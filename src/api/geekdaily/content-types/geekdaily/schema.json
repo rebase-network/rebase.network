@@ -33,7 +33,7 @@
     "editor": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::editor.editor"
+      "target": "plugin::users-permissions.user"
     }
   }
 }
