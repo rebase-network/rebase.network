@@ -40,7 +40,7 @@ module.exports = createCoreController('api::geekdaily.geekdaily', ({ strapi }) =
           fields: ['url'],
         },
         editor: {
-          fields: ['name'],
+          fields: ['username'],
           populate: {
             avatar: { fields: ['url'] },
           },
