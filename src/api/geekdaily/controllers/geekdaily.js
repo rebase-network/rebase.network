@@ -14,14 +14,30 @@ const { createCoreController } = require('@strapi/strapi').factories;
 
 module.exports = createCoreController('api::geekdaily.geekdaily', ({ strapi }) => ({
   async batchInsert(ctx) {
-    const dataToInsert = ctx.request.body;
+    const batchData = ctx.request.body;
 
     try {
       const result = await strapi.db.query('api::geekdaily.geekdaily').createMany({
-        data: dataToInsert.data,
+        data: batchData.data,
       });
 
       // return {"count":3,"ids":[6,7,8]}
+
+      for (const _id of result.ids) {
+        const model = await strapi.db.query('api::geekdaily.geekdaily').findOne({
+          where: { id: _id },
+        });
+
+        // webhooks
+        const msg = {
+          model: 'geekdaily',
+          uid: 'api::geekdaily.geekdaily',
+          entry: model,
+        }
+
+        await strapi.eventHub.emit('entry.create', msg);
+      }
+
       ctx.send(result);
     } catch (error) {
       console.error(error);
