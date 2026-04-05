@@ -40,6 +40,8 @@ Git history is preserved, and the repo is now being rebuilt from scratch with a 
 - `docs/architecture.md`: architecture, runtime model, deployment, and integration decisions
 - `docs/content-model.md`: CMS collections, field design, and URL conventions
 - `docs/implementation-plan.md`: development phases and milestone plan
+- `docs/acceptance-criteria.md`: module-level acceptance criteria for product, content, and page behavior
+- `docs/quality-assurance.md`: browser checks, automated checks, sample content, and release validation flow
 
 ## Repository Conventions
 
