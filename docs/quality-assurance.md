@@ -134,6 +134,9 @@ Recommended initial route set:
 - `/articles/rss.xml`
 - `/events/rss.xml`
 - `/who-is-hiring/rss.xml`
+- `/robots.txt`
+- `/sitemap.xml`
+- `/healthz`
 
 When sample content exists, also test:
 
@@ -148,6 +151,7 @@ Recommended checks:
 - expected heading or landmark exists
 - key page regions render
 - feed responses contain XML content
+- health and SEO support routes return the expected format
 
 ### Structural Assertions
 

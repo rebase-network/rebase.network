@@ -11,6 +11,7 @@
     "cms:up": "node scripts/directus/compose-local.mjs up -d",
     "cms:down": "node scripts/directus/compose-local.mjs down",
     "cms:logs": "node scripts/directus/compose-local.mjs logs --tail=80 directus",
+    "cms:health": "node scripts/directus/check-health.mjs",
     "cms:bootstrap": "node scripts/directus/bootstrap-local.mjs",
     "cms:reset": "pnpm cms:down && node scripts/directus/compose-local.mjs down -v --remove-orphans && pnpm cms:bootstrap",
     "dev": "pnpm --filter @rebase/web dev",

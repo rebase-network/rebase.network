@@ -19,6 +19,8 @@ if (!event) {
   site={site}
   title={event ? event.title : 'Event Not Found'}
   description={event ? event.summary : 'The requested event could not be found.'}
+  socialImage={event?.coverImageUrl}
+  noindex={!event}
 >
   {event ? (
     <>

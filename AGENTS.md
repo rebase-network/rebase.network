@@ -30,4 +30,5 @@ Examples:
 - Use `docs/content-model.md` for CMS collections, URL rules, RSS rules, and migration assumptions.
 - Use `docs/implementation-plan.md` for delivery phases and milestone expectations.
 - Use `docs/acceptance-criteria.md` and `docs/quality-assurance.md` for review and validation standards.
+- Use `docs/launch-checklist.md` for launch routes, health checks, domain preparation, and observability notes.
 - Use `docs/local-development.md` for local Directus, PostgreSQL, SQL bootstrap, and testing commands.

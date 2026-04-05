@@ -246,9 +246,23 @@ V1 should include a simple health-check strategy for backend services.
 
 Recommended baseline:
 
+- a public website health endpoint at `/healthz`
 - a CMS health endpoint
+- a local CMS verification command such as `pnpm cms:health`
 - a database reachability check through CMS or deployment tooling
 - follow-up external periodic checks and notifications may be implemented from another repository with GitHub Actions
+
+## SEO Baseline
+
+V1 should ship with a lightweight but complete SEO baseline.
+
+Recommended baseline:
+
+- canonical URLs on public pages
+- default Open Graph and Twitter metadata
+- a shared social card asset fallback
+- `/robots.txt`
+- `/sitemap.xml`
 
 ## Security Baseline
 

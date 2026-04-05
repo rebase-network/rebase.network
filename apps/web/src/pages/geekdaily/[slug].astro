@@ -21,6 +21,7 @@ if (!episode) {
   site={site}
   title={episode ? episode.title : 'GeekDaily Not Found'}
   description={episode ? episode.summary : 'The requested GeekDaily episode could not be found.'}
+  noindex={!episode}
 >
   {episode ? (
     <>

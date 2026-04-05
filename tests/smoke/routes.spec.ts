@@ -37,3 +37,14 @@ test('detail pages render expected content blocks', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'protocol growth lead' })).toBeVisible();
   await expect(page.getByText('外部投递链接')).toBeVisible();
 });
+
+test('pages expose canonical and social metadata', async ({ page }) => {
+  await page.goto('/articles/building-rebase-in-public');
+
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    'https://rebase.network/articles/building-rebase-in-public',
+  );
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /social-card\.svg|https?:\/\//);
+  await expect(page.locator('meta[name="twitter:description"]')).toHaveAttribute('content', /可阅读、可订阅/);
+});

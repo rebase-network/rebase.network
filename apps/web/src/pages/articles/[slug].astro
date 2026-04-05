@@ -18,6 +18,8 @@ if (!article) {
   site={site}
   title={article ? article.title : 'Article Not Found'}
   description={article ? article.summary : 'The requested article could not be found.'}
+  socialImage={article?.coverImageUrl}
+  noindex={!article}
 >
   {article ? (
     <>

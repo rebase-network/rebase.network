@@ -18,6 +18,7 @@ if (!job) {
   site={site}
   title={job ? `${job.roleTitle} · ${job.companyName}` : 'Job Not Found'}
   description={job ? job.summary : 'The requested job could not be found.'}
+  noindex={!job}
 >
   {job ? (
     <>

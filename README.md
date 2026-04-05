@@ -47,6 +47,7 @@ Git history is preserved, and the repo is now being rebuilt from scratch with a 
 - `docs/acceptance-criteria.md`: module-level acceptance criteria for product, content, and page behavior
 - `docs/quality-assurance.md`: browser checks, automated checks, sample content, and release validation flow
 - `docs/local-development.md`: local Directus, PostgreSQL, SQL bootstrap, and daily development commands
+- `docs/launch-checklist.md`: launch-critical routes, domain preparation, health checks, and observability baseline
 
 ## Local Development
 
@@ -72,6 +73,7 @@ Other useful commands:
 
 - `pnpm cms:logs`: inspect Directus logs
 - `pnpm cms:down`: stop local CMS containers
+- `pnpm cms:health`: verify Directus and the public content read path
 - `pnpm cms:reset`: recreate the local database and reapply the baseline
 - `pnpm test:smoke`: bootstrap CMS, build the app, and run Playwright smoke tests
 

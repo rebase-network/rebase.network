@@ -63,6 +63,21 @@ export async function directusRequest(path: string, query: Record<string, Direct
   return response.json();
 }
 
+export async function directusHealthcheck(): Promise<{ status: string }> {
+  const url = buildUrl('/server/health');
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Directus healthcheck failed (${response.status}) for ${url}: ${body}`);
+  }
+
+  const payload = (await response.json()) as { status?: string };
+  return {
+    status: typeof payload.status === 'string' ? payload.status : 'unknown',
+  };
+}
+
 export async function readSingleton(collection: string, id = 1, fields: string[] = ['*']): Promise<Record<string, unknown>> {
   const payload = await directusRequest(`/items/${collection}/${id}`, {
     fields,

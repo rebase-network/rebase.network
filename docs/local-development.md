@@ -49,6 +49,7 @@ The bootstrap script does the following:
 - `pnpm cms:up`: start PostgreSQL and Directus
 - `pnpm cms:down`: stop the local CMS containers
 - `pnpm cms:logs`: show recent Directus logs
+- `pnpm cms:health`: verify Directus core health and the public website token read path
 - `pnpm cms:bootstrap`: apply the full local baseline
 - `pnpm cms:reset`: recreate the local CMS volumes and baseline
 - `pnpm cms:generate:schema`: regenerate Directus collection schema SQL
