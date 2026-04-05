@@ -21,3 +21,12 @@ Examples:
 - Commit promptly after completing a coherent batch of work.
 - Avoid mixing unrelated changes in the same commit.
 - Keep each commit scoped to a single clear goal so it is easy to review or revert.
+
+## Documentation Map
+
+- Start with `README.md` for the current project baseline and document index.
+- Use `docs/v1-scope.md` for product scope and non-goals.
+- Use `docs/architecture.md` for architecture, deployment, caching, and runtime decisions.
+- Use `docs/content-model.md` for CMS collections, URL rules, RSS rules, and migration assumptions.
+- Use `docs/implementation-plan.md` for delivery phases and milestone expectations.
+- Use `docs/acceptance-criteria.md` and `docs/quality-assurance.md` for review and validation standards.

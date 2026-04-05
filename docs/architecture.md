@@ -21,6 +21,13 @@ This keeps V1 simple while avoiding the scaling limits of a pure full-site stati
 - primary database: PostgreSQL
 - media storage: Cloudflare R2
 
+## Product and Editorial Defaults
+
+- visual direction: community media
+- editorial format: structured fields plus Markdown bodies
+- GeekDaily search implementation in V1: frontend search
+- future search expansion may use a third-party service or plugin if needed
+
 ## Why This Architecture
 
 ### Astro
@@ -98,6 +105,17 @@ postgresql + r2
 4. Uploaded media is stored in R2.
 5. Public pages read the latest published content through Directus APIs.
 
+## Deployment Targets
+
+Recommended public deployment:
+
+- Astro site on Cloudflare Workers
+- public media served behind Cloudflare on top of R2
+
+Planned CMS and database host target for V1:
+
+- `rebase@101.33.75.240`
+
 ## Rendering Strategy
 
 V1 should use a mixed rendering strategy.
@@ -131,9 +149,13 @@ Operational domains:
 - recommended CMS domain: `admin.rebase.network`
 - recommended media domain: `media.rebase.network`
 
-The final redirect policy between `rebase.network` and `rebase.community` can be decided later.
+Preferred behavior:
 
-That decision does not block development.
+- both domains should access the site directly if practical
+
+Fallback behavior:
+
+- `rebase.community` may redirect with `301` to `rebase.network` if direct dual-domain delivery becomes impractical
 
 ## API Boundary
 
@@ -174,6 +196,7 @@ V1 should use practical cache control instead of complex invalidation from day o
 
 Suggested approach:
 
+- rely on Cloudflare edge caching in V1
 - cache public GET responses at the edge
 - keep TTLs conservative for dynamic list pages
 - allow faster refresh for pages with frequent content updates
@@ -190,6 +213,8 @@ Recommended scope:
 - keep the first version lightweight and practical
 
 V1 does not require a heavyweight dedicated search engine.
+
+V1 should implement GeekDaily search in the frontend.
 
 ## Feed Strategy
 
@@ -208,6 +233,22 @@ Feed generation should happen in the public website layer and consume published 
 GeekDaily feed items should map to episode pages, not individual links inside an episode.
 
 Hiring feed items should map to public hiring detail pages rather than external apply links.
+
+V1 feed defaults:
+
+- each feed returns the latest 3 published items
+- article, event, and hiring feed descriptions use summary content
+- GeekDaily feed descriptions use the episode body content or a body-like generated summary
+
+## Operations Baseline
+
+V1 should include a simple health-check strategy for backend services.
+
+Recommended baseline:
+
+- a CMS health endpoint
+- a database reachability check through CMS or deployment tooling
+- follow-up external periodic checks and notifications may be implemented from another repository with GitHub Actions
 
 ## Security Baseline
 

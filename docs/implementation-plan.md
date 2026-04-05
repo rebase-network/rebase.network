@@ -21,6 +21,10 @@ V1 does not require a custom admin application in this repository.
 
 The CMS can be managed as a separately deployed Directus service while schema and integration notes remain documented here.
 
+Planned CMS and database deployment target:
+
+- `rebase@101.33.75.240`
+
 ## Phase 1: Foundation
 
 Deliverables:
@@ -44,6 +48,7 @@ Deliverables:
 - route skeleton for all V1 public pages
 - navigation and footer structure
 - base layout
+- community-media visual direction
 - responsive design tokens
 - reusable content modules
 
@@ -61,6 +66,7 @@ Deliverables:
 - frontend data fetching layer
 - integration for home, about, jobs, job detail pages, articles, events, contributors
 - R2-backed media handling
+- Markdown rendering pipeline for long-form content
 
 Definition of done:
 
@@ -75,11 +81,13 @@ Deliverables:
 - list and detail page implementation
 - CSV-informed migration strategy
 - V1 GeekDaily search
+- SQL generation workflow for historical GeekDaily import
 
 Definition of done:
 
 - GeekDaily list and detail pages work with episode-level URLs
 - search can find practical results quickly
+- historical CSV import output can be generated as committed SQL
 
 ## Phase 5: Hardening and Launch Preparation
 
@@ -91,18 +99,18 @@ Deliverables:
 - cache strategy review
 - domain configuration checklist
 - analytics and observability basics
+- simple backend health-check baseline
 
 Definition of done:
 
 - core SEO is in place
 - launch-critical routes are validated
 - deployment and domain steps are documented
+- basic service health checks are documented
 
 ## Open Decisions to Resolve Before Launch
 
-- whether `rebase.community` should redirect to `rebase.network`
-- Directus deployment target
-- PostgreSQL hosting provider
+- whether both public domains can remain directly accessible in production
 - exact Cloudflare cache policy by route
 - final analytics stack
 

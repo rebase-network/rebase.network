@@ -22,6 +22,8 @@ Git history is preserved, and the repo is now being rebuilt from scratch with a 
 - CMS: Directus
 - primary database: PostgreSQL
 - media storage: Cloudflare R2
+- visual direction: community media
+- editorial format: structured fields plus Markdown bodies
 
 ## Key Decisions
 
@@ -33,6 +35,8 @@ Git history is preserved, and the repo is now being rebuilt from scratch with a 
 - RSS feeds are in scope for V1
 - hiring detail pages and hiring RSS are in scope for V1
 - GeekDaily detail URLs use `/geekdaily/episode-{episode-number}`
+- GeekDaily titles default to `极客日报#{episode-number}` during migration
+- RSS feeds default to the latest 3 items per feed in V1
 
 ## Documentation
 
@@ -42,6 +46,10 @@ Git history is preserved, and the repo is now being rebuilt from scratch with a 
 - `docs/implementation-plan.md`: development phases and milestone plan
 - `docs/acceptance-criteria.md`: module-level acceptance criteria for product, content, and page behavior
 - `docs/quality-assurance.md`: browser checks, automated checks, sample content, and release validation flow
+
+## Deployment Note
+
+The planned CMS and database deployment target for V1 is the server at `rebase@101.33.75.240`.
 
 ## Repository Conventions
 

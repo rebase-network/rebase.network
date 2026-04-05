@@ -9,6 +9,7 @@ V1 should establish a stable public-facing content platform with a maintainable 
 The first release should prioritize:
 
 - clear community positioning
+- a community-media presentation style that surfaces ongoing activity
 - strong mobile and desktop reading experience
 - sustainable content publishing
 - scalable handling of GeekDaily history
@@ -21,6 +22,7 @@ V1 is:
 - a community website
 - a content hub
 - an operations-friendly publishing platform
+- a community-media experience that helps readers discover what is happening inside Rebase
 
 V1 is not:
 
@@ -76,6 +78,15 @@ Admins should be able to manage:
 - footer content
 - media uploads
 
+### Editorial Format
+
+V1 content editing should use:
+
+- structured fields for metadata, taxonomy, and page assembly
+- Markdown for long-form body content
+
+This applies to article bodies, About content, event detail content, hiring detail content, and GeekDaily episode body content when needed.
+
 ### GeekDaily Search
 
 GeekDaily search is part of V1.
@@ -89,6 +100,10 @@ The first version should support search by:
 - date
 
 V1 search should optimize for practical discovery, not heavyweight full-text search quality.
+
+The first implementation should use frontend search.
+
+If future needs grow, the project may later integrate a third-party search service or plugin.
 
 ### RSS Feeds
 
@@ -112,6 +127,8 @@ The site-wide feed should aggregate recent public content from:
 GeekDaily RSS items should be episode-based rather than item-based.
 
 Hiring RSS items should be job-based and link to public job detail pages.
+
+Each V1 feed should default to the latest 3 published items.
 
 ## Out of Scope
 
@@ -161,6 +178,17 @@ V1 does not support:
 - in-site job application forms
 - applicant tracking
 - recruiter dashboards beyond CMS content management
+
+Suggested hiring detail content includes:
+
+- company or team name
+- role title
+- salary
+- remote support
+- work mode
+- work scope or responsibilities
+- work location
+- contact or application method
 
 ## Success Criteria
 

@@ -9,6 +9,21 @@ The data model should support:
 - scalable GeekDaily organization
 - stable public URLs
 
+## Editorial Format
+
+Use:
+
+- structured fields for metadata and structured page sections
+- Markdown for long-form content fields
+
+Recommended Markdown-backed fields include:
+
+- `about_page.content`
+- `articles.content`
+- `events.content`
+- `jobs.description`
+- `geekdaily_episodes.body`
+
 ## URL Conventions
 
 ### Global Rules
@@ -104,12 +119,17 @@ Suggested fields:
 - `company_name`
 - `role_title`
 - `slug`
+- `salary`
+- `supports_remote`
 - `location`
 - `work_mode`
 - `summary`
 - `description`
+- `responsibilities`
 - `apply_url`
 - `apply_note`
+- `contact_label`
+- `contact_value`
 - `logo`
 - `status`
 - `published_at`
@@ -123,6 +143,7 @@ Notes:
 - `status` should support at least draft, published, archived
 - public path should use `/who-is-hiring/{slug}`
 - `slug` should be stable after publication
+- `description` should support Markdown
 
 ### `articles`
 
@@ -204,6 +225,9 @@ Suggested fields:
 - `headline`
 - `bio`
 - `roles`
+- `twitter_url`
+- `wechat`
+- `telegram`
 - `social_links`
 - `sort_order`
 - `status`
@@ -276,6 +300,7 @@ Suggested fields:
 - `published_at`
 - `title`
 - `summary`
+- `body`
 - `tags`
 - `hero_image`
 - `status`
@@ -286,6 +311,10 @@ Slug rule:
 
 - generated as `episode-{episode_number}`
 - example: `episode-1915`
+
+Title default during migration:
+
+- `极客日报#{episode_number}`
 
 Public URL:
 
@@ -312,6 +341,13 @@ CSV mapping:
 - `author` -> `geekdaily_items.author`
 - `url` -> `geekdaily_items.source_url`
 - `introduce` -> `geekdaily_items.summary`
+
+Migration approach:
+
+- the historical `geekdaily.csv` file is the source input
+- generate SQL from CSV after the final schema is defined
+- commit the generated SQL migration files to this repository
+- import all available historical episodes in one batch
 
 ## Search Model for GeekDaily
 
@@ -343,6 +379,10 @@ V1 should not rely on a heavyweight full-text architecture.
 
 `/geekdaily/rss.xml` should publish one feed item per episode.
 
+V1 limit:
+
+- latest 3 published episodes
+
 Suggested feed fields:
 
 - title
@@ -351,9 +391,22 @@ Suggested feed fields:
 - publication date
 - episode number
 
+Description rule:
+
+- use episode body content when available
+- otherwise use a generated body-like summary derived from the episode content
+
 ### Articles Feed
 
 `/articles/rss.xml` should publish one feed item per article.
+
+V1 limit:
+
+- latest 3 published articles
+
+Description rule:
+
+- use article summary
 
 ### Events Feed
 
@@ -361,9 +414,21 @@ Suggested feed fields:
 
 Event feed items should only include public published events.
 
+V1 limit:
+
+- latest 3 published events
+
+Description rule:
+
+- use event summary
+
 ### Hiring Feed
 
 `/who-is-hiring/rss.xml` should publish one feed item per public job entry.
+
+V1 limit:
+
+- latest 3 published job entries
 
 Suggested feed fields:
 
@@ -376,6 +441,10 @@ Suggested feed fields:
 - work mode
 
 Feed links should point to public hiring detail pages, not directly to the external application URL.
+
+Description rule:
+
+- use job summary
 
 ## Shared Content Status Convention
 
