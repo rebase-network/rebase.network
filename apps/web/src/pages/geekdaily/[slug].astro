@@ -1,0 +1,194 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getGeekDailyEpisodeBySlug, getGeekDailyEpisodes } from '@/lib/content';
+import { formatDate } from '@/lib/dates';
+import { getGeekDailyPath } from '@/lib/paths';
+const slug = Astro.params.slug ?? '';
+const episode = getGeekDailyEpisodeBySlug(slug);
+const related = episode
+  ? getGeekDailyEpisodes()
+      .filter((item) => item.slug !== episode.slug)
+      .slice(0, 2)
+  : [];
+
+if (!episode) {
+  Astro.response.status = 404;
+}
+---
+
+<BaseLayout
+  title={episode ? episode.title : 'GeekDaily Not Found'}
+  description={episode ? episode.summary : 'The requested GeekDaily episode could not be found.'}
+>
+  {episode ? (
+    <>
+      <section class="shell page-hero single">
+        <article class="hero-panel card">
+          <p class="hero-kicker">geekdaily episode</p>
+          <h1 class="hero-title">{episode.title}</h1>
+          <p class="hero-summary">{episode.summary}</p>
+        </article>
+      </section>
+
+      <section class="shell page-section detail-shell">
+        <article class="card episode-detail">
+          <div class="lead">
+            <p>{formatDate(episode.publishedAt)}</p>
+            <ul>
+              {episode.tags.map((tag) => <li>{tag}</li>)}
+            </ul>
+          </div>
+          <p class="body">{episode.body}</p>
+          <div class="item-list">
+            {episode.items.map((item, index) => (
+              <article class="item-card">
+                <span>#{index + 1}</span>
+                <div>
+                  <h2>
+                    <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+                      {item.title}
+                    </a>
+                  </h2>
+                  <p class="author">推荐人：{item.author}</p>
+                  <p class="summary">{item.summary}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </article>
+
+        <aside class="card detail-sidebar">
+          <h2>episode info</h2>
+          <p>{episode.title}</p>
+          <ul>
+            <li>链接规范：<code>{getGeekDailyPath(episode.episodeNumber)}</code></li>
+            <li><a href="/geekdaily/rss.xml">订阅 GeekDaily RSS</a></li>
+            <li><a href="/geekdaily">回到 GeekDaily 列表</a></li>
+          </ul>
+          <h2 class="related-title">related episodes</h2>
+          <ul>
+            {related.map((item) => (
+              <li><a href={getGeekDailyPath(item.episodeNumber)}>{item.title}</a></li>
+            ))}
+          </ul>
+        </aside>
+      </section>
+    </>
+  ) : (
+    <section class="shell page-hero single">
+      <article class="hero-panel card">
+        <p class="hero-kicker">404</p>
+        <h1 class="hero-title">这期 GeekDaily 暂时没有被找到。</h1>
+        <p class="hero-summary">你可以先回到 GeekDaily 列表，继续浏览最近和历史 episode。</p>
+      </article>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .single {
+    grid-template-columns: 1fr;
+  }
+
+  .episode-detail {
+    padding: 1.4rem;
+  }
+
+  .lead {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .lead p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .lead ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .lead li {
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.12);
+    color: #92400e;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .body {
+    margin: 1.2rem 0 0;
+    color: var(--muted);
+    line-height: 1.9;
+    font-size: 1.06rem;
+  }
+
+  .item-list {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.25rem;
+  }
+
+  .item-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.76);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .item-card span {
+    display: grid;
+    width: 2.2rem;
+    height: 2.2rem;
+    place-items: center;
+    border-radius: 0.75rem;
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--accent-strong);
+    font-weight: 800;
+  }
+
+  .item-card h2,
+  .author,
+  .summary {
+    margin: 0;
+  }
+
+  .item-card h2 {
+    font-size: 1.2rem;
+    line-height: 1.2;
+  }
+
+  .author {
+    margin-top: 0.45rem;
+    color: var(--accent-strong);
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .summary {
+    margin-top: 0.65rem;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .related-title {
+    margin-top: 1.2rem !important;
+  }
+</style>

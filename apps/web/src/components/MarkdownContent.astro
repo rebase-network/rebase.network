@@ -1,0 +1,46 @@
+---
+import { renderMarkdown } from '@/lib/markdown';
+
+interface Props {
+  content: string;
+}
+
+const { content } = Astro.props;
+---
+
+<div class="markdown" set:html={renderMarkdown(content)} />
+
+<style>
+  .markdown {
+    color: var(--text);
+    line-height: 1.8;
+    font-size: 1.02rem;
+  }
+
+  .markdown :global(h2) {
+    margin: 2rem 0 0.9rem;
+    font-size: 1.6rem;
+    line-height: 1.1;
+  }
+
+  .markdown :global(p) {
+    margin: 0 0 1rem;
+  }
+
+  .markdown :global(ul) {
+    padding-left: 1.1rem;
+  }
+
+  .markdown :global(li + li) {
+    margin-top: 0.5rem;
+  }
+
+  .markdown :global(strong) {
+    color: var(--accent-strong);
+  }
+
+  .markdown :global(a) {
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+</style>

@@ -1,0 +1,159 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import MarkdownContent from '@/components/MarkdownContent.astro';
+import { getJobBySlug, getJobs } from '@/lib/content';
+import { formatDate } from '@/lib/dates';
+import { getJobPath } from '@/lib/paths';
+const slug = Astro.params.slug ?? '';
+const job = getJobBySlug(slug);
+const related = job
+  ? getJobs().filter((item) => item.slug !== job.slug).slice(0, 2)
+  : [];
+
+if (!job) {
+  Astro.response.status = 404;
+}
+---
+
+<BaseLayout
+  title={job ? `${job.roleTitle} · ${job.companyName}` : 'Job Not Found'}
+  description={job ? job.summary : 'The requested job could not be found.'}
+>
+  {job ? (
+    <>
+      <section class="shell page-hero single">
+        <article class="hero-panel card">
+          <p class="hero-kicker">job detail</p>
+          <h1 class="hero-title">{job.roleTitle}</h1>
+          <p class="hero-summary">{job.summary}</p>
+        </article>
+      </section>
+
+      <section class="shell page-section detail-shell">
+        <article class="card article-detail job-detail">
+          <div class="job-meta-grid">
+            <article>
+              <span>company</span>
+              <strong>{job.companyName}</strong>
+            </article>
+            <article>
+              <span>salary</span>
+              <strong>{job.salary}</strong>
+            </article>
+            <article>
+              <span>mode</span>
+              <strong>{job.workMode}</strong>
+            </article>
+            <article>
+              <span>location</span>
+              <strong>{job.location}</strong>
+            </article>
+          </div>
+
+          <MarkdownContent content={job.description} />
+
+          <section class="responsibilities">
+            <h2>工作内容</h2>
+            <ul>
+              {job.responsibilities.map((item) => <li>{item}</li>)}
+            </ul>
+          </section>
+        </article>
+
+        <aside class="card detail-sidebar">
+          <h2>apply info</h2>
+          <p>{job.applyNote}</p>
+          <ul>
+            <li>发布时间：{formatDate(job.publishedAt)}</li>
+            <li>远程支持：{job.supportsRemote ? 'yes' : 'no'}</li>
+            <li>{job.contactLabel}: {job.contactValue}</li>
+            <li>
+              <a href={job.applyUrl} target="_blank" rel="noreferrer">外部投递链接</a>
+            </li>
+          </ul>
+          <h2 class="related-title">related jobs</h2>
+          <ul>
+            {related.map((item) => (
+              <li><a href={getJobPath(item.slug)}>{item.roleTitle}</a></li>
+            ))}
+          </ul>
+        </aside>
+      </section>
+    </>
+  ) : (
+    <section class="shell page-hero single">
+      <article class="hero-panel card">
+        <p class="hero-kicker">404</p>
+        <h1 class="hero-title">这个招聘页面暂时没有被找到。</h1>
+        <p class="hero-summary">你可以先回到 Who-Is-Hiring 列表，浏览社区当前公开的招聘信息。</p>
+      </article>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .single {
+    grid-template-columns: 1fr;
+  }
+
+  .job-detail {
+    padding: 1.4rem;
+  }
+
+  .job-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .job-meta-grid article {
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.74);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .job-meta-grid span,
+  .job-meta-grid strong {
+    display: block;
+  }
+
+  .job-meta-grid span {
+    color: var(--muted);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .job-meta-grid strong {
+    margin-top: 0.4rem;
+    font-size: 1.05rem;
+  }
+
+  .responsibilities {
+    margin-top: 1.5rem;
+  }
+
+  .responsibilities h2 {
+    margin: 0 0 0.8rem;
+    font-size: 1.4rem;
+  }
+
+  .responsibilities ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .related-title {
+    margin-top: 1.2rem !important;
+  }
+
+  @media (max-width: 960px) {
+    .job-meta-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

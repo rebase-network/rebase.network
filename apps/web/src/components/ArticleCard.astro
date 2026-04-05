@@ -1,0 +1,82 @@
+---
+import type { Article } from '@rebase/types';
+import { formatDate } from '@/lib/dates';
+import { getArticlePath } from '@/lib/paths';
+
+interface Props {
+  article: Article;
+  featured?: boolean;
+}
+
+const { article, featured = false } = Astro.props;
+---
+
+<article class:list={['article-card', 'card', { featured }] }>
+  <div class="cover" style={`background:${article.coverAccent}`} />
+  <div class="content">
+    <p class="meta">{formatDate(article.publishedAt)} · {article.readingTime}</p>
+    <h3>
+      <a href={getArticlePath(article.slug)}>{article.title}</a>
+    </h3>
+    <p class="summary">{article.summary}</p>
+    <ul class="tags">
+      {article.tags.map((tag) => <li>{tag}</li>)}
+    </ul>
+  </div>
+</article>
+
+<style>
+  .article-card {
+    overflow: hidden;
+  }
+
+  .cover {
+    min-height: 10rem;
+  }
+
+  .content {
+    padding: 1.25rem;
+  }
+
+  .meta {
+    margin: 0 0 0.75rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0 0 0.75rem;
+    font-size: 1.4rem;
+    line-height: 1.08;
+  }
+
+  .summary {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tags li {
+    padding: 0.42rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.08);
+    color: var(--accent-strong);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .featured h3 {
+    font-size: clamp(1.8rem, 2.2vw, 2.5rem);
+  }
+</style>

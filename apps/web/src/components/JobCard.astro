@@ -1,0 +1,94 @@
+---
+import type { Job } from '@rebase/types';
+import { formatDate } from '@/lib/dates';
+import { getJobPath } from '@/lib/paths';
+
+interface Props {
+  job: Job;
+}
+
+const { job } = Astro.props;
+---
+
+<article class="job-card card">
+  <div class="meta-row">
+    <p>{job.companyName}</p>
+    <span>{formatDate(job.publishedAt)}</span>
+  </div>
+  <h3>
+    <a href={getJobPath(job.slug)}>{job.roleTitle}</a>
+  </h3>
+  <p class="summary">{job.summary}</p>
+  <dl>
+    <div>
+      <dt>salary</dt>
+      <dd>{job.salary}</dd>
+    </div>
+    <div>
+      <dt>mode</dt>
+      <dd>{job.workMode}</dd>
+    </div>
+    <div>
+      <dt>location</dt>
+      <dd>{job.location}</dd>
+    </div>
+  </dl>
+</article>
+
+<style>
+  .job-card {
+    padding: 1.25rem;
+  }
+
+  .meta-row,
+  dl {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .meta-row {
+    margin-bottom: 0.8rem;
+  }
+
+  .meta-row p,
+  .meta-row span {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0 0 0.75rem;
+    font-size: 1.45rem;
+    line-height: 1.08;
+  }
+
+  .summary {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  dl {
+    flex-wrap: wrap;
+    margin: 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+
+  dt {
+    color: var(--muted);
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0.3rem 0 0;
+    font-weight: 700;
+  }
+</style>

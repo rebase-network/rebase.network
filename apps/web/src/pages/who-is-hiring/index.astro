@@ -1,0 +1,76 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import JobCard from '@/components/JobCard.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import { getJobs } from '@/lib/content';
+
+const jobs = getJobs();
+---
+
+<BaseLayout title="Who-Is-Hiring" description="See current hiring opportunities shared by the Rebase community.">
+  <section class="shell page-hero single">
+    <article class="hero-panel card">
+      <p class="hero-kicker">who is hiring</p>
+      <h1 class="hero-title">让招聘信息不仅被发出来，还能被读懂、被订阅、被稳定地回看。</h1>
+      <p class="hero-summary">第一版提供公开招聘列表、详情页与 RSS 输出，帮助求职者快速找到合适机会。</p>
+    </article>
+  </section>
+
+  <section class="shell page-section callout-grid">
+    <article class="card callout-card">
+      <h2>如何发布招聘</h2>
+      <p>当前默认由社区管理后台录入信息。后续也可以从 Who-Is-Hiring issue 历史数据逐步迁移和整理。</p>
+    </article>
+    <article class="card callout-card">
+      <h2>如何投递</h2>
+      <p>每条职位会有站内详情页，并在详情页中展示联系方式、工作模式、薪资与外部投递入口。</p>
+    </article>
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="job board"
+      title="社区招聘信息"
+      description="feed 默认输出最近 3 条职位，详情页提供完整上下文。"
+      href="/who-is-hiring/rss.xml"
+      hrefLabel="rss"
+    />
+    <div class="grid-3">
+      {jobs.map((job) => <JobCard job={job} />)}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .single {
+    grid-template-columns: 1fr;
+  }
+
+  .callout-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .callout-card {
+    padding: 1.4rem;
+  }
+
+  .callout-card h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.4rem;
+  }
+
+  .callout-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  @media (max-width: 960px) {
+    .callout-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+

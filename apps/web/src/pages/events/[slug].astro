@@ -1,0 +1,105 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import MarkdownContent from '@/components/MarkdownContent.astro';
+import { getEventBySlug, getEvents } from '@/lib/content';
+import { formatEventWindow } from '@/lib/dates';
+import { getEventPath } from '@/lib/paths';
+const routeSlug = Astro.params.slug ?? '';
+const eventSlug = routeSlug.replace(/^\d{4}-\d{2}-\d{2}-/, '');
+const event = getEventBySlug(eventSlug);
+const related = event
+  ? getEvents().filter((item) => item.slug !== event.slug).slice(0, 2)
+  : [];
+
+if (!event) {
+  Astro.response.status = 404;
+}
+---
+
+<BaseLayout
+  title={event ? event.title : 'Event Not Found'}
+  description={event ? event.summary : 'The requested event could not be found.'}
+>
+  {event ? (
+    <>
+      <section class="shell page-hero single">
+        <article class="hero-panel card">
+          <p class="hero-kicker">event detail</p>
+          <h1 class="hero-title">{event.title}</h1>
+          <p class="hero-summary">{event.summary}</p>
+        </article>
+      </section>
+
+      <section class="shell page-section detail-shell">
+        <article class="card article-detail">
+          <div class="event-meta">
+            <p>{formatEventWindow(event.startAt, event.endAt)}</p>
+            <p>{event.location} · {event.venue}</p>
+          </div>
+          <MarkdownContent content={event.content} />
+        </article>
+
+        <aside class="card detail-sidebar">
+          <h2>event info</h2>
+          <p>{event.registrationNote ?? '报名方式稍后公布。'}</p>
+          <ul>
+            {event.registrationUrl && (
+              <li>
+                <a href={event.registrationUrl} target="_blank" rel="noreferrer">外部报名链接</a>
+              </li>
+            )}
+            <li><a href="/events/rss.xml">订阅活动 RSS</a></li>
+            <li><a href="/events">回到活动列表</a></li>
+          </ul>
+          <h2 class="related-title">related events</h2>
+          <ul>
+            {related.map((item) => (
+              <li><a href={getEventPath(item.startAt, item.slug)}>{item.title}</a></li>
+            ))}
+          </ul>
+        </aside>
+      </section>
+    </>
+  ) : (
+    <section class="shell page-hero single">
+      <article class="hero-panel card">
+        <p class="hero-kicker">404</p>
+        <h1 class="hero-title">这个活动页面暂时没有被找到。</h1>
+        <p class="hero-summary">你可以先回到活动列表，查看当前活动和历史活动归档。</p>
+      </article>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .single {
+    grid-template-columns: 1fr;
+  }
+
+  .article-detail {
+    padding: 1.4rem;
+  }
+
+  .event-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .event-meta p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .related-title {
+    margin-top: 1.2rem !important;
+  }
+</style>

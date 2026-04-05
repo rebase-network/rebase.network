@@ -1,0 +1,38 @@
+---
+import ArticleCard from '@/components/ArticleCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import { getArticles } from '@/lib/content';
+
+const articles = getArticles();
+---
+
+<BaseLayout title="Rebase Articles" description="Read community writing published by Rebase contributors.">
+  <section class="shell page-hero single">
+    <article class="hero-panel card">
+      <p class="hero-kicker">articles</p>
+      <h1 class="hero-title">把社区里的想法、复盘和方法写成可以沉淀下来的文章。</h1>
+      <p class="hero-summary">文章页承接更长线的讨论：产品、信息架构、社区运营和 builder workflow。</p>
+    </article>
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="article feed"
+      title="已发布文章"
+      description="第一版先聚焦结构清晰、可阅读、可订阅的社区写作体验。"
+      href="/articles/rss.xml"
+      hrefLabel="rss"
+    />
+    <div class="grid-3">
+      {articles.map((article) => <ArticleCard article={article} />)}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .single {
+    grid-template-columns: 1fr;
+  }
+</style>
+

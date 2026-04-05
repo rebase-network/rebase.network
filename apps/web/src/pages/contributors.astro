@@ -1,0 +1,51 @@
+---
+import ContributorCard from '@/components/ContributorCard.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getContributorsByRole } from '@/lib/content';
+
+const groups = getContributorsByRole();
+---
+
+<BaseLayout
+  title="Rebase Contributors"
+  description="Meet the volunteers and GeekDaily advisors who keep the community moving."
+>
+  <section class="shell page-hero single">
+    <article class="hero-panel card">
+      <p class="hero-kicker">contributors</p>
+      <h1 class="hero-title">社区不是抽象概念，它总是由具体的人把内容、活动和协作推着往前走。</h1>
+      <p class="hero-summary">
+        第一版先按志愿者和极客日报智囊团分组展示，后续可扩展更多角色类型。
+      </p>
+    </article>
+  </section>
+
+  <section class="shell page-section contributor-groups">
+    {groups.map((group) => (
+      <div class="group-block">
+        <SectionHeader
+          eyebrow={group.role.slug}
+          title={group.role.name}
+          description={group.role.description}
+        />
+        <div class="grid-2">
+          {group.contributors.map((contributor) => (
+            <ContributorCard contributor={contributor} />
+          ))}
+        </div>
+      </div>
+    ))}
+  </section>
+</BaseLayout>
+
+<style>
+  .single {
+    grid-template-columns: 1fr;
+  }
+
+  .contributor-groups {
+    display: grid;
+    gap: 2rem;
+  }
+</style>

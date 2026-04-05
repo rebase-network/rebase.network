@@ -1,0 +1,50 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import EventCard from '@/components/EventCard.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import { getPastEvents, getUpcomingEvents } from '@/lib/content';
+
+const upcomingEvents = getUpcomingEvents();
+const pastEvents = getPastEvents();
+---
+
+<BaseLayout title="Rebase Events" description="See upcoming and past community events from Rebase.">
+  <section class="shell page-hero single">
+    <article class="hero-panel card">
+      <p class="hero-kicker">events</p>
+      <h1 class="hero-title">活动页先做好表达与归档，再慢慢加深运营能力。</h1>
+      <p class="hero-summary">第一版活动详情页不做站内报名表，但会清晰展示时间、地点、说明和外部报名入口。</p>
+    </article>
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="upcoming"
+      title="当前活动"
+      description="公开展示当前活动与外部报名说明。"
+      href="/events/rss.xml"
+      hrefLabel="rss"
+    />
+    <div class="grid-3">
+      {upcomingEvents.map((event) => <EventCard event={event} />)}
+    </div>
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="archive"
+      title="历史活动"
+      description="历史活动也应该保留上下文，而不是从社区记忆里消失。"
+    />
+    <div class="grid-3">
+      {pastEvents.map((event) => <EventCard event={event} />)}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .single {
+    grid-template-columns: 1fr;
+  }
+</style>
+

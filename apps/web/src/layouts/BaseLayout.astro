@@ -1,15 +1,21 @@
 ---
 import '@/styles/global.css';
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+import { getSiteSettings } from '@/lib/content';
 
 interface Props {
   title?: string;
   description?: string;
 }
 
+const site = getSiteSettings();
 const {
   title = 'Rebase Community',
-  description = 'A community media website for articles, GeekDaily, hiring, events, and contributors.',
+  description = site.description,
 } = Astro.props;
+
+const canonicalUrl = new URL(Astro.url.pathname, site.primaryDomain).toString();
 ---
 
 <!doctype html>
@@ -19,10 +25,25 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" type="application/rss+xml" title="Rebase RSS" href="/rss.xml" />
   </head>
   <body>
-    <main>
+    <SiteHeader />
+    <main class="page-main">
       <slot />
     </main>
+    <SiteFooter />
   </body>
 </html>
+
+<style>
+  .page-main {
+    padding-top: 1.25rem;
+  }
+</style>

@@ -1,0 +1,84 @@
+---
+import type { Contributor } from '@rebase/types';
+import { createAvatarData } from '@/lib/avatar';
+
+interface Props {
+  contributor: Contributor;
+}
+
+const { contributor } = Astro.props;
+const avatarBackground = createAvatarData(contributor.avatarSeed);
+---
+
+<article class="contributor-card card">
+  <div class="avatar" style={`background:${avatarBackground}`}>
+    <span>{contributor.name.slice(0, 1)}</span>
+  </div>
+  <div>
+    <h3>{contributor.name}</h3>
+    <p class="headline">{contributor.headline}</p>
+    <p class="bio">{contributor.bio}</p>
+    <ul>
+      {contributor.twitterUrl && (
+        <li><a href={contributor.twitterUrl} target="_blank" rel="noreferrer">twitter</a></li>
+      )}
+      {contributor.wechat && <li>wechat: {contributor.wechat}</li>}
+      {contributor.telegram && <li>telegram: {contributor.telegram}</li>}
+    </ul>
+  </div>
+</article>
+
+<style>
+  .contributor-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    padding: 1.15rem;
+  }
+
+  .avatar {
+    display: grid;
+    width: 4rem;
+    height: 4rem;
+    place-items: center;
+    border-radius: 1.25rem;
+    color: white;
+    font-size: 1.35rem;
+    font-weight: 800;
+  }
+
+  h3,
+  .headline,
+  .bio,
+  ul {
+    margin: 0;
+  }
+
+  .headline {
+    margin-top: 0.15rem;
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+
+  .bio {
+    margin-top: 0.6rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.9rem;
+    padding: 0;
+    list-style: none;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  a {
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+</style>

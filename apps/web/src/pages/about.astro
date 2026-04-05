@@ -1,0 +1,58 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getAboutContent } from '@/lib/content';
+
+const { intro, sections } = getAboutContent();
+---
+
+<BaseLayout title="About Rebase" description={intro.summary}>
+  <section class="shell page-hero single">
+    <article class="hero-panel card">
+      <p class="hero-kicker">about rebase</p>
+      <h1 class="hero-title">{intro.title}</h1>
+      <p class="hero-summary">{intro.summary}</p>
+    </article>
+  </section>
+
+  <section class="shell page-section about-grid">
+    {sections.map((section) => (
+      <article class="card about-card">
+        <h2>{section.title}</h2>
+        <p>{section.body}</p>
+      </article>
+    ))}
+  </section>
+</BaseLayout>
+
+<style>
+  .single {
+    grid-template-columns: 1fr;
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .about-card {
+    padding: 1.5rem;
+  }
+
+  .about-card h2 {
+    margin: 0 0 0.8rem;
+    font-size: 1.45rem;
+  }
+
+  .about-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.85;
+  }
+
+  @media (max-width: 960px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

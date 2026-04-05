@@ -1,0 +1,107 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import MarkdownContent from '@/components/MarkdownContent.astro';
+import { getArticleBySlug, getArticles } from '@/lib/content';
+import { formatDate } from '@/lib/dates';
+import { getArticlePath } from '@/lib/paths';
+const slug = Astro.params.slug ?? '';
+const article = getArticleBySlug(slug);
+const related = article
+  ? getArticles().filter((item) => item.slug !== article.slug).slice(0, 2)
+  : [];
+
+if (!article) {
+  Astro.response.status = 404;
+}
+---
+
+<BaseLayout
+  title={article ? article.title : 'Article Not Found'}
+  description={article ? article.summary : 'The requested article could not be found.'}
+>
+  {article ? (
+    <>
+      <section class="shell page-hero single">
+        <article class="hero-panel card article-hero" style={`background:${article.coverAccent}`}>
+          <p class="hero-kicker light">article</p>
+          <h1 class="hero-title light">{article.title}</h1>
+          <p class="hero-summary light">{article.summary}</p>
+        </article>
+      </section>
+
+      <section class="shell page-section detail-shell">
+        <article class="card article-detail">
+          <div class="article-meta">
+            <p>{formatDate(article.publishedAt)} · {article.readingTime}</p>
+            <p>{article.authors.map((author) => author.name).join(', ')}</p>
+          </div>
+          <MarkdownContent content={article.body} />
+        </article>
+
+        <aside class="card detail-sidebar">
+          <h2>article details</h2>
+          <p>{article.tags.join(' · ')}</p>
+          <ul>
+            <li><a href="/articles/rss.xml">订阅文章 RSS</a></li>
+            <li><a href="/articles">返回文章列表</a></li>
+          </ul>
+          <h2 class="related-title">related reading</h2>
+          <ul>
+            {related.map((item) => (
+              <li><a href={getArticlePath(item.slug)}>{item.title}</a></li>
+            ))}
+          </ul>
+        </aside>
+      </section>
+    </>
+  ) : (
+    <section class="shell page-hero single">
+      <article class="hero-panel card">
+        <p class="hero-kicker">404</p>
+        <h1 class="hero-title">这篇文章暂时没有被找到。</h1>
+        <p class="hero-summary">你可以先回到文章列表，继续浏览 Rebase 已发布的内容。</p>
+      </article>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .single {
+    grid-template-columns: 1fr;
+  }
+
+  .article-hero {
+    color: white;
+  }
+
+  .light {
+    color: white;
+  }
+
+  .article-detail {
+    padding: 1.4rem;
+  }
+
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .article-meta p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .related-title {
+    margin-top: 1.2rem !important;
+  }
+</style>

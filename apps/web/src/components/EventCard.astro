@@ -1,0 +1,57 @@
+---
+import type { Event } from '@rebase/types';
+import { formatEventWindow } from '@/lib/dates';
+import { getEventPath } from '@/lib/paths';
+
+interface Props {
+  event: Event;
+}
+
+const { event } = Astro.props;
+---
+
+<article class="event-card card">
+  <p class="status">{event.status === 'upcoming' ? 'upcoming' : 'past event'}</p>
+  <h3>
+    <a href={getEventPath(event.startAt, event.slug)}>{event.title}</a>
+  </h3>
+  <p class="summary">{event.summary}</p>
+  <ul>
+    <li>{formatEventWindow(event.startAt, event.endAt)}</li>
+    <li>{event.location} · {event.venue}</li>
+  </ul>
+</article>
+
+<style>
+  .event-card {
+    padding: 1.25rem;
+  }
+
+  .status {
+    margin: 0 0 0.8rem;
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0 0 0.7rem;
+    font-size: 1.45rem;
+    line-height: 1.08;
+  }
+
+  .summary {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+</style>

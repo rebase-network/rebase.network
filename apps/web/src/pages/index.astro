@@ -1,43 +1,192 @@
 ---
+import ArticleCard from '@/components/ArticleCard.astro';
+import ContributorCard from '@/components/ContributorCard.astro';
+import EventCard from '@/components/EventCard.astro';
+import GeekDailyCard from '@/components/GeekDailyCard.astro';
+import JobCard from '@/components/JobCard.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import {
+  getContributors,
+  getHomeFeed,
+  getHomeSignals,
+  getHomeStats,
+  getSiteSettings,
+} from '@/lib/content';
+
+const site = getSiteSettings();
+const homeSignals = getHomeSignals();
+const homeStats = getHomeStats();
+const feed = getHomeFeed();
+const featuredContributors = getContributors().slice(0, 2);
 ---
 
-<BaseLayout>
-  <section class="shell hero card">
-    <p class="eyebrow">rebase community</p>
-    <h1>Rebase is being rebuilt as a living community media website.</h1>
-    <p>
-      The v1 foundation is now in progress with Astro, Cloudflare Workers, Directus,
-      PostgreSQL, and R2.
-    </p>
+<BaseLayout title="Rebase Community" description={site.description}>
+  <section class="shell page-hero">
+    <article class="hero-panel card">
+      <p class="hero-kicker">community media for builders</p>
+      <h1 class="hero-title">把社区的日常内容，组织成一个值得反复访问的公共入口。</h1>
+      <p class="hero-summary">
+        Rebase 新站把 GeekDaily、文章、招聘、活动和贡献者信息组织到同一个公共界面里。
+        我们希望读者一进入首页，就能看见社区最近的节奏、机会与信号。
+      </p>
+      <div class="button-row">
+        <a class="button-link" href="/geekdaily">进入 GeekDaily <span>↗</span></a>
+        <a class="button-link secondary" href="/who-is-hiring">查看招聘板 <span>↗</span></a>
+      </div>
+    </article>
+
+    <aside class="signal-panel card">
+      <SectionHeader
+        eyebrow="signal board"
+        title="本周值得先看的三个入口"
+        description="首页不只是导航，而是今天社区最重要内容的总控台。"
+      />
+      <div class="signal-list">
+        {homeSignals.map((signal) => (
+          <a class="signal-item" href={signal.href}>
+            <p>{signal.eyebrow}</p>
+            <h3>{signal.title}</h3>
+            <span>{signal.summary}</span>
+          </a>
+        ))}
+      </div>
+    </aside>
+  </section>
+
+  <section class="shell meta-strip page-section">
+    {homeStats.map((stat) => (
+      <article class="card">
+        <strong>{stat.value}</strong>
+        <span>{stat.label}</span>
+      </article>
+    ))}
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="current dispatch"
+      title="当前动态"
+      description="把最近的文章、活动、招聘和 GeekDaily 聚合成一个可以快速阅读的首页流。"
+    />
+    <div class="grid-2">
+      <ArticleCard article={feed.latestArticles[0]} featured />
+      <GeekDailyCard episode={feed.latestGeekDaily} />
+    </div>
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="latest articles"
+      title="近期文章"
+      description="从产品、社区到信息架构，公开记录 Rebase 的想法与方法。"
+      href="/articles"
+      hrefLabel="浏览全部文章"
+    />
+    <div class="grid-3">
+      {feed.latestArticles.map((article) => (
+        <ArticleCard article={article} />
+      ))}
+    </div>
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="who is hiring"
+      title="新增招聘信息"
+      description="帮助读者快速理解岗位背景、工作模式和联系方式。"
+      href="/who-is-hiring"
+      hrefLabel="进入招聘板"
+    />
+    <div class="grid-3">
+      {feed.latestJobs.map((job) => (
+        <JobCard job={job} />
+      ))}
+    </div>
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="events"
+      title="社区活动"
+      description="第一版先聚焦活动展示与外部报名入口，后续再扩展更复杂的活动能力。"
+      href="/events"
+      hrefLabel="查看活动"
+    />
+    <div class="grid-3">
+      {feed.latestEvents.map((event) => (
+        <EventCard event={event} />
+      ))}
+    </div>
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="contributors"
+      title="让社区持续运转的人"
+      description="贡献者不是站点背后的附属名单，而是这个社区媒介的一部分。"
+      href="/contributors"
+      hrefLabel="查看贡献者"
+    />
+    <div class="grid-2">
+      {featuredContributors.map((contributor) => (
+        <ContributorCard contributor={contributor} />
+      ))}
+    </div>
+  </section>
+
+  <section class="shell page-section">
+    <article class="card feed-callout">
+      <div>
+        <p class="hero-kicker">subscribe</p>
+        <h2>如果你习惯用 RSS 追踪社区内容，Rebase 从第一版开始就把 feed 当成标准输出。</h2>
+      </div>
+      <div class="feed-links">
+        <a href="/rss.xml">site rss</a>
+        <a href="/geekdaily/rss.xml">geekdaily rss</a>
+        <a href="/articles/rss.xml">articles rss</a>
+        <a href="/events/rss.xml">events rss</a>
+        <a href="/who-is-hiring/rss.xml">hiring rss</a>
+      </div>
+    </article>
   </section>
 </BaseLayout>
 
 <style>
-  .hero {
-    margin: 3rem auto;
-    padding: 3rem;
+  .feed-callout {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 1rem;
+    padding: 1.6rem;
   }
 
-  .eyebrow {
-    margin: 0 0 1rem;
+  .feed-callout h2 {
+    margin: 0;
+    font-size: clamp(1.7rem, 2.5vw, 2.6rem);
+    line-height: 1.08;
+    max-width: 15ch;
+  }
+
+  .feed-links {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .feed-links a {
+    display: block;
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid rgba(31, 41, 51, 0.08);
     color: var(--accent-strong);
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
+    font-weight: 800;
     text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
 
-  h1 {
-    margin: 0 0 1rem;
-    font-size: clamp(2.6rem, 5vw, 5rem);
-    line-height: 0.95;
-    max-width: 13ch;
-  }
-
-  p {
-    max-width: 60ch;
-    font-size: 1.05rem;
-    line-height: 1.7;
+  @media (max-width: 960px) {
+    .feed-callout {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

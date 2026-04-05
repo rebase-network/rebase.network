@@ -1,0 +1,162 @@
+---
+import { getSiteSettings } from '@/lib/content';
+
+const site = getSiteSettings();
+---
+
+<footer class="site-footer">
+  <div class="shell footer-frame card">
+    <div class="footer-top">
+      <div>
+        <p class="eyebrow">rebase footer</p>
+        <h2>让社区内容、机会与协作线索持续流动。</h2>
+      </div>
+      <p class="summary">{site.description}</p>
+    </div>
+
+    <div class="footer-grid">
+      {site.footerGroups.map((group) => (
+        <section>
+          <h3>{group.title}</h3>
+          <ul>
+            {group.links.map((link) => (
+              <li>
+                <a href={link.href} target={link.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+
+    <div class="footer-meta">
+      <div class="socials">
+        {site.socialLinks.map((item) => (
+          <a href={item.href} target="_blank" rel="noreferrer">
+            {item.label}
+          </a>
+        ))}
+      </div>
+      <p>{site.copyright}</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding: 4rem 0 2rem;
+  }
+
+  .footer-frame {
+    padding: 2rem;
+  }
+
+  .footer-top {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 2rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .eyebrow {
+    margin: 0 0 0.7rem;
+    color: var(--accent-strong);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.8rem, 3vw, 3.3rem);
+    line-height: 1.05;
+    max-width: 14ch;
+  }
+
+  .summary {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.4rem;
+    padding: 1.75rem 0;
+  }
+
+  h3 {
+    margin: 0 0 0.8rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li + li {
+    margin-top: 0.55rem;
+  }
+
+  li a,
+  .socials a {
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  li a:hover,
+  .socials a:hover {
+    color: var(--accent-strong);
+  }
+
+  .footer-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+
+  .socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  @media (max-width: 920px) {
+    .footer-top,
+    .footer-grid,
+    .footer-meta {
+      grid-template-columns: 1fr;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 600px) {
+    .footer-frame {
+      padding: 1.4rem;
+    }
+
+    .footer-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
