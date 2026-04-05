@@ -1,17 +1,15 @@
 import rss from '@astrojs/rss';
-import { getArticles, getSiteSettings } from '@/lib/content';
+import { getLatestArticles, getSiteSettings } from '@/lib/content';
 import { getArticlePath } from '@/lib/paths';
 
 export async function GET() {
-  const site = getSiteSettings();
-  const items = getArticles()
-    .slice(0, 3)
-    .map((article) => ({
-      title: article.title,
-      description: article.summary,
-      pubDate: new Date(article.publishedAt),
-      link: getArticlePath(article.slug),
-    }));
+  const [site, articles] = await Promise.all([getSiteSettings(), getLatestArticles(3)]);
+  const items = articles.map((article) => ({
+    title: article.title,
+    description: article.summary,
+    pubDate: new Date(article.publishedAt),
+    link: getArticlePath(article.slug),
+  }));
 
   return rss({
     title: 'Rebase articles',

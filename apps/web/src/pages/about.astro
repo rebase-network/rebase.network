@@ -1,11 +1,12 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getAboutContent } from '@/lib/content';
+import { getAboutContent, getSiteSettings } from '@/lib/content';
 
-const { intro, sections } = getAboutContent();
+const [site, about] = await Promise.all([getSiteSettings(), getAboutContent()]);
+const { intro, sections } = about;
 ---
 
-<BaseLayout title="About Rebase" description={intro.summary}>
+<BaseLayout site={site} title="About Rebase" description={intro.summary}>
   <section class="shell page-hero single">
     <article class="hero-panel card">
       <p class="hero-kicker">about rebase</p>

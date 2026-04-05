@@ -1,38 +1,21 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getGeekDailyEpisodes } from '@/lib/content';
+import { getGeekDailyArchiveOverview, getGeekDailyEpisodes, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 import { getGeekDailyPath } from '@/lib/paths';
 
 const pageSize = 18;
-const episodes = getGeekDailyEpisodes();
-const initialEpisodes = episodes.slice(0, pageSize);
-const years = [...new Set(episodes.map((episode) => new Date(episode.publishedAt).getUTCFullYear()))];
-const featuredTags = [...new Set(episodes.flatMap((episode) => episode.tags))].slice(0, 8);
-const searchDocuments = episodes.map((episode) => ({
-  slug: episode.slug,
-  episodeNumber: episode.episodeNumber,
-  title: episode.title,
-  summary: episode.summary,
-  body: episode.body,
-  tags: episode.tags,
-  publishedAt: formatDate(episode.publishedAt),
-  year: String(new Date(episode.publishedAt).getUTCFullYear()),
-  itemTitles: episode.items.map((item) => item.title),
-  searchableText: [
-    episode.title,
-    episode.summary,
-    episode.body,
-    episode.tags.join(' '),
-    formatDate(episode.publishedAt),
-    ...episode.items.map((item) => item.title),
-  ]
-    .join(' ')
-    .toLowerCase(),
-}));
+const [site, overview, episodes] = await Promise.all([
+  getSiteSettings(),
+  getGeekDailyArchiveOverview(),
+  getGeekDailyEpisodes(pageSize),
+]);
+const years = overview.years;
+const featuredTags = overview.featuredTags;
 ---
 
 <BaseLayout
+  site={site}
   title="GeekDaily"
   description="Browse and search GeekDaily episodes from the Rebase community archive."
 >
@@ -49,7 +32,7 @@ const searchDocuments = episodes.map((episode) => ({
   <section class="shell page-section archive-stats">
     <article class="card stat-card">
       <span>archive size</span>
-      <strong>{episodes.length} episodes</strong>
+      <strong>{overview.totalEpisodes} episodes</strong>
       <p>按 episode 归档，避免把每一期拆散成难以理解的零碎列表。</p>
     </article>
     <article class="card stat-card">
@@ -71,21 +54,23 @@ const searchDocuments = episodes.map((episode) => ({
         id="geekdaily-search"
         name="q"
         type="search"
-        placeholder="搜索 episode、标题、摘要、条目标题、标签或日期"
+        placeholder="搜索 episode、标题、摘要、条目标题、日期或推荐人"
         autocomplete="off"
       />
-      <p>支持 episode number、标题、摘要、标签、日期与条目标题关键词。</p>
+      <p>支持 episode number、标题、摘要、日期、推荐人和条目标题关键词。</p>
     </div>
 
     <div class="card quick-filter-panel">
-      <div>
-        <p class="panel-title">tag filter</p>
-        <div class="chip-row" role="list">
-          {featuredTags.map((tag) => (
-            <button type="button" class="chip-button" data-tag={tag}>{tag}</button>
-          ))}
+      {featuredTags.length > 0 && (
+        <div>
+          <p class="panel-title">tag filter</p>
+          <div class="chip-row" role="list">
+            {featuredTags.map((tag) => (
+              <button type="button" class="chip-button" data-tag={tag}>{tag}</button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       <div>
         <p class="panel-title">year filter</p>
         <div class="chip-row" role="list">
@@ -101,14 +86,14 @@ const searchDocuments = episodes.map((episode) => ({
   <section class="shell page-section">
     <div class="results-head">
       <div>
-        <p id="results-count">共 {episodes.length} 期</p>
+        <p id="results-count">共 {overview.totalEpisodes} 期</p>
         <span id="results-state">默认展示最近 {pageSize} 期。</span>
       </div>
       <a href="/geekdaily/rss.xml">rss ↗</a>
     </div>
 
-    <div class="episode-list" id="results-list">
-      {initialEpisodes.map((episode) => (
+    <div class="episode-list" id="results-list" data-total-episodes={overview.totalEpisodes}>
+      {episodes.map((episode) => (
         <article class="card episode-card">
           <p class="meta">{episode.title} · {formatDate(episode.publishedAt)}</p>
           <h2>
@@ -124,13 +109,12 @@ const searchDocuments = episodes.map((episode) => ({
     </div>
 
     <div class="pager card" aria-label="GeekDaily pagination">
-      <button type="button" id="pager-prev">previous</button>
+      <button type="button" id="pager-prev" disabled>previous</button>
       <p id="pager-label">第 1 页</p>
-      <button type="button" id="pager-next">next</button>
+      <button type="button" id="pager-next" disabled={overview.totalEpisodes <= pageSize}>next</button>
     </div>
   </section>
 
-  <script is:inline type="application/json" id="geekdaily-search-data" set:html={JSON.stringify(searchDocuments)}></script>
   <script>
     type SearchDocument = {
       slug: string;
@@ -148,9 +132,9 @@ const searchDocuments = episodes.map((episode) => ({
     const pageSize = 18;
     const input = document.querySelector<HTMLInputElement>('#geekdaily-search');
     const list = document.querySelector<HTMLElement>('#results-list');
+    const totalEpisodes = Number(list?.dataset.totalEpisodes ?? '0');
     const count = document.querySelector<HTMLElement>('#results-count');
     const stateLabel = document.querySelector<HTMLElement>('#results-state');
-    const dataTag = document.querySelector<HTMLScriptElement>('#geekdaily-search-data');
     const prevButton = document.querySelector<HTMLButtonElement>('#pager-prev');
     const nextButton = document.querySelector<HTMLButtonElement>('#pager-next');
     const pagerLabel = document.querySelector<HTMLElement>('#pager-label');
@@ -166,18 +150,17 @@ const searchDocuments = episodes.map((episode) => ({
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#39;');
 
-    if (
-      input &&
-      list &&
-      count &&
-      stateLabel &&
-      dataTag?.textContent &&
-      prevButton &&
-      nextButton &&
-      pagerLabel &&
-      resetButton
-    ) {
-      const documents = JSON.parse(dataTag.textContent) as SearchDocument[];
+    const formatPublishedAt = (value: string) =>
+      new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date(value));
+
+    if (input && list && count && stateLabel && prevButton && nextButton && pagerLabel && resetButton) {
+      const defaultMarkup = list.innerHTML;
+      let documentsPromise: Promise<SearchDocument[]> | undefined;
 
       const state = {
         query: '',
@@ -230,7 +213,43 @@ const searchDocuments = episodes.map((episode) => ({
         window.history.replaceState({}, '', nextUrl);
       };
 
-      const getFilteredDocuments = () => {
+      const hydrateFromUrl = () => {
+        const params = new URLSearchParams(window.location.search);
+        const rawPage = Number(params.get('page') ?? '1');
+
+        state.query = params.get('q') ?? '';
+        state.tag = params.get('tag') ?? '';
+        state.year = params.get('year') ?? '';
+        state.page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
+      };
+
+      const restoreDefault = () => {
+        list.innerHTML = defaultMarkup;
+        count.textContent = `共 ${totalEpisodes} 期`;
+        stateLabel.textContent = `默认展示最近 ${pageSize} 期。`;
+        pagerLabel.textContent = '第 1 页';
+        prevButton.disabled = true;
+        nextButton.disabled = totalEpisodes <= pageSize;
+        syncControls();
+        updateUrl();
+      };
+
+      const loadDocuments = async () => {
+        if (!documentsPromise) {
+          stateLabel.textContent = '正在加载历史检索数据...';
+          documentsPromise = fetch('/api/geekdaily-search.json')
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`search index request failed: ${response.status}`);
+              }
+              return response.json() as Promise<SearchDocument[]>;
+            });
+        }
+
+        return documentsPromise;
+      };
+
+      const getFilteredDocuments = (documents: SearchDocument[]) => {
         const baseResults = documents.filter((document) => {
           const matchesTag = !state.tag || document.tags.includes(state.tag);
           const matchesYear = !state.year || document.year === state.year;
@@ -242,9 +261,7 @@ const searchDocuments = episodes.map((episode) => ({
         }
 
         const numericQuery = state.query.toLowerCase().replace(/^episode-/, '').replace(/^#/, '').trim();
-        const exactEpisodeMatches = baseResults.filter(
-          (document) => String(document.episodeNumber) === numericQuery,
-        );
+        const exactEpisodeMatches = baseResults.filter((document) => String(document.episodeNumber) === numericQuery);
 
         if (/^\d+$/.test(numericQuery) && exactEpisodeMatches.length > 0) {
           return exactEpisodeMatches;
@@ -256,25 +273,27 @@ const searchDocuments = episodes.map((episode) => ({
           .map((token) => token.trim())
           .filter(Boolean);
 
-        return baseResults.filter((document) =>
-          tokens.every((token) => document.searchableText.includes(token)),
-        );
+        return baseResults.filter((document) => tokens.every((token) => document.searchableText.includes(token)));
       };
 
-      const render = () => {
-        const filtered = getFilteredDocuments();
+      const render = (documents: SearchDocument[]) => {
+        const filtered = getFilteredDocuments(documents);
         const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
         state.page = Math.min(Math.max(state.page, 1), totalPages);
 
         const pageStart = (state.page - 1) * pageSize;
         const visibleItems = filtered.slice(pageStart, pageStart + pageSize);
-        const activeFilters = [state.query && `搜索“${state.query}”`, state.tag && `标签 ${state.tag}`, state.year && `年份 ${state.year}`].filter(Boolean);
+        const activeFilters = [
+          state.query && `搜索“${state.query}”`,
+          state.tag && `标签 ${state.tag}`,
+          state.year && `年份 ${state.year}`,
+        ].filter(Boolean);
 
         if (visibleItems.length === 0) {
           list.innerHTML = `
             <article class="card empty-state">
               <h2>没有找到匹配的 GeekDaily</h2>
-              <p>你可以尝试换一个关键词，或者先清空 tag / year filter 再继续搜索。</p>
+              <p>你可以尝试换一个关键词，或者先清空 year filter 再继续搜索。</p>
             </article>
           `;
         } else {
@@ -287,7 +306,7 @@ const searchDocuments = episodes.map((episode) => ({
 
               return `
                 <article class="card episode-card">
-                  <p class="meta">${escapeHtml(item.title)} · ${escapeHtml(item.publishedAt)}</p>
+                  <p class="meta">${escapeHtml(item.title)} · ${escapeHtml(formatPublishedAt(item.publishedAt))}</p>
                   <h2><a href="/geekdaily/${escapeHtml(item.slug)}">${escapeHtml(item.title)}</a></h2>
                   <p class="summary">${escapeHtml(item.summary)}</p>
                   <p class="body">${escapeHtml(item.body)}</p>
@@ -299,10 +318,7 @@ const searchDocuments = episodes.map((episode) => ({
         }
 
         count.textContent = activeFilters.length > 0 ? `找到 ${filtered.length} 期` : `共 ${documents.length} 期`;
-        stateLabel.textContent =
-          activeFilters.length > 0
-            ? `当前条件：${activeFilters.join(' · ')}`
-            : `默认展示最近 ${pageSize} 期。`;
+        stateLabel.textContent = activeFilters.length > 0 ? `当前条件：${activeFilters.join(' · ')}` : `默认展示最近 ${pageSize} 期。`;
         pagerLabel.textContent = `第 ${state.page} / ${totalPages} 页`;
         prevButton.disabled = state.page <= 1;
         nextButton.disabled = state.page >= totalPages;
@@ -311,45 +327,52 @@ const searchDocuments = episodes.map((episode) => ({
         updateUrl();
       };
 
-      const hydrateFromUrl = () => {
-        const params = new URLSearchParams(window.location.search);
-        const rawPage = Number(params.get('page') ?? '1');
-
-        state.query = params.get('q') ?? '';
-        state.tag = params.get('tag') ?? '';
-        state.year = params.get('year') ?? '';
-        state.page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
+      const loadAndRender = async () => {
+        const documents = await loadDocuments();
+        render(documents);
       };
 
-      input.addEventListener('input', () => {
+      input.addEventListener('input', async () => {
         state.query = input.value.trim();
         state.page = 1;
-        render();
+        if (!state.query && !state.tag && !state.year && !documentsPromise) {
+          restoreDefault();
+          return;
+        }
+        await loadAndRender();
       });
 
-      prevButton.addEventListener('click', () => {
+      prevButton.addEventListener('click', async () => {
         state.page -= 1;
-        render();
+        await loadAndRender();
       });
 
-      nextButton.addEventListener('click', () => {
+      nextButton.addEventListener('click', async () => {
         state.page += 1;
-        render();
+        await loadAndRender();
       });
 
       for (const button of tagButtons) {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', async () => {
           state.tag = state.tag === button.dataset.tag ? '' : button.dataset.tag ?? '';
           state.page = 1;
-          render();
+          if (!state.query && !state.tag && !state.year && !documentsPromise) {
+            restoreDefault();
+            return;
+          }
+          await loadAndRender();
         });
       }
 
       for (const button of yearButtons) {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', async () => {
           state.year = state.year === button.dataset.year ? '' : button.dataset.year ?? '';
           state.page = 1;
-          render();
+          if (!state.query && !state.tag && !state.year && !documentsPromise) {
+            restoreDefault();
+            return;
+          }
+          await loadAndRender();
         });
       }
 
@@ -358,11 +381,19 @@ const searchDocuments = episodes.map((episode) => ({
         state.tag = '';
         state.year = '';
         state.page = 1;
-        render();
+        if (!documentsPromise) {
+          restoreDefault();
+          return;
+        }
+        void loadAndRender();
       });
 
       hydrateFromUrl();
-      render();
+      syncControls();
+
+      if (state.query || state.tag || state.year || state.page > 1) {
+        void loadAndRender();
+      }
     }
   </script>
 </BaseLayout>
@@ -419,85 +450,86 @@ const searchDocuments = episodes.map((episode) => ({
   .summary,
   .body,
   .empty-state p {
-    margin: 0;
     color: var(--muted);
     line-height: 1.75;
   }
 
-  .stat-card p,
-  .results-head span {
-    margin-top: 0.65rem;
-  }
-
   .controls-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    grid-template-columns: 1.15fr 1fr;
     gap: 1rem;
+  }
+
+  .search-panel {
+    display: grid;
+    gap: 0.9rem;
   }
 
   .search-panel input {
     width: 100%;
-    margin: 0.9rem 0 0.7rem;
-    padding: 1rem 1.1rem;
-    border: 1px solid var(--line);
+    padding: 1rem 1.05rem;
+    border: 1px solid rgba(31, 41, 51, 0.12);
     border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.78);
+    background: rgba(255, 255, 255, 0.82);
     font: inherit;
   }
 
   .quick-filter-panel {
     display: grid;
     gap: 1rem;
+    align-content: start;
   }
 
   .chip-row {
     display: flex;
     flex-wrap: wrap;
     gap: 0.6rem;
-    margin-top: 0.75rem;
+    margin-top: 0.85rem;
   }
 
   .chip-button,
   .reset-button,
   .pager button {
-    border: 1px solid var(--line);
+    padding: 0.75rem 0.95rem;
+    border: 0;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.78);
-    color: var(--text);
-    font: inherit;
     cursor: pointer;
+    font: inherit;
   }
 
-  .chip-button,
-  .reset-button {
-    padding: 0.55rem 0.8rem;
-  }
-
-  .chip-button[data-active='true'] {
-    border-color: transparent;
-    background: var(--text);
-    color: white;
-  }
-
-  .chip-button.muted[data-active='true'] {
-    background: var(--accent-strong);
-  }
-
-  .reset-button {
-    justify-self: flex-start;
+  .chip-button {
+    background: rgba(15, 118, 110, 0.09);
+    color: var(--accent-strong);
     font-weight: 700;
   }
 
-  .results-head {
-    display: flex;
-    align-items: start;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1rem;
+  .chip-button.muted {
+    background: rgba(148, 163, 184, 0.16);
+    color: var(--muted);
   }
 
-  .results-head p {
-    color: var(--text);
+  .chip-button[data-active='true'] {
+    background: var(--accent-strong);
+    color: white;
+  }
+
+  .reset-button,
+  .pager button {
+    background: rgba(31, 41, 51, 0.08);
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .results-head,
+  .pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .results-head {
+    margin-bottom: 1rem;
   }
 
   .episode-list {
@@ -505,77 +537,50 @@ const searchDocuments = episodes.map((episode) => ({
     gap: 1rem;
   }
 
-  .meta {
-    margin: 0 0 0.65rem;
-    color: var(--muted);
-    font-size: 0.82rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+  .episode-card h2,
+  .empty-state h2 {
+    margin: 0.35rem 0 0.65rem;
+    font-size: clamp(1.45rem, 2vw, 1.9rem);
+    line-height: 1.08;
   }
 
-  h2 {
+  .meta,
+  .summary,
+  .body,
+  .episode-card ul,
+  .empty-state p {
     margin: 0;
-    font-size: 1.4rem;
-    line-height: 1.1;
-  }
-
-  .summary {
-    margin-top: 0.7rem;
-    font-size: 1.02rem;
-    color: var(--text);
   }
 
   .body {
-    margin-top: 0.7rem;
+    margin-top: 0.75rem;
+    white-space: pre-line;
   }
 
-  ul {
-    margin: 1rem 0 0;
+  .episode-card ul {
     padding-left: 1rem;
+    margin-top: 0.95rem;
     color: var(--muted);
-  }
-
-  .pager {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-
-  .pager p {
-    margin: 0;
-    font-weight: 700;
-  }
-
-  .pager button {
-    padding: 0.72rem 1rem;
-    font-weight: 700;
-  }
-
-  .pager button:disabled {
-    cursor: not-allowed;
-    opacity: 0.45;
+    line-height: 1.7;
   }
 
   .empty-state {
-    padding: 1.5rem;
+    padding: 1.4rem;
   }
 
-  .empty-state h2 {
-    margin: 0 0 0.7rem;
+  .pager {
+    margin-top: 1rem;
+  }
+
+  .pager button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
   }
 
   @media (max-width: 960px) {
     .archive-stats,
     .controls-grid {
       grid-template-columns: 1fr;
-    }
-
-    .results-head,
-    .pager {
-      flex-direction: column;
-      align-items: flex-start;
     }
   }
 </style>

@@ -28,6 +28,14 @@ export interface SiteSettings {
   socialLinks: SocialLink[];
   footerGroups: FooterGroup[];
   copyright: string;
+  heroTitle: string;
+  heroSummary: string;
+  heroPrimaryCtaLabel: string;
+  heroPrimaryCtaUrl: string;
+  heroSecondaryCtaLabel: string;
+  heroSecondaryCtaUrl: string;
+  homeSignals: HomeSignal[];
+  homeStats: HomeStat[];
 }
 
 export interface HomeSignal {
@@ -62,6 +70,7 @@ export interface Article {
   authors: ArticleAuthor[];
   tags: string[];
   coverAccent: string;
+  coverImageUrl?: string;
   body: string;
 }
 
@@ -98,6 +107,7 @@ export interface Event {
   registrationNote?: string;
   status: 'upcoming' | 'past';
   tags: string[];
+  coverImageUrl?: string;
 }
 
 export interface ContributorRole {
@@ -109,6 +119,7 @@ export interface ContributorRole {
 export interface Contributor {
   slug: string;
   name: string;
+  avatarUrl?: string;
   avatarSeed: string;
   headline: string;
   bio: string;
@@ -134,4 +145,12 @@ export interface GeekDailyEpisode {
   tags: string[];
   body: string;
   items: GeekDailyItem[];
+}
+
+export interface AboutContent {
+  intro: {
+    title: string;
+    summary: string;
+  };
+  sections: AboutSection[];
 }

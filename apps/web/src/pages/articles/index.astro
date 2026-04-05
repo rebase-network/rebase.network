@@ -2,12 +2,12 @@
 import ArticleCard from '@/components/ArticleCard.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
-import { getArticles } from '@/lib/content';
+import { getArticles, getSiteSettings } from '@/lib/content';
 
-const articles = getArticles();
+const [site, articles] = await Promise.all([getSiteSettings(), getArticles()]);
 ---
 
-<BaseLayout title="Rebase Articles" description="Read community writing published by Rebase contributors.">
+<BaseLayout site={site} title="Rebase Articles" description="Read community writing published by Rebase contributors.">
   <section class="shell page-hero single">
     <article class="hero-panel card">
       <p class="hero-kicker">articles</p>
@@ -35,4 +35,3 @@ const articles = getArticles();
     grid-template-columns: 1fr;
   }
 </style>
-

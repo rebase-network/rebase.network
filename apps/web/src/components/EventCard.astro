@@ -11,6 +11,7 @@ const { event } = Astro.props;
 ---
 
 <article class="event-card card">
+  {event.coverImageUrl && <img class="cover-image" src={event.coverImageUrl} alt="" loading="lazy" />}
   <p class="status">{event.status === 'upcoming' ? 'upcoming' : 'past event'}</p>
   <h3>
     <a href={getEventPath(event.startAt, event.slug)}>{event.title}</a>
@@ -25,6 +26,13 @@ const { event } = Astro.props;
 <style>
   .event-card {
     padding: 1.25rem;
+  }
+
+  .cover-image {
+    width: calc(100% + 2.5rem);
+    margin: -1.25rem -1.25rem 1rem;
+    border-radius: 1rem 1rem 0 0;
+    object-fit: cover;
   }
 
   .status {

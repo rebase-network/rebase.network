@@ -1,8 +1,11 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getSiteSettings } from '@/lib/content';
+
+const site = await getSiteSettings();
 ---
 
-<BaseLayout title="Page Not Found" description="The page you requested could not be found.">
+<BaseLayout site={site} title="Page Not Found" description="The page you requested could not be found.">
   <section class="shell page-hero single">
     <article class="hero-panel card">
       <p class="hero-kicker">404</p>

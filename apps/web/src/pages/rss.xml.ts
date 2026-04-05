@@ -1,29 +1,42 @@
 import rss from '@astrojs/rss';
-import { getArticles, getEvents, getGeekDailyEpisodes, getJobs, getSiteSettings } from '@/lib/content';
+import {
+  getEvents,
+  getLatestArticles,
+  getLatestGeekDaily,
+  getLatestJobs,
+  getSiteSettings,
+} from '@/lib/content';
 import { getArticlePath, getEventPath, getGeekDailyPath, getJobPath } from '@/lib/paths';
 
 export async function GET() {
-  const site = getSiteSettings();
+  const [site, episodes, articles, events, jobs] = await Promise.all([
+    getSiteSettings(),
+    getLatestGeekDaily(3),
+    getLatestArticles(3),
+    getEvents(),
+    getLatestJobs(3),
+  ]);
+
   const items = [
-    ...getGeekDailyEpisodes().map((episode) => ({
+    ...episodes.map((episode) => ({
       title: episode.title,
       description: episode.body,
       pubDate: new Date(episode.publishedAt),
       link: getGeekDailyPath(episode.episodeNumber),
     })),
-    ...getArticles().map((article) => ({
+    ...articles.map((article) => ({
       title: article.title,
       description: article.summary,
       pubDate: new Date(article.publishedAt),
       link: getArticlePath(article.slug),
     })),
-    ...getEvents().map((event) => ({
+    ...events.map((event) => ({
       title: event.title,
       description: event.summary,
       pubDate: new Date(event.startAt),
       link: getEventPath(event.startAt, event.slug),
     })),
-    ...getJobs().map((job) => ({
+    ...jobs.map((job) => ({
       title: `${job.roleTitle} · ${job.companyName}`,
       description: job.summary,
       pubDate: new Date(job.publishedAt),

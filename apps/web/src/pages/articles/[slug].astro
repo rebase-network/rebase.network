@@ -1,14 +1,13 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
-import { getArticleBySlug, getArticles } from '@/lib/content';
+import { getArticleBySlug, getArticles, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 import { getArticlePath } from '@/lib/paths';
+
 const slug = Astro.params.slug ?? '';
-const article = getArticleBySlug(slug);
-const related = article
-  ? getArticles().filter((item) => item.slug !== article.slug).slice(0, 2)
-  : [];
+const [site, article, articles] = await Promise.all([getSiteSettings(), getArticleBySlug(slug), getArticles()]);
+const related = article ? articles.filter((item) => item.slug !== article.slug).slice(0, 2) : [];
 
 if (!article) {
   Astro.response.status = 404;
@@ -16,6 +15,7 @@ if (!article) {
 ---
 
 <BaseLayout
+  site={site}
   title={article ? article.title : 'Article Not Found'}
   description={article ? article.summary : 'The requested article could not be found.'}
 >

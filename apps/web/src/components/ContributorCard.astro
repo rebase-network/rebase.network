@@ -11,9 +11,13 @@ const avatarBackground = createAvatarData(contributor.avatarSeed);
 ---
 
 <article class="contributor-card card">
-  <div class="avatar" style={`background:${avatarBackground}`}>
-    <span>{contributor.name.slice(0, 1)}</span>
-  </div>
+  {contributor.avatarUrl ? (
+    <img class="avatar image" src={contributor.avatarUrl} alt={`${contributor.name} avatar`} loading="lazy" />
+  ) : (
+    <div class="avatar" style={`background:${avatarBackground}`}>
+      <span>{contributor.name.slice(0, 1)}</span>
+    </div>
+  )}
   <div>
     <h3>{contributor.name}</h3>
     <p class="headline">{contributor.headline}</p>
@@ -45,6 +49,10 @@ const avatarBackground = createAvatarData(contributor.avatarSeed);
     color: white;
     font-size: 1.35rem;
     font-weight: 800;
+  }
+
+  .image {
+    object-fit: cover;
   }
 
   h3,

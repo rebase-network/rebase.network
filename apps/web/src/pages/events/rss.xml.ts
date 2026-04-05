@@ -3,8 +3,8 @@ import { getEvents, getSiteSettings } from '@/lib/content';
 import { getEventPath } from '@/lib/paths';
 
 export async function GET() {
-  const site = getSiteSettings();
-  const items = getEvents()
+  const [site, events] = await Promise.all([getSiteSettings(), getEvents()]);
+  const items = events
     .sort((a, b) => +new Date(b.startAt) - +new Date(a.startAt))
     .slice(0, 3)
     .map((event) => ({

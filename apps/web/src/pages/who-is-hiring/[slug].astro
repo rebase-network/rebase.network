@@ -1,14 +1,13 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
-import { getJobBySlug, getJobs } from '@/lib/content';
+import { getJobBySlug, getJobs, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 import { getJobPath } from '@/lib/paths';
+
 const slug = Astro.params.slug ?? '';
-const job = getJobBySlug(slug);
-const related = job
-  ? getJobs().filter((item) => item.slug !== job.slug).slice(0, 2)
-  : [];
+const [site, job, jobs] = await Promise.all([getSiteSettings(), getJobBySlug(slug), getJobs()]);
+const related = job ? jobs.filter((item) => item.slug !== job.slug).slice(0, 2) : [];
 
 if (!job) {
   Astro.response.status = 404;
@@ -16,6 +15,7 @@ if (!job) {
 ---
 
 <BaseLayout
+  site={site}
   title={job ? `${job.roleTitle} · ${job.companyName}` : 'Job Not Found'}
   description={job ? job.summary : 'The requested job could not be found.'}
 >

@@ -23,7 +23,7 @@ for (const route of primaryRoutes) {
 test('detail pages render expected content blocks', async ({ page }) => {
   await page.goto('/geekdaily/episode-1915');
   await expect(page.getByRole('heading', { level: 1, name: '极客日报#1915' })).toBeVisible();
-  await expect(page.getByText('推荐人：Cedric')).toBeVisible();
+  await expect(page.getByText('推荐人：Cedric', { exact: true })).toBeVisible();
 
   await page.goto('/articles/building-rebase-in-public');
   await expect(page.getByRole('heading', { level: 1, name: '把 Rebase 做成一个持续更新的社区媒体站点' })).toBeVisible();

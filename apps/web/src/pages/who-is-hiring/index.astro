@@ -2,12 +2,12 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import JobCard from '@/components/JobCard.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
-import { getJobs } from '@/lib/content';
+import { getJobs, getSiteSettings } from '@/lib/content';
 
-const jobs = getJobs();
+const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
 ---
 
-<BaseLayout title="Who-Is-Hiring" description="See current hiring opportunities shared by the Rebase community.">
+<BaseLayout site={site} title="Who-Is-Hiring" description="See current hiring opportunities shared by the Rebase community.">
   <section class="shell page-hero single">
     <article class="hero-panel card">
       <p class="hero-kicker">who is hiring</p>
@@ -73,4 +73,3 @@ const jobs = getJobs();
     }
   }
 </style>
-

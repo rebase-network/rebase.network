@@ -1,15 +1,16 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getGeekDailyEpisodeBySlug, getGeekDailyEpisodes } from '@/lib/content';
+import { getGeekDailyEpisodeBySlug, getGeekDailyEpisodes, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 import { getGeekDailyPath } from '@/lib/paths';
+
 const slug = Astro.params.slug ?? '';
-const episode = getGeekDailyEpisodeBySlug(slug);
-const related = episode
-  ? getGeekDailyEpisodes()
-      .filter((item) => item.slug !== episode.slug)
-      .slice(0, 2)
-  : [];
+const [site, episode, episodes] = await Promise.all([
+  getSiteSettings(),
+  getGeekDailyEpisodeBySlug(slug),
+  getGeekDailyEpisodes(),
+]);
+const related = episode ? episodes.filter((item) => item.slug !== episode.slug).slice(0, 2) : [];
 
 if (!episode) {
   Astro.response.status = 404;
@@ -17,6 +18,7 @@ if (!episode) {
 ---
 
 <BaseLayout
+  site={site}
   title={episode ? episode.title : 'GeekDaily Not Found'}
   description={episode ? episode.summary : 'The requested GeekDaily episode could not be found.'}
 >
@@ -34,9 +36,11 @@ if (!episode) {
         <article class="card episode-detail">
           <div class="lead">
             <p>{formatDate(episode.publishedAt)}</p>
-            <ul>
-              {episode.tags.map((tag) => <li>{tag}</li>)}
-            </ul>
+            {episode.tags.length > 0 && (
+              <ul>
+                {episode.tags.map((tag) => <li>{tag}</li>)}
+              </ul>
+            )}
           </div>
           <p class="body">{episode.body}</p>
           <div class="item-list">
@@ -135,6 +139,7 @@ if (!episode) {
     color: var(--muted);
     line-height: 1.9;
     font-size: 1.06rem;
+    white-space: pre-line;
   }
 
   .item-list {

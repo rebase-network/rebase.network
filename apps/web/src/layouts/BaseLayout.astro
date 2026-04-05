@@ -1,16 +1,17 @@
 ---
 import '@/styles/global.css';
+import type { SiteSettings } from '@rebase/types';
 import SiteFooter from '@/components/SiteFooter.astro';
 import SiteHeader from '@/components/SiteHeader.astro';
-import { getSiteSettings } from '@/lib/content';
 
 interface Props {
+  site: SiteSettings;
   title?: string;
   description?: string;
 }
 
-const site = getSiteSettings();
 const {
+  site,
   title = 'Rebase Community',
   description = site.description,
 } = Astro.props;
@@ -34,11 +35,11 @@ const canonicalUrl = new URL(Astro.url.pathname, site.primaryDomain).toString();
     <link rel="alternate" type="application/rss+xml" title="Rebase RSS" href="/rss.xml" />
   </head>
   <body>
-    <SiteHeader />
+    <SiteHeader site={site} />
     <main class="page-main">
       <slot />
     </main>
-    <SiteFooter />
+    <SiteFooter site={site} />
   </body>
 </html>
 

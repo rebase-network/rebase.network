@@ -12,7 +12,11 @@ const { article, featured = false } = Astro.props;
 ---
 
 <article class:list={['article-card', 'card', { featured }] }>
-  <div class="cover" style={`background:${article.coverAccent}`} />
+  {article.coverImageUrl ? (
+    <img class="cover image" src={article.coverImageUrl} alt="" loading="lazy" />
+  ) : (
+    <div class="cover" style={`background:${article.coverAccent}`} />
+  )}
   <div class="content">
     <p class="meta">{formatDate(article.publishedAt)} · {article.readingTime}</p>
     <h3>
@@ -32,6 +36,11 @@ const { article, featured = false } = Astro.props;
 
   .cover {
     min-height: 10rem;
+  }
+
+  .image {
+    width: 100%;
+    object-fit: cover;
   }
 
   .content {

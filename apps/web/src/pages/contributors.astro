@@ -2,12 +2,13 @@
 import ContributorCard from '@/components/ContributorCard.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getContributorsByRole } from '@/lib/content';
+import { getContributorsByRole, getSiteSettings } from '@/lib/content';
 
-const groups = getContributorsByRole();
+const [site, groups] = await Promise.all([getSiteSettings(), getContributorsByRole()]);
 ---
 
 <BaseLayout
+  site={site}
   title="Rebase Contributors"
   description="Meet the volunteers and GeekDaily advisors who keep the community moving."
 >

@@ -1,17 +1,15 @@
 import rss from '@astrojs/rss';
-import { getJobs, getSiteSettings } from '@/lib/content';
+import { getLatestJobs, getSiteSettings } from '@/lib/content';
 import { getJobPath } from '@/lib/paths';
 
 export async function GET() {
-  const site = getSiteSettings();
-  const items = getJobs()
-    .slice(0, 3)
-    .map((job) => ({
-      title: `${job.roleTitle} · ${job.companyName}`,
-      description: job.summary,
-      pubDate: new Date(job.publishedAt),
-      link: getJobPath(job.slug),
-    }));
+  const [site, jobs] = await Promise.all([getSiteSettings(), getLatestJobs(3)]);
+  const items = jobs.map((job) => ({
+    title: `${job.roleTitle} · ${job.companyName}`,
+    description: job.summary,
+    pubDate: new Date(job.publishedAt),
+    link: getJobPath(job.slug),
+  }));
 
   return rss({
     title: 'Rebase hiring',

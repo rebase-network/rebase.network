@@ -6,33 +6,21 @@ import GeekDailyCard from '@/components/GeekDailyCard.astro';
 import JobCard from '@/components/JobCard.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import {
-  getContributors,
-  getHomeFeed,
-  getHomeSignals,
-  getHomeStats,
-  getSiteSettings,
-} from '@/lib/content';
+import { getContributors, getHomeFeed, getSiteSettings } from '@/lib/content';
 
-const site = getSiteSettings();
-const homeSignals = getHomeSignals();
-const homeStats = getHomeStats();
-const feed = getHomeFeed();
-const featuredContributors = getContributors().slice(0, 2);
+const [site, feed, contributors] = await Promise.all([getSiteSettings(), getHomeFeed(), getContributors()]);
+const featuredContributors = contributors.slice(0, 2);
 ---
 
-<BaseLayout title="Rebase Community" description={site.description}>
+<BaseLayout site={site} title="Rebase Community" description={site.description}>
   <section class="shell page-hero">
     <article class="hero-panel card">
       <p class="hero-kicker">community media for builders</p>
-      <h1 class="hero-title">把社区的日常内容，组织成一个值得反复访问的公共入口。</h1>
-      <p class="hero-summary">
-        Rebase 新站把 GeekDaily、文章、招聘、活动和贡献者信息组织到同一个公共界面里。
-        我们希望读者一进入首页，就能看见社区最近的节奏、机会与信号。
-      </p>
+      <h1 class="hero-title">{site.heroTitle}</h1>
+      <p class="hero-summary">{site.heroSummary}</p>
       <div class="button-row">
-        <a class="button-link" href="/geekdaily">进入 GeekDaily <span>↗</span></a>
-        <a class="button-link secondary" href="/who-is-hiring">查看招聘板 <span>↗</span></a>
+        <a class="button-link" href={site.heroPrimaryCtaUrl}>{site.heroPrimaryCtaLabel} <span>↗</span></a>
+        <a class="button-link secondary" href={site.heroSecondaryCtaUrl}>{site.heroSecondaryCtaLabel} <span>↗</span></a>
       </div>
     </article>
 
@@ -43,7 +31,7 @@ const featuredContributors = getContributors().slice(0, 2);
         description="首页不只是导航，而是今天社区最重要内容的总控台。"
       />
       <div class="signal-list">
-        {homeSignals.map((signal) => (
+        {site.homeSignals.map((signal) => (
           <a class="signal-item" href={signal.href}>
             <p>{signal.eyebrow}</p>
             <h3>{signal.title}</h3>
@@ -55,7 +43,7 @@ const featuredContributors = getContributors().slice(0, 2);
   </section>
 
   <section class="shell meta-strip page-section">
-    {homeStats.map((stat) => (
+    {site.homeStats.map((stat) => (
       <article class="card">
         <strong>{stat.value}</strong>
         <span>{stat.label}</span>
@@ -70,8 +58,8 @@ const featuredContributors = getContributors().slice(0, 2);
       description="把最近的文章、活动、招聘和 GeekDaily 聚合成一个可以快速阅读的首页流。"
     />
     <div class="grid-2">
-      <ArticleCard article={feed.latestArticles[0]} featured />
-      <GeekDailyCard episode={feed.latestGeekDaily} />
+      {feed.latestArticles[0] && <ArticleCard article={feed.latestArticles[0]} featured />}
+      {feed.latestGeekDaily && <GeekDailyCard episode={feed.latestGeekDaily} />}
     </div>
   </section>
 

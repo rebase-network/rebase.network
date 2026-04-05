@@ -1,15 +1,14 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
-import { getEventBySlug, getEvents } from '@/lib/content';
+import { getEventBySlug, getEvents, getSiteSettings } from '@/lib/content';
 import { formatEventWindow } from '@/lib/dates';
 import { getEventPath } from '@/lib/paths';
+
 const routeSlug = Astro.params.slug ?? '';
 const eventSlug = routeSlug.replace(/^\d{4}-\d{2}-\d{2}-/, '');
-const event = getEventBySlug(eventSlug);
-const related = event
-  ? getEvents().filter((item) => item.slug !== event.slug).slice(0, 2)
-  : [];
+const [site, event, events] = await Promise.all([getSiteSettings(), getEventBySlug(eventSlug), getEvents()]);
+const related = event ? events.filter((item) => item.slug !== event.slug).slice(0, 2) : [];
 
 if (!event) {
   Astro.response.status = 404;
@@ -17,6 +16,7 @@ if (!event) {
 ---
 
 <BaseLayout
+  site={site}
   title={event ? event.title : 'Event Not Found'}
   description={event ? event.summary : 'The requested event could not be found.'}
 >

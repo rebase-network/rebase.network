@@ -1,7 +1,11 @@
 ---
-import { getSiteSettings } from '@/lib/content';
+import type { SiteSettings } from '@rebase/types';
 
-const site = getSiteSettings();
+interface Props {
+  site: SiteSettings;
+}
+
+const { site } = Astro.props;
 ---
 
 <footer class="site-footer">
