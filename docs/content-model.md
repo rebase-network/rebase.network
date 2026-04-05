@@ -24,9 +24,11 @@ The data model should support:
 - home: `/`
 - about: `/about`
 - who-is-hiring: `/who-is-hiring`
+- hiring detail: `/who-is-hiring/{slug}`
 - GeekDaily list: `/geekdaily`
 - GeekDaily detail: `/geekdaily/episode-{episode-number}`
 - site RSS: `/rss.xml`
+- hiring RSS: `/who-is-hiring/rss.xml`
 - GeekDaily RSS: `/geekdaily/rss.xml`
 - articles list: `/articles`
 - article detail: `/articles/{slug}`
@@ -101,6 +103,7 @@ Suggested fields:
 
 - `company_name`
 - `role_title`
+- `slug`
 - `location`
 - `work_mode`
 - `summary`
@@ -112,11 +115,14 @@ Suggested fields:
 - `published_at`
 - `expires_at`
 - `sort_date`
+- `seo_title`
+- `seo_description`
 
 Notes:
 
 - `status` should support at least draft, published, archived
-- V1 does not require per-job public detail pages
+- public path should use `/who-is-hiring/{slug}`
+- `slug` should be stable after publication
 
 ### `articles`
 
@@ -331,6 +337,7 @@ V1 should not rely on a heavyweight full-text architecture.
 - `geekdaily_episodes`
 - `articles`
 - `events`
+- `jobs`
 
 ### GeekDaily Feed
 
@@ -353,6 +360,22 @@ Suggested feed fields:
 `/events/rss.xml` should publish one feed item per event.
 
 Event feed items should only include public published events.
+
+### Hiring Feed
+
+`/who-is-hiring/rss.xml` should publish one feed item per public job entry.
+
+Suggested feed fields:
+
+- title
+- link
+- description
+- publication date
+- company name
+- location
+- work mode
+
+Feed links should point to public hiring detail pages, not directly to the external application URL.
 
 ## Shared Content Status Convention
 

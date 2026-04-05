@@ -201,10 +201,13 @@ Recommended feeds:
 - `/geekdaily/rss.xml`
 - `/articles/rss.xml`
 - `/events/rss.xml`
+- `/who-is-hiring/rss.xml`
 
 Feed generation should happen in the public website layer and consume published content from Directus.
 
 GeekDaily feed items should map to episode pages, not individual links inside an episode.
+
+Hiring feed items should map to public hiring detail pages rather than external apply links.
 
 ## Security Baseline
 

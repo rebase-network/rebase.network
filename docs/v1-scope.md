@@ -41,6 +41,7 @@ V1 is not:
 - home page
 - about page
 - who-is-hiring page
+- hiring detail page
 - GeekDaily list page
 - GeekDaily detail page
 - articles list page
@@ -99,14 +100,18 @@ The first version should include:
 - a GeekDaily feed at `/geekdaily/rss.xml`
 - an articles feed at `/articles/rss.xml`
 - an events feed at `/events/rss.xml`
+- a hiring feed at `/who-is-hiring/rss.xml`
 
 The site-wide feed should aggregate recent public content from:
 
 - GeekDaily episodes
 - articles
 - events
+- jobs
 
 GeekDaily RSS items should be episode-based rather than item-based.
+
+Hiring RSS items should be job-based and link to public job detail pages.
 
 ## Out of Scope
 
@@ -141,6 +146,21 @@ V1 does not support:
 - internal event registration forms
 - registration management
 - attendee exports
+
+## Hiring Module Boundary
+
+V1 hiring pages support:
+
+- a public hiring list page
+- public hiring detail pages
+- hiring RSS output
+- public apply links and hiring metadata
+
+V1 does not support:
+
+- in-site job application forms
+- applicant tracking
+- recruiter dashboards beyond CMS content management
 
 ## Success Criteria
 

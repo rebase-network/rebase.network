@@ -59,7 +59,7 @@ Deliverables:
 
 - Directus content contract definition
 - frontend data fetching layer
-- integration for home, about, jobs, articles, events, contributors
+- integration for home, about, jobs, job detail pages, articles, events, contributors
 - R2-backed media handling
 
 Definition of done:

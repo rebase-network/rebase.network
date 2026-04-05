@@ -31,6 +31,7 @@ Git history is preserved, and the repo is now being rebuilt from scratch with a 
 - event registration is out of scope for V1
 - GeekDaily search is in scope for V1
 - RSS feeds are in scope for V1
+- hiring detail pages and hiring RSS are in scope for V1
 - GeekDaily detail URLs use `/geekdaily/episode-{episode-number}`
 
 ## Documentation
