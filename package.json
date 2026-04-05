@@ -1,0 +1,13 @@
+{
+  "name": "rebase-network",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.6.5",
+  "scripts": {
+    "dev": "pnpm --filter @rebase/web dev",
+    "build": "pnpm --filter @rebase/web build",
+    "preview": "pnpm --filter @rebase/web preview",
+    "typecheck": "pnpm --filter @rebase/web check",
+    "lint": "pnpm --filter @rebase/web lint"
+  }
+}

@@ -1,0 +1,43 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout>
+  <section class="shell hero card">
+    <p class="eyebrow">rebase community</p>
+    <h1>Rebase is being rebuilt as a living community media website.</h1>
+    <p>
+      The v1 foundation is now in progress with Astro, Cloudflare Workers, Directus,
+      PostgreSQL, and R2.
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    margin: 3rem auto;
+    padding: 3rem;
+  }
+
+  .eyebrow {
+    margin: 0 0 1rem;
+    color: var(--accent-strong);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(2.6rem, 5vw, 5rem);
+    line-height: 0.95;
+    max-width: 13ch;
+  }
+
+  p {
+    max-width: 60ch;
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+</style>

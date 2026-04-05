@@ -1,0 +1,13 @@
+node_modules
+.pnpm-store
+.dist
+.astro
+.cache
+coverage
+playwright-report
+test-results
+.env
+.env.*
+!.env.example
+.DS_Store
+wrangler.toml.bak
