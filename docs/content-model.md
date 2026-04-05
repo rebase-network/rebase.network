@@ -26,10 +26,14 @@ The data model should support:
 - who-is-hiring: `/who-is-hiring`
 - GeekDaily list: `/geekdaily`
 - GeekDaily detail: `/geekdaily/episode-{episode-number}`
+- site RSS: `/rss.xml`
+- GeekDaily RSS: `/geekdaily/rss.xml`
 - articles list: `/articles`
 - article detail: `/articles/{slug}`
+- articles RSS: `/articles/rss.xml`
 - events list: `/events`
 - event detail: `/events/{yyyy-mm-dd}-{slug}`
+- events RSS: `/events/rss.xml`
 - contributors: `/contributors`
 
 ### Query Parameters
@@ -317,6 +321,38 @@ Recommended searchable fields:
 - optional derived text from item titles
 
 V1 should not rely on a heavyweight full-text architecture.
+
+## RSS Model
+
+### Site Feed
+
+`/rss.xml` should aggregate recent published items from:
+
+- `geekdaily_episodes`
+- `articles`
+- `events`
+
+### GeekDaily Feed
+
+`/geekdaily/rss.xml` should publish one feed item per episode.
+
+Suggested feed fields:
+
+- title
+- link
+- description
+- publication date
+- episode number
+
+### Articles Feed
+
+`/articles/rss.xml` should publish one feed item per article.
+
+### Events Feed
+
+`/events/rss.xml` should publish one feed item per event.
+
+Event feed items should only include public published events.
 
 ## Shared Content Status Convention
 

@@ -191,6 +191,21 @@ Recommended scope:
 
 V1 does not require a heavyweight dedicated search engine.
 
+## Feed Strategy
+
+V1 includes RSS output for public content distribution.
+
+Recommended feeds:
+
+- `/rss.xml`
+- `/geekdaily/rss.xml`
+- `/articles/rss.xml`
+- `/events/rss.xml`
+
+Feed generation should happen in the public website layer and consume published content from Directus.
+
+GeekDaily feed items should map to episode pages, not individual links inside an episode.
+
 ## Security Baseline
 
 - readers never need authentication
@@ -206,3 +221,4 @@ V1 does not require a heavyweight dedicated search engine.
 - advanced workflow automation
 - full-site search across all collections
 - multi-language content system
+- email subscription infrastructure

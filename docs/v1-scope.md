@@ -89,6 +89,25 @@ The first version should support search by:
 
 V1 search should optimize for practical discovery, not heavyweight full-text search quality.
 
+### RSS Feeds
+
+RSS is part of V1.
+
+The first version should include:
+
+- a site-wide feed at `/rss.xml`
+- a GeekDaily feed at `/geekdaily/rss.xml`
+- an articles feed at `/articles/rss.xml`
+- an events feed at `/events/rss.xml`
+
+The site-wide feed should aggregate recent public content from:
+
+- GeekDaily episodes
+- articles
+- events
+
+GeekDaily RSS items should be episode-based rather than item-based.
+
 ## Out of Scope
 
 The following items are explicitly excluded from V1:
@@ -104,6 +123,8 @@ The following items are explicitly excluded from V1:
 - complex editorial approval workflows
 - advanced recommendation systems
 - full-site unified search
+- email subscription systems
+- advanced feed distribution workflows
 
 ## Event Module Boundary
 

@@ -87,6 +87,7 @@ Deliverables:
 
 - SEO baseline
 - metadata and social cards
+- RSS feeds
 - cache strategy review
 - domain configuration checklist
 - analytics and observability basics
