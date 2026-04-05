@@ -1,8 +1,10 @@
 node_modules
 .pnpm-store
+dist
 .dist
 .astro
 .cache
+.wrangler
 coverage
 playwright-report
 test-results
