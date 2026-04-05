@@ -4,12 +4,21 @@
   "version": "0.1.0",
   "packageManager": "pnpm@10.6.5",
   "scripts": {
+    "cms:generate:schema": "node scripts/directus/render-schema-sql.mjs",
+    "cms:generate:seed": "node scripts/directus/render-seed-sql.mjs",
+    "cms:generate:geekdaily": "node scripts/directus/render-geekdaily-sql.mjs geekdaily.csv",
+    "cms:generate": "pnpm cms:generate:schema && pnpm cms:generate:seed",
+    "cms:up": "node scripts/directus/compose-local.mjs up -d",
+    "cms:down": "node scripts/directus/compose-local.mjs down",
+    "cms:logs": "node scripts/directus/compose-local.mjs logs --tail=80 directus",
+    "cms:bootstrap": "node scripts/directus/bootstrap-local.mjs",
+    "cms:reset": "pnpm cms:down && node scripts/directus/compose-local.mjs down -v --remove-orphans && pnpm cms:bootstrap",
     "dev": "pnpm --filter @rebase/web dev",
     "build": "pnpm --filter @rebase/web build",
     "preview": "pnpm --filter @rebase/web preview",
     "typecheck": "pnpm --filter @rebase/web check",
     "lint": "pnpm --filter @rebase/web lint",
-    "pretest:smoke": "pnpm build",
+    "pretest:smoke": "pnpm cms:bootstrap && pnpm build",
     "test:smoke": "playwright test"
   },
   "devDependencies": {
