@@ -15,7 +15,9 @@ The active local stack is:
 
 Legacy Directus files still exist in the repository, but only as migration-era reference material.
 
-The public site now runs in Astro server mode with the Cloudflare adapter, so published content changes should appear on the next request instead of waiting for a full static rebuild.
+The public site now runs in Astro server mode, so published content changes should appear on the next request instead of waiting for a full static rebuild.
+
+For local `astro dev`, the repo intentionally skips the Cloudflare adapter and uses Astro's normal dev server to avoid Miniflare-specific startup issues. Production builds still use the Cloudflare adapter.
 
 ## One-Time Setup
 
