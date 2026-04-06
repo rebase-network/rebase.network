@@ -33,6 +33,8 @@ interface UploadFormState {
   assetType: string;
 }
 
+type AssetWorkspaceMode = 'upload' | 'edit';
+
 const visibilityOptions: AssetVisibility[] = ['public', 'private'];
 
 const createBlankForm = (bucket = 'rebase-media'): AssetFormState => ({
@@ -67,7 +69,9 @@ const uploading = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const fieldIssues = ref<Record<string, string>>({});
-const selectedAssetId = ref<'new' | string>('new');
+const activeWorkspaceMode = ref<AssetWorkspaceMode>('upload');
+const selectedAssetId = ref<string | null>(null);
+const manualCreateMode = ref(false);
 const uploadFile = ref<File | null>(null);
 const uploadPreviewUrl = ref('');
 const form = reactive<AssetFormState>(createBlankForm());
@@ -93,10 +97,16 @@ const filteredRows = computed(() => {
 });
 
 const selectedAsset = computed(() => rows.value.find((row) => row.id === selectedAssetId.value) ?? null);
-const isCreating = computed(() => selectedAssetId.value === 'new');
-const previewUrl = computed(() => uploadPreviewUrl.value || selectedAsset.value?.publicUrl || '');
-const previewMimeType = computed(() => uploadFile.value?.type || selectedAsset.value?.mimeType || '');
-const previewIsImage = computed(() => previewUrl.value.length > 0 && previewMimeType.value.startsWith('image/'));
+const isCreating = computed(() => manualCreateMode.value);
+const hasEditableRecord = computed(() => manualCreateMode.value || Boolean(selectedAsset.value));
+const uploadPreviewSrc = computed(() => uploadPreviewUrl.value);
+const uploadPreviewMimeType = computed(() => uploadFile.value?.type ?? '');
+const uploadPreviewIsImage = computed(() => uploadPreviewSrc.value.length > 0 && uploadPreviewMimeType.value.startsWith('image/'));
+const editorPreviewSrc = computed(() => selectedAsset.value?.publicUrl || form.publicUrl || '');
+const editorPreviewMimeType = computed(() => selectedAsset.value?.mimeType || form.mimeType || '');
+const editorPreviewIsImage = computed(() => editorPreviewSrc.value.length > 0 && editorPreviewMimeType.value.startsWith('image/'));
+const editorPanelTitle = computed(() => (isCreating.value ? '手动新建媒体记录' : '编辑已上传文件'));
+const saveButtonLabel = computed(() => (saving.value ? '保存中…' : isCreating.value ? '创建记录' : '保存修改'));
 const uploadStatusMessage = computed(() => {
   if (!uploadConfig.value) {
     return '';
@@ -144,6 +154,10 @@ const resetFeedback = () => {
   fieldIssues.value = {};
 };
 
+const resetEditorForm = () => {
+  Object.assign(form, createBlankForm(uploadConfig.value?.bucket ?? 'rebase-media'));
+};
+
 const revokePreviewUrl = () => {
   if (uploadPreviewUrl.value) {
     URL.revokeObjectURL(uploadPreviewUrl.value);
@@ -161,13 +175,6 @@ const setUploadFile = (file: File | null) => {
 
   uploadPreviewUrl.value = URL.createObjectURL(file);
   upload.assetType = file.type.startsWith('image/') ? 'image' : 'file';
-
-  if (isCreating.value) {
-    form.originalFilename = file.name;
-    form.mimeType = file.type || 'application/octet-stream';
-    form.byteSize = String(file.size);
-    form.altText = upload.altText;
-  }
 };
 
 const applyAsset = (asset: AdminAssetRecord) => {
@@ -189,14 +196,25 @@ const applyAsset = (asset: AdminAssetRecord) => {
   });
 };
 
+const clearEditorSelection = () => {
+  selectedAssetId.value = null;
+  manualCreateMode.value = false;
+  resetEditorForm();
+  resetFeedback();
+};
+
 const selectNew = () => {
-  selectedAssetId.value = 'new';
-  Object.assign(form, createBlankForm(uploadConfig.value?.bucket ?? 'rebase-media'));
+  manualCreateMode.value = true;
+  selectedAssetId.value = null;
+  activeWorkspaceMode.value = 'edit';
+  resetEditorForm();
   resetFeedback();
 };
 
 const selectAsset = async (id: string) => {
+  manualCreateMode.value = false;
   selectedAssetId.value = id;
+  activeWorkspaceMode.value = 'edit';
   resetFeedback();
 
   try {
@@ -207,7 +225,7 @@ const selectAsset = async (id: string) => {
   }
 };
 
-const loadPage = async (nextSelectedId = selectedAssetId.value) => {
+const loadPage = async (nextSelectedId: string | null = selectedAssetId.value, preserveDraft = manualCreateMode.value) => {
   loading.value = true;
   errorMessage.value = '';
 
@@ -220,10 +238,12 @@ const loadPage = async (nextSelectedId = selectedAssetId.value) => {
     rows.value = assetRows;
     uploadConfig.value = nextConfig;
 
-    if (nextSelectedId !== 'new' && rows.value.some((row) => row.id === nextSelectedId)) {
+    if (nextSelectedId && rows.value.some((row) => row.id === nextSelectedId)) {
       await selectAsset(nextSelectedId);
-    } else {
+    } else if (preserveDraft) {
       selectNew();
+    } else {
+      clearEditorSelection();
     }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '无法加载媒体库。';
@@ -262,7 +282,8 @@ const uploadAsset = async () => {
     successMessage.value = '文件已上传到 R2，并自动登记到媒体库。';
     upload.altText = '';
     setUploadFile(null);
-    await loadPage(asset.id);
+    await loadPage(asset.id, false);
+    activeWorkspaceMode.value = 'edit';
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '无法上传文件。';
   } finally {
@@ -271,6 +292,11 @@ const uploadAsset = async () => {
 };
 
 const saveAsset = async () => {
+  if (!hasEditableRecord.value) {
+    errorMessage.value = '请先从左侧选择一个已上传文件。';
+    return;
+  }
+
   saving.value = true;
   resetFeedback();
 
@@ -293,7 +319,7 @@ const saveAsset = async () => {
     };
 
     const asset = await adminRequest<AdminAssetRecord>(
-      isCreating.value ? '/api/admin/v1/assets' : `/api/admin/v1/assets/${selectedAssetId.value}`,
+      isCreating.value ? '/api/admin/v1/assets' : `/api/admin/v1/assets/${selectedAssetId.value ?? ''}`,
       {
         method: isCreating.value ? 'POST' : 'PATCH',
         body: payload,
@@ -301,7 +327,8 @@ const saveAsset = async () => {
     );
 
     successMessage.value = isCreating.value ? '媒体记录已创建。' : '媒体记录已更新。';
-    await loadPage(asset.id);
+    await loadPage(asset.id, false);
+    activeWorkspaceMode.value = 'edit';
   } catch (error) {
     fieldIssues.value = getValidationIssues(error);
     errorMessage.value = error instanceof Error ? error.message : '无法保存媒体记录。';
@@ -326,10 +353,9 @@ onBeforeUnmount(() => {
         <h2>媒体库</h2>
         <p>上传与复用媒体资源</p>
       </div>
-      <div class="page-actions">
-        <button class="button-link" type="button" @click="selectNew">新建空记录</button>
+      <div v-if="activeWorkspaceMode === 'edit' && hasEditableRecord" class="page-actions">
         <button class="button-link button-primary" type="button" :disabled="loading || saving" @click="saveAsset">
-          {{ saving ? '保存中…' : isCreating ? '创建记录' : '保存修改' }}
+          {{ saveButtonLabel }}
         </button>
       </div>
     </header>
@@ -411,7 +437,7 @@ onBeforeUnmount(() => {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="row in filteredRows" :key="row.id">
+                <tr v-for="row in filteredRows" :key="row.id" :class="{ 'is-selected': !isCreating && selectedAssetId === row.id }">
                   <td>
                     <div class="asset-thumb">
                       <img v-if="row.publicUrl && row.mimeType.startsWith('image/')" :src="row.publicUrl" :alt="row.altText || row.originalFilename" />
@@ -439,7 +465,7 @@ onBeforeUnmount(() => {
                   <td>{{ formatDateTime(row.updatedAt) }}</td>
                   <td class="table-actions-cell">
                     <div class="table-action-list">
-                      <button class="table-link table-link-button" type="button" @click="selectAsset(row.id)">编辑</button>
+                      <button class="table-link table-link-button" type="button" @click="selectAsset(row.id)">编辑元数据</button>
                       <a v-if="row.publicUrl" class="table-link" :href="row.publicUrl" target="_blank" rel="noreferrer">打开</a>
                     </div>
                   </td>
@@ -454,10 +480,29 @@ onBeforeUnmount(() => {
         <section class="panel stacked-gap">
           <div class="panel-toolbar">
             <div>
+              <h3>操作模式</h3>
+              <div class="panel-meta">上传新文件与编辑已上传文件分开处理</div>
+            </div>
+            <div class="panel-meta">{{ activeWorkspaceMode === 'upload' ? '上传' : '编辑' }}</div>
+          </div>
+
+          <div class="tab-strip">
+            <button class="tab-button" :class="{ 'is-active': activeWorkspaceMode === 'upload' }" type="button" @click="activeWorkspaceMode = 'upload'">
+              上传新文件
+            </button>
+            <button class="tab-button" :class="{ 'is-active': activeWorkspaceMode === 'edit' }" type="button" @click="activeWorkspaceMode = 'edit'">
+              编辑已上传文件
+            </button>
+          </div>
+        </section>
+
+        <section v-if="activeWorkspaceMode === 'upload'" class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <div>
               <h3>上传文件</h3>
               <div class="panel-meta">{{ uploadConfig?.enabled ? '直接写入 R2' : '当前不可上传' }}</div>
             </div>
-            <div class="panel-meta">{{ uploadConfig?.bucket ?? form.bucket }}</div>
+            <div class="panel-meta">{{ uploadConfig?.bucket ?? '未配置 bucket' }}</div>
           </div>
           <div class="panel-meta">{{ uploadStatusMessage }}</div>
 
@@ -468,11 +513,11 @@ onBeforeUnmount(() => {
             </div>
             <div class="summary-item">
               <dt>当前文件</dt>
-              <dd>{{ uploadFile?.name || selectedAsset?.originalFilename || '未选择' }}</dd>
+              <dd>{{ uploadFile?.name || '未选择' }}</dd>
             </div>
             <div class="summary-item">
               <dt>文件大小</dt>
-              <dd class="muted">{{ uploadFile ? formatFileSize(uploadFile.size) : formatFileSize(selectedAsset?.byteSize) }}</dd>
+              <dd class="muted">{{ uploadFile ? formatFileSize(uploadFile.size) : '未选择' }}</dd>
             </div>
             <div class="summary-item">
               <dt>对象目录</dt>
@@ -480,16 +525,17 @@ onBeforeUnmount(() => {
             </div>
           </dl>
 
-          <div v-if="previewUrl" class="summary-item summary-asset">
-            <div v-if="previewIsImage" class="asset-preview-frame">
-              <img :src="previewUrl" :alt="selectedAsset?.altText || upload.altText || selectedAsset?.originalFilename || uploadFile?.name || 'asset preview'" />
+          <div v-if="uploadPreviewSrc" class="summary-item summary-asset">
+            <div v-if="uploadPreviewIsImage" class="asset-preview-frame">
+              <img :src="uploadPreviewSrc" :alt="upload.altText || uploadFile?.name || 'asset preview'" />
             </div>
             <div class="summary-asset-copy">
               <div class="eyebrow">预览</div>
-              <strong>{{ selectedAsset?.originalFilename || uploadFile?.name || '未命名文件' }}</strong>
-              <p>{{ selectedAsset?.publicUrl || '上传后会自动生成公开地址。' }}</p>
+              <strong>{{ uploadFile?.name || '未命名文件' }}</strong>
+              <p>上传完成后会自动登记到媒体库，并切换到“编辑已上传文件”。</p>
             </div>
           </div>
+          <div v-else class="empty-inline">选择文件后，会在这里看到上传预览。</div>
 
           <label class="field">
             <span>选择文件</span>
@@ -530,9 +576,13 @@ onBeforeUnmount(() => {
           </button>
         </section>
 
-        <section class="panel stacked-gap">
+        <section v-else class="panel stacked-gap">
+          <template v-if="hasEditableRecord">
           <div class="panel-toolbar">
-            <h3>{{ isCreating ? '新建媒体记录' : '编辑媒体记录' }}</h3>
+            <div>
+              <h3>{{ editorPanelTitle }}</h3>
+              <div class="panel-meta">{{ selectedAsset?.originalFilename || '当前未绑定已上传文件' }}</div>
+            </div>
             <div class="panel-meta">{{ formatAssetVisibility(selectedAsset?.visibility ?? form.visibility) }}</div>
           </div>
 
@@ -554,6 +604,17 @@ onBeforeUnmount(() => {
               <dd class="muted">{{ formatDateTime(selectedAsset.updatedAt) }}</dd>
             </div>
           </dl>
+
+          <div v-if="editorPreviewSrc" class="summary-item summary-asset">
+            <div v-if="editorPreviewIsImage" class="asset-preview-frame">
+              <img :src="editorPreviewSrc" :alt="selectedAsset?.altText || form.altText || selectedAsset?.originalFilename || 'asset preview'" />
+            </div>
+            <div class="summary-asset-copy">
+              <div class="eyebrow">已上传文件</div>
+              <strong>{{ selectedAsset?.originalFilename || form.originalFilename || '未命名文件' }}</strong>
+              <p>{{ selectedAsset?.publicUrl || form.publicUrl || '保存后会使用当前公开链接。' }}</p>
+            </div>
+          </div>
 
           <section class="field-shell stacked-gap">
             <div class="panel-toolbar">
@@ -645,6 +706,30 @@ onBeforeUnmount(() => {
               </label>
             </div>
           </section>
+
+          <div class="inline-actions">
+            <button class="button-link button-primary" type="button" :disabled="saving" @click="saveAsset">
+              {{ saveButtonLabel }}
+            </button>
+          </div>
+          </template>
+
+          <template v-else>
+            <div class="panel-toolbar">
+              <div>
+                <h3>编辑已上传文件</h3>
+                <div class="panel-meta">先从左侧选择一个文件，再修改元数据。</div>
+              </div>
+            </div>
+
+            <div class="empty-state-card stacked-gap asset-editor-empty">
+              <p>上传完成后系统会自动切换到这里。你也可以从左侧列表点击“编辑元数据”继续维护已有文件。</p>
+              <div class="inline-actions">
+                <button class="button-link button-primary" type="button" @click="activeWorkspaceMode = 'upload'">去上传文件</button>
+                <button class="button-link" type="button" @click="selectNew">手动新建空记录</button>
+              </div>
+            </div>
+          </template>
         </section>
       </aside>
     </div>
@@ -676,6 +761,10 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.asset-table tbody tr.is-selected {
+  background: rgba(15, 118, 110, 0.06);
 }
 
 .asset-preview-frame {
@@ -710,5 +799,9 @@ onBeforeUnmount(() => {
 .upload-file-chip span {
   color: var(--color-text-muted, #667085);
   font-size: 0.78rem;
+}
+
+.asset-editor-empty {
+  align-content: start;
 }
 </style>
