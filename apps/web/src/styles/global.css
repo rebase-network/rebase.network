@@ -1,5 +1,5 @@
 :root {
-  --page-bg: #fbf7ef;
+  --page-bg: #f8f1e2;
   --surface: rgba(255, 255, 255, 0.88);
   --surface-strong: #fffdf8;
   --text: #1f2933;
@@ -14,7 +14,9 @@
   --radius-sm: 14px;
   --content-width: 1180px;
   color-scheme: light;
-  font-family: 'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --display-font: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  --body-font: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', sans-serif;
+  font-family: var(--body-font);
 }
 
 * {
@@ -30,9 +32,11 @@ body {
   min-height: 100vh;
   background:
     radial-gradient(circle at top left, rgba(209, 236, 228, 0.92), transparent 34%),
-    radial-gradient(circle at top right, rgba(255, 220, 184, 0.64), transparent 28%),
-    linear-gradient(180deg, #f4efe4 0%, #fbf8f2 46%, #f7f4ee 100%);
+    radial-gradient(circle at top right, rgba(255, 220, 184, 0.68), transparent 28%),
+    radial-gradient(circle at 80% 30%, rgba(125, 211, 252, 0.18), transparent 22%),
+    linear-gradient(180deg, #f3ecde 0%, #fbf8f2 46%, #f7f4ee 100%);
   color: var(--text);
+  font-family: var(--body-font);
 }
 
 body::before {
@@ -72,6 +76,7 @@ main {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow);
   backdrop-filter: blur(18px);
+  animation: card-rise 420ms ease both;
 }
 
 .page-section {
@@ -101,9 +106,11 @@ main {
 
 .hero-title {
   margin: 0;
+  font-family: var(--display-font);
   font-size: clamp(2.8rem, 6vw, 5.8rem);
   line-height: 0.92;
   max-width: 12ch;
+  letter-spacing: -0.04em;
 }
 
 .hero-summary {
@@ -130,12 +137,18 @@ main {
   background: var(--text);
   color: white;
   font-weight: 700;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
 .button-link.secondary {
   background: transparent;
   border: 1px solid var(--line);
   color: var(--text);
+}
+
+.button-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(31, 41, 51, 0.12);
 }
 
 .signal-list {
@@ -148,6 +161,13 @@ main {
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(31, 41, 51, 0.08);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.signal-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(17, 94, 89, 0.18);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .signal-item p,
@@ -248,6 +268,26 @@ main {
 .detail-sidebar ul {
   margin: 0.8rem 0 0;
   padding-left: 1rem;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--display-font);
+  letter-spacing: -0.02em;
+}
+
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 960px) {

@@ -5,6 +5,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getContributorsByRole, getSiteSettings } from '@/lib/content';
 
 const [site, groups] = await Promise.all([getSiteSettings(), getContributorsByRole()]);
+const totalContributors = groups.reduce((sum, group) => sum + group.contributors.length, 0);
 ---
 
 <BaseLayout
@@ -13,12 +14,22 @@ const [site, groups] = await Promise.all([getSiteSettings(), getContributorsByRo
   description="Meet the volunteers and GeekDaily advisors who keep the community moving."
 >
   <section class="shell page-hero single">
-    <article class="hero-panel card">
+    <article class="hero-panel card contributors-hero">
       <p class="hero-kicker">contributors</p>
       <h1 class="hero-title">社区不是抽象概念，它总是由具体的人把内容、活动和协作推着往前走。</h1>
       <p class="hero-summary">
         第一版先按志愿者和极客日报智囊团分组展示，后续可扩展更多角色类型。
       </p>
+      <div class="hero-facts">
+        <article>
+          <span>people</span>
+          <strong>{totalContributors}</strong>
+        </article>
+        <article>
+          <span>roles</span>
+          <strong>{groups.length}</strong>
+        </article>
+      </div>
     </article>
   </section>
 
@@ -30,11 +41,16 @@ const [site, groups] = await Promise.all([getSiteSettings(), getContributorsByRo
           title={group.role.name}
           description={group.role.description}
         />
-        <div class="grid-2">
-          {group.contributors.map((contributor) => (
-            <ContributorCard contributor={contributor} />
-          ))}
-        </div>
+        {group.contributors[0] ? (
+          <div class="group-layout">
+            <ContributorCard contributor={group.contributors[0]} />
+            <div class="grid-2">
+              {group.contributors.slice(1).map((contributor) => (
+                <ContributorCard contributor={contributor} />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     ))}
   </section>
@@ -45,8 +61,59 @@ const [site, groups] = await Promise.all([getSiteSettings(), getContributorsByRo
     grid-template-columns: 1fr;
   }
 
+  .contributors-hero {
+    background:
+      radial-gradient(circle at top right, rgba(15, 118, 110, 0.16), transparent 26%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 252, 251, 0.9));
+  }
+
+  .hero-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-top: 1.4rem;
+  }
+
+  .hero-facts article {
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.66);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .hero-facts span,
+  .hero-facts strong {
+    display: block;
+  }
+
+  .hero-facts span {
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .hero-facts strong {
+    margin-top: 0.45rem;
+    font-size: 1.05rem;
+  }
+
   .contributor-groups {
     display: grid;
     gap: 2rem;
+  }
+
+  .group-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 1rem;
+  }
+
+  @media (max-width: 960px) {
+    .hero-facts,
+    .group-layout {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

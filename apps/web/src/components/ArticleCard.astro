@@ -9,20 +9,27 @@ interface Props {
 }
 
 const { article, featured = false } = Astro.props;
+const authorLine = article.authors.map((author) => author.name).filter(Boolean).join(' · ');
 ---
 
 <article class:list={['article-card', 'card', { featured }] }>
-  {article.coverImageUrl ? (
-    <img class="cover image" src={article.coverImageUrl} alt="" loading="lazy" />
-  ) : (
-    <div class="cover" style={`background:${article.coverAccent}`} />
-  )}
+  <a class="cover-link" href={getArticlePath(article.slug)} aria-label={article.title}>
+    {article.coverImageUrl ? (
+      <img class="cover image" src={article.coverImageUrl} alt="" loading="lazy" />
+    ) : (
+      <div class="cover fallback" style={`background:${article.coverAccent}`}>
+        <span class="cover-label">rebase article</span>
+        <strong>{article.tags[0] ?? article.authors[0]?.name ?? 'community memo'}</strong>
+      </div>
+    )}
+  </a>
   <div class="content">
     <p class="meta">{formatDate(article.publishedAt)} · {article.readingTime}</p>
     <h3>
       <a href={getArticlePath(article.slug)}>{article.title}</a>
     </h3>
     <p class="summary">{article.summary}</p>
+    {authorLine && <p class="author-line">{authorLine}</p>}
     <ul class="tags">
       {article.tags.map((tag) => <li>{tag}</li>)}
     </ul>
@@ -32,15 +39,46 @@ const { article, featured = false } = Astro.props;
 <style>
   .article-card {
     overflow: hidden;
+    display: grid;
   }
 
   .cover {
-    min-height: 10rem;
+    min-height: 11rem;
   }
 
   .image {
     width: 100%;
+    height: 100%;
     object-fit: cover;
+  }
+
+  .cover-link {
+    display: block;
+    overflow: hidden;
+    background: rgba(17, 94, 89, 0.08);
+  }
+
+  .fallback {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    gap: 0.7rem;
+    padding: 1.25rem;
+    color: white;
+  }
+
+  .cover-label,
+  .author-line {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.76rem;
+    font-weight: 800;
+  }
+
+  .fallback strong {
+    max-width: 13ch;
+    font-size: clamp(1.2rem, 2.1vw, 2rem);
+    line-height: 0.98;
   }
 
   .content {
@@ -67,6 +105,11 @@ const { article, featured = false } = Astro.props;
     line-height: 1.7;
   }
 
+  .author-line {
+    margin: 1rem 0 0;
+    color: var(--accent-strong);
+  }
+
   .tags {
     display: flex;
     flex-wrap: wrap;
@@ -87,5 +130,17 @@ const { article, featured = false } = Astro.props;
 
   .featured h3 {
     font-size: clamp(1.8rem, 2.2vw, 2.5rem);
+  }
+
+  .featured .cover {
+    min-height: 18rem;
+  }
+
+  .featured .content {
+    padding: 1.5rem;
+  }
+
+  .featured .author-line {
+    margin-top: 1.15rem;
   }
 </style>

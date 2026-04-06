@@ -7,14 +7,24 @@ import JobCard from '@/components/JobCard.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getContributors, getHomeFeed, getSiteSettings } from '@/lib/content';
+import { formatDate } from '@/lib/dates';
 
 const [site, feed, contributors] = await Promise.all([getSiteSettings(), getHomeFeed(), getContributors()]);
 const featuredContributors = contributors.slice(0, 2);
+const liveWire = feed.dynamicFeed.slice(0, 6);
+const recentGeekDaily = feed.recentGeekDaily.slice(0, 3);
+
+const liveWireTypeLabel = {
+  article: 'article',
+  job: 'hiring',
+  event: 'event',
+  geekdaily: 'geekdaily',
+} as const;
 ---
 
 <BaseLayout site={site} title="Rebase Community" description={site.description}>
-  <section class="shell page-hero">
-    <article class="hero-panel card">
+  <section class="shell page-hero home-hero">
+    <article class="hero-panel card masthead-panel">
       <p class="hero-kicker">community media for builders</p>
       <h1 class="hero-title">{site.heroTitle}</h1>
       <p class="hero-summary">{site.heroSummary}</p>
@@ -22,16 +32,42 @@ const featuredContributors = contributors.slice(0, 2);
         <a class="button-link" href={site.heroPrimaryCtaUrl}>{site.heroPrimaryCtaLabel} <span>↗</span></a>
         <a class="button-link secondary" href={site.heroSecondaryCtaUrl}>{site.heroSecondaryCtaLabel} <span>↗</span></a>
       </div>
+      <div class="hero-footnotes">
+        <article>
+          <span>dual domain</span>
+          <strong>{site.primaryDomain.replace('https://', '')}</strong>
+          <p>默认内容主域名，第二域名保留社区入口一致性。</p>
+        </article>
+        <article>
+          <span>open reading</span>
+          <strong>no login required</strong>
+          <p>读者直接访问，管理侧通过专用后台维护结构化内容。</p>
+        </article>
+      </div>
     </article>
 
-    <aside class="signal-panel card">
+    <aside class="signal-panel card live-desk">
       <SectionHeader
-        eyebrow="signal board"
-        title="本周值得先看的三个入口"
-        description="首页不只是导航，而是今天社区最重要内容的总控台。"
+        eyebrow="live wire"
+        title="正在发生什么"
+        description="用一条实时更新的社区新闻线，把文章、活动、GeekDaily 和招聘放在同一个阅读入口里。"
       />
-      <div class="signal-list">
-        {site.homeSignals.map((signal) => (
+      <ol class="live-wire-list">
+        {liveWire.map((item) => (
+          <li class="live-wire-item">
+            <a href={item.href}>
+              <div class="live-wire-meta">
+                <span>{liveWireTypeLabel[item.type]}</span>
+                <time>{item.publishedAt ? formatDate(item.publishedAt) : 'recently'}</time>
+              </div>
+              <h3>{item.title}</h3>
+              <p>{item.summary}</p>
+            </a>
+          </li>
+        ))}
+      </ol>
+      <div class="signal-list signal-compact">
+        {site.homeSignals.slice(0, 2).map((signal) => (
           <a class="signal-item" href={signal.href}>
             <p>{signal.eyebrow}</p>
             <h3>{signal.title}</h3>
@@ -51,15 +87,34 @@ const featuredContributors = contributors.slice(0, 2);
     ))}
   </section>
 
+  <section class="shell page-section current-desk">
+    <SectionHeader
+      eyebrow="front page"
+      title="今天进入 Rebase 最值得先看的内容"
+      description="首屏之下不是简单分栏，而是一份社区首页编辑台：主稿、日报、活动和招聘同时在线。"
+    />
+    <div class="dispatch-grid">
+      {feed.latestArticles[0] && <ArticleCard article={feed.latestArticles[0]} featured />}
+      <div class="dispatch-stack">
+        {feed.latestGeekDaily && <GeekDailyCard episode={feed.latestGeekDaily} />}
+        {feed.latestJobs[0] && <JobCard job={feed.latestJobs[0]} />}
+        {feed.latestEvents[0] && <EventCard event={feed.latestEvents[0]} />}
+      </div>
+    </div>
+  </section>
+
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="current dispatch"
-      title="当前动态"
-      description="把最近的文章、活动、招聘和 GeekDaily 聚合成一个可以快速阅读的首页流。"
+      eyebrow="daily archive"
+      title="近期 GeekDaily"
+      description="日报是 Rebase 最稳定的社区更新机制，也是搜索与 RSS 最常被消费的入口。"
+      href="/geekdaily"
+      hrefLabel="进入 GeekDaily"
     />
-    <div class="grid-2">
-      {feed.latestArticles[0] && <ArticleCard article={feed.latestArticles[0]} featured />}
-      {feed.latestGeekDaily && <GeekDailyCard episode={feed.latestGeekDaily} />}
+    <div class="grid-3">
+      {recentGeekDaily.map((episode) => (
+        <GeekDailyCard episode={episode} />
+      ))}
     </div>
   </section>
 
@@ -78,7 +133,7 @@ const featuredContributors = contributors.slice(0, 2);
     </div>
   </section>
 
-  <section class="shell page-section">
+  <section class="shell page-section dual-column">
     <SectionHeader
       eyebrow="who is hiring"
       title="新增招聘信息"
@@ -112,7 +167,7 @@ const featuredContributors = contributors.slice(0, 2);
     <SectionHeader
       eyebrow="contributors"
       title="让社区持续运转的人"
-      description="贡献者不是站点背后的附属名单，而是这个社区媒介的一部分。"
+      description="贡献者不是站点背后的附属名单，而是这个社区媒介的一部分；他们负责组织、筛选、写作和回应。"
       href="/contributors"
       hrefLabel="查看贡献者"
     />
@@ -141,6 +196,146 @@ const featuredContributors = contributors.slice(0, 2);
 </BaseLayout>
 
 <style>
+  .home-hero {
+    align-items: stretch;
+  }
+
+  .masthead-panel {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at top left, rgba(243, 196, 110, 0.28), transparent 34%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 252, 247, 0.9));
+  }
+
+  .masthead-panel::after {
+    content: '';
+    position: absolute;
+    inset: auto -8rem -8rem auto;
+    width: 16rem;
+    height: 16rem;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(17, 94, 89, 0.18), transparent 68%);
+    pointer-events: none;
+  }
+
+  .hero-footnotes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.5rem;
+  }
+
+  .hero-footnotes article {
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.62);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .hero-footnotes span,
+  .hero-footnotes strong,
+  .hero-footnotes p {
+    display: block;
+    margin: 0;
+  }
+
+  .hero-footnotes span {
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .hero-footnotes strong {
+    margin-top: 0.45rem;
+    font-size: 1.05rem;
+  }
+
+  .hero-footnotes p {
+    margin-top: 0.45rem;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .live-desk {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .live-wire-list {
+    display: grid;
+    gap: 0.85rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .live-wire-item a {
+    display: block;
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .live-wire-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.8rem;
+    align-items: center;
+  }
+
+  .live-wire-meta span,
+  .live-wire-meta time {
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .live-wire-meta time {
+    color: var(--muted);
+  }
+
+  .live-wire-item h3,
+  .live-wire-item p {
+    margin: 0;
+  }
+
+  .live-wire-item h3 {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .live-wire-item p {
+    margin-top: 0.45rem;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .signal-compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .current-desk {
+    padding-top: 1.9rem;
+  }
+
+  .dispatch-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(19rem, 0.9fr);
+    gap: 1rem;
+  }
+
+  .dispatch-stack {
+    display: grid;
+    gap: 1rem;
+  }
+
   .feed-callout {
     display: grid;
     grid-template-columns: 1.3fr 1fr;
@@ -173,6 +368,12 @@ const featuredContributors = contributors.slice(0, 2);
   }
 
   @media (max-width: 960px) {
+    .hero-footnotes,
+    .dispatch-grid,
+    .signal-compact {
+      grid-template-columns: 1fr;
+    }
+
     .feed-callout {
       grid-template-columns: 1fr;
     }

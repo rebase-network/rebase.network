@@ -11,16 +11,31 @@ const { event } = Astro.props;
 ---
 
 <article class="event-card card">
-  {event.coverImageUrl && <img class="cover-image" src={event.coverImageUrl} alt="" loading="lazy" />}
-  <p class="status">{event.status === 'upcoming' ? 'upcoming' : 'past event'}</p>
+  {event.coverImageUrl ? (
+    <img class="cover-image" src={event.coverImageUrl} alt="" loading="lazy" />
+  ) : (
+    <div class:list={['cover-image', 'cover-fallback', event.status]}>
+      <span>{event.status === 'upcoming' ? 'up next' : 'archive'}</span>
+      <strong>{event.city}</strong>
+    </div>
+  )}
+  <div class="status-row">
+    <p class="status">{event.status === 'upcoming' ? 'upcoming' : 'past event'}</p>
+    {event.registrationUrl && <span class="chip">external signup</span>}
+  </div>
   <h3>
     <a href={getEventPath(event.startAt, event.slug)}>{event.title}</a>
   </h3>
   <p class="summary">{event.summary}</p>
-  <ul>
+  <ul class="meta-list">
     <li>{formatEventWindow(event.startAt, event.endAt)}</li>
     <li>{event.location} · {event.venue}</li>
   </ul>
+  {event.tags.length > 0 && (
+    <ul class="tag-list">
+      {event.tags.map((tag) => <li>{tag}</li>)}
+    </ul>
+  )}
 </article>
 
 <style>
@@ -32,15 +47,67 @@ const { event } = Astro.props;
     width: calc(100% + 2.5rem);
     margin: -1.25rem -1.25rem 1rem;
     border-radius: 1rem 1rem 0 0;
+    min-height: 10rem;
     object-fit: cover;
   }
 
+  .cover-fallback {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    gap: 0.55rem;
+    padding: 1rem;
+    color: white;
+  }
+
+  .cover-fallback.upcoming {
+    background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%);
+  }
+
+  .cover-fallback.past {
+    background: linear-gradient(135deg, #7c2d12 0%, #1f2933 100%);
+  }
+
+  .cover-fallback span,
   .status {
     margin: 0 0 0.8rem;
     color: var(--accent-strong);
     font-size: 0.76rem;
     font-weight: 800;
     letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .cover-fallback span {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .cover-fallback strong {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .status-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.8rem;
+    align-items: center;
+  }
+
+  .status {
+    margin-bottom: 0;
+  }
+
+  .chip {
+    padding: 0.34rem 0.68rem;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.08);
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
@@ -56,10 +123,28 @@ const { event } = Astro.props;
     line-height: 1.7;
   }
 
-  ul {
+  .meta-list {
     margin: 0;
     padding-left: 1rem;
     color: var(--muted);
     line-height: 1.7;
+  }
+
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tag-list li {
+    padding: 0.36rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(17, 94, 89, 0.08);
+    color: var(--accent-strong);
+    font-size: 0.78rem;
+    font-weight: 700;
   }
 </style>

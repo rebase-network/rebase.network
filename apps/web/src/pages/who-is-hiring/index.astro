@@ -5,14 +5,27 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import { getJobs, getSiteSettings } from '@/lib/content';
 
 const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
+const leadJob = jobs[0];
+const archiveJobs = jobs.slice(1);
+const remoteJobCount = jobs.filter((job) => job.supportsRemote).length;
 ---
 
 <BaseLayout site={site} title="Who-Is-Hiring" description="See current hiring opportunities shared by the Rebase community.">
   <section class="shell page-hero single">
-    <article class="hero-panel card">
+    <article class="hero-panel card jobs-hero">
       <p class="hero-kicker">who is hiring</p>
       <h1 class="hero-title">让招聘信息不仅被发出来，还能被读懂、被订阅、被稳定地回看。</h1>
       <p class="hero-summary">第一版提供公开招聘列表、详情页与 RSS 输出，帮助求职者快速找到合适机会。</p>
+      <div class="hero-facts">
+        <article>
+          <span>open roles</span>
+          <strong>{jobs.length}</strong>
+        </article>
+        <article>
+          <span>remote friendly</span>
+          <strong>{remoteJobCount}</strong>
+        </article>
+      </div>
     </article>
   </section>
 
@@ -27,6 +40,25 @@ const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
     </article>
   </section>
 
+  {leadJob && (
+    <section class="shell page-section">
+      <SectionHeader
+        eyebrow="featured role"
+        title="本周优先浏览的岗位"
+        description="招聘页也应该像媒体页面一样，有一个优先承接读者注意力的主职位。"
+      />
+      <div class="lead-layout">
+        <JobCard job={leadJob} />
+        <article class="card job-note">
+          <p class="hero-kicker">posting note</p>
+          <h2>职位信息不是口号，而是要把工作方式、薪资范围和投递方式讲明白。</h2>
+          <p>第一版由后台人工录入，后续可以继续把历史 Who-Is-Hiring issue 数据结构化迁移过来。</p>
+          <a href="/who-is-hiring/rss.xml">订阅招聘 RSS</a>
+        </article>
+      </div>
+    </section>
+  )}
+
   <section class="shell page-section">
     <SectionHeader
       eyebrow="job board"
@@ -36,7 +68,7 @@ const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
       hrefLabel="rss"
     />
     <div class="grid-3">
-      {jobs.map((job) => <JobCard job={job} />)}
+      {archiveJobs.map((job) => <JobCard job={job} />)}
     </div>
   </section>
 </BaseLayout>
@@ -44,6 +76,49 @@ const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
 <style>
   .single {
     grid-template-columns: 1fr;
+  }
+
+  .jobs-hero {
+    background:
+      radial-gradient(circle at top right, rgba(245, 158, 11, 0.18), transparent 26%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 252, 247, 0.9));
+  }
+
+  .hero-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-top: 1.4rem;
+  }
+
+  .hero-facts article,
+  .callout-card,
+  .job-note {
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .hero-facts article {
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+
+  .hero-facts span,
+  .hero-facts strong {
+    display: block;
+  }
+
+  .hero-facts span {
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .hero-facts strong {
+    margin-top: 0.45rem;
+    font-size: 1.05rem;
   }
 
   .callout-grid {
@@ -67,8 +142,44 @@ const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
     line-height: 1.8;
   }
 
+  .lead-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.9fr);
+    gap: 1rem;
+  }
+
+  .job-note {
+    padding: 1.4rem;
+    border-radius: 1rem;
+  }
+
+  .job-note h2,
+  .job-note p {
+    margin: 0;
+  }
+
+  .job-note h2 {
+    font-size: clamp(1.8rem, 2.6vw, 2.7rem);
+    line-height: 1.05;
+  }
+
+  .job-note p {
+    margin-top: 0.85rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .job-note a {
+    display: inline-flex;
+    margin-top: 1rem;
+    color: var(--accent-strong);
+    font-weight: 800;
+  }
+
   @media (max-width: 960px) {
-    .callout-grid {
+    .callout-grid,
+    .hero-facts,
+    .lead-layout {
       grid-template-columns: 1fr;
     }
   }

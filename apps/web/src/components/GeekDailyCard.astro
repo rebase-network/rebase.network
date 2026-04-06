@@ -11,11 +11,15 @@ const { episode } = Astro.props;
 ---
 
 <article class="daily-card card">
-  <p class="meta">{episode.title} · {formatDate(episode.publishedAt)}</p>
+  <div class="meta-row">
+    <p class="meta">{formatDate(episode.publishedAt)}</p>
+    <span class="issue-no">#{episode.episodeNumber}</span>
+  </div>
   <h3>
     <a href={getGeekDailyPath(episode.episodeNumber)}>{episode.title}</a>
   </h3>
   <p class="body">{episode.summary}</p>
+  <p class="item-count">{episode.items.length} community picks in this episode</p>
   <ul class="tags">
     {episode.tags.map((tag) => <li>{tag}</li>)}
   </ul>
@@ -26,12 +30,28 @@ const { episode } = Astro.props;
     padding: 1.25rem;
   }
 
+  .meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
   .meta {
     margin: 0 0 0.75rem;
     color: var(--muted);
     font-size: 0.82rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+  }
+
+  .issue-no {
+    padding: 0.35rem 0.68rem;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.12);
+    color: #92400e;
+    font-size: 0.78rem;
+    font-weight: 800;
   }
 
   h3 {
@@ -44,6 +64,15 @@ const { episode } = Astro.props;
     margin: 0;
     color: var(--muted);
     line-height: 1.7;
+  }
+
+  .item-count {
+    margin: 1rem 0 0;
+    color: var(--accent-strong);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .tags {

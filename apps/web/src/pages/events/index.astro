@@ -9,16 +9,46 @@ const [site, upcomingEvents, pastEvents] = await Promise.all([
   getUpcomingEvents(),
   getPastEvents(),
 ]);
+const leadUpcomingEvent = upcomingEvents[0];
 ---
 
 <BaseLayout site={site} title="Rebase Events" description="See upcoming and past community events from Rebase.">
   <section class="shell page-hero single">
-    <article class="hero-panel card">
+    <article class="hero-panel card events-hero">
       <p class="hero-kicker">events</p>
       <h1 class="hero-title">活动页先做好表达与归档，再慢慢加深运营能力。</h1>
       <p class="hero-summary">第一版活动详情页不做站内报名表，但会清晰展示时间、地点、说明和外部报名入口。</p>
+      <div class="hero-facts">
+        <article>
+          <span>upcoming</span>
+          <strong>{upcomingEvents.length}</strong>
+        </article>
+        <article>
+          <span>archive</span>
+          <strong>{pastEvents.length}</strong>
+        </article>
+      </div>
     </article>
   </section>
+
+  {leadUpcomingEvent && (
+    <section class="shell page-section">
+      <SectionHeader
+        eyebrow="headline event"
+        title="当前主推活动"
+        description="如果近期有重点活动，活动页先给出一个足够明确的阅读与报名入口。"
+      />
+      <div class="lead-layout">
+        <EventCard event={leadUpcomingEvent} />
+        <article class="card event-note">
+          <p class="hero-kicker">event policy</p>
+          <h2>第一版先把活动上下文讲清楚。</h2>
+          <p>活动详情页优先保证时间、地点、议题和报名信息准确清晰，站内报名留到后续版本迭代。</p>
+          <a href="/events/rss.xml">订阅活动 RSS</a>
+        </article>
+      </div>
+    </section>
+  )}
 
   <section class="shell page-section">
     <SectionHeader
@@ -48,5 +78,80 @@ const [site, upcomingEvents, pastEvents] = await Promise.all([
 <style>
   .single {
     grid-template-columns: 1fr;
+  }
+
+  .events-hero {
+    background:
+      radial-gradient(circle at top right, rgba(14, 116, 144, 0.16), transparent 26%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 252, 251, 0.9));
+  }
+
+  .hero-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-top: 1.4rem;
+  }
+
+  .hero-facts article,
+  .event-note {
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.66);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .hero-facts span,
+  .hero-facts strong {
+    display: block;
+  }
+
+  .hero-facts span {
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .hero-facts strong {
+    margin-top: 0.45rem;
+    font-size: 1.05rem;
+  }
+
+  .lead-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.85fr);
+    gap: 1rem;
+  }
+
+  .event-note h2,
+  .event-note p {
+    margin: 0;
+  }
+
+  .event-note h2 {
+    font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+    line-height: 1.05;
+  }
+
+  .event-note p {
+    margin-top: 0.85rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .event-note a {
+    display: inline-flex;
+    margin-top: 1rem;
+    color: var(--accent-strong);
+    font-weight: 800;
+  }
+
+  @media (max-width: 960px) {
+    .hero-facts,
+    .lead-layout {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

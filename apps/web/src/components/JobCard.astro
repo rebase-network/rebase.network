@@ -8,12 +8,17 @@ interface Props {
 }
 
 const { job } = Astro.props;
+const companyInitial = job.companyName.slice(0, 1).toUpperCase();
 ---
 
 <article class="job-card card">
   <div class="meta-row">
-    <p>{job.companyName}</p>
-    <span>{formatDate(job.publishedAt)}</span>
+    <div class="company-mark" aria-hidden="true">{companyInitial}</div>
+    <div class="company-copy">
+      <p>{job.companyName}</p>
+      <span>{formatDate(job.publishedAt)}</span>
+    </div>
+    {job.supportsRemote && <strong class="remote-flag">remote</strong>}
   </div>
   <h3>
     <a href={getJobPath(job.slug)}>{job.roleTitle}</a>
@@ -33,6 +38,11 @@ const { job } = Astro.props;
       <dd>{job.location}</dd>
     </div>
   </dl>
+  {job.tags.length > 0 && (
+    <ul class="tag-list">
+      {job.tags.map((tag) => <li>{tag}</li>)}
+    </ul>
+  )}
 </article>
 
 <style>
@@ -44,20 +54,57 @@ const { job } = Astro.props;
   dl {
     display: flex;
     align-items: start;
-    justify-content: space-between;
     gap: 1rem;
   }
 
   .meta-row {
     margin-bottom: 0.8rem;
+    align-items: center;
   }
 
-  .meta-row p,
-  .meta-row span {
+  .company-mark {
+    display: grid;
+    width: 2.8rem;
+    height: 2.8rem;
+    place-items: center;
+    border-radius: 0.95rem;
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.15), rgba(245, 158, 11, 0.22));
+    color: var(--accent-strong);
+    font-size: 1.05rem;
+    font-weight: 800;
+  }
+
+  .company-copy {
+    min-width: 0;
+  }
+
+  .company-copy p,
+  .company-copy span {
     margin: 0;
+  }
+
+  .company-copy p {
+    font-size: 0.92rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .company-copy span {
+    margin-top: 0.25rem;
+    display: block;
     color: var(--muted);
-    font-size: 0.82rem;
-    letter-spacing: 0.06em;
+    font-size: 0.8rem;
+  }
+
+  .remote-flag {
+    margin-left: auto;
+    padding: 0.34rem 0.68rem;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
   }
 
@@ -78,6 +125,7 @@ const { job } = Astro.props;
     margin: 0;
     padding-top: 1rem;
     border-top: 1px solid var(--line);
+    justify-content: space-between;
   }
 
   dt {
@@ -89,6 +137,24 @@ const { job } = Astro.props;
 
   dd {
     margin: 0.3rem 0 0;
+    font-weight: 700;
+  }
+
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tag-list li {
+    padding: 0.36rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(31, 41, 51, 0.05);
+    color: var(--muted);
+    font-size: 0.78rem;
     font-weight: 700;
   }
 </style>
