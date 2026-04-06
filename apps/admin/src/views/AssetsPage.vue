@@ -68,6 +68,7 @@ const saving = ref(false);
 const uploading = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
+const copyFeedback = ref('');
 const fieldIssues = ref<Record<string, string>>({});
 const activeWorkspaceMode = ref<AssetWorkspaceMode>('upload');
 const selectedAssetId = ref<string | null>(null);
@@ -148,10 +149,54 @@ const assetStats = computed(() => [
   },
 ]);
 
+let copyFeedbackTimer: number | null = null;
+
 const resetFeedback = () => {
   errorMessage.value = '';
   successMessage.value = '';
   fieldIssues.value = {};
+};
+
+const setCopyFeedback = (message: string) => {
+  copyFeedback.value = message;
+
+  if (copyFeedbackTimer !== null) {
+    window.clearTimeout(copyFeedbackTimer);
+  }
+
+  copyFeedbackTimer = window.setTimeout(() => {
+    copyFeedback.value = '';
+    copyFeedbackTimer = null;
+  }, 1800);
+};
+
+const copyToClipboard = async (value: string, label: string) => {
+  const nextValue = value.trim();
+
+  if (!nextValue) {
+    errorMessage.value = `${label}为空，无法复制。`;
+    return;
+  }
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(nextValue);
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = nextValue;
+      textarea.setAttribute('readonly', 'true');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+
+    setCopyFeedback(`已复制${label}。`);
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : `无法复制${label}。`;
+  }
 };
 
 const resetEditorForm = () => {
@@ -343,6 +388,10 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   revokePreviewUrl();
+
+  if (copyFeedbackTimer !== null) {
+    window.clearTimeout(copyFeedbackTimer);
+  }
 });
 </script>
 
@@ -362,6 +411,7 @@ onBeforeUnmount(() => {
 
     <div v-if="errorMessage" class="panel panel-danger"><p>{{ errorMessage }}</p></div>
     <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
+    <div v-if="copyFeedback" class="panel panel-success panel-inline-feedback"><p>{{ copyFeedback }}</p></div>
     <div v-if="loading" class="panel"><p>正在加载媒体库…</p></div>
 
     <div v-else class="editor-grid editor-grid-focus">
@@ -466,6 +516,7 @@ onBeforeUnmount(() => {
                   <td class="table-actions-cell">
                     <div class="table-action-list">
                       <button class="table-link table-link-button" type="button" @click="selectAsset(row.id)">编辑元数据</button>
+                      <button class="table-link table-link-button" type="button" @click="copyToClipboard(row.objectKey, '对象路径')">复制路径</button>
                       <a v-if="row.publicUrl" class="table-link" :href="row.publicUrl" target="_blank" rel="noreferrer">打开</a>
                     </div>
                   </td>
@@ -586,6 +637,14 @@ onBeforeUnmount(() => {
             <div class="panel-meta">{{ formatAssetVisibility(selectedAsset?.visibility ?? form.visibility) }}</div>
           </div>
 
+          <div class="asset-quick-actions">
+            <button class="button-link button-compact" type="button" @click="copyToClipboard(form.objectKey, '对象路径')">复制路径</button>
+            <button class="button-link button-compact" type="button" @click="copyToClipboard(form.publicUrl, '公开链接')">复制链接</button>
+            <a v-if="selectedAsset?.publicUrl || form.publicUrl" class="button-link button-compact" :href="selectedAsset?.publicUrl || form.publicUrl" target="_blank" rel="noreferrer">
+              打开文件
+            </a>
+          </div>
+
           <dl class="summary-grid summary-grid-2">
             <div class="summary-item">
               <dt>记录状态</dt>
@@ -616,12 +675,12 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <section class="field-shell stacked-gap">
+          <section class="field-shell stacked-gap-tight asset-edit-shell">
             <div class="panel-toolbar">
               <h3>访问与路径</h3>
               <div class="panel-meta">{{ formatAssetVisibility(form.visibility) }}</div>
             </div>
-            <div class="field-grid field-grid-2">
+            <div class="field-grid field-grid-2 field-grid-compact">
               <label class="field">
                 <span>存储提供方</span>
                 <input v-model="form.storageProvider" type="text" placeholder="r2" />
@@ -644,12 +703,12 @@ onBeforeUnmount(() => {
             </label>
           </section>
 
-          <section class="field-shell stacked-gap">
+          <section class="field-shell stacked-gap-tight asset-edit-shell">
             <div class="panel-toolbar">
               <h3>文件属性</h3>
               <div class="panel-meta">{{ formatAssetStatus(form.status) }}</div>
             </div>
-            <div class="field-grid field-grid-2">
+            <div class="field-grid field-grid-2 field-grid-compact">
               <label class="field">
                 <span>资源类型</span>
                 <input v-model="form.assetType" type="text" placeholder="image" />
@@ -660,7 +719,7 @@ onBeforeUnmount(() => {
               </label>
             </div>
 
-            <div class="field-grid field-grid-3">
+            <div class="field-grid field-grid-3 field-grid-compact">
               <label class="field">
                 <span>字节大小</span>
                 <input v-model="form.byteSize" type="number" min="0" />
@@ -675,7 +734,7 @@ onBeforeUnmount(() => {
               </label>
             </div>
 
-            <div class="field-grid field-grid-2">
+            <div class="field-grid field-grid-2 field-grid-compact">
               <label class="field">
                 <span>原始文件名</span>
                 <input v-model="form.originalFilename" type="text" placeholder="rebase-cover.jpg" />
@@ -691,7 +750,7 @@ onBeforeUnmount(() => {
               <input v-model="form.altText" type="text" placeholder="帮助内容运营记录图片语义。" />
             </label>
 
-            <div class="field-grid field-grid-2">
+            <div class="field-grid field-grid-2 field-grid-compact">
               <label class="field">
                 <span>可见性</span>
                 <select v-model="form.visibility">
@@ -767,10 +826,25 @@ onBeforeUnmount(() => {
   background: rgba(15, 118, 110, 0.06);
 }
 
+.panel-inline-feedback {
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+
 .asset-preview-frame {
   overflow: hidden;
   border-radius: 1rem;
   background: rgba(15, 118, 110, 0.08);
+}
+
+.asset-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.asset-edit-shell {
+  padding: 0.72rem 0.76rem;
 }
 
 .upload-button {
