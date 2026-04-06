@@ -26,6 +26,62 @@ const cards = computed(() => {
   ];
 });
 
+const quickLinks = [
+  { to: '/articles', title: '社区文章', detail: '草稿、发布、作者' },
+  { to: '/jobs', title: '招聘信息', detail: '岗位与投递入口' },
+  { to: '/events', title: '社区活动', detail: '时间、地点、报名' },
+  { to: '/geekdaily', title: '极客日报', detail: '期数、条目、归档' },
+  { to: '/contributors', title: '贡献者', detail: '角色、头像、社交' },
+  { to: '/site', title: '站点页面', detail: '首页、关于页、页脚' },
+  { to: '/assets', title: '媒体库', detail: '上传、路径、复用' },
+  { to: '/staff', title: '工作人员', detail: '账号与权限' },
+] as const;
+
+const workflowInsights = computed(() => {
+  const value = stats.value;
+  if (!value) {
+    return [];
+  }
+
+  return [
+    {
+      title: '内容生产',
+      value: value.articles + value.geekdailyEpisodes,
+      detail: '文章与极客日报库存',
+    },
+    {
+      title: '机会流转',
+      value: value.jobs + value.events,
+      detail: '招聘与活动条目',
+    },
+    {
+      title: '社区协作',
+      value: value.contributors,
+      detail: '公开贡献者档案',
+    },
+    {
+      title: '操作留痕',
+      value: value.auditLogs,
+      detail: '审计记录总数',
+    },
+  ];
+});
+
+const guidanceItems = [
+  {
+    title: '每日内容节奏',
+    detail: '优先检查极客日报、文章和招聘是否需要更新，再处理站点页面。',
+  },
+  {
+    title: '站点维护入口',
+    detail: '站点页面、媒体库和工作人员设置集中在后台即可完成，不需要跳多个系统。',
+  },
+  {
+    title: '发布前检查',
+    detail: '发布内容前，确认公开地址、摘要、标签与封面资源是否已经补齐。',
+  },
+] as const;
+
 onMounted(async () => {
   loading.value = true;
   errorMessage.value = '';
@@ -71,39 +127,52 @@ onMounted(async () => {
         </article>
       </div>
 
-      <article class="panel stacked-gap">
-        <div class="panel-toolbar">
-          <h3>快捷入口</h3>
-          <div class="panel-meta">常用模块</div>
-        </div>
+      <div class="dashboard-workspace-grid">
+        <article class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>快捷入口</h3>
+            <div class="panel-meta">常用模块</div>
+          </div>
 
-        <div class="dashboard-quick-links">
-          <RouterLink class="dashboard-quick-link" to="/articles">
-            <strong>社区文章</strong>
-            <span>草稿、发布、作者</span>
-          </RouterLink>
-          <RouterLink class="dashboard-quick-link" to="/jobs">
-            <strong>招聘信息</strong>
-            <span>岗位与投递入口</span>
-          </RouterLink>
-          <RouterLink class="dashboard-quick-link" to="/events">
-            <strong>社区活动</strong>
-            <span>时间、地点、报名</span>
-          </RouterLink>
-          <RouterLink class="dashboard-quick-link" to="/contributors">
-            <strong>贡献者</strong>
-            <span>角色、头像、社交</span>
-          </RouterLink>
-          <RouterLink class="dashboard-quick-link" to="/staff">
-            <strong>工作人员</strong>
-            <span>账号与权限</span>
-          </RouterLink>
-          <RouterLink class="dashboard-quick-link" to="/audit-logs">
-            <strong>审计日志</strong>
-            <span>关键操作留痕</span>
-          </RouterLink>
+          <div class="dashboard-quick-links">
+            <RouterLink v-for="item in quickLinks" :key="item.to" class="dashboard-quick-link" :to="item.to">
+              <strong>{{ item.title }}</strong>
+              <span>{{ item.detail }}</span>
+            </RouterLink>
+          </div>
+        </article>
+
+        <div class="stacked-gap">
+          <article class="panel stacked-gap">
+            <div class="panel-toolbar">
+              <h3>工作提示</h3>
+              <div class="panel-meta">值班节奏</div>
+            </div>
+
+            <div class="dashboard-guidance-list">
+              <article v-for="item in guidanceItems" :key="item.title" class="insight-card">
+                <strong>{{ item.title }}</strong>
+                <p>{{ item.detail }}</p>
+              </article>
+            </div>
+          </article>
+
+          <article class="panel stacked-gap">
+            <div class="panel-toolbar">
+              <h3>内容概览</h3>
+              <div class="panel-meta">核心模块分布</div>
+            </div>
+
+            <div class="dashboard-insight-grid">
+              <article v-for="item in workflowInsights" :key="item.title" class="insight-card">
+                <span class="compact-stat-label">{{ item.title }}</span>
+                <strong>{{ item.value }}</strong>
+                <p>{{ item.detail }}</p>
+              </article>
+            </div>
+          </article>
         </div>
-      </article>
+      </div>
     </template>
   </section>
 </template>

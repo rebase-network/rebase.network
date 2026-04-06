@@ -53,6 +53,21 @@ const auditStats = computed(() => {
   ];
 });
 
+const emptyGuides = [
+  {
+    title: '会记录什么',
+    detail: '内容发布、更新、工作人员账号变更等关键后台操作都会进入审计日志。',
+  },
+  {
+    title: '如何使用',
+    detail: '先按动作或目标类型搜索，再结合操作者和时间快速定位问题来源。',
+  },
+  {
+    title: '当前为空时',
+    detail: '说明当前样例数据没有操作历史；一旦后台发生写入动作，这里会逐步累积记录。',
+  },
+] as const;
+
 onMounted(async () => {
   loading.value = true;
   errorMessage.value = '';
@@ -99,7 +114,18 @@ onMounted(async () => {
         </label>
       </div>
 
-      <div v-if="filteredRows.length === 0" class="panel empty-state-card"><p>当前没有匹配的审计记录。</p></div>
+      <div v-if="filteredRows.length === 0" class="stacked-gap">
+        <div class="panel empty-state-card">
+          <p>{{ rows.length === 0 ? '当前还没有审计记录。' : '当前没有匹配的审计记录。' }}</p>
+        </div>
+
+        <div class="panel-grid panel-grid-3">
+          <article v-for="item in emptyGuides" :key="item.title" class="insight-card">
+            <strong>{{ item.title }}</strong>
+            <p>{{ item.detail }}</p>
+          </article>
+        </div>
+      </div>
 
       <div v-else class="panel table-panel">
         <table class="data-table dense-table">

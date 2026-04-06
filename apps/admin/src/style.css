@@ -434,6 +434,19 @@ code {
   gap: 0.65rem;
 }
 
+.dashboard-workspace-grid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.95fr);
+  align-items: start;
+}
+
+.dashboard-guidance-list,
+.dashboard-insight-grid {
+  display: grid;
+  gap: 0.55rem;
+}
+
 .compact-stat-grid {
   display: grid;
   gap: 0.55rem;
@@ -454,6 +467,16 @@ code {
   border-radius: 14px;
   padding: 0.74rem;
   background: rgba(255, 255, 255, 0.72);
+}
+
+.insight-card strong,
+.insight-card p {
+  margin: 0;
+}
+
+.insight-card p {
+  color: var(--muted);
+  font-size: 0.8rem;
 }
 
 .dashboard-quick-link {
@@ -957,6 +980,10 @@ code {
   .compact-stat-grid-4,
   .login-highlight-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-workspace-grid {
+    grid-template-columns: 1fr;
   }
 
   .dashboard-stat-grid {
