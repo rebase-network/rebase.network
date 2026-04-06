@@ -12,6 +12,7 @@ import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatDateTime, formatStaffAccountStatus } from '../lib/format';
 
 type StaffStatus = (typeof staffAccountStatusValues)[number];
+type StaffWorkspaceMode = 'create' | 'edit';
 
 interface StaffFormState {
   email: string;
@@ -47,7 +48,9 @@ const localizeRoleSummary = (role: AdminRoleRecord) => {
 const rows = ref<AdminStaffRecord[]>([]);
 const roles = ref<AdminRoleRecord[]>([]);
 const detail = ref<AdminStaffDetailPayload | null>(null);
-const selectedStaffId = ref<'new' | string>('new');
+const activeWorkspaceMode = ref<StaffWorkspaceMode>('create');
+const selectedStaffId = ref<string | null>(null);
+const manualCreateMode = ref(true);
 const loading = ref(true);
 const saving = ref(false);
 const errorMessage = ref('');
@@ -55,8 +58,10 @@ const successMessage = ref('');
 const fieldIssues = ref<Record<string, string>>({});
 const form = reactive<StaffFormState>(createBlankForm());
 
-const isCreating = computed(() => selectedStaffId.value === 'new');
+const isCreating = computed(() => activeWorkspaceMode.value === 'create');
 const selectedStaff = computed(() => rows.value.find((row) => row.id === selectedStaffId.value) ?? null);
+const hasEditableRecord = computed(() => activeWorkspaceMode.value === 'create' || Boolean(selectedStaff.value));
+const saveButtonLabel = computed(() => (saving.value ? '保存中…' : isCreating.value ? '确认创建' : '保存修改'));
 const staffStats = computed(() => [
   {
     label: '账号总数',
@@ -97,7 +102,15 @@ const resetForm = () => {
   Object.assign(form, createBlankForm());
 };
 
+const clearEditSelection = () => {
+  selectedStaffId.value = null;
+  manualCreateMode.value = false;
+  resetForm();
+  resetFeedback();
+};
+
 const applyDetail = (payload: AdminStaffDetailPayload) => {
+  manualCreateMode.value = false;
   detail.value = payload;
   roles.value = payload.roles;
   Object.assign(form, {
@@ -111,7 +124,7 @@ const applyDetail = (payload: AdminStaffDetailPayload) => {
   });
 };
 
-const loadStaff = async (nextSelectedId = selectedStaffId.value) => {
+const loadStaff = async (nextSelectedId: string | null = selectedStaffId.value, preserveDraft = manualCreateMode.value) => {
   loading.value = true;
   errorMessage.value = '';
 
@@ -124,12 +137,13 @@ const loadStaff = async (nextSelectedId = selectedStaffId.value) => {
     rows.value = nextRows;
     roles.value = nextRoles;
 
-    if (nextSelectedId !== 'new' && nextRows.some((row) => row.id === nextSelectedId)) {
+    if (nextSelectedId && nextRows.some((row) => row.id === nextSelectedId)) {
       selectedStaffId.value = nextSelectedId;
       applyDetail(await adminFetch<AdminStaffDetailPayload>(`/api/admin/v1/staff/${nextSelectedId}`));
+    } else if (preserveDraft) {
+      selectNew();
     } else {
-      selectedStaffId.value = 'new';
-      resetForm();
+      clearEditSelection();
     }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '无法加载工作人员列表。';
@@ -139,7 +153,9 @@ const loadStaff = async (nextSelectedId = selectedStaffId.value) => {
 };
 
 const selectStaff = async (id: string) => {
+  manualCreateMode.value = false;
   selectedStaffId.value = id;
+  activeWorkspaceMode.value = 'edit';
   resetFeedback();
 
   try {
@@ -150,9 +166,23 @@ const selectStaff = async (id: string) => {
 };
 
 const selectNew = () => {
-  selectedStaffId.value = 'new';
+  manualCreateMode.value = true;
+  selectedStaffId.value = null;
+  activeWorkspaceMode.value = 'create';
   resetFeedback();
   resetForm();
+};
+
+const openEditWorkspace = () => {
+  activeWorkspaceMode.value = 'edit';
+
+  if (selectedStaffId.value) {
+    manualCreateMode.value = false;
+    resetFeedback();
+    return;
+  }
+
+  clearEditSelection();
 };
 
 const toggleRole = (roleId: string) => {
@@ -166,6 +196,11 @@ const toggleRole = (roleId: string) => {
 };
 
 const saveStaff = async () => {
+  if (!hasEditableRecord.value) {
+    errorMessage.value = '请先从左侧列表选择一个工作人员账号。';
+    return;
+  }
+
   saving.value = true;
   resetFeedback();
 
@@ -187,7 +222,7 @@ const saveStaff = async () => {
         };
 
     const nextDetail = await adminRequest<AdminStaffDetailPayload>(
-      isCreating.value ? '/api/admin/v1/staff' : `/api/admin/v1/staff/${selectedStaffId.value}`,
+      isCreating.value ? '/api/admin/v1/staff' : `/api/admin/v1/staff/${selectedStaffId.value ?? ''}`,
       {
         method: isCreating.value ? 'POST' : 'PATCH',
         body: payload,
@@ -195,7 +230,8 @@ const saveStaff = async () => {
     );
 
     successMessage.value = isCreating.value ? '工作人员账号已创建。' : '工作人员账号已更新。';
-    await loadStaff(nextDetail.staff.id);
+    await loadStaff(nextDetail?.staff.id ?? null, false);
+    activeWorkspaceMode.value = 'edit';
   } catch (error) {
     fieldIssues.value = getValidationIssues(error);
     errorMessage.value = error instanceof Error ? error.message : '无法保存工作人员信息。';
@@ -216,10 +252,9 @@ onMounted(() => {
         <h2>工作人员与权限</h2>
         <p>账号、角色、权限</p>
       </div>
-      <div class="page-actions">
-        <button class="button-link" type="button" @click="selectNew">新增工作人员</button>
+      <div v-if="hasEditableRecord" class="page-actions">
         <button class="button-link button-primary" type="button" :disabled="loading || saving" @click="saveStaff">
-          {{ saving ? '保存中…' : isCreating ? '创建账号' : '保存修改' }}
+          {{ saveButtonLabel }}
         </button>
       </div>
     </header>
@@ -294,7 +329,7 @@ onMounted(() => {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="row in rows" :key="row.id">
+                <tr v-for="row in rows" :key="row.id" :class="{ 'is-selected': activeWorkspaceMode === 'edit' && row.id === selectedStaffId }">
                   <td>
                     <div class="table-cell-stack">
                       <strong>{{ row.displayName }}</strong>
@@ -306,7 +341,7 @@ onMounted(() => {
                   <td>{{ formatDateTime(row.lastLoginAt) }}</td>
                   <td class="table-actions-cell">
                     <div class="table-action-list">
-                      <button class="table-link table-link-button" type="button" @click="selectStaff(row.id)">编辑</button>
+                      <button class="table-link table-link-button" type="button" @click="selectStaff(row.id)">编辑账号</button>
                     </div>
                   </td>
                 </tr>
@@ -319,11 +354,33 @@ onMounted(() => {
       <aside class="stacked-gap editor-sidebar sticky-stack">
         <section class="panel stacked-gap">
           <div class="panel-toolbar">
-            <h3>{{ isCreating ? '新建工作人员' : '编辑工作人员' }}</h3>
-            <div class="panel-meta">{{ formatStaffAccountStatus(selectedStaff?.status ?? form.status) }}</div>
+            <div>
+              <h3>操作模式</h3>
+              <div class="panel-meta">新建工作人员与编辑已有账号分开处理</div>
+            </div>
+            <div class="panel-meta">{{ activeWorkspaceMode === 'create' ? '新建' : '编辑' }}</div>
           </div>
 
-          <template v-if="isCreating">
+          <div class="tab-strip">
+            <button class="tab-button" :class="{ 'is-active': activeWorkspaceMode === 'create' }" type="button" @click="selectNew">
+              新建工作人员
+            </button>
+            <button class="tab-button" :class="{ 'is-active': activeWorkspaceMode === 'edit' }" type="button" @click="openEditWorkspace">
+              编辑已有账号
+            </button>
+          </div>
+        </section>
+
+        <section class="panel stacked-gap">
+          <template v-if="activeWorkspaceMode === 'create'">
+            <div class="panel-toolbar">
+              <div>
+                <h3>新建工作人员</h3>
+                <div class="panel-meta">创建可登录的后台账号并分配角色权限</div>
+              </div>
+              <div class="panel-meta">新建</div>
+            </div>
+
             <div class="field-grid field-grid-2">
               <label class="field">
                 <span>登录邮箱</span>
@@ -342,9 +399,54 @@ onMounted(() => {
               <input v-model="form.password" type="password" autocomplete="new-password" placeholder="至少 8 位" />
               <small v-if="fieldIssues.password" class="field-error">{{ fieldIssues.password }}</small>
             </label>
+
+            <label class="field">
+              <span>显示名称</span>
+              <input v-model="form.displayName" type="text" placeholder="Rebase 编辑部" />
+              <small v-if="fieldIssues.displayName" class="field-error">{{ fieldIssues.displayName }}</small>
+            </label>
+
+            <div class="field">
+              <span>角色权限</span>
+              <div class="checkbox-list">
+                <label v-for="role in roles" :key="role.id" class="checkbox-chip">
+                  <input :checked="form.roleIds.includes(role.id)" type="checkbox" @change="toggleRole(role.id)" />
+                  <span>{{ role.name }}</span>
+                  <small>{{ role.code }}</small>
+                </label>
+              </div>
+              <small v-if="fieldIssues.roleIds" class="field-error">{{ fieldIssues.roleIds }}</small>
+            </div>
+
+            <label class="field">
+              <span>备注</span>
+              <textarea v-model="form.notes" rows="3" placeholder="记录职责范围、交接信息或额外提醒。" />
+            </label>
+
+            <div class="field-shell stacked-gap">
+              <div class="eyebrow">创建摘要</div>
+              <dl class="summary-grid summary-grid-2">
+                <div class="summary-item">
+                  <dt>角色数量</dt>
+                  <dd>{{ form.roleIds.length }}</dd>
+                </div>
+                <div class="summary-item">
+                  <dt>创建结果</dt>
+                  <dd class="muted">会同时创建登录账号与工作人员资料</dd>
+                </div>
+              </dl>
+            </div>
           </template>
 
-          <template v-else>
+          <template v-else-if="selectedStaff">
+            <div class="panel-toolbar">
+              <div>
+                <h3>编辑已有账号</h3>
+                <div class="panel-meta">{{ detail?.staff.email ?? '未找到账号信息' }}</div>
+              </div>
+              <div class="panel-meta">{{ formatStaffAccountStatus(selectedStaff?.status ?? form.status) }}</div>
+            </div>
+
             <article class="summary-card">
               <div class="eyebrow">账号信息</div>
               <dl class="summary-grid summary-grid-2">
@@ -366,53 +468,79 @@ onMounted(() => {
                 </div>
               </dl>
             </article>
+
+            <label class="field">
+              <span>显示名称</span>
+              <input v-model="form.displayName" type="text" placeholder="Rebase 编辑部" />
+              <small v-if="fieldIssues.displayName" class="field-error">{{ fieldIssues.displayName }}</small>
+            </label>
+
+            <label class="field">
+              <span>账号状态</span>
+              <select v-model="form.status">
+                <option v-for="status in staffAccountStatusValues" :key="status" :value="status">{{ formatStaffAccountStatus(status) }}</option>
+              </select>
+            </label>
+
+            <div class="field">
+              <span>角色权限</span>
+              <div class="checkbox-list">
+                <label v-for="role in roles" :key="role.id" class="checkbox-chip">
+                  <input :checked="form.roleIds.includes(role.id)" type="checkbox" @change="toggleRole(role.id)" />
+                  <span>{{ role.name }}</span>
+                  <small>{{ role.code }}</small>
+                </label>
+              </div>
+              <small v-if="fieldIssues.roleIds" class="field-error">{{ fieldIssues.roleIds }}</small>
+            </div>
+
+            <label class="field">
+              <span>备注</span>
+              <textarea v-model="form.notes" rows="3" placeholder="记录职责范围、交接信息或额外提醒。" />
+            </label>
+
+            <div class="field-shell stacked-gap">
+              <div class="eyebrow">权限摘要</div>
+              <dl class="summary-grid summary-grid-2">
+                <div class="summary-item">
+                  <dt>角色数量</dt>
+                  <dd>{{ form.roleIds.length }}</dd>
+                </div>
+                <div class="summary-item">
+                  <dt>账号状态</dt>
+                  <dd class="muted">{{ formatStaffAccountStatus(form.status) }}</dd>
+                </div>
+              </dl>
+            </div>
           </template>
 
-          <label class="field">
-            <span>显示名称</span>
-            <input v-model="form.displayName" type="text" placeholder="Rebase 编辑部" />
-            <small v-if="fieldIssues.displayName" class="field-error">{{ fieldIssues.displayName }}</small>
-          </label>
-
-          <label v-if="!isCreating" class="field">
-            <span>账号状态</span>
-            <select v-model="form.status">
-              <option v-for="status in staffAccountStatusValues" :key="status" :value="status">{{ formatStaffAccountStatus(status) }}</option>
-            </select>
-          </label>
-
-          <div class="field">
-            <span>角色权限</span>
-            <div class="checkbox-list">
-              <label v-for="role in roles" :key="role.id" class="checkbox-chip">
-                <input :checked="form.roleIds.includes(role.id)" type="checkbox" @change="toggleRole(role.id)" />
-                <span>{{ role.name }}</span>
-                <small>{{ role.code }}</small>
-              </label>
+          <template v-else>
+            <div class="panel-toolbar">
+              <div>
+                <h3>编辑已有账号</h3>
+                <div class="panel-meta">先从左侧列表选择一个工作人员账号。</div>
+              </div>
             </div>
-            <small v-if="fieldIssues.roleIds" class="field-error">{{ fieldIssues.roleIds }}</small>
-          </div>
 
-          <label class="field">
-            <span>备注</span>
-            <textarea v-model="form.notes" rows="3" placeholder="记录职责范围、交接信息或额外提醒。" />
-          </label>
-
-          <div class="field-shell stacked-gap">
-            <div class="eyebrow">权限摘要</div>
-            <dl class="summary-grid summary-grid-2">
-              <div class="summary-item">
-                <dt>角色数量</dt>
-                <dd>{{ form.roleIds.length }}</dd>
+            <div class="empty-state-card stacked-gap staff-editor-empty">
+              <p>从账号列表点击“编辑”，就会进入这个模式。你也可以切回“新建工作人员”创建一个新的后台账号。</p>
+              <div class="inline-actions">
+                <button class="button-link button-primary" type="button" @click="selectNew">新建工作人员</button>
               </div>
-              <div class="summary-item">
-                <dt>账号状态</dt>
-                <dd class="muted">{{ formatStaffAccountStatus(form.status) }}</dd>
-              </div>
-            </dl>
-          </div>
+            </div>
+          </template>
         </section>
       </aside>
     </div>
   </section>
 </template>
+
+<style scoped>
+.data-table tbody tr.is-selected {
+  background: rgba(15, 109, 100, 0.06);
+}
+
+.staff-editor-empty {
+  align-content: start;
+}
+</style>
