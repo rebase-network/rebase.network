@@ -44,6 +44,8 @@ const pageTitle = computed(() => (isNew.value ? '新增贡献者' : `编辑贡�
 const selectedAvatarAsset = computed(() => assets.value.find((asset) => asset.id === form.avatarAssetId) ?? null);
 const roleSummary = computed(() => availableRoles.value.filter((role) => form.roleIds.includes(role.id)).map((role) => role.name).join('、') || '未分配');
 const contactSummary = computed(() => [form.twitterUrl, form.wechat, form.telegram].filter(Boolean).join(' / ') || '未填写');
+const publicUrl = computed(() => (form.slug ? `/contributors#${form.slug}` : '待生成'));
+const socialChannelCount = computed(() => [form.twitterUrl, form.wechat, form.telegram].filter(Boolean).length);
 
 const detail = ref<AdminContributorDetailPayload | null>(null);
 const assets = ref<AdminAssetRecord[]>([]);
@@ -169,7 +171,78 @@ onMounted(() => void loadRecord());
     <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
     <div v-if="loading" class="panel"><p>正在准备贡献者编辑器…</p></div>
 
-    <div v-else class="editor-grid editor-grid-focus editor-grid-summary">
+    <div v-else class="stacked-gap">
+      <div class="editor-overview-grid">
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>资料摘要</h3>
+            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
+          </div>
+          <dl class="summary-grid summary-grid-2">
+            <div class="summary-item">
+              <dt>公开地址</dt>
+              <dd>{{ publicUrl }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>角色</dt>
+              <dd>{{ roleSummary }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>联系方式</dt>
+              <dd class="muted">{{ contactSummary }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>更新时间</dt>
+              <dd class="muted">{{ detail ? formatDateTime(detail.contributor.updatedAt) : '新建后生成' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>头像设置</h3>
+            <div class="panel-meta">{{ selectedAvatarAsset ? '上传资源' : '头像种子' }}</div>
+          </div>
+          <dl class="summary-grid summary-grid-2">
+            <div class="summary-item">
+              <dt>头像种子</dt>
+              <dd class="muted">{{ form.avatarSeed || '未填写' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>排序</dt>
+              <dd>{{ form.sortOrder }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>URL 标识</dt>
+              <dd>{{ form.slug || '待生成' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>社交渠道</dt>
+              <dd class="muted">{{ socialChannelCount }} 个</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>头像预览</h3>
+            <div class="panel-meta">{{ form.name || '未填写姓名' }}</div>
+          </div>
+
+          <div v-if="selectedAvatarAsset" class="summary-item summary-asset">
+            <div v-if="selectedAvatarAsset.publicUrl && selectedAvatarAsset.mimeType.startsWith('image/')" class="asset-preview-frame avatar-frame">
+              <img :src="selectedAvatarAsset.publicUrl" :alt="selectedAvatarAsset.altText || selectedAvatarAsset.originalFilename" />
+            </div>
+            <div class="summary-asset-copy">
+              <div class="eyebrow">头像</div>
+              <strong>{{ selectedAvatarAsset.originalFilename }}</strong>
+              <p>{{ selectedAvatarAsset.publicUrl || '未生成公开地址' }}</p>
+            </div>
+          </div>
+          <div v-else class="empty-inline">当前未绑定上传头像，将依赖头像种子生成默认形象。</div>
+        </section>
+      </div>
+
       <section class="panel stacked-gap editor-main">
         <div class="field-grid field-grid-2">
           <label class="field">
@@ -241,62 +314,6 @@ onMounted(() => void loadRecord());
           </div>
         </div>
       </section>
-
-      <aside class="stacked-gap editor-sidebar sticky-stack">
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>资料摘要</h3>
-            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
-          </div>
-          <dl class="summary-grid">
-            <div class="summary-item">
-              <dt>角色</dt>
-              <dd>{{ roleSummary }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>联系方式</dt>
-              <dd class="muted">{{ contactSummary }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>排序</dt>
-              <dd>{{ form.sortOrder }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>更新时间</dt>
-              <dd class="muted">{{ detail ? formatDateTime(detail.contributor.updatedAt) : '新建后生成' }}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>头像设置</h3>
-            <div class="panel-meta">{{ selectedAvatarAsset ? '上传资源' : '头像种子' }}</div>
-          </div>
-          <dl class="summary-grid">
-            <div class="summary-item">
-              <dt>头像种子</dt>
-              <dd class="muted">{{ form.avatarSeed || '未填写' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>URL 标识</dt>
-              <dd>{{ form.slug || '待生成' }}</dd>
-            </div>
-          </dl>
-
-          <div v-if="selectedAvatarAsset" class="summary-item summary-asset">
-            <div v-if="selectedAvatarAsset.publicUrl && selectedAvatarAsset.mimeType.startsWith('image/')" class="asset-preview-frame avatar-frame">
-              <img :src="selectedAvatarAsset.publicUrl" :alt="selectedAvatarAsset.altText || selectedAvatarAsset.originalFilename" />
-            </div>
-            <div class="summary-asset-copy">
-              <div class="eyebrow">头像</div>
-              <strong>{{ selectedAvatarAsset.originalFilename }}</strong>
-              <p>{{ selectedAvatarAsset.publicUrl || '未生成公开地址' }}</p>
-            </div>
-          </div>
-          <div v-else class="empty-inline">当前未绑定上传头像，将依赖头像种子生成默认形象。</div>
-        </section>
-      </aside>
     </div>
   </section>
 </template>

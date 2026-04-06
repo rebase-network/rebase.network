@@ -52,6 +52,8 @@ const itemAuthorSummary = computed(() =>
   Array.from(new Set(form.items.map((item) => item.authorName.trim()).filter(Boolean))).join('、') || '未填写',
 );
 const firstItemTitle = computed(() => form.items.find((item) => item.title.trim())?.title ?? '未填写');
+const tagSummary = computed(() => form.tags.join('、') || '未填写');
+const bodyStatus = computed(() => (form.bodyMarkdown.trim() ? '已补充说明' : '未补充说明'));
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -170,7 +172,84 @@ onMounted(() => void loadRecord());
     <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
     <div v-if="loading" class="panel"><p>正在准备极客日报编辑器…</p></div>
 
-    <div v-else class="editor-grid editor-grid-focus editor-grid-summary">
+    <div v-else class="stacked-gap">
+      <div class="editor-overview-grid">
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>期数摘要</h3>
+            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
+          </div>
+          <dl class="summary-grid summary-grid-2">
+            <div class="summary-item">
+              <dt>公开地址</dt>
+              <dd>{{ publicUrl }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>发布时间</dt>
+              <dd class="muted">{{ form.publishedAt || '未设置' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>条目数</dt>
+              <dd>{{ form.items.length }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>更新时间</dt>
+              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '新建后生成' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>内容提示</h3>
+            <div class="panel-meta">{{ form.tags.length }} 个标签</div>
+          </div>
+          <dl class="summary-grid summary-grid-2">
+            <div class="summary-item">
+              <dt>推荐人</dt>
+              <dd>{{ itemAuthorSummary }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>首条内容</dt>
+              <dd class="muted">{{ firstItemTitle }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>标签</dt>
+              <dd class="muted">{{ tagSummary }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>正文说明</dt>
+              <dd class="muted">{{ bodyStatus }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>期刊结构</h3>
+            <div class="panel-meta">第 {{ form.episodeNumber || '—' }} 期</div>
+          </div>
+          <dl class="summary-grid summary-grid-2">
+            <div class="summary-item">
+              <dt>标题</dt>
+              <dd>{{ form.title || '未填写' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>状态</dt>
+              <dd class="muted">{{ formatContentStatus(form.status) }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>期数编号</dt>
+              <dd>{{ form.episodeNumber || '未填写' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>摘要</dt>
+              <dd class="muted">{{ form.summary || '未填写' }}</dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+
       <section class="panel stacked-gap editor-main">
         <div class="field-grid field-grid-3">
           <label class="field">
@@ -204,54 +283,6 @@ onMounted(() => void loadRecord());
         <GeekDailyItemsField v-model="form.items" />
         <MarkdownEditorField v-model="form.bodyMarkdown" label="正文说明" placeholder="这里可以补充本期总述、关键词和额外说明。" />
       </section>
-
-      <aside class="stacked-gap editor-sidebar sticky-stack">
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>期数摘要</h3>
-            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
-          </div>
-          <dl class="summary-grid">
-            <div class="summary-item">
-              <dt>公开地址</dt>
-              <dd>{{ publicUrl }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>发布时间</dt>
-              <dd class="muted">{{ form.publishedAt || '未设置' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>条目数</dt>
-              <dd>{{ form.items.length }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>更新时间</dt>
-              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '新建后生成' }}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>内容提示</h3>
-            <div class="panel-meta">{{ form.tags.length }} 个标签</div>
-          </div>
-          <dl class="summary-grid">
-            <div class="summary-item">
-              <dt>推荐人</dt>
-              <dd>{{ itemAuthorSummary }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>首条内容</dt>
-              <dd class="muted">{{ firstItemTitle }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>标签</dt>
-              <dd class="muted">{{ form.tags.join('、') || '未填写' }}</dd>
-            </div>
-          </dl>
-        </section>
-      </aside>
     </div>
   </section>
 </template>
