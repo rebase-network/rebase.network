@@ -8,68 +8,140 @@ const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
 const leadJob = jobs[0];
 const archiveJobs = jobs.slice(1);
 const remoteJobCount = jobs.filter((job) => job.supportsRemote).length;
+
+const jobSignals = [
+  {
+    value: String(jobs.length).padStart(2, '0'),
+    label: '开放岗位',
+    detail: '岗位页优先把当前仍然可投递的机会集中放在同一个公开入口里。',
+  },
+  {
+    value: String(remoteJobCount).padStart(2, '0'),
+    label: '支持远程',
+    detail: '远程信息直接进入首屏信号卡，帮助求职者更快筛掉不匹配的机会。',
+  },
+  {
+    value: 'RSS',
+    label: '订阅出口',
+    detail: '招聘信息继续通过 /who-is-hiring/rss.xml 输出，保持被阅读器和搜索消费的能力。',
+  },
+];
+
+const jobBriefs = [
+  {
+    eyebrow: 'Publishing flow',
+    title: '如何发布招聘',
+    summary: '当前先由后台人工录入，后续再逐步把历史 Who-Is-Hiring issue 数据结构化迁移过来。',
+    tone: 'warm',
+  },
+  {
+    eyebrow: 'Reading standard',
+    title: '如何评估岗位',
+    summary: '每条职位都应该明确工作模式、薪资范围、联系方式和公司背景，而不是只留下模糊口号。',
+    tone: 'cool',
+  },
+  {
+    eyebrow: 'Archive value',
+    title: '为什么保留归档',
+    summary: '职位下线后仍保留公开页面，方便社区回看组织、团队和岗位变化的长期轨迹。',
+    tone: 'neutral',
+  },
+];
 ---
 
 <BaseLayout site={site} title="社区招聘" description="查看 Rebase 社区当前公开的招聘信息与岗位详情。">
   <section class="shell page-hero single">
     <article class="hero-panel card jobs-hero">
-      <p class="hero-kicker">社区招聘</p>
+      <div class="hero-topline">
+        <p class="hero-kicker">社区招聘</p>
+        <span class="edition-chip">Opportunity Board</span>
+      </div>
       <h1 class="hero-title">让招聘信息不仅被发出来，还能被读懂、被订阅、被稳定地回看。</h1>
       <p class="hero-summary">第一版提供公开招聘列表、详情页与 RSS 输出，帮助求职者快速找到合适机会。</p>
+      <p class="brand-note">
+        招聘页不是信息堆砌，而是把角色背景、工作方式、薪资范围和投递入口写清楚，让双方在进入前就有足够判断。
+      </p>
       <div class="hero-facts">
-        <article>
-          <span>开放岗位</span>
-          <strong>{jobs.length}</strong>
-        </article>
-        <article>
-          <span>支持远程</span>
-          <strong>{remoteJobCount}</strong>
-        </article>
+        {jobSignals.map((signal) => (
+          <article>
+            <strong>{signal.value}</strong>
+            <span>{signal.label}</span>
+            <p>{signal.detail}</p>
+          </article>
+        ))}
+      </div>
+      <div class="jump-list">
+        <a href="#hiring-brief">发布方式</a>
+        <a href="#lead-job">主推岗位</a>
+        <a href="#job-archive">岗位列表</a>
       </div>
     </article>
   </section>
 
-  <section class="shell page-section callout-grid">
-    <article class="card callout-card">
-      <h2>如何发布招聘</h2>
-      <p>当前默认由社区管理后台录入信息。后续也可以从 Who-Is-Hiring issue 历史数据逐步迁移和整理。</p>
-    </article>
-    <article class="card callout-card">
-      <h2>如何投递</h2>
-      <p>每条职位会有站内详情页，并在详情页中展示联系方式、工作模式、薪资与外部投递入口。</p>
-    </article>
+  <section id="hiring-brief" class="shell page-section brief-grid">
+    {jobBriefs.map((brief, index) => (
+      <article class:list={['card', 'brief-card', `tone-${brief.tone}`]}>
+        <div class="card-topline">
+          <span>0{index + 1}</span>
+          <p>{brief.eyebrow}</p>
+        </div>
+        <h2>{brief.title}</h2>
+        <p>{brief.summary}</p>
+      </article>
+    ))}
   </section>
 
   {leadJob && (
-    <section class="shell page-section">
+    <section id="lead-job" class="shell page-section">
       <SectionHeader
         eyebrow="主推岗位"
         title="本周优先浏览的岗位"
-        description="招聘页也应该像媒体页面一样，有一个优先承接读者注意力的主职位。"
+        description="招聘页也应该像媒体栏目一样，有一个优先承接读者注意力的主职位入口。"
       />
       <div class="lead-layout">
         <JobCard job={leadJob} />
-        <article class="card job-note">
-          <p class="hero-kicker">投递提示</p>
+        <article class="card desk-note">
+          <div class="card-topline">
+            <span>01</span>
+            <p>Opportunity desk</p>
+          </div>
           <h2>职位信息不是口号，而是要把工作方式、薪资范围和投递方式讲明白。</h2>
-          <p>第一版由后台人工录入，后续可以继续把历史 Who-Is-Hiring issue 数据结构化迁移过来。</p>
-          <a href="/who-is-hiring/rss.xml">订阅招聘 RSS</a>
+          <p>第一版先由后台人工录入，后续可以继续把历史 Who-Is-Hiring issue 数据结构化迁移过来。</p>
+          <ul class="note-list">
+            <li>
+              <strong>筛选前置</strong>
+              <span>远程、薪资、联系方式和岗位类型越早讲清楚，越能减少无效点击和误投递。</span>
+            </li>
+            <li>
+              <strong>上下文完整</strong>
+              <span>职位详情不只讲要求，也要交代团队背景、工作方式和真实的投递动作。</span>
+            </li>
+          </ul>
+          <a class="desk-link" href="/who-is-hiring/rss.xml">订阅招聘 RSS</a>
         </article>
       </div>
     </section>
   )}
 
-  <section class="shell page-section">
+  <section id="job-archive" class="shell page-section">
     <SectionHeader
       eyebrow="岗位列表"
       title="社区招聘信息"
-      description="feed 默认输出最近 3 条职位，详情页提供完整上下文。"
+      description="主推岗位之外，其余职位继续按清晰、可筛读、可订阅的方式组织在同一个公开列表里。"
       href="/who-is-hiring/rss.xml"
       hrefLabel="订阅 RSS"
     />
-    <div class="grid-3">
-      {archiveJobs.map((job) => <JobCard job={job} />)}
-    </div>
+    {archiveJobs.length > 0 ? (
+      <div class="grid-3">
+        {archiveJobs.map((job) => <JobCard job={job} />)}
+      </div>
+    ) : (
+      <article class="card archive-empty">
+        <p class="hero-kicker">持续补充</p>
+        <h2>更多岗位正在整理中。</h2>
+        <p>当前先保留主推职位入口，后续会继续把新的社区岗位按同一标准补进这个公开机会板。</p>
+      </article>
+    )}
   </section>
 </BaseLayout>
 
@@ -79,36 +151,98 @@ const remoteJobCount = jobs.filter((job) => job.supportsRemote).length;
   }
 
   .jobs-hero {
+    position: relative;
+    overflow: hidden;
     background:
-      radial-gradient(circle at top right, rgba(245, 158, 11, 0.18), transparent 26%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 252, 247, 0.9));
+      radial-gradient(circle at top left, rgba(243, 196, 110, 0.28), transparent 30%),
+      radial-gradient(circle at 92% 18%, rgba(56, 189, 248, 0.16), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 251, 244, 0.92));
+    border-color: rgba(15, 118, 110, 0.14);
+    box-shadow: 0 28px 60px rgba(26, 40, 34, 0.12);
+  }
+
+  .jobs-hero::before {
+    content: 'HIRING';
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    color: rgba(17, 94, 89, 0.08);
+    font-family: var(--display-font);
+    font-size: clamp(3.8rem, 8vw, 6.6rem);
+    letter-spacing: 0.08em;
+    line-height: 0.82;
+    pointer-events: none;
+  }
+
+  .jobs-hero > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .edition-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.48rem 0.8rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .jobs-hero .hero-title {
+    max-width: 11ch;
+    text-wrap: balance;
+  }
+
+  .brand-note {
+    margin: 1rem 0 0;
+    max-width: 58ch;
+    color: rgba(17, 94, 89, 0.84);
+    font-size: 0.98rem;
+    line-height: 1.8;
   }
 
   .hero-facts {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.85rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
     margin-top: 1.4rem;
-  }
-
-  .hero-facts article,
-  .callout-card,
-  .job-note {
-    background: rgba(255, 255, 255, 0.72);
-    border: 1px solid rgba(31, 41, 51, 0.08);
   }
 
   .hero-facts article {
     padding: 1rem;
     border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.06);
   }
 
+  .hero-facts strong,
   .hero-facts span,
-  .hero-facts strong {
+  .hero-facts p {
     display: block;
+    margin: 0;
+  }
+
+  .hero-facts strong {
+    font-size: 1.55rem;
+    font-family: var(--display-font);
   }
 
   .hero-facts span {
+    margin-top: 0.35rem;
     color: var(--accent-strong);
     font-size: 0.72rem;
     font-weight: 800;
@@ -116,71 +250,197 @@ const remoteJobCount = jobs.filter((job) => job.supportsRemote).length;
     text-transform: uppercase;
   }
 
-  .hero-facts strong {
-    margin-top: 0.45rem;
-    font-size: 1.05rem;
+  .hero-facts p {
+    margin-top: 0.55rem;
+    color: var(--muted);
+    line-height: 1.72;
   }
 
-  .callout-grid {
+  .jump-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1.25rem;
+  }
+
+  .jump-list a {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.68rem 0.92rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--accent-strong);
+    font-weight: 700;
+    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  }
+
+  .jump-list a:hover,
+  .jump-list a:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(15, 118, 110, 0.26);
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .brief-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
   }
 
-  .callout-card {
-    padding: 1.4rem;
+  .brief-card,
+  .desk-note,
+  .archive-empty {
+    border: 1px solid rgba(31, 41, 51, 0.08);
   }
 
-  .callout-card h2 {
-    margin: 0 0 0.75rem;
-    font-size: 1.4rem;
+  .brief-card {
+    padding: 1.35rem;
   }
 
-  .callout-card p {
+  .brief-card.tone-warm {
+    background:
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.2), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 250, 243, 0.9));
+  }
+
+  .brief-card.tone-cool {
+    background:
+      radial-gradient(circle at top right, rgba(125, 211, 252, 0.2), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 251, 252, 0.9));
+  }
+
+  .brief-card.tone-neutral {
+    background:
+      radial-gradient(circle at top right, rgba(148, 163, 184, 0.16), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.9));
+  }
+
+  .card-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .card-topline span,
+  .card-topline p,
+  .brief-card h2,
+  .brief-card p:last-child,
+  .desk-note h2,
+  .desk-note p,
+  .archive-empty h2,
+  .archive-empty p:last-child {
     margin: 0;
+  }
+
+  .card-topline span {
+    display: inline-grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    place-items: center;
+    border-radius: 0.8rem;
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--accent-strong);
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  .card-topline p {
+    color: var(--accent-strong);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .brief-card h2,
+  .desk-note h2,
+  .archive-empty h2 {
+    margin-top: 1rem;
+    font-size: clamp(1.55rem, 2.4vw, 2.35rem);
+    line-height: 1.08;
+  }
+
+  .brief-card p:last-child,
+  .desk-note p,
+  .archive-empty p:last-child {
+    margin-top: 0.8rem;
     color: var(--muted);
     line-height: 1.8;
   }
 
   .lead-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.9fr);
+    grid-template-columns: minmax(0, 1.35fr) minmax(19rem, 0.95fr);
     gap: 1rem;
   }
 
-  .job-note {
-    padding: 1.4rem;
-    border-radius: 1rem;
+  .desk-note {
+    padding: 1.35rem;
+    background:
+      radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 251, 250, 0.9));
   }
 
-  .job-note h2,
-  .job-note p {
-    margin: 0;
+  .note-list {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0;
+    margin: 1rem 0 0;
+    list-style: none;
   }
 
-  .job-note h2 {
-    font-size: clamp(1.8rem, 2.6vw, 2.7rem);
-    line-height: 1.05;
+  .note-list li {
+    padding: 0.95rem 1rem;
+    border-radius: 0.95rem;
+    background: rgba(255, 255, 255, 0.74);
+    border: 1px solid rgba(31, 41, 51, 0.08);
   }
 
-  .job-note p {
-    margin-top: 0.85rem;
+  .note-list strong,
+  .note-list span {
+    display: block;
+  }
+
+  .note-list strong {
+    color: var(--foreground);
+    font-size: 0.95rem;
+  }
+
+  .note-list span {
+    margin-top: 0.35rem;
     color: var(--muted);
-    line-height: 1.8;
+    line-height: 1.72;
   }
 
-  .job-note a {
+  .desk-link {
     display: inline-flex;
     margin-top: 1rem;
     color: var(--accent-strong);
     font-weight: 800;
   }
 
-  @media (max-width: 960px) {
-    .callout-grid,
+  .archive-empty {
+    padding: 1.35rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 252, 251, 0.9));
+  }
+
+  @media (max-width: 1100px) {
+    .brief-grid,
     .hero-facts,
     .lead-layout {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .hero-topline {
+      align-items: start;
+      justify-content: start;
     }
   }
 </style>

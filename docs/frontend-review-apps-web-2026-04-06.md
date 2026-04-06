@@ -353,6 +353,26 @@
 - `apps/web/src/pages/contributors.astro`
 - `apps/web/src/components/ContributorCard.astro`
 
+## 第七轮栏目首页统一性补强
+
+这轮继续只收敛 `apps/web` 的公共前台页面，目标是把 `articles`、`events`、`who-is-hiring` 三个栏目首页拉回到和首页 / About / Contributors 更一致的 editorial 语言里。
+
+### 17. 三类公共列表页统一成更明确的栏目首页结构
+
+已完成：
+
+- 三个栏目首页都补上了统一的 hero 顶部结构：edition chip、品牌说明、三张信号卡和锚点跳转，让它们更像“栏目首页”而不是普通列表页。
+- `articles`、`events`、`who-is-hiring` 都新增了三张 brief cards，把栏目定位、阅读方式和归档价值提前讲清楚，减少首屏之后才理解页面用途的问题。
+- 三个页面的主推荐区统一改成“主卡 + desk note”的节奏，右侧说明卡会明确解释这一栏为什么要有 lead item，以及读者该如何使用这个栏目。
+- `events` 的当前活动列表不再重复显示已经作为主推的活动；主推之外的近期活动和历史归档也补了空状态卡，结构更一致。
+- `articles` 和 `who-is-hiring` 的归档区同样补了统一的空状态兜底，保证这些栏目在条目较少时仍然保持完整页面节奏。
+
+涉及文件：
+
+- `apps/web/src/pages/articles/index.astro`
+- `apps/web/src/pages/events/index.astro`
+- `apps/web/src/pages/who-is-hiring/index.astro`
+
 ## 结论
 
 `apps/web` 当前已经具备完整可运行的公共站点形态，而且这轮前台修正后，活动详情 URL 规范、Markdown 链接安全、招聘详情降级处理、GeekDaily 搜索文案和语言标记这些明显问题都已经收敛。

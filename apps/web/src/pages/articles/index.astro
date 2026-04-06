@@ -7,57 +7,139 @@ import { getArticles, getSiteSettings } from '@/lib/content';
 const [site, articles] = await Promise.all([getSiteSettings(), getArticles()]);
 const leadArticle = articles[0];
 const archiveArticles = articles.slice(1);
+
+const articleSignals = [
+  {
+    value: String(articles.length).padStart(2, '0'),
+    label: '已发布文章',
+    detail: '先保持结构清晰、可读、可订阅，而不是把长文散落在不同平台里。',
+  },
+  {
+    value: 'RSS',
+    label: '标准输出',
+    detail: '订阅源固定在 /articles/rss.xml，让写作同时服务站内浏览与外部阅读器。',
+  },
+  {
+    value: 'Lead',
+    label: '主稿入口',
+    detail: '栏目首页保留一个编辑推荐入口，先承接最值得完整阅读的一篇长文。',
+  },
+];
+
+const articleBriefs = [
+  {
+    eyebrow: 'Writing desk',
+    title: '主稿 + 归档',
+    summary: '栏目首页先给一个主稿入口，再把其余文章组织成稳定归档，阅读节奏更像编辑台而不是普通列表。',
+    tone: 'warm',
+  },
+  {
+    eyebrow: 'Front page flow',
+    title: '从首页流向长文',
+    summary: '首页负责发现和更新速度，文章页负责把判断、复盘和方法沉淀成完整上下文。',
+    tone: 'cool',
+  },
+  {
+    eyebrow: 'Editorial scope',
+    title: '方法论先于宣传',
+    summary: '这里优先承载产品、信息架构、社区运营和 builder workflow，而不是轻量口号式内容。',
+    tone: 'neutral',
+  },
+];
 ---
 
 <BaseLayout site={site} title="Rebase 文章" description="浏览 Rebase 社区发布的文章、复盘与方法总结。">
   <section class="shell page-hero single">
-    <article class="hero-panel card archive-hero">
-      <p class="hero-kicker">文章归档</p>
+    <article class="hero-panel card articles-hero">
+      <div class="hero-topline">
+        <p class="hero-kicker">文章归档</p>
+        <span class="edition-chip">Archive Index</span>
+      </div>
       <h1 class="hero-title">把社区里的想法、复盘和方法写成可以沉淀下来的文章。</h1>
       <p class="hero-summary">文章页承接更长线的讨论：产品、信息架构、社区运营和 builder workflow。</p>
+      <p class="brand-note">
+        首页负责告诉读者现在在发生什么，文章栏目页则负责把判断、过程和方法沉淀成可以再次引用的上下文。
+      </p>
       <div class="hero-facts">
-        <article>
-          <span>文章总数</span>
-          <strong>{articles.length}</strong>
-        </article>
-        <article>
-          <span>订阅源</span>
-          <strong>/articles/rss.xml</strong>
-        </article>
+        {articleSignals.map((signal) => (
+          <article>
+            <strong>{signal.value}</strong>
+            <span>{signal.label}</span>
+            <p>{signal.detail}</p>
+          </article>
+        ))}
+      </div>
+      <div class="jump-list">
+        <a href="#editorial-desk">编辑推荐</a>
+        <a href="#article-archive">全部文章</a>
       </div>
     </article>
   </section>
 
+  <section id="article-brief" class="shell page-section brief-grid">
+    {articleBriefs.map((brief, index) => (
+      <article class:list={['card', 'brief-card', `tone-${brief.tone}`]}>
+        <div class="card-topline">
+          <span>0{index + 1}</span>
+          <p>{brief.eyebrow}</p>
+        </div>
+        <h2>{brief.title}</h2>
+        <p>{brief.summary}</p>
+      </article>
+    ))}
+  </section>
+
   {leadArticle && (
-    <section class="shell page-section">
+    <section id="editorial-desk" class="shell page-section">
       <SectionHeader
         eyebrow="主推荐"
         title="编辑台推荐阅读"
-        description="文章页首页保留一个主稿入口，优先承接最能代表 Rebase 方法论的长文。"
+        description="文章栏目首页先给出一个代表当前判断和方法论的主稿入口，再把其余内容交给归档承接。"
       />
       <div class="lead-layout">
         <ArticleCard article={leadArticle} featured />
-        <article class="card archive-note">
-          <p class="hero-kicker">阅读提示</p>
-          <h2>公开写作不是宣传页，而是把社区如何思考、如何迭代、如何组织信息留下可复用的上下文。</h2>
-          <p>文章和 GeekDaily、活动、招聘互相导流：日报负责更新速度，文章负责沉淀深度。</p>
-          <a href="/articles/rss.xml">订阅文章 RSS</a>
+        <article class="card desk-note">
+          <div class="card-topline">
+            <span>01</span>
+            <p>Reading desk</p>
+          </div>
+          <h2>一篇栏目主稿，应该先告诉读者 Rebase 正在如何思考、如何迭代。</h2>
+          <p>它不只是“最新文章”，而是负责承接最完整的一次判断、复盘或方法总结。</p>
+          <ul class="note-list">
+            <li>
+              <strong>优先完整</strong>
+              <span>把结论、过程、引用和后续动作留在同一页里，减少信息散落。</span>
+            </li>
+            <li>
+              <strong>持续分发</strong>
+              <span>通过首页入口、详情页和 RSS，让长文保持可再次进入的阅读能力。</span>
+            </li>
+          </ul>
+          <a class="desk-link" href="/articles/rss.xml">订阅文章 RSS</a>
         </article>
       </div>
     </section>
   )}
 
-  <section class="shell page-section">
+  <section id="article-archive" class="shell page-section">
     <SectionHeader
       eyebrow="文章列表"
       title="全部文章"
-      description="第一版先聚焦结构清晰、可阅读、可订阅的社区写作体验。"
+      description="归档保持简单直接：先保证阅读、订阅和二次进入，再继续扩展更多运营能力。"
       href="/articles/rss.xml"
       hrefLabel="订阅 RSS"
     />
-    <div class="grid-3">
-      {archiveArticles.map((article) => <ArticleCard article={article} />)}
-    </div>
+    {archiveArticles.length > 0 ? (
+      <div class="grid-3">
+        {archiveArticles.map((article) => <ArticleCard article={article} />)}
+      </div>
+    ) : (
+      <article class="card archive-empty">
+        <p class="hero-kicker">持续更新</p>
+        <h2>更多文章正在整理中。</h2>
+        <p>当前先保留主稿入口，后续会继续把新的复盘、判断和方法写作补进这份归档里。</p>
+      </article>
+    )}
   </section>
 </BaseLayout>
 
@@ -66,33 +148,99 @@ const archiveArticles = articles.slice(1);
     grid-template-columns: 1fr;
   }
 
-  .archive-hero {
+  .articles-hero {
+    position: relative;
+    overflow: hidden;
     background:
-      radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 28%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 252, 247, 0.9));
+      radial-gradient(circle at top left, rgba(243, 196, 110, 0.28), transparent 30%),
+      radial-gradient(circle at 92% 18%, rgba(15, 118, 110, 0.14), transparent 22%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 251, 244, 0.92));
+    border-color: rgba(15, 118, 110, 0.14);
+    box-shadow: 0 28px 60px rgba(26, 40, 34, 0.12);
+  }
+
+  .articles-hero::before {
+    content: 'WRITING';
+    position: absolute;
+    top: 1rem;
+    right: 1.3rem;
+    color: rgba(17, 94, 89, 0.08);
+    font-family: var(--display-font);
+    font-size: clamp(3.8rem, 8vw, 6.6rem);
+    letter-spacing: 0.08em;
+    line-height: 0.82;
+    pointer-events: none;
+  }
+
+  .articles-hero > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .edition-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.48rem 0.8rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .articles-hero .hero-title {
+    max-width: 12ch;
+    text-wrap: balance;
+  }
+
+  .brand-note {
+    margin: 1rem 0 0;
+    max-width: 56ch;
+    color: rgba(17, 94, 89, 0.84);
+    font-size: 0.98rem;
+    line-height: 1.8;
   }
 
   .hero-facts {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.85rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
     margin-top: 1.4rem;
   }
 
-  .hero-facts article,
-  .archive-note {
+  .hero-facts article {
     padding: 1rem;
     border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.66);
+    background: rgba(255, 255, 255, 0.78);
     border: 1px solid rgba(31, 41, 51, 0.08);
+    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.06);
   }
 
+  .hero-facts strong,
   .hero-facts span,
-  .hero-facts strong {
+  .hero-facts p {
     display: block;
+    margin: 0;
+  }
+
+  .hero-facts strong {
+    font-size: 1.55rem;
+    font-family: var(--display-font);
   }
 
   .hero-facts span {
+    margin-top: 0.35rem;
     color: var(--accent-strong);
     font-size: 0.72rem;
     font-weight: 800;
@@ -100,44 +248,197 @@ const archiveArticles = articles.slice(1);
     text-transform: uppercase;
   }
 
-  .hero-facts strong {
-    margin-top: 0.45rem;
-    font-size: 1.05rem;
+  .hero-facts p {
+    margin-top: 0.55rem;
+    color: var(--muted);
+    line-height: 1.72;
   }
 
-  .lead-layout {
+  .jump-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1.25rem;
+  }
+
+  .jump-list a {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.68rem 0.92rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--accent-strong);
+    font-weight: 700;
+    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  }
+
+  .jump-list a:hover,
+  .jump-list a:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(15, 118, 110, 0.26);
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .brief-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.9fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
   }
 
-  .archive-note h2,
-  .archive-note p {
+  .brief-card,
+  .desk-note,
+  .archive-empty {
+    border: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .brief-card {
+    padding: 1.35rem;
+  }
+
+  .brief-card.tone-warm {
+    background:
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.2), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 250, 243, 0.9));
+  }
+
+  .brief-card.tone-cool {
+    background:
+      radial-gradient(circle at top right, rgba(125, 211, 252, 0.2), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 251, 252, 0.9));
+  }
+
+  .brief-card.tone-neutral {
+    background:
+      radial-gradient(circle at top right, rgba(148, 163, 184, 0.16), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.9));
+  }
+
+  .card-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .card-topline span,
+  .card-topline p,
+  .brief-card h2,
+  .brief-card p:last-child,
+  .desk-note h2,
+  .desk-note p,
+  .archive-empty h2,
+  .archive-empty p:last-child {
     margin: 0;
   }
 
-  .archive-note h2 {
-    font-size: clamp(1.8rem, 2.5vw, 2.6rem);
-    line-height: 1.05;
+  .card-topline span {
+    display: inline-grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    place-items: center;
+    border-radius: 0.8rem;
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--accent-strong);
+    font-size: 0.84rem;
+    font-weight: 800;
   }
 
-  .archive-note p {
-    margin-top: 0.9rem;
+  .card-topline p {
+    color: var(--accent-strong);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .brief-card h2,
+  .desk-note h2,
+  .archive-empty h2 {
+    margin-top: 1rem;
+    font-size: clamp(1.55rem, 2.4vw, 2.35rem);
+    line-height: 1.08;
+  }
+
+  .brief-card p:last-child,
+  .desk-note p,
+  .archive-empty p:last-child {
+    margin-top: 0.8rem;
     color: var(--muted);
     line-height: 1.8;
   }
 
-  .archive-note a {
+  .lead-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(19rem, 0.95fr);
+    gap: 1rem;
+  }
+
+  .desk-note {
+    padding: 1.35rem;
+    background:
+      radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 251, 250, 0.9));
+  }
+
+  .note-list {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0;
+    margin: 1rem 0 0;
+    list-style: none;
+  }
+
+  .note-list li {
+    padding: 0.95rem 1rem;
+    border-radius: 0.95rem;
+    background: rgba(255, 255, 255, 0.74);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .note-list strong,
+  .note-list span {
+    display: block;
+  }
+
+  .note-list strong {
+    color: var(--foreground);
+    font-size: 0.95rem;
+  }
+
+  .note-list span {
+    margin-top: 0.35rem;
+    color: var(--muted);
+    line-height: 1.72;
+  }
+
+  .desk-link {
     display: inline-flex;
     margin-top: 1rem;
     color: var(--accent-strong);
     font-weight: 800;
   }
 
-  @media (max-width: 960px) {
+  .archive-empty {
+    padding: 1.35rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 252, 251, 0.9));
+  }
+
+  @media (max-width: 1100px) {
+    .brief-grid,
     .hero-facts,
     .lead-layout {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .hero-topline {
+      align-items: start;
+      justify-content: start;
     }
   }
 </style>
