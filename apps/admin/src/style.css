@@ -434,6 +434,15 @@ code {
   gap: 0.65rem;
 }
 
+.compact-stat-grid {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.compact-stat-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .dashboard-quick-link,
 .insight-card,
 .card-shell,
@@ -458,6 +467,38 @@ code {
   transform: translateY(-1px);
   border-color: rgba(15, 109, 100, 0.2);
   background: rgba(15, 109, 100, 0.08);
+}
+
+.compact-stat-card {
+  display: grid;
+  gap: 0.16rem;
+  padding: 0.7rem 0.78rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.compact-stat-label {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.compact-stat-card strong,
+.compact-stat-card small {
+  margin: 0;
+}
+
+.compact-stat-card strong {
+  font-size: 1.2rem;
+  line-height: 1.1;
+}
+
+.compact-stat-card small {
+  color: var(--muted);
+  font-size: 0.78rem;
 }
 
 .editor-grid {
@@ -859,6 +900,7 @@ code {
 @media (max-width: 1240px) {
   .panel-grid-3,
   .dashboard-quick-links,
+  .compact-stat-grid-4,
   .login-highlight-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -895,6 +937,7 @@ code {
   .checkbox-list,
   .panel-grid-3,
   .dashboard-quick-links,
+  .compact-stat-grid-4,
   .login-highlight-grid {
     grid-template-columns: 1fr;
   }

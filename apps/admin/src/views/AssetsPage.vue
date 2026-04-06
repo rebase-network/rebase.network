@@ -4,7 +4,7 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import { assetStatusValues, type AdminAssetRecord, type AdminAssetUploadConfig } from '@rebase/shared';
 
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
-import { formatDateTime } from '../lib/format';
+import { formatAssetStatus, formatAssetVisibility, formatDateTime, formatFileSize } from '../lib/format';
 
 type AssetStatus = (typeof assetStatusValues)[number];
 type AssetVisibility = 'public' | 'private';
@@ -97,6 +97,28 @@ const isCreating = computed(() => selectedAssetId.value === 'new');
 const previewUrl = computed(() => uploadPreviewUrl.value || selectedAsset.value?.publicUrl || '');
 const previewMimeType = computed(() => uploadFile.value?.type || selectedAsset.value?.mimeType || '');
 const previewIsImage = computed(() => previewUrl.value.length > 0 && previewMimeType.value.startsWith('image/'));
+const assetStats = computed(() => [
+  {
+    label: '媒体记录',
+    value: rows.value.length,
+    detail: '已登记资源',
+  },
+  {
+    label: '筛选结果',
+    value: filteredRows.value.length,
+    detail: '当前列表',
+  },
+  {
+    label: '公开资源',
+    value: rows.value.filter((row) => row.visibility === 'public').length,
+    detail: '可直接引用',
+  },
+  {
+    label: '图片资源',
+    value: rows.value.filter((row) => row.assetType === 'image').length,
+    detail: '适合页面展示',
+  },
+]);
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -305,6 +327,14 @@ onBeforeUnmount(() => {
           <div class="panel-meta">{{ rows.length }} 条记录</div>
         </div>
 
+        <div class="compact-stat-grid compact-stat-grid-4">
+          <article v-for="item in assetStats" :key="item.label" class="compact-stat-card">
+            <span class="compact-stat-label">{{ item.label }}</span>
+            <strong>{{ item.value }}</strong>
+            <small>{{ item.detail }}</small>
+          </article>
+        </div>
+
         <div class="field-grid field-grid-3">
           <label class="field">
             <span>搜索</span>
@@ -314,14 +344,14 @@ onBeforeUnmount(() => {
             <span>状态</span>
             <select v-model="filters.status">
               <option value="all">全部状态</option>
-              <option v-for="status in assetStatusValues" :key="status" :value="status">{{ status }}</option>
+              <option v-for="status in assetStatusValues" :key="status" :value="status">{{ formatAssetStatus(status) }}</option>
             </select>
           </label>
           <label class="field">
             <span>可见性</span>
             <select v-model="filters.visibility">
               <option value="all">全部可见性</option>
-              <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ visibility }}</option>
+              <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ formatAssetVisibility(visibility) }}</option>
             </select>
           </label>
         </div>
@@ -359,7 +389,7 @@ onBeforeUnmount(() => {
                   <div class="muted-row">{{ row.mimeType }}</div>
                 </div>
               </td>
-              <td><span class="status-pill">{{ row.status }}</span></td>
+              <td><span class="status-pill">{{ formatAssetStatus(row.status) }}</span></td>
               <td>{{ formatDateTime(row.updatedAt) }}</td>
               <td class="table-actions-cell">
                 <div class="table-action-list">
@@ -373,11 +403,47 @@ onBeforeUnmount(() => {
       </section>
 
       <aside class="panel stacked-gap editor-sidebar">
-        <article class="insight-card upload-card stacked-gap-tight">
-          <span class="eyebrow">upload workflow</span>
-          <strong>{{ uploadConfig?.enabled ? uploadConfig.bucket : 'upload disabled' }}</strong>
-          <p>{{ uploadConfig?.message }}</p>
-          <p v-if="uploadConfig?.publicBaseUrl" class="muted-mono">{{ uploadConfig.publicBaseUrl }}</p>
+        <article class="summary-card">
+          <div class="eyebrow">上传摘要</div>
+          <dl class="summary-grid">
+            <div class="summary-item">
+              <dt>目标 bucket</dt>
+              <dd>{{ uploadConfig?.bucket ?? form.bucket }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>公开访问</dt>
+              <dd class="muted">{{ uploadConfig?.publicBaseUrl || '尚未配置公开域名' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>当前文件</dt>
+              <dd>{{ uploadFile?.name || selectedAsset?.originalFilename || '未选择' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>文件大小</dt>
+              <dd class="muted">{{ uploadFile ? formatFileSize(uploadFile.size) : formatFileSize(selectedAsset?.byteSize) }}</dd>
+            </div>
+          </dl>
+
+          <div v-if="previewUrl" class="summary-item summary-asset">
+            <div v-if="previewIsImage" class="asset-preview-frame">
+              <img :src="previewUrl" :alt="selectedAsset?.altText || upload.altText || selectedAsset?.originalFilename || uploadFile?.name || 'asset preview'" />
+            </div>
+            <div class="summary-asset-copy">
+              <div class="eyebrow">预览</div>
+              <strong>{{ selectedAsset?.originalFilename || uploadFile?.name || '未命名文件' }}</strong>
+              <p>{{ selectedAsset?.publicUrl || '上传后会自动生成公开地址。' }}</p>
+            </div>
+          </div>
+        </article>
+
+        <section class="field-shell stacked-gap">
+          <div class="panel-toolbar">
+            <div>
+              <h3>上传文件</h3>
+              <div class="panel-meta">{{ uploadConfig?.enabled ? '直接写入 R2' : '当前不可上传' }}</div>
+            </div>
+          </div>
+          <div class="panel-meta">{{ uploadConfig?.message }}</div>
 
           <label class="field">
             <span>选择文件</span>
@@ -386,7 +452,7 @@ onBeforeUnmount(() => {
 
           <div v-if="uploadFile" class="upload-file-chip">
             <strong>{{ uploadFile.name }}</strong>
-            <span>{{ Math.max(1, Math.round(uploadFile.size / 1024)) }} KB</span>
+            <span>{{ formatFileSize(uploadFile.size) }}</span>
           </div>
 
           <div class="field-grid field-grid-2">
@@ -404,7 +470,7 @@ onBeforeUnmount(() => {
             <label class="field">
               <span>可见性</span>
               <select v-model="upload.visibility">
-                <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ visibility }}</option>
+                <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ formatAssetVisibility(visibility) }}</option>
               </select>
             </label>
             <label class="field">
@@ -416,110 +482,124 @@ onBeforeUnmount(() => {
           <button class="button-link button-primary upload-button" type="button" :disabled="!uploadConfig?.enabled || !uploadFile || uploading" @click="uploadAsset">
             {{ uploading ? '上传中…' : '上传到 R2' }}
           </button>
-        </article>
-
-        <article v-if="previewUrl" class="insight-card preview-card stacked-gap-tight">
-          <span class="eyebrow">preview</span>
-          <div v-if="previewIsImage" class="preview-frame">
-            <img :src="previewUrl" :alt="selectedAsset?.altText || upload.altText || selectedAsset?.originalFilename || uploadFile?.name || 'asset preview'" />
-          </div>
-          <strong>{{ selectedAsset?.originalFilename || uploadFile?.name }}</strong>
-          <p>{{ selectedAsset?.publicUrl || '上传后会自动生成公开地址。' }}</p>
-        </article>
+        </section>
 
         <div class="panel-toolbar">
           <h3>{{ isCreating ? '新建媒体记录' : '编辑媒体记录' }}</h3>
-          <div class="panel-meta">{{ selectedAsset?.visibility ?? form.visibility }}</div>
+          <div class="panel-meta">{{ formatAssetVisibility(selectedAsset?.visibility ?? form.visibility) }}</div>
         </div>
 
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>存储提供方</span>
-            <input v-model="form.storageProvider" type="text" placeholder="r2" />
-          </label>
-          <label class="field">
-            <span>Bucket</span>
-            <input v-model="form.bucket" type="text" placeholder="rebase-media" />
-          </label>
-        </div>
+        <section class="field-shell stacked-gap">
+          <div class="panel-toolbar">
+            <h3>访问与路径</h3>
+            <div class="panel-meta">{{ formatAssetVisibility(form.visibility) }}</div>
+          </div>
+          <div class="field-grid field-grid-2">
+            <label class="field">
+              <span>存储提供方</span>
+              <input v-model="form.storageProvider" type="text" placeholder="r2" />
+            </label>
+            <label class="field">
+              <span>Bucket</span>
+              <input v-model="form.bucket" type="text" placeholder="rebase-media" />
+            </label>
+          </div>
 
-        <label class="field">
-          <span>对象路径</span>
-          <input v-model="form.objectKey" type="text" placeholder="articles/2026/04/rebase-cover.jpg" />
-          <small v-if="fieldIssues.objectKey" class="field-error">{{ fieldIssues.objectKey }}</small>
-        </label>
+          <label class="field">
+            <span>对象路径</span>
+            <input v-model="form.objectKey" type="text" placeholder="articles/2026/04/rebase-cover.jpg" />
+            <small v-if="fieldIssues.objectKey" class="field-error">{{ fieldIssues.objectKey }}</small>
+          </label>
 
-        <label class="field">
-          <span>公开链接</span>
-          <input v-model="form.publicUrl" type="url" placeholder="https://media.rebase.network/articles/rebase-cover.jpg" />
-        </label>
+          <label class="field">
+            <span>公开链接</span>
+            <input v-model="form.publicUrl" type="url" placeholder="https://media.rebase.network/articles/rebase-cover.jpg" />
+          </label>
+        </section>
 
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>资源类型</span>
-            <input v-model="form.assetType" type="text" placeholder="image" />
-          </label>
-          <label class="field">
-            <span>MIME Type</span>
-            <input v-model="form.mimeType" type="text" placeholder="image/jpeg" />
-          </label>
-        </div>
+        <section class="field-shell stacked-gap">
+          <div class="panel-toolbar">
+            <h3>文件属性</h3>
+            <div class="panel-meta">{{ formatAssetStatus(form.status) }}</div>
+          </div>
+          <div class="field-grid field-grid-2">
+            <label class="field">
+              <span>资源类型</span>
+              <input v-model="form.assetType" type="text" placeholder="image" />
+            </label>
+            <label class="field">
+              <span>MIME 类型</span>
+              <input v-model="form.mimeType" type="text" placeholder="image/jpeg" />
+            </label>
+          </div>
 
-        <div class="field-grid field-grid-3">
-          <label class="field">
-            <span>字节大小</span>
-            <input v-model="form.byteSize" type="number" min="0" />
-          </label>
-          <label class="field">
-            <span>宽度</span>
-            <input v-model="form.width" type="number" min="0" placeholder="可选" />
-          </label>
-          <label class="field">
-            <span>高度</span>
-            <input v-model="form.height" type="number" min="0" placeholder="可选" />
-          </label>
-        </div>
+          <div class="field-grid field-grid-3">
+            <label class="field">
+              <span>字节大小</span>
+              <input v-model="form.byteSize" type="number" min="0" />
+            </label>
+            <label class="field">
+              <span>宽度</span>
+              <input v-model="form.width" type="number" min="0" placeholder="可选" />
+            </label>
+            <label class="field">
+              <span>高度</span>
+              <input v-model="form.height" type="number" min="0" placeholder="可选" />
+            </label>
+          </div>
 
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>原始文件名</span>
-            <input v-model="form.originalFilename" type="text" placeholder="rebase-cover.jpg" />
-          </label>
-          <label class="field">
-            <span>校验值</span>
-            <input v-model="form.checksum" type="text" placeholder="sha256" />
-          </label>
-        </div>
+          <div class="field-grid field-grid-2">
+            <label class="field">
+              <span>原始文件名</span>
+              <input v-model="form.originalFilename" type="text" placeholder="rebase-cover.jpg" />
+            </label>
+            <label class="field">
+              <span>校验值</span>
+              <input v-model="form.checksum" type="text" placeholder="sha256" />
+            </label>
+          </div>
 
-        <label class="field">
-          <span>Alt 文案</span>
-          <input v-model="form.altText" type="text" placeholder="帮助内容运营记录图片语义。" />
-        </label>
-
-        <div class="field-grid field-grid-2">
           <label class="field">
-            <span>可见性</span>
-            <select v-model="form.visibility">
-              <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ visibility }}</option>
-            </select>
+            <span>Alt 文案</span>
+            <input v-model="form.altText" type="text" placeholder="帮助内容运营记录图片语义。" />
           </label>
-          <label class="field">
-            <span>状态</span>
-            <select v-model="form.status">
-              <option v-for="status in assetStatusValues" :key="status" :value="status">{{ status }}</option>
-            </select>
-          </label>
-        </div>
 
-        <article class="insight-card stacked-gap-tight">
-          <span class="eyebrow">record status</span>
-          <strong>{{ selectedAsset?.status ?? form.status }}</strong>
-          <p>{{ form.objectKey || '未设置对象路径' }}</p>
-        </article>
-        <article v-if="selectedAsset" class="insight-card stacked-gap-tight">
-          <span class="eyebrow">updated at</span>
-          <strong>{{ formatDateTime(selectedAsset.updatedAt) }}</strong>
-          <p>{{ selectedAsset.publicUrl || '当前记录还没有公开地址。' }}</p>
+          <div class="field-grid field-grid-2">
+            <label class="field">
+              <span>可见性</span>
+              <select v-model="form.visibility">
+                <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ formatAssetVisibility(visibility) }}</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>状态</span>
+              <select v-model="form.status">
+                <option v-for="status in assetStatusValues" :key="status" :value="status">{{ formatAssetStatus(status) }}</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <article class="summary-card">
+          <div class="eyebrow">记录摘要</div>
+          <dl class="summary-grid">
+            <div class="summary-item">
+              <dt>记录状态</dt>
+              <dd>{{ formatAssetStatus(selectedAsset?.status ?? form.status) }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>可见性</dt>
+              <dd class="muted">{{ formatAssetVisibility(selectedAsset?.visibility ?? form.visibility) }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>对象路径</dt>
+              <dd class="muted">{{ form.objectKey || '未设置' }}</dd>
+            </div>
+            <div v-if="selectedAsset" class="summary-item">
+              <dt>更新时间</dt>
+              <dd class="muted">{{ formatDateTime(selectedAsset.updatedAt) }}</dd>
+            </div>
+          </dl>
         </article>
       </aside>
     </div>
@@ -547,15 +627,16 @@ onBeforeUnmount(() => {
 }
 
 .asset-thumb img,
-.preview-frame img {
+.asset-preview-frame img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.upload-card,
-.preview-card {
-  padding: 1rem;
+.asset-preview-frame {
+  overflow: hidden;
+  border-radius: 1rem;
+  background: rgba(15, 118, 110, 0.08);
 }
 
 .upload-button {
@@ -573,8 +654,7 @@ onBeforeUnmount(() => {
 }
 
 .upload-file-chip strong,
-.upload-file-chip span,
-.muted-mono {
+.upload-file-chip span {
   display: block;
 }
 
@@ -582,21 +662,8 @@ onBeforeUnmount(() => {
   font-size: 0.95rem;
 }
 
-.upload-file-chip span,
-.muted-mono {
+.upload-file-chip span {
   color: var(--color-text-muted, #667085);
   font-size: 0.78rem;
-}
-
-.muted-mono {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  word-break: break-all;
-}
-
-.preview-frame {
-  overflow: hidden;
-  border-radius: 1rem;
-  aspect-ratio: 16 / 10;
-  background: rgba(15, 118, 110, 0.08);
 }
 </style>

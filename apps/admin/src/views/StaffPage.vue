@@ -46,6 +46,28 @@ const form = reactive<StaffFormState>(createBlankForm());
 
 const isCreating = computed(() => selectedStaffId.value === 'new');
 const selectedStaff = computed(() => rows.value.find((row) => row.id === selectedStaffId.value) ?? null);
+const staffStats = computed(() => [
+  {
+    label: '账号总数',
+    value: rows.value.length,
+    detail: '后台工作人员',
+  },
+  {
+    label: '已启用',
+    value: rows.value.filter((row) => row.status === 'active').length,
+    detail: '可正常登录',
+  },
+  {
+    label: '待激活',
+    value: rows.value.filter((row) => row.status === 'invited').length,
+    detail: '待初始化账号',
+  },
+  {
+    label: '受限账号',
+    value: rows.value.filter((row) => row.status === 'suspended' || row.status === 'disabled').length,
+    detail: '暂停或停用',
+  },
+]);
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -194,6 +216,14 @@ onMounted(() => {
         <div class="panel-toolbar">
           <h3>账号列表</h3>
           <div class="panel-meta">{{ rows.length }} 个账号</div>
+        </div>
+
+        <div class="compact-stat-grid compact-stat-grid-4">
+          <article v-for="item in staffStats" :key="item.label" class="compact-stat-card">
+            <span class="compact-stat-label">{{ item.label }}</span>
+            <strong>{{ item.value }}</strong>
+            <small>{{ item.detail }}</small>
+          </article>
         </div>
 
         <div v-if="rows.length === 0" class="empty-state-card"><p>当前还没有工作人员账号。</p></div>
