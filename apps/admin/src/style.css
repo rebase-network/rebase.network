@@ -108,27 +108,28 @@ code {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 154px minmax(0, 1fr);
-  column-gap: 0.62rem;
+  grid-template-columns: 142px minmax(0, 1fr);
+  column-gap: 0.78rem;
   min-height: 100vh;
+  padding: 0.44rem;
 }
 
 .sidebar {
   position: sticky;
-  top: 0;
-  height: 100vh;
-  padding: 0.45rem 0 0.45rem 0.45rem;
+  top: 0.44rem;
+  height: calc(100vh - 0.88rem);
+  padding: 0;
 }
 
 .sidebar-inner {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 0.44rem;
+  gap: 0.36rem;
   height: 100%;
-  padding: 0.48rem;
+  padding: 0.42rem;
   border: 1px solid rgba(255, 255, 255, 0.32);
-  border-radius: 18px;
-  background: rgba(255, 251, 245, 0.82);
+  border-radius: 16px;
+  background: rgba(255, 251, 245, 0.84);
   box-shadow: var(--shadow);
   backdrop-filter: blur(14px);
 }
@@ -136,18 +137,19 @@ code {
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.42rem;
+  padding: 0.14rem 0.12rem 0.18rem;
 }
 
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 1.9rem;
-  height: 1.9rem;
-  border-radius: 0.7rem;
+  width: 1.76rem;
+  height: 1.76rem;
+  border-radius: 0.64rem;
   background: linear-gradient(135deg, #0f6d64 0%, #ef9f45 100%);
   color: white;
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.08em;
 }
@@ -158,20 +160,20 @@ code {
 }
 
 .brand strong {
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   letter-spacing: 0.02em;
 }
 
 .brand small {
   margin-top: 0.04rem;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.62rem;
 }
 
 .sidebar-nav {
   display: grid;
   align-content: start;
-  gap: 0.08rem;
+  gap: 0.06rem;
   overflow-y: auto;
   padding-right: 0.08rem;
 }
@@ -179,8 +181,8 @@ code {
 .nav-link {
   display: flex;
   align-items: center;
-  min-height: 1.78rem;
-  padding: 0.28rem 0.34rem;
+  min-height: 1.66rem;
+  padding: 0.24rem 0.3rem;
   border: 1px solid transparent;
   border-radius: 9px;
   transition:
@@ -197,7 +199,8 @@ code {
 
 .nav-link span {
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
+  line-height: 1.1;
 }
 
 .nav-link.router-link-active {
@@ -207,13 +210,13 @@ code {
 
 .sidebar-footer {
   display: grid;
-  gap: 0.22rem;
+  gap: 0.18rem;
 }
 
 .sidebar-account {
   display: grid;
   gap: 0.18rem;
-  padding: 0.4rem 0.42rem;
+  padding: 0.36rem 0.38rem;
   border-radius: 9px;
   background: rgba(15, 109, 100, 0.06);
 }
@@ -236,7 +239,17 @@ code {
 
 .main {
   min-width: 0;
-  padding: 0.72rem 0.72rem 0.72rem 0.1rem;
+  padding: 0;
+}
+
+.workspace-shell {
+  min-height: calc(100vh - 0.88rem);
+  padding: 0.76rem 0.82rem 0.86rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 22px;
+  background: rgba(255, 249, 241, 0.42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(10px);
 }
 
 .page-header {
@@ -988,6 +1001,7 @@ code {
   .app-shell {
     grid-template-columns: 1fr;
     column-gap: 0;
+    padding: 0;
   }
 
   .sidebar {
@@ -998,6 +1012,15 @@ code {
 
   .main {
     padding: 1rem;
+  }
+
+  .workspace-shell {
+    min-height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
   }
 
   .page-header-row,

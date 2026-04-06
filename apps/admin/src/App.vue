@@ -81,7 +81,9 @@ onMounted(() => {
     </aside>
 
     <main class="main">
-      <RouterView />
+      <div class="workspace-shell">
+        <RouterView />
+      </div>
     </main>
   </div>
 </template>
