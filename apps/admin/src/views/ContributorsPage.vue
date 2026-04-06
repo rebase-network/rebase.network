@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import {
@@ -28,6 +28,29 @@ const roleForm = reactive({
   sortOrder: 0,
   status: 'draft' as 'draft' | 'published' | 'archived',
 });
+
+const contributorStats = computed(() => [
+  {
+    label: '贡献者总数',
+    value: contributors.value.length,
+    detail: '全部成员记录',
+  },
+  {
+    label: '已发布',
+    value: contributors.value.filter((item) => item.status === 'published').length,
+    detail: '前台可见',
+  },
+  {
+    label: '草稿中',
+    value: contributors.value.filter((item) => item.status === 'draft').length,
+    detail: '待继续完善',
+  },
+  {
+    label: '角色分组',
+    value: roles.value.length,
+    detail: `${roles.value.filter((item) => item.status === 'published').length} 个已启用`,
+  },
+]);
 
 const resetRoleForm = () => {
   selectedRoleId.value = 'new';
@@ -135,51 +158,64 @@ onMounted(() => void loadData());
     <div v-if="loading" class="panel"><p>正在加载贡献者数据…</p></div>
 
     <template v-else>
+      <div class="compact-stat-grid compact-stat-grid-4">
+        <article v-for="item in contributorStats" :key="item.label" class="compact-stat-card">
+          <span class="compact-stat-label">{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+          <small>{{ item.detail }}</small>
+        </article>
+      </div>
+
       <section class="panel stacked-gap">
         <div class="panel-toolbar">
-          <h3>贡献者列表</h3>
+          <div>
+            <h3>贡献者列表</h3>
+            <div class="panel-meta">集中维护头像、介绍与角色归属</div>
+          </div>
           <div class="panel-meta">{{ contributors.length }} 人</div>
         </div>
 
         <div v-if="contributors.length === 0" class="empty-state-card"><p>暂时还没有贡献者。</p></div>
 
-        <table v-else class="data-table">
-          <thead>
-            <tr>
-              <th>贡献者</th>
-              <th>角色</th>
-              <th>状态</th>
-              <th>更新时间</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="row in contributors" :key="row.id">
-              <td>
-                <div class="table-cell-stack">
-                  <strong>{{ row.name }}</strong>
-                  <div class="muted-row">{{ row.headline }}</div>
-                </div>
-              </td>
-              <td>{{ row.roleNames.join('、') || '未分配角色' }}</td>
-              <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
-              <td>{{ formatDateTime(row.updatedAt) }}</td>
-              <td class="table-actions-cell">
-                <div class="table-action-list">
-                  <RouterLink class="table-link" :to="`/contributors/${row.id}/edit`">编辑</RouterLink>
-                  <a class="table-link" :href="`/contributors#${row.slug}`" target="_blank" rel="noreferrer">前台定位</a>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div v-else class="table-panel">
+          <table class="data-table dense-table">
+            <thead>
+              <tr>
+                <th>贡献者</th>
+                <th>角色</th>
+                <th>状态</th>
+                <th>更新时间</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in contributors" :key="row.id">
+                <td>
+                  <div class="table-cell-stack">
+                    <strong>{{ row.name }}</strong>
+                    <div class="muted-row">{{ row.headline }}</div>
+                  </div>
+                </td>
+                <td>{{ row.roleNames.join('、') || '未分配角色' }}</td>
+                <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
+                <td>{{ formatDateTime(row.updatedAt) }}</td>
+                <td class="table-actions-cell">
+                  <div class="table-action-list">
+                    <RouterLink class="table-link" :to="`/contributors/${row.id}/edit`">编辑</RouterLink>
+                    <a class="table-link" :href="`/contributors#${row.slug}`" target="_blank" rel="noreferrer">前台定位</a>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section class="panel stacked-gap">
         <div class="panel-toolbar">
           <div>
             <h3>角色分组</h3>
-            <div class="panel-meta">{{ roles.length }} 个角色</div>
+            <div class="panel-meta">{{ roles.length }} 个角色 · 次级维护界面</div>
           </div>
           <div v-if="showRoleManager" class="page-actions">
             <button class="button-link" type="button" @click="openNewRoleForm">新建角色</button>
@@ -201,6 +237,8 @@ onMounted(() => void loadData());
             <small>{{ role.slug }}</small>
           </button>
         </div>
+
+        <div v-if="!showRoleManager" class="empty-inline">角色调整频率较低，点击顶部“管理角色”后再新建或编辑。</div>
 
         <div v-if="showRoleManager" class="field-shell stacked-gap">
           <div class="panel-toolbar">

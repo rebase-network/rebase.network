@@ -323,7 +323,10 @@ onBeforeUnmount(() => {
     <div v-else class="editor-grid editor-grid-focus">
       <section class="panel stacked-gap editor-main">
         <div class="panel-toolbar">
-          <h3>媒体记录</h3>
+          <div>
+            <h3>媒体记录</h3>
+            <div class="panel-meta">上传、筛选并复用站点资源</div>
+          </div>
           <div class="panel-meta">{{ rows.length }} 条记录</div>
         </div>
 
@@ -335,71 +338,84 @@ onBeforeUnmount(() => {
           </article>
         </div>
 
-        <div class="field-grid field-grid-3">
-          <label class="field">
-            <span>搜索</span>
-            <input v-model="filters.query" type="search" placeholder="搜索文件名、对象路径或类型" />
-          </label>
-          <label class="field">
-            <span>状态</span>
-            <select v-model="filters.status">
-              <option value="all">全部状态</option>
-              <option v-for="status in assetStatusValues" :key="status" :value="status">{{ formatAssetStatus(status) }}</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>可见性</span>
-            <select v-model="filters.visibility">
-              <option value="all">全部可见性</option>
-              <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ formatAssetVisibility(visibility) }}</option>
-            </select>
-          </label>
-        </div>
+        <section class="field-shell stacked-gap filter-panel">
+          <div class="panel-toolbar">
+            <h3>筛选</h3>
+            <div class="panel-meta">{{ filteredRows.length }} 条结果</div>
+          </div>
+          <div class="field-grid field-grid-3">
+            <label class="field">
+              <span>搜索</span>
+              <input v-model="filters.query" type="search" placeholder="搜索文件名、对象路径或类型" />
+            </label>
+            <label class="field">
+              <span>状态</span>
+              <select v-model="filters.status">
+                <option value="all">全部状态</option>
+                <option v-for="status in assetStatusValues" :key="status" :value="status">{{ formatAssetStatus(status) }}</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>可见性</span>
+              <select v-model="filters.visibility">
+                <option value="all">全部可见性</option>
+                <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ formatAssetVisibility(visibility) }}</option>
+              </select>
+            </label>
+          </div>
+        </section>
 
         <div v-if="filteredRows.length === 0" class="empty-state-card"><p>当前筛选条件下没有媒体记录。</p></div>
 
-        <table v-else class="data-table asset-table">
-          <thead>
-            <tr>
-              <th>预览</th>
-              <th>文件</th>
-              <th>类型</th>
-              <th>状态</th>
-              <th>更新时间</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="row in filteredRows" :key="row.id">
-              <td>
-                <div class="asset-thumb">
-                  <img v-if="row.publicUrl && row.mimeType.startsWith('image/')" :src="row.publicUrl" :alt="row.altText || row.originalFilename" />
-                  <span v-else>{{ row.assetType }}</span>
-                </div>
-              </td>
-              <td>
-                <div class="table-cell-stack">
-                  <strong>{{ row.originalFilename }}</strong>
-                  <div class="muted-row">{{ row.objectKey }}</div>
-                </div>
-              </td>
-              <td>
-                <div class="table-cell-stack">
-                  <strong>{{ row.assetType }}</strong>
-                  <div class="muted-row">{{ row.mimeType }}</div>
-                </div>
-              </td>
-              <td><span class="status-pill">{{ formatAssetStatus(row.status) }}</span></td>
-              <td>{{ formatDateTime(row.updatedAt) }}</td>
-              <td class="table-actions-cell">
-                <div class="table-action-list">
-                  <button class="table-link table-link-button" type="button" @click="selectAsset(row.id)">编辑</button>
-                  <a v-if="row.publicUrl" class="table-link" :href="row.publicUrl" target="_blank" rel="noreferrer">打开</a>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div v-else class="table-panel">
+          <table class="data-table dense-table asset-table">
+            <thead>
+              <tr>
+                <th>预览</th>
+                <th>文件</th>
+                <th>类型</th>
+                <th>状态</th>
+                <th>更新时间</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in filteredRows" :key="row.id">
+                <td>
+                  <div class="asset-thumb">
+                    <img v-if="row.publicUrl && row.mimeType.startsWith('image/')" :src="row.publicUrl" :alt="row.altText || row.originalFilename" />
+                    <span v-else>{{ row.assetType }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="table-cell-stack">
+                    <strong>{{ row.originalFilename }}</strong>
+                    <div class="muted-row">{{ row.objectKey }}</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="table-cell-stack">
+                    <strong>{{ row.assetType }}</strong>
+                    <div class="muted-row">{{ row.mimeType }}</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="table-cell-stack">
+                    <span class="status-pill">{{ formatAssetStatus(row.status) }}</span>
+                    <div class="muted-row">{{ formatAssetVisibility(row.visibility) }}</div>
+                  </div>
+                </td>
+                <td>{{ formatDateTime(row.updatedAt) }}</td>
+                <td class="table-actions-cell">
+                  <div class="table-action-list">
+                    <button class="table-link table-link-button" type="button" @click="selectAsset(row.id)">编辑</button>
+                    <a v-if="row.publicUrl" class="table-link" :href="row.publicUrl" target="_blank" rel="noreferrer">打开</a>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <aside class="panel stacked-gap editor-sidebar">
@@ -609,19 +625,19 @@ onBeforeUnmount(() => {
 <style scoped>
 .asset-table th:first-child,
 .asset-table td:first-child {
-  width: 6rem;
+  width: 5.4rem;
 }
 
 .asset-thumb {
   display: grid;
-  width: 4.2rem;
-  height: 4.2rem;
+  width: 3.45rem;
+  height: 3.45rem;
   place-items: center;
   overflow: hidden;
-  border-radius: 1rem;
+  border-radius: 0.9rem;
   background: rgba(15, 118, 110, 0.08);
   color: #0f766e;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
 }

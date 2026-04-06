@@ -214,7 +214,10 @@ onMounted(() => {
     <div v-else class="editor-grid editor-grid-focus">
       <section class="panel stacked-gap editor-main">
         <div class="panel-toolbar">
-          <h3>账号列表</h3>
+          <div>
+            <h3>账号列表</h3>
+            <div class="panel-meta">后台工作人员与角色权限</div>
+          </div>
           <div class="panel-meta">{{ rows.length }} 个账号</div>
         </div>
 
@@ -228,35 +231,37 @@ onMounted(() => {
 
         <div v-if="rows.length === 0" class="empty-state-card"><p>当前还没有工作人员账号。</p></div>
 
-        <table v-else class="data-table">
-          <thead>
-            <tr>
-              <th>工作人员</th>
-              <th>角色</th>
-              <th>状态</th>
-              <th>最后登录</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="row in rows" :key="row.id">
-              <td>
-                <div class="table-cell-stack">
-                  <strong>{{ row.displayName }}</strong>
-                  <div class="muted-row">{{ row.email }}</div>
-                </div>
-              </td>
-              <td>{{ row.roleCodes.join('、') || '未分配角色' }}</td>
-              <td><span class="status-pill">{{ formatStaffAccountStatus(row.status) }}</span></td>
-              <td>{{ formatDateTime(row.lastLoginAt) }}</td>
-              <td class="table-actions-cell">
-                <div class="table-action-list">
-                  <button class="table-link table-link-button" type="button" @click="selectStaff(row.id)">编辑</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div v-else class="table-panel">
+          <table class="data-table dense-table">
+            <thead>
+              <tr>
+                <th>工作人员</th>
+                <th>角色</th>
+                <th>状态</th>
+                <th>最后登录</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in rows" :key="row.id">
+                <td>
+                  <div class="table-cell-stack">
+                    <strong>{{ row.displayName }}</strong>
+                    <div class="muted-row">{{ row.email }}</div>
+                  </div>
+                </td>
+                <td>{{ row.roleCodes.join('、') || '未分配角色' }}</td>
+                <td><span class="status-pill">{{ formatStaffAccountStatus(row.status) }}</span></td>
+                <td>{{ formatDateTime(row.lastLoginAt) }}</td>
+                <td class="table-actions-cell">
+                  <div class="table-action-list">
+                    <button class="table-link table-link-button" type="button" @click="selectStaff(row.id)">编辑</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <aside class="panel stacked-gap editor-sidebar">

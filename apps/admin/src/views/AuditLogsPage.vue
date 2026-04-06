@@ -102,7 +102,7 @@ onMounted(async () => {
       <div v-if="filteredRows.length === 0" class="panel empty-state-card"><p>当前没有匹配的审计记录。</p></div>
 
       <div v-else class="panel table-panel">
-        <table class="data-table">
+        <table class="data-table dense-table">
           <thead>
             <tr>
               <th>时间</th>
