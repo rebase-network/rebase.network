@@ -18,7 +18,7 @@ import {
 import { listAuditEntries } from '../lib/audit.js';
 import { getDashboardStats } from '../lib/access.js';
 import { createAdminArticle, getAdminArticle, listAdminArticles, publishAdminArticle, updateAdminArticle, archiveAdminArticle } from '../lib/articles.js';
-import { createAdminAsset, getAdminAsset, listAdminAssets, updateAdminAsset } from '../lib/assets.js';
+import { createAdminAsset, getAdminAsset, getAdminAssetUploadConfig, listAdminAssets, updateAdminAsset, uploadAdminAsset } from '../lib/assets.js';
 import { createAdminContributor, createAdminContributorRole, getAdminContributor, listAdminContributorRoles, listAdminContributors, updateAdminContributor, updateAdminContributorRole } from '../lib/contributors.js';
 import { createAdminEvent, getAdminEvent, listAdminEvents, publishAdminEvent, updateAdminEvent, archiveAdminEvent } from '../lib/events.js';
 import { createAdminGeekDailyEpisode, getAdminGeekDailyEpisode, listAdminGeekDailyEpisodes, publishAdminGeekDailyEpisode, updateAdminGeekDailyEpisode, archiveAdminGeekDailyEpisode } from '../lib/geekdaily.js';
@@ -52,6 +52,8 @@ const expectValid = <T>(c: any, result: { valid: boolean; data?: T; issues?: { p
     },
   }));
 };
+
+const readOptionalString = (value: FormDataEntryValue | null) => (typeof value === 'string' ? value : '');
 
 adminRoutes.use('*', requireActiveStaff());
 
@@ -174,6 +176,34 @@ adminRoutes.patch('/geekdaily/:id', requireActiveStaff('geekdaily.write'), async
 adminRoutes.post('/geekdaily/:id/publish', requireActiveStaff('geekdaily.publish'), async (c) => c.json(ok(await publishAdminGeekDailyEpisode(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.post('/geekdaily/:id/archive', requireActiveStaff('geekdaily.publish'), async (c) => c.json(ok(await archiveAdminGeekDailyEpisode(c.req.param('id'), getAuditActor(c)))));
 
+adminRoutes.get('/assets/upload-config', requireActiveStaff('asset.manage'), async (c) => c.json(ok(await getAdminAssetUploadConfig())));
+adminRoutes.post('/assets/upload', requireActiveStaff('asset.manage'), async (c) => {
+  const form = await c.req.formData();
+  const file = form.get('file');
+
+  if (!(file instanceof File)) {
+    return jsonError(c, 400, 'BAD_REQUEST', 'file is required');
+  }
+
+  const visibilityValue = readOptionalString(form.get('visibility'));
+  const visibility = visibilityValue === 'private' ? 'private' : 'public';
+
+  return c.json(
+    ok(
+      await uploadAdminAsset(
+        {
+          file,
+          folder: readOptionalString(form.get('folder')),
+          altText: readOptionalString(form.get('altText')),
+          visibility,
+          assetType: readOptionalString(form.get('assetType')),
+        },
+        getAuditActor(c),
+      ),
+    ),
+    201,
+  );
+});
 adminRoutes.get('/assets', requireActiveStaff('asset.manage'), async (c) => c.json(ok(await listAdminAssets())));
 adminRoutes.post('/assets', requireActiveStaff('asset.manage'), async (c) => {
   const payload = expectValid(c, validateAssetInput(await c.req.json().catch(() => null)));

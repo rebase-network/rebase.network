@@ -4,6 +4,7 @@ import { articles } from '@rebase/db';
 import type { AdminArticleListItem, ArticleInput } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
+import { listPublicAssetUrlsById } from './assets.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
 import { ensurePublishedAt, toIsoString } from './utils.js';
@@ -202,6 +203,7 @@ export const listPublicArticles = async () => {
     .from(articles)
     .where(eq(articles.status, 'published'))
     .orderBy(desc(articles.publishedAt));
+  const assetUrls = await listPublicAssetUrlsById(rows.map((row) => row.coverAssetId));
 
   return rows.map((row) => ({
     slug: row.slug,
@@ -212,7 +214,7 @@ export const listPublicArticles = async () => {
     authors: Array.isArray(row.authorsJson) ? row.authorsJson : [],
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
     coverAccent: row.coverAccent,
-    coverImageUrl: null,
+    coverImageUrl: row.coverAssetId ? assetUrls.get(row.coverAssetId) : undefined,
     body: row.bodyMarkdown,
   }));
 };
@@ -230,6 +232,8 @@ export const getPublicArticleBySlug = async (slug: string) => {
     return null;
   }
 
+  const assetUrls = await listPublicAssetUrlsById([row.coverAssetId]);
+
   return {
     slug: row.slug,
     title: row.title,
@@ -239,7 +243,7 @@ export const getPublicArticleBySlug = async (slug: string) => {
     authors: Array.isArray(row.authorsJson) ? row.authorsJson : [],
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
     coverAccent: row.coverAccent,
-    coverImageUrl: null,
+    coverImageUrl: row.coverAssetId ? assetUrls.get(row.coverAssetId) : undefined,
     body: row.bodyMarkdown,
   };
 };

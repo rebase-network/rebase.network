@@ -4,6 +4,7 @@ import { contributorRoleBindings, contributorRoles, contributors } from '@rebase
 import type { AdminContributorDetailPayload, AdminContributorListItem, AdminContributorRoleRecord, ContributorInput, ContributorRoleInput } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
+import { listPublicAssetUrlsById } from './assets.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
 import { toIsoString } from './utils.js';
@@ -281,6 +282,7 @@ export const listPublicContributorGroups = async () => {
       .orderBy(asc(contributors.sortOrder), asc(contributors.name)),
     contributorBindingsMap(),
   ]);
+  const avatarUrls = await listPublicAssetUrlsById(contributorRows.map((contributor) => contributor.avatarAssetId));
 
   const roleMap = new Map(roleRows.map((role) => [role.id, role]));
   const contributorsByRole = new Map<string, any[]>();
@@ -291,7 +293,7 @@ export const listPublicContributorGroups = async () => {
       current.push({
         slug: contributor.slug,
         name: contributor.name,
-        avatarUrl: undefined,
+        avatarUrl: contributor.avatarAssetId ? avatarUrls.get(contributor.avatarAssetId) : undefined,
         avatarSeed: contributor.avatarSeed,
         headline: contributor.headline,
         bio: contributor.bio,

@@ -1,8 +1,9 @@
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 
 import { assets } from '@rebase/db';
 import type { AdminAssetRecord, AssetInput } from '@rebase/shared';
 
+import { getAssetUploadConfig, type UploadAssetOptions, uploadAssetToR2 } from './asset-storage.js';
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
@@ -20,6 +21,7 @@ const mapAsset = (row: any): AdminAssetRecord => ({
   byteSize: row.byteSize,
   width: row.width,
   height: row.height,
+  checksum: row.checksum,
   originalFilename: row.originalFilename,
   altText: row.altText,
   status: row.status,
@@ -42,12 +44,37 @@ export const listAdminAssets = async (): Promise<AdminAssetRecord[]> => {
   return rows.map(mapAsset);
 };
 
+export const listPublicAssetUrlsById = async (assetIds: Array<string | null | undefined>) => {
+  const db = getDb();
+  const ids = [...new Set(assetIds.filter((value): value is string => Boolean(value)))];
+
+  if (ids.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const rows = await db
+    .select({
+      id: assets.id,
+      publicUrl: assets.publicUrl,
+    })
+    .from(assets)
+    .where(and(inArray(assets.id, ids), eq(assets.visibility, 'public'), eq(assets.status, 'active')));
+
+  return new Map(
+    rows
+      .filter((row) => typeof row.publicUrl === 'string' && row.publicUrl.length > 0)
+      .map((row) => [row.id, row.publicUrl as string]),
+  );
+};
+
 export const getAdminAsset = async (id: string) => {
   const db = getDb();
   const rows = await db.select().from(assets).where(eq(assets.id, id)).limit(1);
   const row = rows[0] ?? null;
   return row ? mapAsset(row) : null;
 };
+
+export const getAdminAssetUploadConfig = async () => getAssetUploadConfig();
 
 export const createAdminAsset = async (input: AssetInput, actor: AuditActor) => {
   const db = getDb();
@@ -80,6 +107,43 @@ export const createAdminAsset = async (input: AssetInput, actor: AuditActor) => 
     targetType: 'asset',
     targetId: created.id,
     summary: `Created asset ${created.objectKey}`,
+  });
+
+  return mapAsset(created);
+};
+
+export const uploadAdminAsset = async (input: UploadAssetOptions, actor: AuditActor) => {
+  const db = getDb();
+  const uploaded = await uploadAssetToR2(input);
+  await ensureUniqueObjectKey(uploaded.objectKey);
+
+  const [created] = await db
+    .insert(assets)
+    .values({
+      storageProvider: uploaded.storageProvider,
+      bucket: uploaded.bucket,
+      objectKey: uploaded.objectKey,
+      publicUrl: uploaded.publicUrl,
+      visibility: uploaded.visibility,
+      assetType: uploaded.assetType,
+      mimeType: uploaded.mimeType,
+      byteSize: uploaded.byteSize,
+      width: uploaded.width,
+      height: uploaded.height,
+      checksum: uploaded.checksum,
+      originalFilename: uploaded.originalFilename,
+      altText: uploaded.altText || null,
+      uploadedByStaffId: actor.actorStaffAccountId ?? null,
+      status: uploaded.status,
+    })
+    .returning();
+
+  await createAuditEntry({
+    ...actor,
+    action: 'asset.upload',
+    targetType: 'asset',
+    targetId: created.id,
+    summary: `Uploaded asset ${created.objectKey}`,
   });
 
   return mapAsset(created);

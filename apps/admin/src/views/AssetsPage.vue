@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 
-import { assetStatusValues, type AdminAssetRecord } from '@rebase/shared';
+import { assetStatusValues, type AdminAssetRecord, type AdminAssetUploadConfig } from '@rebase/shared';
 
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatDateTime } from '../lib/format';
@@ -26,11 +26,18 @@ interface AssetFormState {
   status: AssetStatus;
 }
 
+interface UploadFormState {
+  folder: string;
+  visibility: AssetVisibility;
+  altText: string;
+  assetType: string;
+}
+
 const visibilityOptions: AssetVisibility[] = ['public', 'private'];
 
-const createBlankForm = (): AssetFormState => ({
+const createBlankForm = (bucket = 'rebase-media'): AssetFormState => ({
   storageProvider: 'r2',
-  bucket: 'rebase-media',
+  bucket,
   objectKey: '',
   publicUrl: '',
   visibility: 'public',
@@ -45,14 +52,26 @@ const createBlankForm = (): AssetFormState => ({
   status: 'active',
 });
 
+const createUploadForm = (): UploadFormState => ({
+  folder: 'media',
+  visibility: 'public',
+  altText: '',
+  assetType: 'image',
+});
+
 const rows = ref<AdminAssetRecord[]>([]);
+const uploadConfig = ref<AdminAssetUploadConfig | null>(null);
 const loading = ref(true);
 const saving = ref(false);
+const uploading = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const fieldIssues = ref<Record<string, string>>({});
 const selectedAssetId = ref<'new' | string>('new');
+const uploadFile = ref<File | null>(null);
+const uploadPreviewUrl = ref('');
 const form = reactive<AssetFormState>(createBlankForm());
+const upload = reactive<UploadFormState>(createUploadForm());
 const filters = reactive({
   query: '',
   status: 'all',
@@ -75,11 +94,40 @@ const filteredRows = computed(() => {
 
 const selectedAsset = computed(() => rows.value.find((row) => row.id === selectedAssetId.value) ?? null);
 const isCreating = computed(() => selectedAssetId.value === 'new');
+const previewUrl = computed(() => uploadPreviewUrl.value || selectedAsset.value?.publicUrl || '');
+const previewMimeType = computed(() => uploadFile.value?.type || selectedAsset.value?.mimeType || '');
+const previewIsImage = computed(() => previewUrl.value.length > 0 && previewMimeType.value.startsWith('image/'));
 
 const resetFeedback = () => {
   errorMessage.value = '';
   successMessage.value = '';
   fieldIssues.value = {};
+};
+
+const revokePreviewUrl = () => {
+  if (uploadPreviewUrl.value) {
+    URL.revokeObjectURL(uploadPreviewUrl.value);
+    uploadPreviewUrl.value = '';
+  }
+};
+
+const setUploadFile = (file: File | null) => {
+  revokePreviewUrl();
+  uploadFile.value = file;
+
+  if (!file) {
+    return;
+  }
+
+  uploadPreviewUrl.value = URL.createObjectURL(file);
+  upload.assetType = file.type.startsWith('image/') ? 'image' : 'file';
+
+  if (isCreating.value) {
+    form.originalFilename = file.name;
+    form.mimeType = file.type || 'application/octet-stream';
+    form.byteSize = String(file.size);
+    form.altText = upload.altText;
+  }
 };
 
 const applyAsset = (asset: AdminAssetRecord) => {
@@ -94,7 +142,7 @@ const applyAsset = (asset: AdminAssetRecord) => {
     byteSize: String(asset.byteSize),
     width: asset.width === null ? '' : String(asset.width),
     height: asset.height === null ? '' : String(asset.height),
-    checksum: '',
+    checksum: asset.checksum ?? '',
     originalFilename: asset.originalFilename,
     altText: asset.altText ?? '',
     status: asset.status,
@@ -103,7 +151,7 @@ const applyAsset = (asset: AdminAssetRecord) => {
 
 const selectNew = () => {
   selectedAssetId.value = 'new';
-  Object.assign(form, createBlankForm());
+  Object.assign(form, createBlankForm(uploadConfig.value?.bucket ?? 'rebase-media'));
   resetFeedback();
 };
 
@@ -119,12 +167,18 @@ const selectAsset = async (id: string) => {
   }
 };
 
-const loadAssets = async (nextSelectedId = selectedAssetId.value) => {
+const loadPage = async (nextSelectedId = selectedAssetId.value) => {
   loading.value = true;
   errorMessage.value = '';
 
   try {
-    rows.value = await adminFetch<AdminAssetRecord[]>('/api/admin/v1/assets');
+    const [assetRows, nextConfig] = await Promise.all([
+      adminFetch<AdminAssetRecord[]>('/api/admin/v1/assets'),
+      adminFetch<AdminAssetUploadConfig>('/api/admin/v1/assets/upload-config'),
+    ]);
+
+    rows.value = assetRows;
+    uploadConfig.value = nextConfig;
 
     if (nextSelectedId !== 'new' && rows.value.some((row) => row.id === nextSelectedId)) {
       await selectAsset(nextSelectedId);
@@ -135,6 +189,44 @@ const loadAssets = async (nextSelectedId = selectedAssetId.value) => {
     errorMessage.value = error instanceof Error ? error.message : '无法加载媒体库。';
   } finally {
     loading.value = false;
+  }
+};
+
+const onFilePicked = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  setUploadFile(input.files?.[0] ?? null);
+};
+
+const uploadAsset = async () => {
+  if (!uploadFile.value) {
+    errorMessage.value = '请先选择一个要上传的文件。';
+    return;
+  }
+
+  uploading.value = true;
+  resetFeedback();
+
+  try {
+    const payload = new FormData();
+    payload.append('file', uploadFile.value);
+    payload.append('folder', upload.folder);
+    payload.append('visibility', upload.visibility);
+    payload.append('altText', upload.altText);
+    payload.append('assetType', upload.assetType);
+
+    const asset = await adminRequest<AdminAssetRecord>('/api/admin/v1/assets/upload', {
+      method: 'POST',
+      body: payload,
+    });
+
+    successMessage.value = '文件已上传到 R2，并自动登记到媒体库。';
+    upload.altText = '';
+    setUploadFile(null);
+    await loadPage(asset.id);
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : '无法上传文件。';
+  } finally {
+    uploading.value = false;
   }
 };
 
@@ -169,7 +261,7 @@ const saveAsset = async () => {
     );
 
     successMessage.value = isCreating.value ? '媒体记录已创建。' : '媒体记录已更新。';
-    await loadAssets(asset.id);
+    await loadPage(asset.id);
   } catch (error) {
     fieldIssues.value = getValidationIssues(error);
     errorMessage.value = error instanceof Error ? error.message : '无法保存媒体记录。';
@@ -179,7 +271,11 @@ const saveAsset = async () => {
 };
 
 onMounted(() => {
-  void loadAssets();
+  void loadPage();
+});
+
+onBeforeUnmount(() => {
+  revokePreviewUrl();
 });
 </script>
 
@@ -188,10 +284,10 @@ onMounted(() => {
     <header class="page-header page-header-row">
       <div>
         <h2>媒体库</h2>
-        <p>第一版先提供结构化媒体台账，后续接入 R2 直传后再升级成真实上传工作流。</p>
+        <p>R2 直传已经接入；上传后的资源可以直接在文章、活动和贡献者内容里复用。</p>
       </div>
       <div class="page-actions">
-        <button class="button-link" type="button" @click="selectNew">新建媒体记录</button>
+        <button class="button-link" type="button" @click="selectNew">新建空记录</button>
         <button class="button-link button-primary" type="button" :disabled="loading || saving" @click="saveAsset">
           {{ saving ? '保存中…' : isCreating ? '创建记录' : '保存修改' }}
         </button>
@@ -232,9 +328,10 @@ onMounted(() => {
 
         <div v-if="filteredRows.length === 0" class="empty-state-card"><p>当前筛选条件下没有媒体记录。</p></div>
 
-        <table v-else class="data-table">
+        <table v-else class="data-table asset-table">
           <thead>
             <tr>
+              <th>预览</th>
               <th>文件</th>
               <th>类型</th>
               <th>状态</th>
@@ -244,6 +341,12 @@ onMounted(() => {
           </thead>
           <tbody>
             <tr v-for="row in filteredRows" :key="row.id">
+              <td>
+                <div class="asset-thumb">
+                  <img v-if="row.publicUrl && row.mimeType.startsWith('image/')" :src="row.publicUrl" :alt="row.altText || row.originalFilename" />
+                  <span v-else>{{ row.assetType }}</span>
+                </div>
+              </td>
               <td>
                 <div class="table-cell-stack">
                   <strong>{{ row.originalFilename }}</strong>
@@ -270,6 +373,60 @@ onMounted(() => {
       </section>
 
       <aside class="panel stacked-gap editor-sidebar">
+        <article class="insight-card upload-card stacked-gap-tight">
+          <span class="eyebrow">upload workflow</span>
+          <strong>{{ uploadConfig?.enabled ? uploadConfig.bucket : 'upload disabled' }}</strong>
+          <p>{{ uploadConfig?.message }}</p>
+          <p v-if="uploadConfig?.publicBaseUrl" class="muted-mono">{{ uploadConfig.publicBaseUrl }}</p>
+
+          <label class="field">
+            <span>选择文件</span>
+            <input type="file" @change="onFilePicked" />
+          </label>
+
+          <div v-if="uploadFile" class="upload-file-chip">
+            <strong>{{ uploadFile.name }}</strong>
+            <span>{{ Math.max(1, Math.round(uploadFile.size / 1024)) }} KB</span>
+          </div>
+
+          <div class="field-grid field-grid-2">
+            <label class="field">
+              <span>对象目录</span>
+              <input v-model="upload.folder" type="text" placeholder="articles" />
+            </label>
+            <label class="field">
+              <span>资源类型</span>
+              <input v-model="upload.assetType" type="text" placeholder="image" />
+            </label>
+          </div>
+
+          <div class="field-grid field-grid-2">
+            <label class="field">
+              <span>可见性</span>
+              <select v-model="upload.visibility">
+                <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ visibility }}</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Alt 文案</span>
+              <input v-model="upload.altText" type="text" placeholder="帮助编辑识别图片内容" />
+            </label>
+          </div>
+
+          <button class="button-link button-primary upload-button" type="button" :disabled="!uploadConfig?.enabled || !uploadFile || uploading" @click="uploadAsset">
+            {{ uploading ? '上传中…' : '上传到 R2' }}
+          </button>
+        </article>
+
+        <article v-if="previewUrl" class="insight-card preview-card stacked-gap-tight">
+          <span class="eyebrow">preview</span>
+          <div v-if="previewIsImage" class="preview-frame">
+            <img :src="previewUrl" :alt="selectedAsset?.altText || upload.altText || selectedAsset?.originalFilename || uploadFile?.name || 'asset preview'" />
+          </div>
+          <strong>{{ selectedAsset?.originalFilename || uploadFile?.name }}</strong>
+          <p>{{ selectedAsset?.publicUrl || '上传后会自动生成公开地址。' }}</p>
+        </article>
+
         <div class="panel-toolbar">
           <h3>{{ isCreating ? '新建媒体记录' : '编辑媒体记录' }}</h3>
           <div class="panel-meta">{{ selectedAsset?.visibility ?? form.visibility }}</div>
@@ -288,13 +445,13 @@ onMounted(() => {
 
         <label class="field">
           <span>对象路径</span>
-          <input v-model="form.objectKey" type="text" placeholder="geekdaily/episode-1915/cover.jpg" />
+          <input v-model="form.objectKey" type="text" placeholder="articles/2026/04/rebase-cover.jpg" />
           <small v-if="fieldIssues.objectKey" class="field-error">{{ fieldIssues.objectKey }}</small>
         </label>
 
         <label class="field">
           <span>公开链接</span>
-          <input v-model="form.publicUrl" type="url" placeholder="https://pub-xxxx.r2.dev/geekdaily/cover.jpg" />
+          <input v-model="form.publicUrl" type="url" placeholder="https://media.rebase.network/articles/rebase-cover.jpg" />
         </label>
 
         <div class="field-grid field-grid-2">
@@ -330,7 +487,7 @@ onMounted(() => {
           </label>
           <label class="field">
             <span>校验值</span>
-            <input v-model="form.checksum" type="text" placeholder="可选" />
+            <input v-model="form.checksum" type="text" placeholder="sha256" />
           </label>
         </div>
 
@@ -357,14 +514,89 @@ onMounted(() => {
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">record status</span>
           <strong>{{ selectedAsset?.status ?? form.status }}</strong>
-          <p>当前媒体库先服务内容管理和资源引用，之后再接入 R2 上传与缩略图生成。</p>
+          <p>上传入口服务于真实媒体工作流，手动表单用于补充元数据、修正链接与维护状态。</p>
         </article>
         <article v-if="selectedAsset" class="insight-card stacked-gap-tight">
           <span class="eyebrow">updated at</span>
           <strong>{{ formatDateTime(selectedAsset.updatedAt) }}</strong>
-          <p>{{ selectedAsset.publicUrl || '还没有公开地址，可先保存结构化记录。' }}</p>
+          <p>{{ selectedAsset.publicUrl || '当前记录还没有公开地址。' }}</p>
         </article>
       </aside>
     </div>
   </section>
 </template>
+
+<style scoped>
+.asset-table th:first-child,
+.asset-table td:first-child {
+  width: 6rem;
+}
+
+.asset-thumb {
+  display: grid;
+  width: 4.2rem;
+  height: 4.2rem;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: rgba(15, 118, 110, 0.08);
+  color: #0f766e;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.asset-thumb img,
+.preview-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-card,
+.preview-card {
+  padding: 1rem;
+}
+
+.upload-button {
+  justify-content: center;
+}
+
+.upload-file-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 1rem;
+  background: rgba(15, 118, 110, 0.08);
+}
+
+.upload-file-chip strong,
+.upload-file-chip span,
+.muted-mono {
+  display: block;
+}
+
+.upload-file-chip strong {
+  font-size: 0.95rem;
+}
+
+.upload-file-chip span,
+.muted-mono {
+  color: var(--color-text-muted, #667085);
+  font-size: 0.78rem;
+}
+
+.muted-mono {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  word-break: break-all;
+}
+
+.preview-frame {
+  overflow: hidden;
+  border-radius: 1rem;
+  aspect-ratio: 16 / 10;
+  background: rgba(15, 118, 110, 0.08);
+}
+</style>

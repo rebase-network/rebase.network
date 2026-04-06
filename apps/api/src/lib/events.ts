@@ -4,6 +4,7 @@ import { events } from '@rebase/db';
 import type { AdminEventListItem, EventInput } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
+import { listPublicAssetUrlsById } from './assets.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
 import { ensurePublishedAt, toIsoString } from './utils.js';
@@ -214,6 +215,7 @@ export const listPublicEvents = async () => {
   const db = getDb();
   const rows = await db.select().from(events).where(eq(events.status, 'published')).orderBy(asc(events.startAt));
   const now = Date.now();
+  const assetUrls = await listPublicAssetUrlsById(rows.map((row) => row.coverAssetId));
 
   return rows.map((row) => ({
     slug: row.slug,
@@ -229,7 +231,7 @@ export const listPublicEvents = async () => {
     registrationNote: row.registrationNote ?? undefined,
     status: new Date(row.endAt).getTime() < now ? 'past' : 'upcoming',
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
-    coverImageUrl: undefined,
+    coverImageUrl: row.coverAssetId ? assetUrls.get(row.coverAssetId) : undefined,
   }));
 };
 
@@ -242,6 +244,7 @@ export const getPublicEventBySlug = async (slug: string) => {
   }
 
   const now = Date.now();
+  const assetUrls = await listPublicAssetUrlsById([row.coverAssetId]);
   return {
     slug: row.slug,
     title: row.title,
@@ -256,6 +259,6 @@ export const getPublicEventBySlug = async (slug: string) => {
     registrationNote: row.registrationNote ?? undefined,
     status: new Date(row.endAt).getTime() < now ? 'past' : 'upcoming',
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
-    coverImageUrl: undefined,
+    coverImageUrl: row.coverAssetId ? assetUrls.get(row.coverAssetId) : undefined,
   };
 };

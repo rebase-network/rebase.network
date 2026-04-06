@@ -18,7 +18,7 @@ export class AdminApiError extends Error {
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
-  body?: unknown;
+  body?: FormData | string | Record<string, unknown> | Array<unknown> | null;
 }
 
 interface ApiSuccessResponse<T, M = Record<string, unknown>> {
@@ -48,14 +48,24 @@ const parseResponse = async <T, M = Record<string, unknown>>(response: Response)
 };
 
 const request = async <T, M = Record<string, unknown>>(path: string, options: RequestOptions = {}) => {
+  const isFormData = options.body instanceof FormData;
+  let body: BodyInit | undefined;
+
+  if (options.body !== undefined && options.body !== null) {
+    if (options.body instanceof FormData || typeof options.body === 'string') {
+      body = options.body as BodyInit;
+    } else {
+      body = JSON.stringify(options.body);
+    }
+  }
   const response = await fetch(new URL(path, getAdminApiBaseUrl()), {
     method: options.method ?? 'GET',
     credentials: 'include',
     headers: {
       Accept: 'application/json',
-      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(options.body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
     },
-    ...(options.body ? { body: JSON.stringify(options.body) } : {}),
+    ...(body ? { body } : {}),
   });
 
   return parseResponse<T, M>(response);

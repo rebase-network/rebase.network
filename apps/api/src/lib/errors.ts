@@ -19,3 +19,6 @@ export const badRequest = (message: string, details?: Record<string, unknown>) =
 
 export const forbidden = (message: string, details?: Record<string, unknown>) =>
   new ApiError(403, 'FORBIDDEN', message, details);
+
+export const serviceUnavailable = (message: string, details?: Record<string, unknown>) =>
+  new ApiError(503, 'SERVICE_UNAVAILABLE', message, details);

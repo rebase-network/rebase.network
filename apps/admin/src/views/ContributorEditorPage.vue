@@ -41,6 +41,7 @@ const form = reactive<ContributorFormState>(createBlankForm());
 const contributorId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => contributorId.value.length === 0);
 const pageTitle = computed(() => (isNew.value ? '新增贡献者' : `编辑贡献者：${detail.value?.contributor.name ?? ''}`));
+const selectedAvatarAsset = computed(() => assets.value.find((asset) => asset.id === form.avatarAssetId) ?? null);
 
 const detail = ref<AdminContributorDetailPayload | null>(null);
 const assets = ref<AdminAssetRecord[]>([]);
@@ -250,6 +251,14 @@ onMounted(() => void loadRecord());
           <strong>{{ form.twitterUrl || form.wechat || form.telegram || '待填写' }}</strong>
           <p>至少保留一种社区成员可以联系到该贡献者的方式。</p>
         </article>
+        <article v-if="selectedAvatarAsset" class="insight-card stacked-gap-tight asset-preview-card">
+          <span class="eyebrow">avatar preview</span>
+          <div v-if="selectedAvatarAsset.publicUrl && selectedAvatarAsset.mimeType.startsWith('image/')" class="asset-preview-frame avatar-frame">
+            <img :src="selectedAvatarAsset.publicUrl" :alt="selectedAvatarAsset.altText || selectedAvatarAsset.originalFilename" />
+          </div>
+          <strong>{{ selectedAvatarAsset.originalFilename }}</strong>
+          <p>{{ selectedAvatarAsset.publicUrl || '当前资源尚未生成公开地址。' }}</p>
+        </article>
         <article class="insight-card stacked-gap-tight" v-if="detail">
           <span class="eyebrow">updated at</span>
           <strong>{{ formatDateTime(detail.contributor.updatedAt) }}</strong>
@@ -259,3 +268,21 @@ onMounted(() => void loadRecord());
     </div>
   </section>
 </template>
+
+<style scoped>
+.asset-preview-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.asset-preview-frame {
+  overflow: hidden;
+  border-radius: 1rem;
+  background: rgba(15, 118, 110, 0.08);
+}
+
+.avatar-frame {
+  aspect-ratio: 1 / 1;
+}
+</style>

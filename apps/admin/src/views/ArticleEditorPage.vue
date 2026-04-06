@@ -64,6 +64,7 @@ const articleId = computed(() => (typeof route.params.id === 'string' ? route.pa
 const isNew = computed(() => articleId.value.length === 0);
 const publicUrl = computed(() => (form.slug ? `/articles/${form.slug}` : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新建文章' : `编辑文章：${article.value?.title ?? ''}`));
+const selectedCoverAsset = computed(() => assets.value.find((asset) => asset.id === form.coverAssetId) ?? null);
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -281,6 +282,15 @@ onMounted(() => void loadArticle());
           <p>最近更新时间：{{ formatDateTime(article?.updatedAt) }}</p>
         </article>
 
+        <article v-if="selectedCoverAsset" class="insight-card stacked-gap-tight asset-preview-card">
+          <span class="eyebrow">cover preview</span>
+          <div v-if="selectedCoverAsset.publicUrl && selectedCoverAsset.mimeType.startsWith('image/')" class="asset-preview-frame">
+            <img :src="selectedCoverAsset.publicUrl" :alt="selectedCoverAsset.altText || selectedCoverAsset.originalFilename" />
+          </div>
+          <strong>{{ selectedCoverAsset.originalFilename }}</strong>
+          <p>{{ selectedCoverAsset.publicUrl || '当前资源尚未生成公开地址。' }}</p>
+        </article>
+
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">authors</span>
           <strong>{{ form.authors.map((item) => item.name).filter(Boolean).join('、') || '暂未填写' }}</strong>
@@ -290,3 +300,18 @@ onMounted(() => void loadArticle());
     </div>
   </section>
 </template>
+
+<style scoped>
+.asset-preview-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.asset-preview-frame {
+  overflow: hidden;
+  border-radius: 1rem;
+  aspect-ratio: 16 / 10;
+  background: rgba(15, 118, 110, 0.08);
+}
+</style>

@@ -463,11 +463,21 @@ export interface AdminAssetRecord {
   byteSize: number;
   width: number | null;
   height: number | null;
+  checksum: string | null;
   originalFilename: string;
   altText: string | null;
   status: AssetStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AdminAssetUploadConfig {
+  enabled: boolean;
+  mode: 'r2-s3' | 'wrangler-cli' | 'disabled';
+  storageProvider: 'r2';
+  bucket: string;
+  publicBaseUrl: string | null;
+  message: string;
 }
 
 export interface AdminRoleRecord {

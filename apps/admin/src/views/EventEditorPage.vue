@@ -74,6 +74,7 @@ const eventId = computed(() => (typeof route.params.id === 'string' ? route.para
 const isNew = computed(() => eventId.value.length === 0);
 const publicUrl = computed(() => (form.slug ? `/events/${form.slug}` : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新增活动' : `编辑活动：${record.value?.title ?? ''}`));
+const selectedCoverAsset = computed(() => assets.value.find((asset) => asset.id === form.coverAssetId) ?? null);
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -316,6 +317,14 @@ onMounted(() => void loadRecord());
           <strong>{{ form.registrationMode }}</strong>
           <p>{{ form.registrationUrl || form.registrationNote || '暂未填写报名信息' }}</p>
         </article>
+        <article v-if="selectedCoverAsset" class="insight-card stacked-gap-tight asset-preview-card">
+          <span class="eyebrow">cover preview</span>
+          <div v-if="selectedCoverAsset.publicUrl && selectedCoverAsset.mimeType.startsWith('image/')" class="asset-preview-frame">
+            <img :src="selectedCoverAsset.publicUrl" :alt="selectedCoverAsset.altText || selectedCoverAsset.originalFilename" />
+          </div>
+          <strong>{{ selectedCoverAsset.originalFilename }}</strong>
+          <p>{{ selectedCoverAsset.publicUrl || '当前资源尚未生成公开地址。' }}</p>
+        </article>
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">updated at</span>
           <strong>{{ formatDateTime(record?.updatedAt) }}</strong>
@@ -325,3 +334,18 @@ onMounted(() => void loadRecord());
     </div>
   </section>
 </template>
+
+<style scoped>
+.asset-preview-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.asset-preview-frame {
+  overflow: hidden;
+  border-radius: 1rem;
+  aspect-ratio: 16 / 10;
+  background: rgba(15, 118, 110, 0.08);
+}
+</style>

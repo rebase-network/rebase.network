@@ -1,0 +1,14 @@
+<svg width="1600" height="960" viewBox="0 0 1600 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="960" fill="#111827"/>
+  <rect x="80" y="80" width="1440" height="800" rx="42" fill="url(#night)"/>
+  <circle cx="1230" cy="250" r="120" fill="#FBBF24" fill-opacity="0.9"/>
+  <path d="M190 700L470 470L640 640L860 360L1130 620L1330 430" stroke="#F8FAFC" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="180" y="210" fill="#F8FAFC" font-size="58" font-family="Georgia, serif" font-weight="700">rebase shanghai builder night</text>
+  <text x="180" y="790" fill="#E0F2FE" font-size="36" font-family="Arial, sans-serif">event cover · skyline sessions</text>
+  <defs>
+    <linearGradient id="night" x1="180" y1="120" x2="1400" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1D4ED8"/>
+      <stop offset="1" stop-color="#312E81"/>
+    </linearGradient>
+  </defs>
+</svg>

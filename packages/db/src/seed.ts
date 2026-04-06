@@ -367,6 +367,90 @@ const seedContent = async (database: Database, baselineData: BaselineData) => {
   await database.delete(articles);
   await database.delete(assets);
 
+  const demoAssets = [
+    {
+      contentSlug: 'building-rebase-in-public',
+      contentType: 'article',
+      objectKey: 'demo/articles/building-rebase-in-public.svg',
+      publicUrl: '/media/demo/article-builder-dispatch.svg',
+      originalFilename: 'article-builder-dispatch.svg',
+      altText: 'Editorial cover for the article about building Rebase in public.',
+    },
+    {
+      contentSlug: 'signal-over-noise',
+      contentType: 'article',
+      objectKey: 'demo/articles/signal-over-noise.svg',
+      publicUrl: '/media/demo/article-signal-over-noise.svg',
+      originalFilename: 'article-signal-over-noise.svg',
+      altText: 'Editorial cover for the Signal over Noise article.',
+    },
+    {
+      contentSlug: 'community-archives-should-stay-readable',
+      contentType: 'article',
+      objectKey: 'demo/articles/community-archives-should-stay-readable.svg',
+      publicUrl: '/media/demo/article-community-archive.svg',
+      originalFilename: 'article-community-archive.svg',
+      altText: 'Editorial cover for the community archives article.',
+    },
+    {
+      contentSlug: 'rebase-shanghai-builder-night',
+      contentType: 'event',
+      objectKey: 'demo/events/rebase-shanghai-builder-night.svg',
+      publicUrl: '/media/demo/event-builder-night.svg',
+      originalFilename: 'event-builder-night.svg',
+      altText: 'Event cover for Rebase Shanghai Builder Night.',
+    },
+    {
+      contentSlug: 'geekdaily-editor-roundtable',
+      contentType: 'event',
+      objectKey: 'demo/events/geekdaily-editor-roundtable.svg',
+      publicUrl: '/media/demo/event-roundtable.svg',
+      originalFilename: 'event-roundtable.svg',
+      altText: 'Event cover for the GeekDaily editor roundtable.',
+    },
+    {
+      contentSlug: 'community-media-retrospective',
+      contentType: 'event',
+      objectKey: 'demo/events/community-media-retrospective.svg',
+      publicUrl: '/media/demo/event-retrospective.svg',
+      originalFilename: 'event-retrospective.svg',
+      altText: 'Event cover for the community media retrospective.',
+    },
+  ] as const;
+
+  const insertedAssets = await database
+    .insert(assets)
+    .values(
+      demoAssets.map((asset) => ({
+        storageProvider: 'local-demo',
+        bucket: 'rebase-media',
+        objectKey: asset.objectKey,
+        publicUrl: asset.publicUrl,
+        visibility: 'public' as const,
+        assetType: 'image',
+        mimeType: 'image/svg+xml',
+        byteSize: 4096,
+        width: 1600,
+        height: 960,
+        originalFilename: asset.originalFilename,
+        altText: asset.altText,
+        status: 'active' as const,
+      })),
+    )
+    .returning({ id: assets.id, objectKey: assets.objectKey });
+
+  const assetIdByObjectKey = new Map(insertedAssets.map((item) => [item.objectKey, item.id]));
+  const articleCoverAssetIdBySlug = new Map<string, string | null>(
+    demoAssets
+      .filter((asset) => asset.contentType === 'article')
+      .map((asset) => [asset.contentSlug, assetIdByObjectKey.get(asset.objectKey) ?? null]),
+  );
+  const eventCoverAssetIdBySlug = new Map<string, string | null>(
+    demoAssets
+      .filter((asset) => asset.contentType === 'event')
+      .map((asset) => [asset.contentSlug, assetIdByObjectKey.get(asset.objectKey) ?? null]),
+  );
+
   await insertChunks(
     database,
     articles,
@@ -376,6 +460,7 @@ const seedContent = async (database: Database, baselineData: BaselineData) => {
       summary: article.summary,
       bodyMarkdown: article.body,
       readingTime: article.reading_time,
+      coverAssetId: articleCoverAssetIdBySlug.get(article.slug) ?? null,
       coverAccent: article.cover_accent,
       authorsJson: article.authors,
       tagsJson: article.tags,
@@ -422,6 +507,7 @@ const seedContent = async (database: Database, baselineData: BaselineData) => {
       city: event.city,
       location: event.location,
       venue: event.venue,
+      coverAssetId: eventCoverAssetIdBySlug.get(event.slug) ?? null,
       registrationMode: event.registration_url ? 'external_url' : 'announcement_only',
       registrationUrl: event.registration_url,
       registrationNote: event.registration_note,
