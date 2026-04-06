@@ -1,0 +1,30 @@
+import { desc } from 'drizzle-orm';
+
+export const toIsoString = (value: Date | string | null | undefined) => {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  return new Date(value).toISOString();
+};
+
+export const slugify = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+export const ensurePublishedAt = (status: string, value?: string | null) => {
+  if (status !== 'published') {
+    return value ? new Date(value) : null;
+  }
+
+  return value ? new Date(value) : new Date();
+};
+
+export const latestFirst = <T extends { updatedAt: Date | string }>(field: T['updatedAt']) => desc(field as never);

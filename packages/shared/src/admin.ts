@@ -47,7 +47,7 @@ export const adminModules: ReadonlyArray<AdminModule> = [
     label: 'Contributors',
     href: '/contributors',
     summary: 'Maintain contributor profiles and role groupings.',
-    permission: 'contributor.manage',
+    permission: 'contributor.read',
   },
   {
     key: 'site',
@@ -59,7 +59,7 @@ export const adminModules: ReadonlyArray<AdminModule> = [
   {
     key: 'media',
     label: 'Media Library',
-    href: '/media',
+    href: '/assets',
     summary: 'Upload and reuse R2-backed media assets.',
     permission: 'asset.manage',
   },
@@ -73,7 +73,7 @@ export const adminModules: ReadonlyArray<AdminModule> = [
   {
     key: 'audit',
     label: 'Audit Logs',
-    href: '/audit',
+    href: '/audit-logs',
     summary: 'Review sensitive publishing and permission changes.',
     permission: 'audit_log.read',
   },

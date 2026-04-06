@@ -1,0 +1,269 @@
+import { desc, eq } from 'drizzle-orm';
+
+import { jobs } from '@rebase/db';
+import type { AdminJobListItem, JobInput } from '@rebase/shared';
+
+import { createAuditEntry, type AuditActor } from './audit.js';
+import { getDb } from './db.js';
+import { badRequest, notFound } from './errors.js';
+import { ensurePublishedAt, toIsoString } from './utils.js';
+
+const mapJobListItem = (row: any): AdminJobListItem => ({
+  id: row.id,
+  slug: row.slug,
+  companyName: row.companyName,
+  roleTitle: row.roleTitle,
+  status: row.status,
+  publishedAt: toIsoString(row.publishedAt),
+  expiresAt: toIsoString(row.expiresAt),
+  updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
+  supportsRemote: row.supportsRemote,
+});
+
+const mapJobDetail = (row: any) => ({
+  id: row.id,
+  slug: row.slug,
+  companyName: row.companyName,
+  roleTitle: row.roleTitle,
+  salary: row.salary,
+  supportsRemote: row.supportsRemote,
+  workMode: row.workMode,
+  location: row.location,
+  summary: row.summary,
+  descriptionMarkdown: row.descriptionMarkdown,
+  responsibilities: Array.isArray(row.responsibilitiesJson) ? row.responsibilitiesJson : [],
+  applyUrl: row.applyUrl ?? '',
+  applyNote: row.applyNote ?? '',
+  contactLabel: row.contactLabel ?? '',
+  contactValue: row.contactValue ?? '',
+  tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
+  seoTitle: row.seoTitle ?? '',
+  seoDescription: row.seoDescription ?? '',
+  status: row.status,
+  expiresAt: toIsoString(row.expiresAt),
+  publishedAt: toIsoString(row.publishedAt),
+  createdAt: toIsoString(row.createdAt) ?? new Date().toISOString(),
+  updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
+});
+
+const ensureUniqueSlug = async (slug: string, currentId?: string) => {
+  const db = getDb();
+  const rows = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.slug, slug)).limit(1);
+  const existing = rows[0] ?? null;
+  if (existing && existing.id !== currentId) {
+    throw badRequest('job slug already exists', { field: 'slug' });
+  }
+};
+
+export const listAdminJobs = async (): Promise<AdminJobListItem[]> => {
+  const db = getDb();
+  const rows = await db.select().from(jobs).orderBy(desc(jobs.updatedAt));
+  return rows.map(mapJobListItem);
+};
+
+export const getAdminJob = async (id: string) => {
+  const db = getDb();
+  const rows = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
+  const row = rows[0] ?? null;
+  return row ? mapJobDetail(row) : null;
+};
+
+export const createAdminJob = async (input: JobInput, actor: AuditActor) => {
+  const db = getDb();
+  await ensureUniqueSlug(input.slug);
+
+  const [created] = await db
+    .insert(jobs)
+    .values({
+      slug: input.slug,
+      companyName: input.companyName,
+      roleTitle: input.roleTitle,
+      salary: input.salary,
+      supportsRemote: input.supportsRemote,
+      workMode: input.workMode,
+      location: input.location,
+      summary: input.summary,
+      descriptionMarkdown: input.descriptionMarkdown,
+      responsibilitiesJson: input.responsibilities,
+      applyUrl: input.applyUrl,
+      applyNote: input.applyNote,
+      contactLabel: input.contactLabel,
+      contactValue: input.contactValue,
+      tagsJson: input.tags,
+      seoTitle: input.seoTitle,
+      seoDescription: input.seoDescription,
+      status: input.status,
+      expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+      publishedAt: ensurePublishedAt(input.status, input.publishedAt),
+      updatedByStaffId: actor.actorStaffAccountId ?? null,
+    })
+    .returning();
+
+  await createAuditEntry({
+    ...actor,
+    action: 'job.create',
+    targetType: 'job',
+    targetId: created.id,
+    summary: `Created job ${created.roleTitle}`,
+  });
+
+  return mapJobDetail(created);
+};
+
+export const updateAdminJob = async (id: string, input: JobInput, actor: AuditActor) => {
+  const db = getDb();
+  const current = await getAdminJob(id);
+  if (!current) {
+    throw notFound('job not found');
+  }
+
+  await ensureUniqueSlug(input.slug, id);
+
+  const [updated] = await db
+    .update(jobs)
+    .set({
+      slug: input.slug,
+      companyName: input.companyName,
+      roleTitle: input.roleTitle,
+      salary: input.salary,
+      supportsRemote: input.supportsRemote,
+      workMode: input.workMode,
+      location: input.location,
+      summary: input.summary,
+      descriptionMarkdown: input.descriptionMarkdown,
+      responsibilitiesJson: input.responsibilities,
+      applyUrl: input.applyUrl,
+      applyNote: input.applyNote,
+      contactLabel: input.contactLabel,
+      contactValue: input.contactValue,
+      tagsJson: input.tags,
+      seoTitle: input.seoTitle,
+      seoDescription: input.seoDescription,
+      status: input.status,
+      expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+      publishedAt: ensurePublishedAt(input.status, input.publishedAt),
+      updatedByStaffId: actor.actorStaffAccountId ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(jobs.id, id))
+    .returning();
+
+  await createAuditEntry({
+    ...actor,
+    action: 'job.update',
+    targetType: 'job',
+    targetId: updated.id,
+    summary: `Updated job ${updated.roleTitle}`,
+  });
+
+  return mapJobDetail(updated);
+};
+
+export const publishAdminJob = async (id: string, actor: AuditActor) => {
+  const db = getDb();
+  const current = await getAdminJob(id);
+  if (!current) {
+    throw notFound('job not found');
+  }
+
+  const [updated] = await db
+    .update(jobs)
+    .set({
+      status: 'published',
+      publishedAt: ensurePublishedAt('published', current.publishedAt),
+      updatedByStaffId: actor.actorStaffAccountId ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(jobs.id, id))
+    .returning();
+
+  await createAuditEntry({
+    ...actor,
+    action: 'job.publish',
+    targetType: 'job',
+    targetId: updated.id,
+    summary: `Published job ${updated.roleTitle}`,
+  });
+
+  return mapJobDetail(updated);
+};
+
+export const archiveAdminJob = async (id: string, actor: AuditActor) => {
+  const db = getDb();
+  const current = await getAdminJob(id);
+  if (!current) {
+    throw notFound('job not found');
+  }
+
+  const [updated] = await db
+    .update(jobs)
+    .set({
+      status: 'archived',
+      updatedByStaffId: actor.actorStaffAccountId ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(jobs.id, id))
+    .returning();
+
+  await createAuditEntry({
+    ...actor,
+    action: 'job.archive',
+    targetType: 'job',
+    targetId: updated.id,
+    summary: `Archived job ${updated.roleTitle}`,
+  });
+
+  return mapJobDetail(updated);
+};
+
+export const listPublicJobs = async () => {
+  const db = getDb();
+  const rows = await db.select().from(jobs).where(eq(jobs.status, 'published')).orderBy(desc(jobs.publishedAt));
+
+  return rows.map((row) => ({
+    slug: row.slug,
+    companyName: row.companyName,
+    roleTitle: row.roleTitle,
+    salary: row.salary,
+    supportsRemote: row.supportsRemote,
+    workMode: row.workMode,
+    location: row.location,
+    summary: row.summary,
+    description: row.descriptionMarkdown,
+    responsibilities: Array.isArray(row.responsibilitiesJson) ? row.responsibilitiesJson : [],
+    applyUrl: row.applyUrl ?? '',
+    applyNote: row.applyNote ?? '',
+    contactLabel: row.contactLabel ?? '',
+    contactValue: row.contactValue ?? '',
+    publishedAt: toIsoString(row.publishedAt),
+    tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
+  }));
+};
+
+export const getPublicJobBySlug = async (slug: string) => {
+  const db = getDb();
+  const rows = await db.select().from(jobs).where(eq(jobs.slug, slug)).limit(1);
+  const row = rows[0] ?? null;
+  if (!row || row.status !== 'published') {
+    return null;
+  }
+
+  return {
+    slug: row.slug,
+    companyName: row.companyName,
+    roleTitle: row.roleTitle,
+    salary: row.salary,
+    supportsRemote: row.supportsRemote,
+    workMode: row.workMode,
+    location: row.location,
+    summary: row.summary,
+    description: row.descriptionMarkdown,
+    responsibilities: Array.isArray(row.responsibilitiesJson) ? row.responsibilitiesJson : [],
+    applyUrl: row.applyUrl ?? '',
+    applyNote: row.applyNote ?? '',
+    contactLabel: row.contactLabel ?? '',
+    contactValue: row.contactValue ?? '',
+    publishedAt: toIsoString(row.publishedAt),
+    tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
+  };
+};

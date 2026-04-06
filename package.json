@@ -27,7 +27,15 @@
     "build:admin": "pnpm --filter @rebase/admin build",
     "build:api": "pnpm --filter @rebase/api build",
     "typecheck:admin": "pnpm --filter @rebase/admin typecheck",
-    "typecheck:api": "pnpm --filter @rebase/api typecheck"
+    "typecheck:api": "pnpm --filter @rebase/api typecheck",
+    "typecheck:backend": "pnpm typecheck:api && pnpm typecheck:admin",
+    "db:up": "docker compose -f infra/postgres/docker-compose.yml up -d",
+    "db:down": "docker compose -f infra/postgres/docker-compose.yml down",
+    "db:logs": "docker compose -f infra/postgres/docker-compose.yml logs --tail=120 postgres",
+    "db:generate": "pnpm --filter @rebase/db generate",
+    "db:migrate": "pnpm --filter @rebase/db migrate",
+    "db:seed": "pnpm --filter @rebase/db seed",
+    "admin:bootstrap": "pnpm --filter @rebase/api bootstrap-admin"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1"
