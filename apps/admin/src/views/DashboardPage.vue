@@ -85,7 +85,7 @@ onMounted(async () => {
     <header class="page-header">
       <div>
         <h2>仪表盘</h2>
-        <p>今日工作台</p>
+        <p>内容、权限与发布概览</p>
       </div>
     </header>
 
@@ -105,34 +105,38 @@ onMounted(async () => {
         </article>
       </div>
 
-      <article class="panel stacked-gap">
-        <div class="panel-toolbar">
-          <h3>常用模块</h3>
-          <div class="panel-meta">直接进入内容维护</div>
-        </div>
+      <div class="dashboard-content-grid">
+        <article class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>内容入口</h3>
+            <div class="panel-meta">直接进入维护界面</div>
+          </div>
 
-        <div class="dashboard-quick-links dashboard-quick-links-wide">
-          <RouterLink v-for="item in quickLinks" :key="item.to" class="dashboard-quick-link" :to="item.to">
-            <strong>{{ item.title }}</strong>
-            <span>{{ item.detail }}</span>
-          </RouterLink>
-        </div>
-      </article>
+          <div class="dashboard-module-grid">
+            <RouterLink v-for="item in quickLinks" :key="item.to" class="dashboard-quick-link" :to="item.to">
+              <strong>{{ item.title }}</strong>
+              <span>{{ item.detail }}</span>
+            </RouterLink>
+          </div>
+        </article>
 
-      <article class="panel stacked-gap">
-        <div class="panel-toolbar">
-          <h3>内容概览</h3>
-          <div class="panel-meta">核心模块分布</div>
-        </div>
+        <article class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>关键汇总</h3>
+            <div class="panel-meta">当前库存</div>
+          </div>
 
-        <div class="dashboard-insight-row">
-          <article v-for="item in workflowInsights" :key="item.title" class="insight-card">
-            <span class="compact-stat-label">{{ item.title }}</span>
-            <strong>{{ item.value }}</strong>
-            <p>{{ item.detail }}</p>
-          </article>
-        </div>
-      </article>
+          <div class="dashboard-summary-list">
+            <article v-for="item in workflowInsights" :key="item.title" class="dashboard-summary-row">
+              <div class="dashboard-summary-copy">
+                <strong>{{ item.title }}</strong>
+                <p>{{ item.detail }}</p>
+              </div>
+              <span class="status-pill">{{ item.value }}</span>
+            </article>
+          </div>
+        </article>
+      </div>
     </template>
   </section>
 </template>

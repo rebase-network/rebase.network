@@ -246,11 +246,11 @@ onMounted(() => void loadRecord());
         <div class="field-grid field-grid-2">
           <label class="field">
             <span>城市</span>
-            <input v-model="form.city" type="text" placeholder="Shanghai" />
+            <input v-model="form.city" type="text" placeholder="上海" />
           </label>
           <label class="field">
             <span>地点描述</span>
-            <input v-model="form.location" type="text" placeholder="Shanghai downtown" />
+            <input v-model="form.location" type="text" placeholder="上海市静安区 / 线下空间" />
           </label>
         </div>
 

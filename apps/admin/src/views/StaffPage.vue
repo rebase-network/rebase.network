@@ -9,7 +9,7 @@ import {
 } from '@rebase/shared';
 
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
-import { formatDateTime, formatStaffAccountStatus } from '../lib/format';
+import { formatAdminRoleLabel, formatAdminRoleList, formatDateTime, formatStaffAccountStatus } from '../lib/format';
 
 type StaffStatus = (typeof staffAccountStatusValues)[number];
 type StaffWorkspaceMode = 'create' | 'edit';
@@ -286,7 +286,7 @@ onMounted(() => {
 
             <div v-else class="role-overview-grid">
               <article v-for="role in roleSummaries" :key="role.id" class="role-overview-card">
-                <strong>{{ role.name }}</strong>
+                <strong>{{ formatAdminRoleLabel(role.code, role.name) }}</strong>
                 <span class="status-pill">{{ role.memberCount }} 人</span>
               </article>
             </div>
@@ -323,7 +323,7 @@ onMounted(() => {
                       <div class="muted-row">{{ row.email }}</div>
                     </div>
                   </td>
-                  <td>{{ row.roleCodes.join('、') || '未分配角色' }}</td>
+                  <td>{{ formatAdminRoleList(row.roleCodes) }}</td>
                   <td><span class="status-pill">{{ formatStaffAccountStatus(row.status) }}</span></td>
                   <td>{{ formatDateTime(row.lastLoginAt) }}</td>
                   <td class="table-actions-cell">
@@ -376,7 +376,7 @@ onMounted(() => {
               </label>
               <label class="field">
                 <span>姓名</span>
-                <input v-model="form.name" type="text" autocomplete="off" placeholder="rebase editor" />
+                <input v-model="form.name" type="text" autocomplete="off" placeholder="内容编辑" />
                 <small v-if="fieldIssues.name" class="field-error">{{ fieldIssues.name }}</small>
               </label>
             </div>
@@ -398,8 +398,7 @@ onMounted(() => {
               <div class="checkbox-list">
                 <label v-for="role in roles" :key="role.id" class="checkbox-chip">
                   <input :checked="form.roleIds.includes(role.id)" type="checkbox" @change="toggleRole(role.id)" />
-                  <span>{{ role.name }}</span>
-                  <small>{{ role.code }}</small>
+                  <span>{{ formatAdminRoleLabel(role.code, role.name) }}</span>
                 </label>
               </div>
               <small v-if="fieldIssues.roleIds" class="field-error">{{ fieldIssues.roleIds }}</small>
@@ -474,8 +473,7 @@ onMounted(() => {
               <div class="checkbox-list">
                 <label v-for="role in roles" :key="role.id" class="checkbox-chip">
                   <input :checked="form.roleIds.includes(role.id)" type="checkbox" @change="toggleRole(role.id)" />
-                  <span>{{ role.name }}</span>
-                  <small>{{ role.code }}</small>
+                  <span>{{ formatAdminRoleLabel(role.code, role.name) }}</span>
                 </label>
               </div>
               <small v-if="fieldIssues.roleIds" class="field-error">{{ fieldIssues.roleIds }}</small>

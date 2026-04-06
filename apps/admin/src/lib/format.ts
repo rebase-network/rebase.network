@@ -61,6 +61,30 @@ export const formatStaffAccountStatus = (status: StaffAccountStatus) => {
   }
 };
 
+const adminRoleLabelMap: Record<string, string> = {
+  super_admin: '超级管理员',
+  content_editor: '内容编辑',
+  'Super Admin': '超级管理员',
+  'Content Editor': '内容编辑',
+};
+
+export const formatAdminRoleLabel = (value?: string | null, fallback?: string | null) => {
+  if (value && adminRoleLabelMap[value]) {
+    return adminRoleLabelMap[value];
+  }
+
+  if (fallback && adminRoleLabelMap[fallback]) {
+    return adminRoleLabelMap[fallback];
+  }
+
+  return value || fallback || '—';
+};
+
+export const formatAdminRoleList = (values: string[]) => {
+  const labels = values.map((value) => formatAdminRoleLabel(value)).filter(Boolean);
+  return labels.length > 0 ? labels.join('、') : '未分配角色';
+};
+
 export const formatRegistrationMode = (value: RegistrationMode) => {
   switch (value) {
     case 'external_url':

@@ -283,7 +283,7 @@ onMounted(() => void loadRecord());
             </div>
             <div class="summary-item">
               <dt>联系方式</dt>
-              <dd class="muted">{{ form.contactLabel || form.contactValue ? `${form.contactLabel || 'contact'} / ${form.contactValue || '未填写'}` : '未填写' }}</dd>
+              <dd class="muted">{{ form.contactLabel || form.contactValue ? `${form.contactLabel || '联系方式'} / ${form.contactValue || '未填写'}` : '未填写' }}</dd>
             </div>
           </dl>
         </section>
@@ -297,7 +297,7 @@ onMounted(() => void loadRecord());
           </label>
           <label class="field">
             <span>岗位名称</span>
-            <input v-model="form.roleTitle" type="text" placeholder="frontend engineer" />
+            <input v-model="form.roleTitle" type="text" placeholder="前端工程师" />
           </label>
         </div>
 
@@ -321,11 +321,11 @@ onMounted(() => void loadRecord());
         <div class="field-grid field-grid-3">
           <label class="field">
             <span>工作模式</span>
-            <input v-model="form.workMode" type="text" placeholder="full-time" />
+            <input v-model="form.workMode" type="text" placeholder="全职" />
           </label>
           <label class="field">
             <span>地点</span>
-            <input v-model="form.location" type="text" placeholder="remote / china time zone preferred" />
+            <input v-model="form.location" type="text" placeholder="远程 / 中国时区优先" />
           </label>
           <label class="field checkbox-field">
             <span>支持远程</span>
@@ -364,7 +364,7 @@ onMounted(() => void loadRecord());
         <div class="field-grid field-grid-2">
           <label class="field">
             <span>联系方式标签</span>
-            <input v-model="form.contactLabel" type="text" placeholder="telegram" />
+            <input v-model="form.contactLabel" type="text" placeholder="telegram / 微信 / 邮箱" />
           </label>
           <label class="field">
             <span>联系方式值</span>

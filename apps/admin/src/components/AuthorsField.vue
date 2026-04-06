@@ -41,11 +41,11 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
         <div class="field-grid" :class="props.showRole ? 'field-grid-2' : undefined">
           <label class="field">
             <span>姓名</span>
-            <input :value="item.name" placeholder="Ruix" @input="updateItem(index, 'name', ($event.target as HTMLInputElement).value)" />
+            <input :value="item.name" placeholder="陈小明" @input="updateItem(index, 'name', ($event.target as HTMLInputElement).value)" />
           </label>
           <label v-if="props.showRole" class="field">
             <span>角色说明</span>
-            <input :value="item.role ?? ''" placeholder="Community steward" @input="updateItem(index, 'role', ($event.target as HTMLInputElement).value)" />
+            <input :value="item.role ?? ''" placeholder="编辑 / 组织者" @input="updateItem(index, 'role', ($event.target as HTMLInputElement).value)" />
           </label>
         </div>
       </div>

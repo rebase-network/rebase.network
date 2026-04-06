@@ -240,7 +240,7 @@ onMounted(() => void loadSite());
 
               <label class="field">
                 <span>版权文案</span>
-                <input v-model="settings.copyrightText" type="text" placeholder="Copyright © Rebase Community. All rights reserved." />
+                <input v-model="settings.copyrightText" type="text" placeholder="Copyright © Rebase Community. 保留所有权利。" />
               </label>
 
               <FooterGroupsField v-model="settings.footerGroups" />

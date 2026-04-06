@@ -248,7 +248,7 @@ onMounted(() => void loadRecord());
         <div class="field-grid field-grid-2">
           <label class="field">
             <span>姓名</span>
-            <input v-model="form.name" type="text" placeholder="Ruix" @input="onNameInput" />
+            <input v-model="form.name" type="text" placeholder="陈小明" @input="onNameInput" />
           </label>
           <label class="field">
             <span>URL 标识</span>
@@ -258,7 +258,7 @@ onMounted(() => void loadRecord());
 
         <label class="field">
           <span>一句话介绍</span>
-          <input v-model="form.headline" type="text" placeholder="Community steward" />
+          <input v-model="form.headline" type="text" placeholder="社区志愿者 / 极客日报智囊团" />
         </label>
 
         <MarkdownEditorField v-model="form.bio" label="详细介绍" placeholder="使用 Markdown 编写贡献者介绍。" :rows="8" />
@@ -287,7 +287,7 @@ onMounted(() => void loadRecord());
             <input v-model="form.twitterUrl" type="url" placeholder="https://x.com/rebase_network" />
           </label>
           <label class="field">
-            <span>Wechat</span>
+            <span>微信</span>
             <input v-model="form.wechat" type="text" placeholder="rebase-network" />
           </label>
           <label class="field">
