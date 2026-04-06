@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import DetailHero from '@/components/DetailHero.astro';
+import DetailSidebarLinksSection from '@/components/DetailSidebarLinksSection.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getGeekDailyEpisodeBySlug, getGeekDailyEpisodes, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
@@ -25,6 +27,36 @@ const slug = Astro.params.slug ?? '';
 const site = await getSiteSettings();
 const episode = (Astro.props.episode as GeekDailyEpisode | undefined) ?? (await getGeekDailyEpisodeBySlug(slug));
 const related = (Astro.props.related as GeekDailyEpisode[] | undefined) ?? [];
+const episodeBreadcrumbs = episode
+  ? [
+      { href: '/', label: '首页' },
+      { href: '/geekdaily', label: 'GeekDaily' },
+      { label: episode.title, current: true },
+    ]
+  : [];
+const episodeHeroMeta = episode ? [formatDate(episode.publishedAt), `${episode.items.length} 条推荐`, '持续归档'] : [];
+const episodeHeroActions = [
+  { href: '/geekdaily/rss.xml', label: '订阅 GeekDaily RSS', showIcon: true },
+  { href: '/geekdaily', label: '回到 GeekDaily 列表', secondary: true },
+];
+const episodeJumpLinks = [
+  { href: '#episode-body', label: '进入正文' },
+  { href: '#episode-items', label: '推荐条目' },
+  { href: '#episode-info', label: '期数信息' },
+];
+const episodeWayfindingLinks = [
+  { href: '#episode-body', label: '进入正文' },
+  { href: '#episode-items', label: '查看推荐条目' },
+  { href: '#episode-info', label: '查看期数信息' },
+];
+const episodeActionLinks = [
+  { href: '/geekdaily/rss.xml', label: '订阅 GeekDaily RSS' },
+  { href: '/geekdaily', label: '回到 GeekDaily 列表' },
+];
+const episodeRelatedLinks = related.map((item) => ({
+  href: getGeekDailyPath(item.episodeNumber),
+  label: item.title,
+}));
 
 if (!episode) {
   Astro.response.status = 404;
@@ -33,23 +65,30 @@ if (!episode) {
 
 <BaseLayout
   site={site}
-  title={episode ? episode.title : 'GeekDaily Not Found'}
-  description={episode ? episode.summary : 'The requested GeekDaily episode could not be found.'}
+  title={episode ? episode.title : 'GeekDaily 未找到'}
+  description={episode ? episode.summary : '你访问的 GeekDaily 内容暂时无法找到。'}
   noindex={!episode}
 >
   {episode ? (
     <>
       <section class="shell page-hero single">
-        <article class="hero-panel card">
-          <p class="hero-kicker">geekdaily episode</p>
-          <h1 class="hero-title">{episode.title}</h1>
-          <p class="hero-summary">{episode.summary}</p>
-        </article>
+        <DetailHero
+          kicker="GeekDaily 详情"
+          breadcrumbs={episodeBreadcrumbs}
+          edition={`No. ${episode.episodeNumber}`}
+          title={episode.title}
+          summary={episode.summary}
+          meta={episodeHeroMeta}
+          note="这期内容既保留正文，也把逐条推荐保留下来，方便搜索、订阅和回看。"
+          actions={episodeHeroActions}
+          jumps={episodeJumpLinks}
+          heroClass="episode-hero"
+        />
       </section>
 
       <section class="shell page-section detail-shell">
-        <article class="card episode-detail">
-          <div class="lead">
+        <article id="episode-body" class="card detail-body-card episode-detail">
+          <div class="detail-body-lead lead">
             <p>{formatDate(episode.publishedAt)}</p>
             {episode.tags.length > 0 && (
               <ul>
@@ -58,38 +97,72 @@ if (!episode) {
             )}
           </div>
           <MarkdownContent content={episode.body} />
-          <div class="item-list">
-            {episode.items.map((item, index) => (
-              <article class="item-card">
-                <span>#{index + 1}</span>
-                <div>
-                  <h2>
-                    <a href={item.sourceUrl} target="_blank" rel="noreferrer">
-                      {item.title}
-                    </a>
-                  </h2>
-                  <p class="author">推荐人：{item.author}</p>
-                  <p class="summary">{item.summary}</p>
-                </div>
-              </article>
-            ))}
-          </div>
+          <section id="episode-items" class="item-section">
+            <h2>本期推荐</h2>
+            <div class="item-list">
+              {episode.items.map((item, index) => (
+                <article class="item-card">
+                  <span>#{index + 1}</span>
+                  <div>
+                    <h3>
+                      <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+                        {item.title}
+                      </a>
+                    </h3>
+                    <p class="author">推荐人：{item.author}</p>
+                    <p class="summary">{item.summary}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
         </article>
 
         <aside class="card detail-sidebar">
-          <h2>episode info</h2>
-          <p>{episode.title}</p>
-          <ul>
-            <li>链接规范：<code>{getGeekDailyPath(episode.episodeNumber)}</code></li>
-            <li><a href="/geekdaily/rss.xml">订阅 GeekDaily RSS</a></li>
-            <li><a href="/geekdaily">回到 GeekDaily 列表</a></li>
-          </ul>
-          <h2 class="related-title">related episodes</h2>
-          <ul>
-            {related.map((item) => (
-              <li><a href={getGeekDailyPath(item.episodeNumber)}>{item.title}</a></li>
-            ))}
-          </ul>
+          <DetailSidebarLinksSection
+            title="页面导览"
+            copy="如果你是从搜索或分享链接重新进入，这几个锚点能帮你更快找到正文、条目和订阅入口。"
+            links={episodeWayfindingLinks}
+          />
+
+          <section id="episode-info" class="detail-sidebar-section">
+            <h2>期数信息</h2>
+            <ul class="detail-fact-list">
+              <li>
+                <strong>发布时间</strong>
+                <span>{formatDate(episode.publishedAt)}</span>
+              </li>
+              <li>
+                <strong>条目数量</strong>
+                <span>{episode.items.length} 条推荐</span>
+              </li>
+              <li>
+                <strong>链接规范</strong>
+                <span><code>{getGeekDailyPath(episode.episodeNumber)}</code></span>
+              </li>
+            </ul>
+            {episode.tags.length > 0 && (
+              <ul class="detail-tag-list">
+                {episode.tags.map((tag) => <li>{tag}</li>)}
+              </ul>
+            )}
+          </section>
+
+          <DetailSidebarLinksSection
+            id="episode-actions"
+            title="继续追踪"
+            copy="GeekDaily 详情页除了正文，还保留了逐条推荐和固定路径，适合从搜索结果重新进入。"
+            links={episodeActionLinks}
+          />
+
+          {related.length > 0 && (
+            <DetailSidebarLinksSection
+              id="episode-related"
+              title="相关期数"
+              links={episodeRelatedLinks}
+              listClass="related-list"
+            />
+          )}
         </aside>
       </section>
     </>
@@ -98,7 +171,7 @@ if (!episode) {
       <article class="hero-panel card">
         <p class="hero-kicker">404</p>
         <h1 class="hero-title">这期 GeekDaily 暂时没有被找到。</h1>
-        <p class="hero-summary">你可以先回到 GeekDaily 列表，继续浏览最近和历史 episode。</p>
+        <p class="hero-summary">你可以先回到 GeekDaily 列表，继续浏览最近与历史归档。</p>
       </article>
     </section>
   )}
@@ -109,26 +182,17 @@ if (!episode) {
     grid-template-columns: 1fr;
   }
 
-  .episode-detail {
-    padding: 1.4rem;
+  .episode-hero {
+    color: white;
+    background:
+      radial-gradient(circle at top right, rgba(245, 158, 11, 0.24), transparent 24%),
+      linear-gradient(135deg, rgba(67, 32, 14, 0.98), rgba(15, 118, 110, 0.92));
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 28px 60px rgba(39, 26, 18, 0.24);
   }
 
-  .lead {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .lead p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.84rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .light {
+    color: white;
   }
 
   .lead ul {
@@ -155,6 +219,15 @@ if (!episode) {
     margin-top: 1.25rem;
   }
 
+  .item-section {
+    margin-top: 1.5rem;
+  }
+
+  .item-section h2 {
+    margin: 0;
+    font-size: 1.45rem;
+  }
+
   .item-card {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -163,6 +236,15 @@ if (!episode) {
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.76);
     border: 1px solid rgba(31, 41, 51, 0.08);
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+
+  .item-card:hover,
+  .item-card:focus-within {
+    transform: translateY(-3px);
+    border-color: rgba(15, 118, 110, 0.16);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 18px 32px rgba(15, 118, 110, 0.08);
   }
 
   .item-card span {
@@ -176,13 +258,13 @@ if (!episode) {
     font-weight: 800;
   }
 
-  .item-card h2,
+  .item-card h3,
   .author,
   .summary {
     margin: 0;
   }
 
-  .item-card h2 {
+  .item-card h3 {
     font-size: 1.2rem;
     line-height: 1.2;
   }
@@ -198,9 +280,5 @@ if (!episode) {
     margin-top: 0.65rem;
     color: var(--muted);
     line-height: 1.75;
-  }
-
-  .related-title {
-    margin-top: 1.2rem !important;
   }
 </style>

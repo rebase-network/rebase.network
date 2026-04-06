@@ -1,0 +1,31 @@
+---
+interface DetailLink {
+  href: string;
+  label: string;
+  external?: boolean;
+}
+
+interface Props {
+  title: string;
+  copy?: string;
+  links: DetailLink[];
+  id?: string;
+  listClass?: string;
+}
+
+const { title, copy, links, id, listClass = 'detail-sidebar-list' } = Astro.props;
+---
+
+<section id={id} class="detail-sidebar-section">
+  <h2>{title}</h2>
+  {copy && <p class="detail-sidebar-copy">{copy}</p>}
+  <ul class={listClass}>
+    {links.map((link) => (
+      <li>
+        <a href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noreferrer' : undefined}>
+          {link.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>

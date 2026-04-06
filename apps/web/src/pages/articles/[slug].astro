@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import DetailHero from '@/components/DetailHero.astro';
+import DetailSidebarLinksSection from '@/components/DetailSidebarLinksSection.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getArticleBySlug, getArticles, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
@@ -21,6 +23,43 @@ const slug = Astro.params.slug ?? '';
 const site = await getSiteSettings();
 const article = (Astro.props.article as Article | undefined) ?? (await getArticleBySlug(slug));
 const related = (Astro.props.related as Article[] | undefined) ?? [];
+const articleAuthors = article?.authors.map((author) => author.name).join(' · ') ?? '';
+const articleContextNote = article
+  ? article.tags.length > 0
+    ? `关键词：${article.tags.join(' · ')}`
+    : '把社区里的方法、复盘和判断整理成可以反复回看的长内容。'
+  : '';
+const articleContinueAnchor = related.length > 0 ? '#article-related' : '#article-actions';
+const articleBreadcrumbs = article
+  ? [
+      { href: '/', label: '首页' },
+      { href: '/articles', label: '文章' },
+      { label: article.title, current: true },
+    ]
+  : [];
+const articleHeroMeta = article ? [formatDate(article.publishedAt), article.readingTime, articleAuthors].filter(Boolean) : [];
+const articleHeroActions = [
+  { href: '/articles/rss.xml', label: '订阅文章 RSS', showIcon: true },
+  { href: '/articles', label: '回到文章列表', secondary: true },
+];
+const articleJumpLinks = [
+  { href: '#article-body', label: '进入正文' },
+  { href: '#article-info', label: '文章信息' },
+  { href: articleContinueAnchor, label: '继续阅读' },
+];
+const articleWayfindingLinks = [
+  { href: '#article-body', label: '进入正文' },
+  { href: '#article-info', label: '查看文章信息' },
+  { href: articleContinueAnchor, label: '继续阅读' },
+];
+const articleActionLinks = [
+  { href: '/articles/rss.xml', label: '订阅文章 RSS' },
+  { href: '/articles', label: '返回文章列表' },
+];
+const articleRelatedLinks = related.map((item) => ({
+  href: getArticlePath(item.slug),
+  label: item.title,
+}));
 
 if (!article) {
   Astro.response.status = 404;
@@ -29,43 +68,83 @@ if (!article) {
 
 <BaseLayout
   site={site}
-  title={article ? article.title : 'Article Not Found'}
-  description={article ? article.summary : 'The requested article could not be found.'}
+  title={article ? article.title : '文章未找到'}
+  description={article ? article.summary : '你访问的文章暂时无法找到。'}
   socialImage={article?.coverImageUrl}
   noindex={!article}
 >
   {article ? (
     <>
       <section class="shell page-hero single">
-        <article class="hero-panel card article-hero" style={`background:${article.coverAccent}`}>
-          <p class="hero-kicker light">article</p>
-          <h1 class="hero-title light">{article.title}</h1>
-          <p class="hero-summary light">{article.summary}</p>
-        </article>
+        <DetailHero
+          kicker="文章详情"
+          breadcrumbs={articleBreadcrumbs}
+          edition="Longform Dispatch"
+          title={article.title}
+          summary={article.summary}
+          meta={articleHeroMeta}
+          note={articleContextNote}
+          actions={articleHeroActions}
+          jumps={articleJumpLinks}
+          heroClass="article-hero"
+          heroStyle={`--article-accent:${article.coverAccent};`}
+        />
       </section>
 
       <section class="shell page-section detail-shell">
-        <article class="card article-detail">
-          <div class="article-meta">
+        <article id="article-body" class="card detail-body-card article-detail">
+          <div class="detail-body-lead article-meta">
             <p>{formatDate(article.publishedAt)} · {article.readingTime}</p>
-            <p>{article.authors.map((author) => author.name).join(', ')}</p>
+            <p>{articleAuthors}</p>
           </div>
           <MarkdownContent content={article.body} />
         </article>
 
         <aside class="card detail-sidebar">
-          <h2>article details</h2>
-          <p>{article.tags.join(' · ')}</p>
-          <ul>
-            <li><a href="/articles/rss.xml">订阅文章 RSS</a></li>
-            <li><a href="/articles">返回文章列表</a></li>
-          </ul>
-          <h2 class="related-title">related reading</h2>
-          <ul>
-            {related.map((item) => (
-              <li><a href={getArticlePath(item.slug)}>{item.title}</a></li>
-            ))}
-          </ul>
+          <DetailSidebarLinksSection
+            title="页面导览"
+            copy="如果你是从搜索、分享或 RSS 进入，可以先用这几个锚点快速定位。"
+            links={articleWayfindingLinks}
+          />
+
+          <section id="article-info" class="detail-sidebar-section">
+            <h2>文章信息</h2>
+            <ul class="detail-fact-list">
+              <li>
+                <strong>发布时间</strong>
+                <span>{formatDate(article.publishedAt)}</span>
+              </li>
+              <li>
+                <strong>作者</strong>
+                <span>{articleAuthors}</span>
+              </li>
+              <li>
+                <strong>阅读时长</strong>
+                <span>{article.readingTime}</span>
+              </li>
+            </ul>
+            {article.tags.length > 0 && (
+              <ul class="detail-tag-list">
+                {article.tags.map((tag) => <li>{tag}</li>)}
+              </ul>
+            )}
+          </section>
+
+          <DetailSidebarLinksSection
+            id="article-actions"
+            title="继续阅读"
+            copy="除了当前正文，还保留订阅入口和完整归档，方便后续继续追踪。"
+            links={articleActionLinks}
+          />
+
+          {related.length > 0 && (
+            <DetailSidebarLinksSection
+              id="article-related"
+              title="延伸阅读"
+              links={articleRelatedLinks}
+              listClass="related-list"
+            />
+          )}
         </aside>
       </section>
     </>
@@ -87,36 +166,14 @@ if (!article) {
 
   .article-hero {
     color: white;
+    background:
+      linear-gradient(135deg, rgba(12, 23, 22, 0.72), rgba(12, 23, 22, 0.3)),
+      var(--article-accent);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 28px 60px rgba(23, 32, 29, 0.22);
   }
 
   .light {
     color: white;
-  }
-
-  .article-detail {
-    padding: 1.4rem;
-  }
-
-  .article-meta {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .article-meta p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.84rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .related-title {
-    margin-top: 1.2rem !important;
   }
 </style>

@@ -4,24 +4,115 @@ import { getAboutContent, getSiteSettings } from '@/lib/content';
 
 const [site, about] = await Promise.all([getSiteSettings(), getAboutContent()]);
 const { intro, sections } = about;
+
+const aboutSignals = [
+  {
+    value: '05',
+    label: '公共栏目',
+    detail: '文章、GeekDaily、活动、招聘、贡献者被放在同一个公共入口里。',
+  },
+  {
+    value: '05',
+    label: '默认 RSS',
+    detail: '首页和四类内容都有稳定 feed，分发层不是额外补丁。',
+  },
+  {
+    value: '02',
+    label: '入口域名',
+    detail: '双域名入口让迁移、传播和长期维护都更稳一点。',
+  },
+];
+
+const publicSurfaces = [
+  {
+    eyebrow: 'Longform',
+    title: 'Articles',
+    summary: '把复盘、判断和方法写成可以被再次进入的长内容。',
+    href: '/articles',
+  },
+  {
+    eyebrow: 'Signal desk',
+    title: 'GeekDaily',
+    summary: '把高频推荐、选题和历史条目组织成可搜索的连续档案。',
+    href: '/geekdaily',
+  },
+  {
+    eyebrow: 'Community flow',
+    title: 'Events',
+    summary: '让活动信息不只在社交平台里短暂出现，也能稳定归档。',
+    href: '/events',
+  },
+  {
+    eyebrow: 'Opportunities',
+    title: 'Who-Is-Hiring',
+    summary: '把招聘从短期帖子升级成可阅读、可追踪、可回看的公开页面。',
+    href: '/who-is-hiring',
+  },
+  {
+    eyebrow: 'People network',
+    title: 'Contributors',
+    summary: '把真正推动内容、活动和协作的人明确地呈现出来。',
+    href: '/contributors',
+  },
+];
 ---
 
-<BaseLayout site={site} title="About Rebase" description={intro.summary}>
+<BaseLayout site={site} title="关于 Rebase" description={intro.summary}>
   <section class="shell page-hero single">
-    <article class="hero-panel card">
-      <p class="hero-kicker">about rebase</p>
+    <article class="hero-panel card about-hero">
+      <div class="hero-topline">
+        <p class="hero-kicker">关于 Rebase</p>
+        <span class="edition-chip">Community Brief</span>
+      </div>
       <h1 class="hero-title">{intro.title}</h1>
       <p class="hero-summary">{intro.summary}</p>
+      <p class="brand-note">
+        Rebase 不想只做一个静态官网，而是想把 builder、community operator 和研究者每天真正产生的内容，
+        组织成一张长期可阅读的社区 front page。
+      </p>
+      <div class="about-signal-grid">
+        {aboutSignals.map((signal) => (
+          <article>
+            <strong>{signal.value}</strong>
+            <span>{signal.label}</span>
+            <p>{signal.detail}</p>
+          </article>
+        ))}
+      </div>
     </article>
   </section>
 
-  <section class="shell page-section about-grid">
-    {sections.map((section) => (
-      <article class="card about-card">
+  <section class="shell page-section about-story-grid">
+    {sections.map((section, index) => (
+      <article class:list={['card', 'about-card', { lead: index === 0 }]}>
+        <div class="card-topline">
+          <span>0{index + 1}</span>
+          <p>{section.title}</p>
+        </div>
         <h2>{section.title}</h2>
         <p>{section.body}</p>
       </article>
     ))}
+  </section>
+
+  <section class="shell page-section public-surface-shell">
+    <div class="surface-intro card">
+      <p class="hero-kicker">公共结构</p>
+      <h2>这几类页面不是孤立栏目，而是同一套社区媒体结构里的不同入口。</h2>
+      <p>
+        首页负责建立第一印象，栏目页负责持续归档，详情页负责完整阅读与后续动作，而关于页需要把这整套结构讲明白。
+      </p>
+    </div>
+
+    <div class="surface-grid">
+      {publicSurfaces.map((surface) => (
+        <a class="surface-card card" href={surface.href}>
+          <p>{surface.eyebrow}</p>
+          <h3>{surface.title}</h3>
+          <span>{surface.summary}</span>
+        </a>
+      ))}
+    </div>
   </section>
 </BaseLayout>
 
@@ -30,30 +121,272 @@ const { intro, sections } = about;
     grid-template-columns: 1fr;
   }
 
-  .about-grid {
+  .about-hero {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at top left, rgba(243, 196, 110, 0.28), transparent 30%),
+      radial-gradient(circle at 92% 18%, rgba(15, 118, 110, 0.16), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 251, 244, 0.92));
+    border-color: rgba(15, 118, 110, 0.14);
+    box-shadow: 0 28px 60px rgba(26, 40, 34, 0.12);
+  }
+
+  .about-hero::before {
+    content: 'REBASE';
+    position: absolute;
+    top: 1.1rem;
+    right: 1.35rem;
+    color: rgba(17, 94, 89, 0.08);
+    font-family: var(--display-font);
+    font-size: clamp(4.2rem, 8vw, 7rem);
+    letter-spacing: 0.08em;
+    line-height: 0.82;
+    pointer-events: none;
+  }
+
+  .about-hero > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .edition-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.48rem 0.8rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .about-hero .hero-title {
+    max-width: 11ch;
+    text-wrap: balance;
+  }
+
+  .brand-note {
+    margin: 1rem 0 0;
+    max-width: 52ch;
+    color: rgba(17, 94, 89, 0.84);
+    font-size: 0.98rem;
+    line-height: 1.8;
+  }
+
+  .about-signal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.4rem;
+  }
+
+  .about-signal-grid article {
+    padding: 1rem;
+    border: 1px solid rgba(15, 118, 110, 0.12);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.06);
+  }
+
+  .about-signal-grid strong,
+  .about-signal-grid span,
+  .about-signal-grid p {
+    display: block;
+    margin: 0;
+  }
+
+  .about-signal-grid strong {
+    font-size: 1.6rem;
+    font-family: var(--display-font);
+  }
+
+  .about-signal-grid span {
+    margin-top: 0.35rem;
+    color: var(--accent-strong);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .about-signal-grid p {
+    margin-top: 0.55rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .about-story-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
   }
 
   .about-card {
-    padding: 1.5rem;
+    padding: 1.4rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 252, 251, 0.88));
+  }
+
+  .about-card.lead {
+    grid-column: span 2;
+    background:
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.22), transparent 22%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 250, 242, 0.9));
+  }
+
+  .card-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .card-topline span,
+  .card-topline p {
+    margin: 0;
+  }
+
+  .card-topline span {
+    display: inline-grid;
+    width: 2.4rem;
+    height: 2.4rem;
+    place-items: center;
+    border-radius: 0.8rem;
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--accent-strong);
+    font-size: 0.85rem;
+    font-weight: 800;
+  }
+
+  .card-topline p {
+    color: var(--accent-strong);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
   .about-card h2 {
-    margin: 0 0 0.8rem;
-    font-size: 1.45rem;
+    margin: 1rem 0 0.75rem;
+    font-size: clamp(1.45rem, 2vw, 2.1rem);
+    line-height: 1.08;
   }
 
-  .about-card p {
+  .about-card p:last-child {
     margin: 0;
     color: var(--muted);
     line-height: 1.85;
   }
 
+  .public-surface-shell {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .surface-intro {
+    padding: 1.5rem;
+    background:
+      radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 252, 250, 0.88));
+  }
+
+  .surface-intro h2,
+  .surface-intro p:last-child {
+    margin: 0;
+  }
+
+  .surface-intro h2 {
+    font-size: clamp(1.7rem, 2.6vw, 2.6rem);
+    line-height: 1.08;
+  }
+
+  .surface-intro p:last-child {
+    margin-top: 0.8rem;
+    max-width: 66ch;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .surface-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .surface-card {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1.1rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 252, 250, 0.86));
+  }
+
+  .surface-card:hover,
+  .surface-card:focus-visible {
+    transform: translateY(-4px);
+    border-color: rgba(15, 118, 110, 0.18);
+    box-shadow: var(--shadow-strong);
+  }
+
+  .surface-card p,
+  .surface-card h3,
+  .surface-card span {
+    margin: 0;
+  }
+
+  .surface-card p {
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .surface-card h3 {
+    font-size: 1.18rem;
+    line-height: 1.15;
+  }
+
+  .surface-card span {
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 1100px) {
+    .surface-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   @media (max-width: 960px) {
-    .about-grid {
+    .about-signal-grid,
+    .about-story-grid,
+    .surface-grid {
       grid-template-columns: 1fr;
+    }
+
+    .about-card.lead {
+      grid-column: span 1;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .hero-topline {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 </style>

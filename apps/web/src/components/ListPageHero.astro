@@ -1,0 +1,188 @@
+---
+interface HeroSignal {
+  value: string;
+  label: string;
+  detail: string;
+}
+
+interface HeroJump {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  kicker: string;
+  edition: string;
+  title: string;
+  summary: string;
+  note?: string;
+  signals?: HeroSignal[];
+  jumps?: HeroJump[];
+  heroClass?: string;
+}
+
+const { kicker, edition, title, summary, note, signals = [], jumps = [], heroClass } = Astro.props;
+const heroSignals = signals.filter((signal) => signal.value && signal.label && signal.detail);
+const heroJumps = jumps.filter((jump) => jump.href && jump.label);
+---
+
+<section class="shell page-hero list-page-hero-shell">
+  <article class:list={['hero-panel', 'card', 'list-page-hero', heroClass]}>
+    <div class="hero-topline">
+      <p class="hero-kicker">{kicker}</p>
+      <span class="edition-chip">{edition}</span>
+    </div>
+    <h1 class="hero-title">{title}</h1>
+    <p class="hero-summary">{summary}</p>
+    {note && <p class="brand-note">{note}</p>}
+    {heroSignals.length > 0 && (
+      <div class="hero-facts">
+        {heroSignals.map((signal) => (
+          <article>
+            <strong>{signal.value}</strong>
+            <span>{signal.label}</span>
+            <p>{signal.detail}</p>
+          </article>
+        ))}
+      </div>
+    )}
+    {heroJumps.length > 0 && (
+      <div class="jump-list">
+        {heroJumps.map((jump) => (
+          <a href={jump.href}>{jump.label}</a>
+        ))}
+      </div>
+    )}
+  </article>
+</section>
+
+<style>
+  .list-page-hero-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .list-page-hero {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(15, 118, 110, 0.14);
+    box-shadow: 0 28px 60px rgba(26, 40, 34, 0.12);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 251, 0.92));
+  }
+
+  .list-page-hero > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .edition-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.48rem 0.8rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .brand-note {
+    margin: 1rem 0 0;
+    max-width: 56ch;
+    color: rgba(17, 94, 89, 0.84);
+    font-size: 0.98rem;
+    line-height: 1.8;
+  }
+
+  .hero-facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.4rem;
+  }
+
+  .hero-facts article {
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.06);
+  }
+
+  .hero-facts strong,
+  .hero-facts span,
+  .hero-facts p {
+    display: block;
+    margin: 0;
+  }
+
+  .hero-facts strong {
+    font-size: 1.55rem;
+    font-family: var(--display-font);
+  }
+
+  .hero-facts span {
+    margin-top: 0.35rem;
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .hero-facts p {
+    margin-top: 0.55rem;
+    color: var(--muted);
+    line-height: 1.72;
+  }
+
+  .jump-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1.25rem;
+  }
+
+  .jump-list a {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.68rem 0.92rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--accent-strong);
+    font-weight: 700;
+    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  }
+
+  .jump-list a:hover,
+  .jump-list a:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(15, 118, 110, 0.26);
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  @media (max-width: 1100px) {
+    .hero-facts {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .hero-topline {
+      align-items: start;
+      justify-content: start;
+    }
+  }
+</style>

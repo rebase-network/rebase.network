@@ -1,0 +1,170 @@
+---
+import SectionHeader from '@/components/SectionHeader.astro';
+
+interface NotePoint {
+  title: string;
+  description: string;
+}
+
+interface Props {
+  id?: string;
+  eyebrow: string;
+  title: string;
+  description?: string;
+  noteIndex?: string;
+  noteEyebrow: string;
+  noteTitle: string;
+  noteSummary: string;
+  notePoints?: NotePoint[];
+  noteLinkHref: string;
+  noteLinkLabel: string;
+}
+
+const {
+  id,
+  eyebrow,
+  title,
+  description,
+  noteIndex = '01',
+  noteEyebrow,
+  noteTitle,
+  noteSummary,
+  notePoints = [],
+  noteLinkHref,
+  noteLinkLabel,
+} = Astro.props;
+const points = notePoints.filter((point) => point.title && point.description);
+---
+
+<section id={id} class="shell page-section">
+  <SectionHeader eyebrow={eyebrow} title={title} description={description} />
+  <div class="lead-layout">
+    <slot />
+    <article class="card desk-note">
+      <div class="card-topline">
+        <span>{noteIndex}</span>
+        <p>{noteEyebrow}</p>
+      </div>
+      <h2>{noteTitle}</h2>
+      <p class="desk-copy">{noteSummary}</p>
+      {points.length > 0 && (
+        <ul class="note-list">
+          {points.map((point) => (
+            <li>
+              <strong>{point.title}</strong>
+              <span>{point.description}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <a class="desk-link" href={noteLinkHref}>{noteLinkLabel}</a>
+    </article>
+  </div>
+</section>
+
+<style>
+  .lead-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(19rem, 0.95fr);
+    gap: 1rem;
+  }
+
+  .desk-note {
+    padding: 1.35rem;
+    border: 1px solid rgba(31, 41, 51, 0.08);
+    background:
+      radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 251, 250, 0.9));
+  }
+
+  .card-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .card-topline span,
+  .card-topline p,
+  h2,
+  .desk-copy {
+    margin: 0;
+  }
+
+  .card-topline span {
+    display: inline-grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    place-items: center;
+    border-radius: 0.8rem;
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--accent-strong);
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  .card-topline p {
+    color: var(--accent-strong);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin-top: 1rem;
+    font-size: clamp(1.55rem, 2.4vw, 2.35rem);
+    line-height: 1.08;
+  }
+
+  .desk-copy {
+    margin-top: 0.8rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .note-list {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0;
+    margin: 1rem 0 0;
+    list-style: none;
+  }
+
+  .note-list li {
+    padding: 0.95rem 1rem;
+    border-radius: 0.95rem;
+    background: rgba(255, 255, 255, 0.74);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .note-list strong,
+  .note-list span {
+    display: block;
+  }
+
+  .note-list strong {
+    color: var(--foreground);
+    font-size: 0.95rem;
+  }
+
+  .note-list span {
+    margin-top: 0.35rem;
+    color: var(--muted);
+    line-height: 1.72;
+  }
+
+  .desk-link {
+    display: inline-flex;
+    margin-top: 1rem;
+    color: var(--accent-strong);
+    font-weight: 800;
+  }
+
+  @media (max-width: 1100px) {
+    .lead-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

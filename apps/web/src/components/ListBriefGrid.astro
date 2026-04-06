@@ -1,0 +1,115 @@
+---
+interface BriefItem {
+  eyebrow: string;
+  title: string;
+  summary: string;
+  tone?: string;
+}
+
+interface Props {
+  id?: string;
+  items?: BriefItem[];
+}
+
+const { id, items = [] } = Astro.props;
+const briefs = items.filter((item) => item.eyebrow && item.title && item.summary);
+---
+
+{briefs.length > 0 && (
+  <section id={id} class="shell page-section brief-grid">
+    {briefs.map((brief, index) => (
+      <article class:list={['card', 'brief-card', `tone-${brief.tone ?? 'neutral'}`]}>
+        <div class="card-topline">
+          <span>{String(index + 1).padStart(2, '0')}</span>
+          <p>{brief.eyebrow}</p>
+        </div>
+        <h2>{brief.title}</h2>
+        <p class="brief-summary">{brief.summary}</p>
+      </article>
+    ))}
+  </section>
+)}
+
+<style>
+  .brief-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .brief-card {
+    padding: 1.35rem;
+    border: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .brief-card.tone-warm {
+    background:
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.2), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 250, 243, 0.9));
+  }
+
+  .brief-card.tone-cool {
+    background:
+      radial-gradient(circle at top right, rgba(125, 211, 252, 0.2), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 251, 252, 0.9));
+  }
+
+  .brief-card.tone-neutral {
+    background:
+      radial-gradient(circle at top right, rgba(148, 163, 184, 0.16), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.9));
+  }
+
+  .card-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .card-topline span,
+  .card-topline p,
+  h2,
+  .brief-summary {
+    margin: 0;
+  }
+
+  .card-topline span {
+    display: inline-grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    place-items: center;
+    border-radius: 0.8rem;
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--accent-strong);
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  .card-topline p {
+    color: var(--accent-strong);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin-top: 1rem;
+    font-size: clamp(1.55rem, 2.4vw, 2.35rem);
+    line-height: 1.08;
+  }
+
+  .brief-summary {
+    margin-top: 0.8rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  @media (max-width: 1100px) {
+    .brief-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

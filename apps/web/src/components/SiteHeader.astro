@@ -19,7 +19,7 @@ const pathname = Astro.url.pathname;
       </span>
     </a>
 
-    <nav aria-label="Primary navigation">
+    <nav aria-label="主导航">
       <ul>
         {site.navigation.map((item) => {
           const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
@@ -123,10 +123,37 @@ const pathname = Astro.url.pathname;
     .header-inner {
       flex-direction: column;
       align-items: stretch;
+      gap: 0.75rem;
+      padding: 0.9rem 1rem;
+    }
+
+    .brand {
+      justify-content: flex-start;
+    }
+
+    small {
+      display: none;
+    }
+
+    nav {
+      overflow-x: auto;
+      padding-bottom: 0.1rem;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    nav::-webkit-scrollbar {
+      display: none;
     }
 
     nav ul {
       justify-content: flex-start;
+      flex-wrap: nowrap;
+      width: max-content;
+    }
+
+    nav a {
+      white-space: nowrap;
     }
   }
 </style>
