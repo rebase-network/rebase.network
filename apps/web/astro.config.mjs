@@ -1,10 +1,10 @@
 import { defineConfig } from 'astro/config';
-import cloudflare from '@astrojs/cloudflare';
+
+const site = process.env.SITE_URL ?? 'https://rebase.network';
 
 export default defineConfig({
-  site: 'https://rebase.network',
-  output: 'server',
-  adapter: cloudflare(),
+  site,
+  output: 'static',
   server: {
     host: true,
     port: 4321,

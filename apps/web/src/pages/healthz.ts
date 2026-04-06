@@ -1,16 +1,18 @@
+import { fetchApiReady } from '@/lib/api';
 import { getSiteSettings } from '@/lib/content';
-import { directusHealthcheck } from '@/lib/directus';
 
 export async function GET() {
   try {
-    const [directus, site] = await Promise.all([directusHealthcheck(), getSiteSettings()]);
+    const [ready, site] = await Promise.all([fetchApiReady(), getSiteSettings()]);
 
     return Response.json(
       {
         status: 'ok',
         checkedAt: new Date().toISOString(),
         checks: {
-          directus: directus.status,
+          api: ready.status,
+          database: ready.checks.database,
+          auth: ready.checks.auth,
           publicContent: site.name ? 'ok' : 'missing',
         },
       },

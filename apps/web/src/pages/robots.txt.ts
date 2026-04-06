@@ -1,10 +1,11 @@
-const primaryDomain = 'https://rebase.network';
+import { getSiteSettings } from '@/lib/content';
 
-export function GET() {
+export async function GET() {
+  const site = await getSiteSettings();
   const body = [
     'User-agent: *',
     'Allow: /',
-    `Sitemap: ${primaryDomain}/sitemap.xml`,
+    `Sitemap: ${site.primaryDomain}/sitemap.xml`,
     '',
   ].join('\n');
 

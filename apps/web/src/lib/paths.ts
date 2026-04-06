@@ -2,8 +2,8 @@ export function getArticlePath(slug: string) {
   return `/articles/${slug}`;
 }
 
-export function getEventPath(date: string, slug: string) {
-  return `/events/${date.slice(0, 10)}-${slug}`;
+export function getEventPath(_date: string, slug: string) {
+  return `/events/${slug}`;
 }
 
 export function getGeekDailyPath(episodeNumber: number) {

@@ -1,6 +1,7 @@
 ---
 import type { Contributor } from '@rebase/types';
 import { createAvatarData } from '@/lib/avatar';
+import { renderMarkdown } from '@/lib/markdown';
 
 interface Props {
   contributor: Contributor;
@@ -8,6 +9,7 @@ interface Props {
 
 const { contributor } = Astro.props;
 const avatarBackground = createAvatarData(contributor.avatarSeed);
+const bioHtml = renderMarkdown(contributor.bio);
 ---
 
 <article class="contributor-card card">
@@ -21,7 +23,7 @@ const avatarBackground = createAvatarData(contributor.avatarSeed);
   <div>
     <h3>{contributor.name}</h3>
     <p class="headline">{contributor.headline}</p>
-    <p class="bio">{contributor.bio}</p>
+    <div class="bio" set:html={bioHtml} />
     <ul>
       {contributor.twitterUrl && (
         <li><a href={contributor.twitterUrl} target="_blank" rel="noreferrer">twitter</a></li>
@@ -72,6 +74,10 @@ const avatarBackground = createAvatarData(contributor.avatarSeed);
     margin-top: 0.6rem;
     color: var(--muted);
     line-height: 1.7;
+  }
+
+  .bio :global(p) {
+    margin: 0;
   }
 
   ul {

@@ -4,10 +4,23 @@ import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getJobBySlug, getJobs, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 import { getJobPath } from '@/lib/paths';
+import type { Job } from '@rebase/types';
+
+export async function getStaticPaths() {
+  const jobs = await getJobs();
+  return jobs.map((job) => ({
+    params: { slug: job.slug },
+    props: {
+      job,
+      related: jobs.filter((item) => item.slug !== job.slug).slice(0, 2),
+    },
+  }));
+}
 
 const slug = Astro.params.slug ?? '';
-const [site, job, jobs] = await Promise.all([getSiteSettings(), getJobBySlug(slug), getJobs()]);
-const related = job ? jobs.filter((item) => item.slug !== job.slug).slice(0, 2) : [];
+const site = await getSiteSettings();
+const job = (Astro.props.job as Job | undefined) ?? (await getJobBySlug(slug));
+const related = (Astro.props.related as Job[] | undefined) ?? [];
 
 if (!job) {
   Astro.response.status = 404;
