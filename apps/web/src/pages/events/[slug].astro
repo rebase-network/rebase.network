@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import DetailHero from '@/components/DetailHero.astro';
+import DetailSidebarLinksSection from '@/components/DetailSidebarLinksSection.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getEventBySlug, getEvents, getSiteSettings } from '@/lib/content';
 import { formatEventWindow } from '@/lib/dates';
@@ -23,6 +25,42 @@ const event = (Astro.props.event as Event | undefined) ?? (await getEventBySlug(
 const related = (Astro.props.related as Event[] | undefined) ?? [];
 const eventStatusLabel = event ? (event.status === 'upcoming' ? '即将举办' : '活动归档') : '';
 const registrationModeLabel = event ? (event.registrationUrl ? '开放报名' : '仅信息说明') : '';
+const eventContinueAnchor = related.length > 0 ? '#event-related' : '#event-actions';
+const eventBreadcrumbs = event
+  ? [
+      { href: '/', label: '首页' },
+      { href: '/events', label: '活动' },
+      { label: event.title, current: true },
+    ]
+  : [];
+const eventHeroMeta = event ? [event.city, event.venue, registrationModeLabel].filter(Boolean) : [];
+const eventHeroActions = event
+  ? [
+      ...(event.registrationUrl
+        ? [{ href: event.registrationUrl, label: '外部报名', external: true, showIcon: true }]
+        : []),
+      { href: '/events', label: '返回活动列表', secondary: true },
+    ]
+  : [];
+const eventJumpLinks = [
+  { href: '#event-body', label: '活动内容' },
+  { href: '#event-info', label: '活动信息' },
+  { href: eventContinueAnchor, label: '继续追踪' },
+];
+const eventWayfindingLinks = [
+  { href: '#event-body', label: '查看活动内容' },
+  { href: '#event-info', label: '查看活动信息' },
+  { href: eventContinueAnchor, label: '继续追踪' },
+];
+const eventActionLinks = [
+  ...(event?.registrationUrl ? [{ href: event.registrationUrl, label: '打开外部报名链接', external: true }] : []),
+  { href: '/events/rss.xml', label: '订阅活动 RSS' },
+  { href: '/events', label: '回到活动列表' },
+];
+const eventRelatedLinks = related.map((item) => ({
+  href: getEventPath(item.startAt, item.slug),
+  label: item.title,
+}));
 
 if (!event) {
   Astro.response.status = 404;
@@ -39,40 +77,18 @@ if (!event) {
   {event ? (
     <>
       <section class="shell page-hero single">
-        <article class="hero-panel card detail-hero event-hero">
-          <div class="detail-topline">
-            <div class="detail-context">
-              <p class="hero-kicker light">活动详情</p>
-              <nav class="detail-breadcrumbs light" aria-label="Breadcrumb">
-                <a href="/">首页</a>
-                <span aria-hidden="true">/</span>
-                <a href="/events">活动</a>
-                <span aria-hidden="true">/</span>
-                <span aria-current="page">{event.title}</span>
-              </nav>
-            </div>
-            <span class="detail-edition">{eventStatusLabel}</span>
-          </div>
-          <h1 class="hero-title light">{event.title}</h1>
-          <p class="hero-summary light">{event.summary}</p>
-          <div class="detail-meta-strip">
-            <span class="detail-meta-pill">{event.city}</span>
-            <span class="detail-meta-pill">{event.venue}</span>
-            <span class="detail-meta-pill">{registrationModeLabel}</span>
-          </div>
-          <p class="detail-hero-note light">{formatEventWindow(event.startAt, event.endAt)} · {event.location}</p>
-          <div class="button-row">
-            {event.registrationUrl && (
-              <a class="button-link" href={event.registrationUrl} target="_blank" rel="noreferrer">外部报名 <span>↗</span></a>
-            )}
-            <a class="button-link secondary" href="/events">返回活动列表</a>
-          </div>
-          <div class="detail-jump-list">
-            <a href="#event-body">活动内容</a>
-            <a href="#event-info">活动信息</a>
-            <a href={related.length > 0 ? '#event-related' : '#event-actions'}>继续追踪</a>
-          </div>
-        </article>
+        <DetailHero
+          kicker="活动详情"
+          breadcrumbs={eventBreadcrumbs}
+          edition={eventStatusLabel}
+          title={event.title}
+          summary={event.summary}
+          meta={eventHeroMeta}
+          note={`${formatEventWindow(event.startAt, event.endAt)} · ${event.location}`}
+          actions={eventHeroActions}
+          jumps={eventJumpLinks}
+          heroClass="event-hero"
+        />
       </section>
 
       <section class="shell page-section detail-shell">
@@ -85,15 +101,11 @@ if (!event) {
         </article>
 
         <aside class="card detail-sidebar">
-          <section class="detail-sidebar-section">
-            <h2>页面导览</h2>
-            <p class="detail-sidebar-copy">如果你是从活动分享或历史归档进入，可以先用这些锚点快速定位。</p>
-            <ul class="detail-sidebar-list">
-              <li><a href="#event-body">查看活动内容</a></li>
-              <li><a href="#event-info">查看活动信息</a></li>
-              <li><a href={related.length > 0 ? '#event-related' : '#event-actions'}>继续追踪</a></li>
-            </ul>
-          </section>
+          <DetailSidebarLinksSection
+            title="页面导览"
+            copy="如果你是从活动分享或历史归档进入，可以先用这些锚点快速定位。"
+            links={eventWayfindingLinks}
+          />
 
           <section id="event-info" class="detail-sidebar-section">
             <h2>活动信息</h2>
@@ -119,28 +131,15 @@ if (!event) {
             )}
           </section>
 
-          <section id="event-actions" class="detail-sidebar-section">
-            <h2>继续追踪</h2>
-            <ul class="detail-sidebar-list">
-              {event.registrationUrl && (
-                <li>
-                  <a href={event.registrationUrl} target="_blank" rel="noreferrer">打开外部报名链接</a>
-                </li>
-              )}
-              <li><a href="/events/rss.xml">订阅活动 RSS</a></li>
-              <li><a href="/events">回到活动列表</a></li>
-            </ul>
-          </section>
+          <DetailSidebarLinksSection id="event-actions" title="继续追踪" links={eventActionLinks} />
 
           {related.length > 0 && (
-            <section id="event-related" class="detail-sidebar-section">
-              <h2>相关活动</h2>
-              <ul class="related-list">
-                {related.map((item) => (
-                  <li><a href={getEventPath(item.startAt, item.slug)}>{item.title}</a></li>
-                ))}
-              </ul>
-            </section>
+            <DetailSidebarLinksSection
+              id="event-related"
+              title="相关活动"
+              links={eventRelatedLinks}
+              listClass="related-list"
+            />
           )}
         </aside>
       </section>

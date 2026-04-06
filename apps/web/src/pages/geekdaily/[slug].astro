@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import DetailHero from '@/components/DetailHero.astro';
+import DetailSidebarLinksSection from '@/components/DetailSidebarLinksSection.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getGeekDailyEpisodeBySlug, getGeekDailyEpisodes, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
@@ -25,6 +27,36 @@ const slug = Astro.params.slug ?? '';
 const site = await getSiteSettings();
 const episode = (Astro.props.episode as GeekDailyEpisode | undefined) ?? (await getGeekDailyEpisodeBySlug(slug));
 const related = (Astro.props.related as GeekDailyEpisode[] | undefined) ?? [];
+const episodeBreadcrumbs = episode
+  ? [
+      { href: '/', label: '首页' },
+      { href: '/geekdaily', label: 'GeekDaily' },
+      { label: episode.title, current: true },
+    ]
+  : [];
+const episodeHeroMeta = episode ? [formatDate(episode.publishedAt), `${episode.items.length} 条推荐`, '持续归档'] : [];
+const episodeHeroActions = [
+  { href: '/geekdaily/rss.xml', label: '订阅 GeekDaily RSS', showIcon: true },
+  { href: '/geekdaily', label: '回到 GeekDaily 列表', secondary: true },
+];
+const episodeJumpLinks = [
+  { href: '#episode-body', label: '进入正文' },
+  { href: '#episode-items', label: '推荐条目' },
+  { href: '#episode-info', label: '期数信息' },
+];
+const episodeWayfindingLinks = [
+  { href: '#episode-body', label: '进入正文' },
+  { href: '#episode-items', label: '查看推荐条目' },
+  { href: '#episode-info', label: '查看期数信息' },
+];
+const episodeActionLinks = [
+  { href: '/geekdaily/rss.xml', label: '订阅 GeekDaily RSS' },
+  { href: '/geekdaily', label: '回到 GeekDaily 列表' },
+];
+const episodeRelatedLinks = related.map((item) => ({
+  href: getGeekDailyPath(item.episodeNumber),
+  label: item.title,
+}));
 
 if (!episode) {
   Astro.response.status = 404;
@@ -40,38 +72,18 @@ if (!episode) {
   {episode ? (
     <>
       <section class="shell page-hero single">
-        <article class="hero-panel card detail-hero episode-hero">
-          <div class="detail-topline">
-            <div class="detail-context">
-              <p class="hero-kicker light">GeekDaily 详情</p>
-              <nav class="detail-breadcrumbs light" aria-label="Breadcrumb">
-                <a href="/">首页</a>
-                <span aria-hidden="true">/</span>
-                <a href="/geekdaily">GeekDaily</a>
-                <span aria-hidden="true">/</span>
-                <span aria-current="page">{episode.title}</span>
-              </nav>
-            </div>
-            <span class="detail-edition">No. {episode.episodeNumber}</span>
-          </div>
-          <h1 class="hero-title light">{episode.title}</h1>
-          <p class="hero-summary light">{episode.summary}</p>
-          <div class="detail-meta-strip">
-            <span class="detail-meta-pill">{formatDate(episode.publishedAt)}</span>
-            <span class="detail-meta-pill">{episode.items.length} 条推荐</span>
-            <span class="detail-meta-pill">持续归档</span>
-          </div>
-          <p class="detail-hero-note light">这期内容既保留正文，也把逐条推荐保留下来，方便搜索、订阅和回看。</p>
-          <div class="button-row">
-            <a class="button-link" href="/geekdaily/rss.xml">订阅 GeekDaily RSS <span>↗</span></a>
-            <a class="button-link secondary" href="/geekdaily">回到 GeekDaily 列表</a>
-          </div>
-          <div class="detail-jump-list">
-            <a href="#episode-body">进入正文</a>
-            <a href="#episode-items">推荐条目</a>
-            <a href="#episode-info">期数信息</a>
-          </div>
-        </article>
+        <DetailHero
+          kicker="GeekDaily 详情"
+          breadcrumbs={episodeBreadcrumbs}
+          edition={`No. ${episode.episodeNumber}`}
+          title={episode.title}
+          summary={episode.summary}
+          meta={episodeHeroMeta}
+          note="这期内容既保留正文，也把逐条推荐保留下来，方便搜索、订阅和回看。"
+          actions={episodeHeroActions}
+          jumps={episodeJumpLinks}
+          heroClass="episode-hero"
+        />
       </section>
 
       <section class="shell page-section detail-shell">
@@ -107,15 +119,11 @@ if (!episode) {
         </article>
 
         <aside class="card detail-sidebar">
-          <section class="detail-sidebar-section">
-            <h2>页面导览</h2>
-            <p class="detail-sidebar-copy">如果你是从搜索或分享链接重新进入，这几个锚点能帮你更快找到正文、条目和订阅入口。</p>
-            <ul class="detail-sidebar-list">
-              <li><a href="#episode-body">进入正文</a></li>
-              <li><a href="#episode-items">查看推荐条目</a></li>
-              <li><a href="#episode-info">查看期数信息</a></li>
-            </ul>
-          </section>
+          <DetailSidebarLinksSection
+            title="页面导览"
+            copy="如果你是从搜索或分享链接重新进入，这几个锚点能帮你更快找到正文、条目和订阅入口。"
+            links={episodeWayfindingLinks}
+          />
 
           <section id="episode-info" class="detail-sidebar-section">
             <h2>期数信息</h2>
@@ -140,24 +148,20 @@ if (!episode) {
             )}
           </section>
 
-          <section id="episode-actions" class="detail-sidebar-section">
-            <h2>继续追踪</h2>
-            <p class="detail-sidebar-copy">GeekDaily 详情页除了正文，还保留了逐条推荐和固定路径，适合从搜索结果重新进入。</p>
-            <ul class="detail-sidebar-list">
-              <li><a href="/geekdaily/rss.xml">订阅 GeekDaily RSS</a></li>
-              <li><a href="/geekdaily">回到 GeekDaily 列表</a></li>
-            </ul>
-          </section>
+          <DetailSidebarLinksSection
+            id="episode-actions"
+            title="继续追踪"
+            copy="GeekDaily 详情页除了正文，还保留了逐条推荐和固定路径，适合从搜索结果重新进入。"
+            links={episodeActionLinks}
+          />
 
           {related.length > 0 && (
-            <section id="episode-related" class="detail-sidebar-section">
-              <h2>相关期数</h2>
-              <ul class="related-list">
-                {related.map((item) => (
-                  <li><a href={getGeekDailyPath(item.episodeNumber)}>{item.title}</a></li>
-                ))}
-              </ul>
-            </section>
+            <DetailSidebarLinksSection
+              id="episode-related"
+              title="相关期数"
+              links={episodeRelatedLinks}
+              listClass="related-list"
+            />
           )}
         </aside>
       </section>

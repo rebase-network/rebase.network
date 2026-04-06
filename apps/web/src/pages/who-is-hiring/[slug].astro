@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import DetailHero from '@/components/DetailHero.astro';
+import DetailSidebarLinksSection from '@/components/DetailSidebarLinksSection.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getJobBySlug, getJobs, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
@@ -25,6 +27,38 @@ const remoteLabel = job ? (job.supportsRemote ? '支持远程' : '线下优先')
 const applyCopy = job
   ? job.applyNote || (job.applyUrl ? '请通过下方外部链接投递。' : '请通过下方联系方式投递。')
   : '';
+const jobBreadcrumbs = job
+  ? [
+      { href: '/', label: '首页' },
+      { href: '/who-is-hiring', label: '招聘' },
+      { label: job.roleTitle, current: true },
+    ]
+  : [];
+const jobHeroMeta = job ? [job.workMode, job.location, remoteLabel].filter(Boolean) : [];
+const jobHeroActions = job
+  ? [
+      ...(job.applyUrl ? [{ href: job.applyUrl, label: '立即投递', external: true, showIcon: true }] : []),
+      { href: '/who-is-hiring', label: '回到招聘列表', secondary: true },
+    ]
+  : [];
+const jobJumpLinks = [
+  { href: '#job-overview', label: '岗位概览' },
+  { href: '#job-responsibilities', label: '工作内容' },
+  { href: '#job-info', label: '投递信息' },
+];
+const jobWayfindingLinks = [
+  { href: '#job-overview', label: '查看岗位概览' },
+  { href: '#job-responsibilities', label: '查看工作内容' },
+  { href: '#job-info', label: '查看投递信息' },
+];
+const jobActionLinks = [
+  ...(job?.applyUrl ? [{ href: job.applyUrl, label: '打开外部投递链接', external: true }] : []),
+  { href: '/who-is-hiring', label: '回到招聘列表' },
+];
+const jobRelatedLinks = related.map((item) => ({
+  href: getJobPath(item.slug),
+  label: item.roleTitle,
+}));
 
 if (!job) {
   Astro.response.status = 404;
@@ -40,40 +74,18 @@ if (!job) {
   {job ? (
     <>
       <section class="shell page-hero single">
-        <article class="hero-panel card detail-hero job-hero">
-          <div class="detail-topline">
-            <div class="detail-context">
-              <p class="hero-kicker light">岗位详情</p>
-              <nav class="detail-breadcrumbs light" aria-label="Breadcrumb">
-                <a href="/">首页</a>
-                <span aria-hidden="true">/</span>
-                <a href="/who-is-hiring">招聘</a>
-                <span aria-hidden="true">/</span>
-                <span aria-current="page">{job.roleTitle}</span>
-              </nav>
-            </div>
-            <span class="detail-edition">{job.companyName}</span>
-          </div>
-          <h1 class="hero-title light">{job.roleTitle}</h1>
-          <p class="hero-summary light">{job.summary}</p>
-          <div class="detail-meta-strip">
-            <span class="detail-meta-pill">{job.workMode}</span>
-            <span class="detail-meta-pill">{job.location}</span>
-            <span class="detail-meta-pill">{remoteLabel}</span>
-          </div>
-          <p class="detail-hero-note light">{job.salary} · 发布时间 {formatDate(job.publishedAt)}</p>
-          <div class="button-row">
-            {job.applyUrl && (
-              <a class="button-link" href={job.applyUrl} target="_blank" rel="noreferrer">立即投递 <span>↗</span></a>
-            )}
-            <a class="button-link secondary" href="/who-is-hiring">回到招聘列表</a>
-          </div>
-          <div class="detail-jump-list">
-            <a href="#job-overview">岗位概览</a>
-            <a href="#job-responsibilities">工作内容</a>
-            <a href="#job-info">投递信息</a>
-          </div>
-        </article>
+        <DetailHero
+          kicker="岗位详情"
+          breadcrumbs={jobBreadcrumbs}
+          edition={job.companyName}
+          title={job.roleTitle}
+          summary={job.summary}
+          meta={jobHeroMeta}
+          note={`${job.salary} · 发布时间 ${formatDate(job.publishedAt)}`}
+          actions={jobHeroActions}
+          jumps={jobJumpLinks}
+          heroClass="job-hero"
+        />
       </section>
 
       <section class="shell page-section detail-shell">
@@ -108,15 +120,11 @@ if (!job) {
         </article>
 
         <aside class="card detail-sidebar">
-          <section class="detail-sidebar-section">
-            <h2>页面导览</h2>
-            <p class="detail-sidebar-copy">如果你是从搜索结果或职位分享进入，可以先用这些锚点快速判断是否匹配。</p>
-            <ul class="detail-sidebar-list">
-              <li><a href="#job-overview">查看岗位概览</a></li>
-              <li><a href="#job-responsibilities">查看工作内容</a></li>
-              <li><a href="#job-info">查看投递信息</a></li>
-            </ul>
-          </section>
+          <DetailSidebarLinksSection
+            title="页面导览"
+            copy="如果你是从搜索结果或职位分享进入，可以先用这些锚点快速判断是否匹配。"
+            links={jobWayfindingLinks}
+          />
 
           <section id="job-info" class="detail-sidebar-section">
             <h2>投递信息</h2>
@@ -142,27 +150,15 @@ if (!job) {
             )}
           </section>
 
-          <section id="job-actions" class="detail-sidebar-section">
-            <h2>继续查看</h2>
-            <ul class="detail-sidebar-list">
-              {job.applyUrl && (
-                <li>
-                  <a href={job.applyUrl} target="_blank" rel="noreferrer">打开外部投递链接</a>
-                </li>
-              )}
-              <li><a href="/who-is-hiring">回到招聘列表</a></li>
-            </ul>
-          </section>
+          <DetailSidebarLinksSection id="job-actions" title="继续查看" links={jobActionLinks} />
 
           {related.length > 0 && (
-            <section id="job-related" class="detail-sidebar-section">
-              <h2>相关岗位</h2>
-              <ul class="related-list">
-                {related.map((item) => (
-                  <li><a href={getJobPath(item.slug)}>{item.roleTitle}</a></li>
-                ))}
-              </ul>
-            </section>
+            <DetailSidebarLinksSection
+              id="job-related"
+              title="相关岗位"
+              links={jobRelatedLinks}
+              listClass="related-list"
+            />
           )}
         </aside>
       </section>

@@ -395,6 +395,28 @@
 - `apps/web/src/pages/who-is-hiring/[slug].astro`
 - `apps/web/src/pages/geekdaily/[slug].astro`
 
+## 第九轮公共组件抽取
+
+这轮继续只做 `apps/web` 的公共前台层，不改数据结构，重点是把上一轮在四类详情页里重复出现的结构抽成共享组件，降低后续继续迭代时的重复修改成本。
+
+### 19. 把详情页 hero 与 sidebar 链接区提炼成共享组件
+
+已完成：
+
+- 新增 `DetailHero` 组件，把四类详情页里重复的 breadcrumb、edition、meta pills、主操作按钮和页内 jump links 收敛到同一套结构里。
+- 新增 `DetailSidebarLinksSection` 组件，把详情页 sidebar 里反复出现的“标题 + 说明 + 链接列表”区块统一起来，页面导览、继续追踪和相关内容都能复用。
+- 文章、活动、招聘、GeekDaily 四类详情页都改成由共享组件驱动，原本散落在各页里的重复 hero / sidebar 标记被大幅收掉。
+- 这次抽取没有改动各页自己的品牌化 hero 配色、正文结构和事实信息区，只收敛共用骨架，避免把页面个性一起抹平。
+
+涉及文件：
+
+- `apps/web/src/components/DetailHero.astro`
+- `apps/web/src/components/DetailSidebarLinksSection.astro`
+- `apps/web/src/pages/articles/[slug].astro`
+- `apps/web/src/pages/events/[slug].astro`
+- `apps/web/src/pages/who-is-hiring/[slug].astro`
+- `apps/web/src/pages/geekdaily/[slug].astro`
+
 ## 结论
 
 `apps/web` 当前已经具备完整可运行的公共站点形态，而且这轮前台修正后，活动详情 URL 规范、Markdown 链接安全、招聘详情降级处理、GeekDaily 搜索文案和语言标记这些明显问题都已经收敛。
