@@ -417,6 +417,30 @@
 - `apps/web/src/pages/who-is-hiring/[slug].astro`
 - `apps/web/src/pages/geekdaily/[slug].astro`
 
+## 第十轮列表页公共结构组件化
+
+这轮继续只做 `apps/web` 的公共前台层，不改数据查询和路由语义，重点是把三个栏目首页里反复出现的 hero、brief cards、lead desk note 和空状态卡片收成共享组件，降低后续继续细调时的重复劳动。
+
+### 20. 把三类栏目首页的重复骨架提炼成共享组件
+
+已完成：
+
+- 新增 `ListPageHero` 组件，把栏目首页通用的 edition chip、品牌说明、信号卡和 jump links 收到同一套骨架里，页面只保留自己的渐变和 watermark。
+- 新增 `ListBriefGrid` 组件，统一三张 brief cards 的序号、tone 变体和响应式栅格，后续再调栏目 brief 结构时不需要三页一起手改。
+- 新增 `ListLeadSection` 组件，把 lead item 右侧的 desk note、note list 和 RSS 回流入口整合起来，文章 / 活动 / 招聘页的主推荐区结构保持一致。
+- 新增 `ListEmptyState` 组件，统一列表为空时的卡片骨架，同时保留活动历史归档的 cool 变体，避免空状态样式再次分叉。
+- `articles`、`events`、`who-is-hiring` 三个栏目首页现在只保留各自的内容数据和 hero 个性化样式，公共结构重复显著减少，后续继续做列表页 refinement 的修改面更小。
+
+涉及文件：
+
+- `apps/web/src/components/ListPageHero.astro`
+- `apps/web/src/components/ListBriefGrid.astro`
+- `apps/web/src/components/ListLeadSection.astro`
+- `apps/web/src/components/ListEmptyState.astro`
+- `apps/web/src/pages/articles/index.astro`
+- `apps/web/src/pages/events/index.astro`
+- `apps/web/src/pages/who-is-hiring/index.astro`
+
 ## 结论
 
 `apps/web` 当前已经具备完整可运行的公共站点形态，而且这轮前台修正后，活动详情 URL 规范、Markdown 链接安全、招聘详情降级处理、GeekDaily 搜索文案和语言标记这些明显问题都已经收敛。

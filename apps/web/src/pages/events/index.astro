@@ -1,7 +1,11 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
 import EventCard from '@/components/EventCard.astro';
+import ListBriefGrid from '@/components/ListBriefGrid.astro';
+import ListEmptyState from '@/components/ListEmptyState.astro';
+import ListLeadSection from '@/components/ListLeadSection.astro';
+import ListPageHero from '@/components/ListPageHero.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getPastEvents, getSiteSettings, getUpcomingEvents } from '@/lib/content';
 
 const [site, upcomingEvents, pastEvents] = await Promise.all([
@@ -50,80 +54,52 @@ const eventBriefs = [
     tone: 'neutral',
   },
 ];
+
+const eventLeadPoints = [
+  {
+    title: '动作前置',
+    description: '把最主要的报名入口放在首屏附近，不让读者在页面里反复寻找。',
+  },
+  {
+    title: '归档不丢失',
+    description: '即使活动结束，页面也继续保留，方便社区回看曾经发生过什么。',
+  },
+];
 ---
 
 <BaseLayout site={site} title="Rebase 活动" description="查看 Rebase 社区的当前活动与历史活动归档。">
-  <section class="shell page-hero single">
-    <article class="hero-panel card events-hero">
-      <div class="hero-topline">
-        <p class="hero-kicker">活动归档</p>
-        <span class="edition-chip">Agenda Index</span>
-      </div>
-      <h1 class="hero-title">活动页先做好表达与归档，再慢慢加深运营能力。</h1>
-      <p class="hero-summary">第一版活动详情页不做站内报名表，但会清晰展示时间、地点、说明和外部报名入口。</p>
-      <p class="brand-note">
-        活动栏目既要服务当前报名，也要服务后续回看；它不只是“近期活动列表”，也是社区节奏的公开档案。
-      </p>
-      <div class="hero-facts">
-        {eventSignals.map((signal) => (
-          <article>
-            <strong>{signal.value}</strong>
-            <span>{signal.label}</span>
-            <p>{signal.detail}</p>
-          </article>
-        ))}
-      </div>
-      <div class="jump-list">
-        <a href="#lead-event">当前主推</a>
-        <a href="#upcoming-archive">近期活动</a>
-        <a href="#past-archive">历史归档</a>
-      </div>
-    </article>
-  </section>
+  <ListPageHero
+    kicker="活动归档"
+    edition="Agenda Index"
+    title="活动页先做好表达与归档，再慢慢加深运营能力。"
+    summary="第一版活动详情页不做站内报名表，但会清晰展示时间、地点、说明和外部报名入口。"
+    note="活动栏目既要服务当前报名，也要服务后续回看；它不只是“近期活动列表”，也是社区节奏的公开档案。"
+    signals={eventSignals}
+    jumps={[
+      { href: '#lead-event', label: '当前主推' },
+      { href: '#upcoming-archive', label: '近期活动' },
+      { href: '#past-archive', label: '历史归档' },
+    ]}
+    heroClass="events-hero"
+  />
 
-  <section id="event-brief" class="shell page-section brief-grid">
-    {eventBriefs.map((brief, index) => (
-      <article class:list={['card', 'brief-card', `tone-${brief.tone}`]}>
-        <div class="card-topline">
-          <span>0{index + 1}</span>
-          <p>{brief.eyebrow}</p>
-        </div>
-        <h2>{brief.title}</h2>
-        <p>{brief.summary}</p>
-      </article>
-    ))}
-  </section>
+  <ListBriefGrid id="event-brief" items={eventBriefs} />
 
   {leadUpcomingEvent && (
-    <section id="lead-event" class="shell page-section">
-      <SectionHeader
-        eyebrow="重点活动"
-        title="当前主推活动"
-        description="活动栏目先给一个足够明确的主推入口，让读者一眼知道什么时候、在哪里、为什么值得参与。"
-      />
-      <div class="lead-layout">
-        <EventCard event={leadUpcomingEvent} />
-        <article class="card desk-note">
-          <div class="card-topline">
-            <span>01</span>
-            <p>Participation desk</p>
-          </div>
-          <h2>主推活动应该一眼回答“什么时候、在哪里、为什么值得去”。</h2>
-          <p>活动详情页优先保证时间、地点、议题和报名方式准确清晰，把参与门槛降到最低。</p>
-          <ul class="note-list">
-            <li>
-              <strong>动作前置</strong>
-              <span>把最主要的报名入口放在首屏附近，不让读者在页面里反复寻找。</span>
-            </li>
-            <li>
-              <strong>归档不丢失</strong>
-              <span>即使活动结束，页面也继续保留，方便社区回看曾经发生过什么。</span>
-            </li>
-          </ul>
-          <a class="desk-link" href="/events/rss.xml">订阅活动 RSS</a>
-        </article>
-      </div>
-    </section>
+    <ListLeadSection
+      id="lead-event"
+      eyebrow="重点活动"
+      title="当前主推活动"
+      description="活动栏目先给一个足够明确的主推入口，让读者一眼知道什么时候、在哪里、为什么值得参与。"
+      noteEyebrow="Participation desk"
+      noteTitle="主推活动应该一眼回答“什么时候、在哪里、为什么值得去”。"
+      noteSummary="活动详情页优先保证时间、地点、议题和报名方式准确清晰，把参与门槛降到最低。"
+      notePoints={eventLeadPoints}
+      noteLinkHref="/events/rss.xml"
+      noteLinkLabel="订阅活动 RSS"
+    >
+      <EventCard event={leadUpcomingEvent} />
+    </ListLeadSection>
   )}
 
   <section id="upcoming-archive" class="shell page-section">
@@ -139,11 +115,11 @@ const eventBriefs = [
         {remainingUpcomingEvents.map((event) => <EventCard event={event} />)}
       </div>
     ) : (
-      <article class="card archive-empty">
-        <p class="hero-kicker">持续排期</p>
-        <h2>更多活动正在安排中。</h2>
-        <p>当前先保留主推活动入口，新的公开活动会继续按同一结构补进这条时间线里。</p>
-      </article>
+      <ListEmptyState
+        kicker="持续排期"
+        title="更多活动正在安排中。"
+        description="当前先保留主推活动入口，新的公开活动会继续按同一结构补进这条时间线里。"
+      />
     )}
   </section>
 
@@ -158,32 +134,25 @@ const eventBriefs = [
         {pastEvents.map((event) => <EventCard event={event} />)}
       </div>
     ) : (
-      <article class="card archive-empty archive-empty-cool">
-        <p class="hero-kicker">归档建设中</p>
-        <h2>历史活动档案会继续补全。</h2>
-        <p>这部分会逐步补上过往活动的时间、地点、主题和说明，让站点保留更完整的社区记忆。</p>
-      </article>
+      <ListEmptyState
+        kicker="归档建设中"
+        title="历史活动档案会继续补全。"
+        description="这部分会逐步补上过往活动的时间、地点、主题和说明，让站点保留更完整的社区记忆。"
+        variant="cool"
+      />
     )}
   </section>
 </BaseLayout>
 
 <style>
-  .single {
-    grid-template-columns: 1fr;
-  }
-
-  .events-hero {
-    position: relative;
-    overflow: hidden;
+  :global(.events-hero) {
     background:
       radial-gradient(circle at top left, rgba(125, 211, 252, 0.24), transparent 30%),
       radial-gradient(circle at 90% 18%, rgba(15, 118, 110, 0.18), transparent 22%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 252, 251, 0.92));
-    border-color: rgba(15, 118, 110, 0.14);
-    box-shadow: 0 28px 60px rgba(26, 40, 34, 0.12);
   }
 
-  .events-hero::before {
+  :global(.events-hero::before) {
     content: 'EVENTS';
     position: absolute;
     top: 1rem;
@@ -196,279 +165,8 @@ const eventBriefs = [
     pointer-events: none;
   }
 
-  .events-hero > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .hero-topline {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.8rem;
-  }
-
-  .edition-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.48rem 0.8rem;
-    border: 1px solid rgba(15, 118, 110, 0.14);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.72);
-    color: var(--accent-strong);
-    font-size: 0.76rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .events-hero .hero-title {
+  :global(.events-hero .hero-title) {
     max-width: 11ch;
     text-wrap: balance;
-  }
-
-  .brand-note {
-    margin: 1rem 0 0;
-    max-width: 56ch;
-    color: rgba(17, 94, 89, 0.84);
-    font-size: 0.98rem;
-    line-height: 1.8;
-  }
-
-  .hero-facts {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.9rem;
-    margin-top: 1.4rem;
-  }
-
-  .hero-facts article {
-    padding: 1rem;
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.78);
-    border: 1px solid rgba(31, 41, 51, 0.08);
-    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.06);
-  }
-
-  .hero-facts strong,
-  .hero-facts span,
-  .hero-facts p {
-    display: block;
-    margin: 0;
-  }
-
-  .hero-facts strong {
-    font-size: 1.55rem;
-    font-family: var(--display-font);
-  }
-
-  .hero-facts span {
-    margin-top: 0.35rem;
-    color: var(--accent-strong);
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .hero-facts p {
-    margin-top: 0.55rem;
-    color: var(--muted);
-    line-height: 1.72;
-  }
-
-  .jump-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.7rem;
-    margin-top: 1.25rem;
-  }
-
-  .jump-list a {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.68rem 0.92rem;
-    border: 1px solid rgba(15, 118, 110, 0.14);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.74);
-    color: var(--accent-strong);
-    font-weight: 700;
-    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
-  }
-
-  .jump-list a:hover,
-  .jump-list a:focus-visible {
-    transform: translateY(-2px);
-    border-color: rgba(15, 118, 110, 0.26);
-    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
-    background: rgba(255, 255, 255, 0.92);
-  }
-
-  .brief-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  .brief-card,
-  .desk-note,
-  .archive-empty {
-    border: 1px solid rgba(31, 41, 51, 0.08);
-  }
-
-  .brief-card {
-    padding: 1.35rem;
-  }
-
-  .brief-card.tone-warm {
-    background:
-      radial-gradient(circle at top right, rgba(243, 196, 110, 0.2), transparent 24%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 250, 243, 0.9));
-  }
-
-  .brief-card.tone-cool {
-    background:
-      radial-gradient(circle at top right, rgba(125, 211, 252, 0.2), transparent 24%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 251, 252, 0.9));
-  }
-
-  .brief-card.tone-neutral {
-    background:
-      radial-gradient(circle at top right, rgba(148, 163, 184, 0.16), transparent 24%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.9));
-  }
-
-  .card-topline {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.8rem;
-  }
-
-  .card-topline span,
-  .card-topline p,
-  .brief-card h2,
-  .brief-card p:last-child,
-  .desk-note h2,
-  .desk-note p,
-  .archive-empty h2,
-  .archive-empty p:last-child {
-    margin: 0;
-  }
-
-  .card-topline span {
-    display: inline-grid;
-    width: 2.35rem;
-    height: 2.35rem;
-    place-items: center;
-    border-radius: 0.8rem;
-    background: rgba(15, 118, 110, 0.1);
-    color: var(--accent-strong);
-    font-size: 0.84rem;
-    font-weight: 800;
-  }
-
-  .card-topline p {
-    color: var(--accent-strong);
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .brief-card h2,
-  .desk-note h2,
-  .archive-empty h2 {
-    margin-top: 1rem;
-    font-size: clamp(1.55rem, 2.4vw, 2.35rem);
-    line-height: 1.08;
-  }
-
-  .brief-card p:last-child,
-  .desk-note p,
-  .archive-empty p:last-child {
-    margin-top: 0.8rem;
-    color: var(--muted);
-    line-height: 1.8;
-  }
-
-  .lead-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(19rem, 0.95fr);
-    gap: 1rem;
-  }
-
-  .desk-note {
-    padding: 1.35rem;
-    background:
-      radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 24%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 251, 250, 0.9));
-  }
-
-  .note-list {
-    display: grid;
-    gap: 0.8rem;
-    padding: 0;
-    margin: 1rem 0 0;
-    list-style: none;
-  }
-
-  .note-list li {
-    padding: 0.95rem 1rem;
-    border-radius: 0.95rem;
-    background: rgba(255, 255, 255, 0.74);
-    border: 1px solid rgba(31, 41, 51, 0.08);
-  }
-
-  .note-list strong,
-  .note-list span {
-    display: block;
-  }
-
-  .note-list strong {
-    color: var(--foreground);
-    font-size: 0.95rem;
-  }
-
-  .note-list span {
-    margin-top: 0.35rem;
-    color: var(--muted);
-    line-height: 1.72;
-  }
-
-  .desk-link {
-    display: inline-flex;
-    margin-top: 1rem;
-    color: var(--accent-strong);
-    font-weight: 800;
-  }
-
-  .archive-empty {
-    padding: 1.35rem;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 252, 251, 0.9));
-  }
-
-  .archive-empty-cool {
-    background:
-      radial-gradient(circle at top right, rgba(125, 211, 252, 0.16), transparent 24%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 251, 252, 0.9));
-  }
-
-  @media (max-width: 1100px) {
-    .brief-grid,
-    .hero-facts,
-    .lead-layout {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media (max-width: 960px) {
-    .hero-topline {
-      align-items: start;
-      justify-content: start;
-    }
   }
 </style>
