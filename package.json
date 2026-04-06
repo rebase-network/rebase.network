@@ -20,7 +20,14 @@
     "typecheck": "pnpm --filter @rebase/web check",
     "lint": "pnpm --filter @rebase/web lint",
     "pretest:smoke": "pnpm cms:bootstrap && pnpm build",
-    "test:smoke": "playwright test"
+    "test:smoke": "playwright test",
+    "dev:web": "pnpm --filter @rebase/web dev",
+    "dev:admin": "pnpm --filter @rebase/admin dev",
+    "dev:api": "pnpm --filter @rebase/api dev",
+    "build:admin": "pnpm --filter @rebase/admin build",
+    "build:api": "pnpm --filter @rebase/api build",
+    "typecheck:admin": "pnpm --filter @rebase/admin typecheck",
+    "typecheck:api": "pnpm --filter @rebase/api typecheck"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1"

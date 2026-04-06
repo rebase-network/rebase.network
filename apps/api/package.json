@@ -1,0 +1,22 @@
+{
+  "name": "@rebase/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @rebase/shared build && pnpm --filter @rebase/db build && tsx watch --tsconfig tsconfig.json src/index.ts",
+    "build": "pnpm --filter @rebase/shared build && pnpm --filter @rebase/db build && tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "pnpm --filter @rebase/shared build && pnpm --filter @rebase/db build && tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.0",
+    "@rebase/shared": "workspace:*",
+    "hono": "^4.7.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}

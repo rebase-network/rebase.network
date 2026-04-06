@@ -63,6 +63,7 @@ The target architecture is no longer a headless CMS workflow.
 Current reality in this repository:
 
 - the public Astro site is implemented and runnable today
+- the custom admin workspace and Hono API foundation are now scaffolded in the repo
 - the committed local content prototype still uses Directus bootstrap scripts
 - the long-term direction is to replace that prototype with a custom admin and API stack
 
@@ -81,6 +82,12 @@ pnpm dev
 
 Useful current commands:
 
+- `pnpm dev:admin`: run the Vue-based admin foundation locally
+- `pnpm dev:api`: run the Hono API foundation locally
+- `pnpm build:admin`: build the admin frontend
+- `pnpm build:api`: build the API service
+- `pnpm typecheck:admin`: typecheck the admin app
+- `pnpm typecheck:api`: typecheck the API app
 - `pnpm cms:logs`: inspect Directus prototype logs
 - `pnpm cms:down`: stop the local prototype containers
 - `pnpm cms:health`: verify the temporary prototype health path

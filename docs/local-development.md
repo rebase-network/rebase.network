@@ -9,6 +9,10 @@ The repository currently contains a Directus-based local content prototype, but 
 Today, the repository has:
 
 - a working public Astro site in `apps/web`
+- a custom admin scaffold in `apps/admin`
+- a Hono API scaffold in `apps/api`
+- shared contracts in `packages/shared`
+- a Drizzle-backed schema package in `packages/db`
 - temporary Directus bootstrap scripts and SQL used to unblock frontend development
 - committed GeekDaily archive SQL generated from `geekdaily.csv`
 
@@ -47,6 +51,26 @@ Useful flow today:
 ```bash
 pnpm cms:bootstrap
 pnpm dev
+```
+
+## Current Custom Workspace Commands
+
+The new custom admin and API foundation can already be run and validated locally:
+
+- `pnpm dev:admin`
+- `pnpm dev:api`
+- `pnpm build:admin`
+- `pnpm build:api`
+- `pnpm typecheck:admin`
+- `pnpm typecheck:api`
+
+Useful validation flow for the new workspace foundation:
+
+```bash
+pnpm typecheck:admin
+pnpm typecheck:api
+pnpm build:admin
+pnpm build:api
 ```
 
 ## Prototype Notes
