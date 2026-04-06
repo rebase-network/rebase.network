@@ -33,13 +33,23 @@ const updateLink = (groupIndex: number, linkIndex: number, key: 'label' | 'href'
 };
 
 const addGroup = () => emit('update:modelValue', [...props.modelValue, { title: '', slug: '', links: [] }]);
-const removeGroup = (index: number) => emit('update:modelValue', props.modelValue.filter((_, itemIndex) => itemIndex !== index));
+const removeGroup = (index: number) => {
+  if (!window.confirm('确认删除这个分组吗？分组下的所有链接都会一起删除。')) {
+    return;
+  }
+
+  emit('update:modelValue', props.modelValue.filter((_, itemIndex) => itemIndex !== index));
+};
 const addLink = (groupIndex: number) => {
   const next = cloneGroups();
   next[groupIndex].links.push({ label: '', href: '' });
   emit('update:modelValue', next);
 };
 const removeLink = (groupIndex: number, linkIndex: number) => {
+  if (!window.confirm('确认删除这个链接吗？删除后需要重新填写。')) {
+    return;
+  }
+
   const next = cloneGroups();
   next[groupIndex].links = next[groupIndex].links.filter((_, itemIndex) => itemIndex !== linkIndex);
   emit('update:modelValue', next);
@@ -89,14 +99,14 @@ const removeLink = (groupIndex: number, linkIndex: number) => {
                 </label>
               </div>
               <div class="panel-actions">
-                <button class="button-link button-danger" type="button" @click="removeLink(groupIndex, linkIndex)">删除链接</button>
+                <button class="button-link button-danger button-compact" type="button" @click="removeLink(groupIndex, linkIndex)">删除链接</button>
               </div>
             </div>
           </div>
         </div>
 
         <div class="panel-actions">
-          <button class="button-link button-danger" type="button" @click="removeGroup(groupIndex)">删除分组</button>
+          <button class="button-link button-danger button-compact" type="button" @click="removeGroup(groupIndex)">删除分组</button>
         </div>
       </div>
     </div>

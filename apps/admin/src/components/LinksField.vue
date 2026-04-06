@@ -29,7 +29,13 @@ const updateItem = (index: number, key: keyof LinkItem, value: string) => {
 };
 
 const addItem = () => emit('update:modelValue', [...props.modelValue, { label: '', href: '', handle: '' }]);
-const removeItem = (index: number) => emit('update:modelValue', props.modelValue.filter((_, itemIndex) => itemIndex !== index));
+const removeItem = (index: number) => {
+  if (!window.confirm('确认删除这个链接吗？删除后需要重新填写。')) {
+    return;
+  }
+
+  emit('update:modelValue', props.modelValue.filter((_, itemIndex) => itemIndex !== index));
+};
 </script>
 
 <template>
@@ -58,7 +64,7 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
           </label>
         </div>
         <div class="panel-actions">
-          <button class="button-link button-danger" type="button" @click="removeItem(index)">删除链接</button>
+          <button class="button-link button-danger button-compact" type="button" @click="removeItem(index)">删除链接</button>
         </div>
       </div>
     </div>

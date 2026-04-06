@@ -10,9 +10,8 @@ import {
 
 import AuthorsField from '../components/AuthorsField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
-import StringListField from '../components/StringListField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
-import { formatContentStatus, formatDateTime, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
+import { fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
 
 interface ArticleFormState {
   slug: string;
@@ -64,9 +63,6 @@ const articleId = computed(() => (typeof route.params.id === 'string' ? route.pa
 const isNew = computed(() => articleId.value.length === 0);
 const publicUrl = computed(() => (form.slug ? `/articles/${form.slug}` : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新建文章' : `编辑文章：${article.value?.title ?? ''}`));
-const selectedCoverAsset = computed(() => assets.value.find((asset) => asset.id === form.coverAssetId) ?? null);
-const authorSummary = computed(() => form.authors.map((item) => item.name).filter(Boolean).join('、') || '未填写');
-const tagSummary = computed(() => form.tags.join('、') || '未填写');
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -132,6 +128,8 @@ const save = async () => {
   try {
     const payload = {
       ...form,
+      readingTime: form.readingTime || '5 min read',
+      coverAccent: form.coverAccent || 'linear-gradient(135deg, #efc37b 0%, #0f766e 100%)',
       coverAssetId: form.coverAssetId || null,
       publishedAt: fromDateTimeInputValue(form.publishedAt),
     };
@@ -185,7 +183,7 @@ onMounted(() => void loadArticle());
     <header class="page-header page-header-row">
       <div>
         <h2>{{ pageTitle }}</h2>
-        <p>文章内容与元数据</p>
+        <p>优先完成正文，其余字段保持精简。</p>
       </div>
 
       <div class="page-actions">
@@ -203,77 +201,6 @@ onMounted(() => void loadArticle());
     <div v-if="loading" class="panel"><p>正在准备文章编辑器…</p></div>
 
     <div v-else class="stacked-gap">
-      <div class="editor-overview-grid">
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>发布信息</h3>
-            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
-          </div>
-          <dl class="summary-grid summary-grid-2">
-            <div class="summary-item">
-              <dt>公开地址</dt>
-              <dd>{{ publicUrl }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>发布时间</dt>
-              <dd class="muted">{{ form.publishedAt || '未设置' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>更新时间</dt>
-              <dd class="muted">{{ article ? formatDateTime(article.updatedAt) : '新建后生成' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>发布状态</dt>
-              <dd class="muted">{{ formatContentStatus(form.status) }}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>协作信息</h3>
-            <div class="panel-meta">{{ form.authors.length }} 位作者</div>
-          </div>
-          <dl class="summary-grid summary-grid-2">
-            <div class="summary-item">
-              <dt>作者</dt>
-              <dd>{{ authorSummary }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>标签</dt>
-              <dd class="muted">{{ tagSummary }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>阅读时长</dt>
-              <dd class="muted">{{ form.readingTime || '未填写' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>封面资源</dt>
-              <dd class="muted">{{ selectedCoverAsset ? '已绑定资源' : '未绑定资源' }}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>封面预览</h3>
-            <div class="panel-meta">{{ selectedCoverAsset ? '已选择封面' : '未选择封面' }}</div>
-          </div>
-
-          <div v-if="selectedCoverAsset" class="summary-item summary-asset">
-            <div v-if="selectedCoverAsset.publicUrl && selectedCoverAsset.mimeType.startsWith('image/')" class="asset-preview-frame">
-              <img :src="selectedCoverAsset.publicUrl" :alt="selectedCoverAsset.altText || selectedCoverAsset.originalFilename" />
-            </div>
-            <div class="summary-asset-copy">
-              <div class="eyebrow">封面</div>
-              <strong>{{ selectedCoverAsset.originalFilename }}</strong>
-              <p>{{ selectedCoverAsset.publicUrl || '未生成公开地址' }}</p>
-            </div>
-          </div>
-          <div v-else class="empty-inline">当前未绑定封面资源。</div>
-        </section>
-      </div>
-
       <section class="panel stacked-gap editor-main">
         <div class="field-grid field-grid-2">
           <label class="field">
@@ -294,11 +221,22 @@ onMounted(() => void loadArticle());
           <small v-if="fieldIssues.summary" class="field-error">{{ fieldIssues.summary }}</small>
         </label>
 
-        <div class="field-grid field-grid-3">
-          <label class="field">
-            <span>阅读时长</span>
-            <input v-model="form.readingTime" type="text" placeholder="5 min read" />
-          </label>
+        <AuthorsField v-model="form.authors" :show-role="false" />
+        <MarkdownEditorField
+          v-model="form.bodyMarkdown"
+          label="正文"
+          placeholder="使用 Markdown 编写文章正文。"
+          :error="fieldIssues.bodyMarkdown"
+          :rows="22"
+        />
+      </section>
+
+      <section class="panel stacked-gap">
+        <div class="panel-toolbar">
+          <h3>发布设置</h3>
+          <div class="panel-meta">{{ publicUrl }}</div>
+        </div>
+        <div class="field-grid field-grid-2">
           <label class="field">
             <span>状态</span>
             <select v-model="form.status">
@@ -306,56 +244,14 @@ onMounted(() => void loadArticle());
             </select>
           </label>
           <label class="field">
-            <span>发布时间</span>
-            <input v-model="form.publishedAt" type="datetime-local" />
-          </label>
-        </div>
-
-        <div class="field-grid field-grid-2">
-          <label class="field">
             <span>封面资源</span>
             <select v-model="form.coverAssetId">
               <option value="">不使用封面资源</option>
               <option v-for="asset in assets" :key="asset.id" :value="asset.id">{{ asset.originalFilename }}</option>
             </select>
           </label>
-          <label class="field">
-            <span>封面渐变</span>
-            <input v-model="form.coverAccent" type="text" placeholder="linear-gradient(135deg, #efc37b 0%, #0f766e 100%)" />
-          </label>
         </div>
-
-        <AuthorsField v-model="form.authors" />
-        <StringListField v-model="form.tags" label="标签" add-label="新增标签" placeholder="community" />
-
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>SEO 标题</span>
-            <input v-model="form.seoTitle" type="text" placeholder="可选" />
-          </label>
-          <label class="field">
-            <span>SEO 描述</span>
-            <input v-model="form.seoDescription" type="text" placeholder="可选" />
-          </label>
-        </div>
-
-        <MarkdownEditorField v-model="form.bodyMarkdown" label="正文" placeholder="使用 Markdown 编写文章正文。" :error="fieldIssues.bodyMarkdown" />
       </section>
     </div>
   </section>
 </template>
-
-<style scoped>
-.asset-preview-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.asset-preview-frame {
-  overflow: hidden;
-  border-radius: 1rem;
-  aspect-ratio: 16 / 10;
-  background: rgba(15, 118, 110, 0.08);
-}
-</style>

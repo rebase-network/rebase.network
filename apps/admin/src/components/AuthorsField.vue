@@ -1,7 +1,13 @@
 <script setup lang="ts">
-const props = defineProps<{
-  modelValue: Array<{ name: string; role?: string }>;
-}>();
+const props = withDefaults(
+  defineProps<{
+    modelValue: Array<{ name: string; role?: string }>;
+    showRole?: boolean;
+  }>(),
+  {
+    showRole: true,
+  },
+);
 
 const emit = defineEmits<{
   'update:modelValue': [value: Array<{ name: string; role?: string }>];
@@ -32,12 +38,12 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
           <h3>作者 {{ index + 1 }}</h3>
           <button class="button-link button-danger" type="button" @click="removeItem(index)">删除作者</button>
         </div>
-        <div class="field-grid field-grid-2">
+        <div class="field-grid" :class="props.showRole ? 'field-grid-2' : undefined">
           <label class="field">
             <span>姓名</span>
             <input :value="item.name" placeholder="Ruix" @input="updateItem(index, 'name', ($event.target as HTMLInputElement).value)" />
           </label>
-          <label class="field">
+          <label v-if="props.showRole" class="field">
             <span>角色说明</span>
             <input :value="item.role ?? ''" placeholder="Community steward" @input="updateItem(index, 'role', ($event.target as HTMLInputElement).value)" />
           </label>
