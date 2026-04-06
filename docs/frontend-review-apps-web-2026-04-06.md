@@ -373,6 +373,28 @@
 - `apps/web/src/pages/events/index.astro`
 - `apps/web/src/pages/who-is-hiring/index.astro`
 
+## 第八轮详情页导览与回流一致性
+
+这轮继续只做 `apps/web` 的公共前台页面，重点从栏目首页切回四类详情页，把“从外部链接进入之后，如何继续读、继续跳、继续回到栏目”的路径讲得更清楚。
+
+### 18. 四类详情页补齐 breadcrumb、页内锚点和更一致的 hero / sidebar 导览
+
+已完成：
+
+- 文章、活动、招聘、GeekDaily 四类详情页都补上了 breadcrumb 式的顶部路径，读者从搜索、分享链接或 RSS 进入时，能更快理解自己当前位于哪一个栏目层级。
+- 四类详情页 hero 都新增了页内 jump links，把“正文 / 信息 / 工作内容 / 推荐条目 / 继续追踪”这些关键区块提前暴露出来，移动端和长页面里的二次定位更轻松。
+- 四类详情页 sidebar 顶部统一补了“页面导览”区，把页内锚点和栏目回流入口变成明确的导览动作，而不是只依赖用户自己滚动查找。
+- `articles` 和 `geekdaily` 详情页 hero 补上了和 `events` / `who-is-hiring` 一致的主操作按钮，详情页首屏的返回与订阅动作更统一。
+- `geekdaily` 详情页把逐条推荐区块显式命名为“本期推荐”，让正文和条目列表之间的结构边界更清晰，也更方便用锚点直达。
+
+涉及文件：
+
+- `apps/web/src/styles/global.css`
+- `apps/web/src/pages/articles/[slug].astro`
+- `apps/web/src/pages/events/[slug].astro`
+- `apps/web/src/pages/who-is-hiring/[slug].astro`
+- `apps/web/src/pages/geekdaily/[slug].astro`
+
 ## 结论
 
 `apps/web` 当前已经具备完整可运行的公共站点形态，而且这轮前台修正后，活动详情 URL 规范、Markdown 链接安全、招聘详情降级处理、GeekDaily 搜索文案和语言标记这些明显问题都已经收敛。

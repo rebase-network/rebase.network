@@ -42,7 +42,16 @@ if (!episode) {
       <section class="shell page-hero single">
         <article class="hero-panel card detail-hero episode-hero">
           <div class="detail-topline">
-            <p class="hero-kicker light">GeekDaily 详情</p>
+            <div class="detail-context">
+              <p class="hero-kicker light">GeekDaily 详情</p>
+              <nav class="detail-breadcrumbs light" aria-label="Breadcrumb">
+                <a href="/">首页</a>
+                <span aria-hidden="true">/</span>
+                <a href="/geekdaily">GeekDaily</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">{episode.title}</span>
+              </nav>
+            </div>
             <span class="detail-edition">No. {episode.episodeNumber}</span>
           </div>
           <h1 class="hero-title light">{episode.title}</h1>
@@ -53,11 +62,20 @@ if (!episode) {
             <span class="detail-meta-pill">持续归档</span>
           </div>
           <p class="detail-hero-note light">这期内容既保留正文，也把逐条推荐保留下来，方便搜索、订阅和回看。</p>
+          <div class="button-row">
+            <a class="button-link" href="/geekdaily/rss.xml">订阅 GeekDaily RSS <span>↗</span></a>
+            <a class="button-link secondary" href="/geekdaily">回到 GeekDaily 列表</a>
+          </div>
+          <div class="detail-jump-list">
+            <a href="#episode-body">进入正文</a>
+            <a href="#episode-items">推荐条目</a>
+            <a href="#episode-info">期数信息</a>
+          </div>
         </article>
       </section>
 
       <section class="shell page-section detail-shell">
-        <article class="card detail-body-card episode-detail">
+        <article id="episode-body" class="card detail-body-card episode-detail">
           <div class="detail-body-lead lead">
             <p>{formatDate(episode.publishedAt)}</p>
             {episode.tags.length > 0 && (
@@ -67,26 +85,39 @@ if (!episode) {
             )}
           </div>
           <MarkdownContent content={episode.body} />
-          <div class="item-list">
-            {episode.items.map((item, index) => (
-              <article class="item-card">
-                <span>#{index + 1}</span>
-                <div>
-                  <h2>
-                    <a href={item.sourceUrl} target="_blank" rel="noreferrer">
-                      {item.title}
-                    </a>
-                  </h2>
-                  <p class="author">推荐人：{item.author}</p>
-                  <p class="summary">{item.summary}</p>
-                </div>
-              </article>
-            ))}
-          </div>
+          <section id="episode-items" class="item-section">
+            <h2>本期推荐</h2>
+            <div class="item-list">
+              {episode.items.map((item, index) => (
+                <article class="item-card">
+                  <span>#{index + 1}</span>
+                  <div>
+                    <h3>
+                      <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+                        {item.title}
+                      </a>
+                    </h3>
+                    <p class="author">推荐人：{item.author}</p>
+                    <p class="summary">{item.summary}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
         </article>
 
         <aside class="card detail-sidebar">
           <section class="detail-sidebar-section">
+            <h2>页面导览</h2>
+            <p class="detail-sidebar-copy">如果你是从搜索或分享链接重新进入，这几个锚点能帮你更快找到正文、条目和订阅入口。</p>
+            <ul class="detail-sidebar-list">
+              <li><a href="#episode-body">进入正文</a></li>
+              <li><a href="#episode-items">查看推荐条目</a></li>
+              <li><a href="#episode-info">查看期数信息</a></li>
+            </ul>
+          </section>
+
+          <section id="episode-info" class="detail-sidebar-section">
             <h2>期数信息</h2>
             <ul class="detail-fact-list">
               <li>
@@ -109,7 +140,7 @@ if (!episode) {
             )}
           </section>
 
-          <section class="detail-sidebar-section">
+          <section id="episode-actions" class="detail-sidebar-section">
             <h2>继续追踪</h2>
             <p class="detail-sidebar-copy">GeekDaily 详情页除了正文，还保留了逐条推荐和固定路径，适合从搜索结果重新进入。</p>
             <ul class="detail-sidebar-list">
@@ -119,7 +150,7 @@ if (!episode) {
           </section>
 
           {related.length > 0 && (
-            <section class="detail-sidebar-section">
+            <section id="episode-related" class="detail-sidebar-section">
               <h2>相关期数</h2>
               <ul class="related-list">
                 {related.map((item) => (
@@ -184,6 +215,15 @@ if (!episode) {
     margin-top: 1.25rem;
   }
 
+  .item-section {
+    margin-top: 1.5rem;
+  }
+
+  .item-section h2 {
+    margin: 0;
+    font-size: 1.45rem;
+  }
+
   .item-card {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -214,13 +254,13 @@ if (!episode) {
     font-weight: 800;
   }
 
-  .item-card h2,
+  .item-card h3,
   .author,
   .summary {
     margin: 0;
   }
 
-  .item-card h2 {
+  .item-card h3 {
     font-size: 1.2rem;
     line-height: 1.2;
   }

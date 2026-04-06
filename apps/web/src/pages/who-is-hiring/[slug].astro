@@ -42,7 +42,16 @@ if (!job) {
       <section class="shell page-hero single">
         <article class="hero-panel card detail-hero job-hero">
           <div class="detail-topline">
-            <p class="hero-kicker light">岗位详情</p>
+            <div class="detail-context">
+              <p class="hero-kicker light">岗位详情</p>
+              <nav class="detail-breadcrumbs light" aria-label="Breadcrumb">
+                <a href="/">首页</a>
+                <span aria-hidden="true">/</span>
+                <a href="/who-is-hiring">招聘</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">{job.roleTitle}</span>
+              </nav>
+            </div>
             <span class="detail-edition">{job.companyName}</span>
           </div>
           <h1 class="hero-title light">{job.roleTitle}</h1>
@@ -59,11 +68,16 @@ if (!job) {
             )}
             <a class="button-link secondary" href="/who-is-hiring">回到招聘列表</a>
           </div>
+          <div class="detail-jump-list">
+            <a href="#job-overview">岗位概览</a>
+            <a href="#job-responsibilities">工作内容</a>
+            <a href="#job-info">投递信息</a>
+          </div>
         </article>
       </section>
 
       <section class="shell page-section detail-shell">
-        <article class="card detail-body-card job-detail">
+        <article id="job-overview" class="card detail-body-card job-detail">
           <div class="job-meta-grid">
             <article>
               <span>公司</span>
@@ -85,7 +99,7 @@ if (!job) {
 
           <MarkdownContent content={job.description} />
 
-          <section class="responsibilities">
+          <section id="job-responsibilities" class="responsibilities">
             <h2>工作内容</h2>
             <ul>
               {job.responsibilities.map((item) => <li>{item}</li>)}
@@ -95,6 +109,16 @@ if (!job) {
 
         <aside class="card detail-sidebar">
           <section class="detail-sidebar-section">
+            <h2>页面导览</h2>
+            <p class="detail-sidebar-copy">如果你是从搜索结果或职位分享进入，可以先用这些锚点快速判断是否匹配。</p>
+            <ul class="detail-sidebar-list">
+              <li><a href="#job-overview">查看岗位概览</a></li>
+              <li><a href="#job-responsibilities">查看工作内容</a></li>
+              <li><a href="#job-info">查看投递信息</a></li>
+            </ul>
+          </section>
+
+          <section id="job-info" class="detail-sidebar-section">
             <h2>投递信息</h2>
             <p class="detail-sidebar-copy">{applyCopy}</p>
             <ul class="detail-fact-list">
@@ -118,7 +142,7 @@ if (!job) {
             )}
           </section>
 
-          <section class="detail-sidebar-section">
+          <section id="job-actions" class="detail-sidebar-section">
             <h2>继续查看</h2>
             <ul class="detail-sidebar-list">
               {job.applyUrl && (
@@ -131,7 +155,7 @@ if (!job) {
           </section>
 
           {related.length > 0 && (
-            <section class="detail-sidebar-section">
+            <section id="job-related" class="detail-sidebar-section">
               <h2>相关岗位</h2>
               <ul class="related-list">
                 {related.map((item) => (

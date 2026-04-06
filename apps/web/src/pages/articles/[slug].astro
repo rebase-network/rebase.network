@@ -45,7 +45,16 @@ if (!article) {
       <section class="shell page-hero single">
         <article class="hero-panel card detail-hero article-hero" style={`--article-accent:${article.coverAccent};`}>
           <div class="detail-topline">
-            <p class="hero-kicker light">文章详情</p>
+            <div class="detail-context">
+              <p class="hero-kicker light">文章详情</p>
+              <nav class="detail-breadcrumbs light" aria-label="Breadcrumb">
+                <a href="/">首页</a>
+                <span aria-hidden="true">/</span>
+                <a href="/articles">文章</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">{article.title}</span>
+              </nav>
+            </div>
             <span class="detail-edition">Longform Dispatch</span>
           </div>
           <h1 class="hero-title light">{article.title}</h1>
@@ -56,11 +65,20 @@ if (!article) {
             <span class="detail-meta-pill">{articleAuthors}</span>
           </div>
           <p class="detail-hero-note light">{articleContextNote}</p>
+          <div class="button-row">
+            <a class="button-link" href="/articles/rss.xml">订阅文章 RSS <span>↗</span></a>
+            <a class="button-link secondary" href="/articles">回到文章列表</a>
+          </div>
+          <div class="detail-jump-list">
+            <a href="#article-body">进入正文</a>
+            <a href="#article-info">文章信息</a>
+            <a href={related.length > 0 ? '#article-related' : '#article-actions'}>继续阅读</a>
+          </div>
         </article>
       </section>
 
       <section class="shell page-section detail-shell">
-        <article class="card detail-body-card article-detail">
+        <article id="article-body" class="card detail-body-card article-detail">
           <div class="detail-body-lead article-meta">
             <p>{formatDate(article.publishedAt)} · {article.readingTime}</p>
             <p>{articleAuthors}</p>
@@ -70,6 +88,16 @@ if (!article) {
 
         <aside class="card detail-sidebar">
           <section class="detail-sidebar-section">
+            <h2>页面导览</h2>
+            <p class="detail-sidebar-copy">如果你是从搜索、分享或 RSS 进入，可以先用这几个锚点快速定位。</p>
+            <ul class="detail-sidebar-list">
+              <li><a href="#article-body">进入正文</a></li>
+              <li><a href="#article-info">查看文章信息</a></li>
+              <li><a href={related.length > 0 ? '#article-related' : '#article-actions'}>继续阅读</a></li>
+            </ul>
+          </section>
+
+          <section id="article-info" class="detail-sidebar-section">
             <h2>文章信息</h2>
             <ul class="detail-fact-list">
               <li>
@@ -92,7 +120,7 @@ if (!article) {
             )}
           </section>
 
-          <section class="detail-sidebar-section">
+          <section id="article-actions" class="detail-sidebar-section">
             <h2>继续阅读</h2>
             <p class="detail-sidebar-copy">除了当前正文，还保留订阅入口和完整归档，方便后续继续追踪。</p>
             <ul class="detail-sidebar-list">
@@ -102,7 +130,7 @@ if (!article) {
           </section>
 
           {related.length > 0 && (
-            <section class="detail-sidebar-section">
+            <section id="article-related" class="detail-sidebar-section">
               <h2>延伸阅读</h2>
               <ul class="related-list">
                 {related.map((item) => (

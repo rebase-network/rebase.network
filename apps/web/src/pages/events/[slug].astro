@@ -41,7 +41,16 @@ if (!event) {
       <section class="shell page-hero single">
         <article class="hero-panel card detail-hero event-hero">
           <div class="detail-topline">
-            <p class="hero-kicker light">活动详情</p>
+            <div class="detail-context">
+              <p class="hero-kicker light">活动详情</p>
+              <nav class="detail-breadcrumbs light" aria-label="Breadcrumb">
+                <a href="/">首页</a>
+                <span aria-hidden="true">/</span>
+                <a href="/events">活动</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">{event.title}</span>
+              </nav>
+            </div>
             <span class="detail-edition">{eventStatusLabel}</span>
           </div>
           <h1 class="hero-title light">{event.title}</h1>
@@ -58,11 +67,16 @@ if (!event) {
             )}
             <a class="button-link secondary" href="/events">返回活动列表</a>
           </div>
+          <div class="detail-jump-list">
+            <a href="#event-body">活动内容</a>
+            <a href="#event-info">活动信息</a>
+            <a href={related.length > 0 ? '#event-related' : '#event-actions'}>继续追踪</a>
+          </div>
         </article>
       </section>
 
       <section class="shell page-section detail-shell">
-        <article class="card detail-body-card event-detail">
+        <article id="event-body" class="card detail-body-card event-detail">
           <div class="detail-body-lead event-meta">
             <p>{formatEventWindow(event.startAt, event.endAt)}</p>
             <p>{event.location} · {event.venue}</p>
@@ -72,6 +86,16 @@ if (!event) {
 
         <aside class="card detail-sidebar">
           <section class="detail-sidebar-section">
+            <h2>页面导览</h2>
+            <p class="detail-sidebar-copy">如果你是从活动分享或历史归档进入，可以先用这些锚点快速定位。</p>
+            <ul class="detail-sidebar-list">
+              <li><a href="#event-body">查看活动内容</a></li>
+              <li><a href="#event-info">查看活动信息</a></li>
+              <li><a href={related.length > 0 ? '#event-related' : '#event-actions'}>继续追踪</a></li>
+            </ul>
+          </section>
+
+          <section id="event-info" class="detail-sidebar-section">
             <h2>活动信息</h2>
             <ul class="detail-fact-list">
               <li>
@@ -95,7 +119,7 @@ if (!event) {
             )}
           </section>
 
-          <section class="detail-sidebar-section">
+          <section id="event-actions" class="detail-sidebar-section">
             <h2>继续追踪</h2>
             <ul class="detail-sidebar-list">
               {event.registrationUrl && (
@@ -109,7 +133,7 @@ if (!event) {
           </section>
 
           {related.length > 0 && (
-            <section class="detail-sidebar-section">
+            <section id="event-related" class="detail-sidebar-section">
               <h2>相关活动</h2>
               <ul class="related-list">
                 {related.map((item) => (
