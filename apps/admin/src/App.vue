@@ -13,6 +13,8 @@ const router = useRouter();
 
 const me = ref<AdminMePayload | null>(null);
 const loadingMe = ref(false);
+const adminVersionLabel = `v${__APP_VERSION__}`;
+const adminBuildLabel = __APP_BUILD_SHA__ === 'local' ? 'local' : __APP_BUILD_SHA__;
 const showShell = computed(() => route.name !== 'login');
 const sidebarModules = computed(() => getVisibleAdminModules(me.value, loadingMe.value));
 
@@ -59,7 +61,7 @@ onMounted(() => {
           <div class="brand-mark">RB</div>
           <div>
             <strong>rebase 后台</strong>
-            <small>内容运营</small>
+            <small>社区运营工作台</small>
           </div>
         </RouterLink>
 
@@ -73,6 +75,11 @@ onMounted(() => {
           <div class="sidebar-account">
             <strong>{{ me?.staffAccount?.displayName ?? me?.user?.name ?? '工作人员' }}</strong>
             <span>{{ me?.user?.email ?? (loadingMe ? '正在读取账号信息…' : '未登录') }}</span>
+          </div>
+
+          <div class="sidebar-version">
+            <span>版本 {{ adminVersionLabel }}</span>
+            <code>{{ adminBuildLabel }}</code>
           </div>
 
           <button class="nav-link nav-button" type="button" @click="signOut">退出登录</button>
