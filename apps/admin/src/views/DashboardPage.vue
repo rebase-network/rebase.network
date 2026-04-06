@@ -21,7 +21,7 @@ const cards = computed(() => {
     { label: '招聘', value: value.jobs },
     { label: '活动', value: value.events },
     { label: '贡献者', value: value.contributors },
-    { label: 'GeekDaily', value: value.geekdailyEpisodes },
+    { label: '极客日报', value: value.geekdailyEpisodes },
     { label: '审计日志', value: value.auditLogs },
   ];
 });
@@ -51,7 +51,7 @@ onMounted(async () => {
 
       <div class="page-actions">
         <RouterLink class="button-link" to="/site">编辑站点</RouterLink>
-        <RouterLink class="button-link button-primary" to="/geekdaily/new">新增 GeekDaily</RouterLink>
+        <RouterLink class="button-link button-primary" to="/geekdaily/new">新增极客日报</RouterLink>
       </div>
     </header>
 
@@ -83,7 +83,7 @@ onMounted(async () => {
             <span>草稿、发布、作者</span>
           </RouterLink>
           <RouterLink class="dashboard-quick-link" to="/jobs">
-            <strong>Who-Is-Hiring</strong>
+            <strong>招聘信息</strong>
             <span>岗位与投递入口</span>
           </RouterLink>
           <RouterLink class="dashboard-quick-link" to="/events">

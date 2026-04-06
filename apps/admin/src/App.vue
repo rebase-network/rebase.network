@@ -58,8 +58,8 @@ onMounted(() => {
         <RouterLink class="brand" to="/dashboard">
           <div class="brand-mark">RB</div>
           <div>
-            <strong>rebase admin</strong>
-            <small>content operations</small>
+            <strong>rebase 后台</strong>
+            <small>内容运营</small>
           </div>
         </RouterLink>
 

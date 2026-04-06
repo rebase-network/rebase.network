@@ -12,7 +12,7 @@ import {
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import StringListField from '../components/StringListField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
-import { formatDateTime, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
+import { formatContentStatus, formatDateTime, formatRegistrationMode, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
 
 interface EventFormState {
   slug: string;
@@ -208,7 +208,7 @@ onMounted(() => void loadRecord());
     <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
     <div v-if="loading" class="panel"><p>正在准备活动编辑器…</p></div>
 
-    <div v-else class="editor-grid editor-grid-focus">
+    <div v-else class="editor-grid editor-grid-focus editor-grid-summary">
       <section class="panel stacked-gap editor-main">
         <div class="field-grid field-grid-2">
           <label class="field">
@@ -276,7 +276,7 @@ onMounted(() => void loadRecord());
           <label class="field">
             <span>报名模式</span>
             <select v-model="form.registrationMode">
-              <option v-for="value in registrationModeValues" :key="value" :value="value">{{ value }}</option>
+              <option v-for="value in registrationModeValues" :key="value" :value="value">{{ formatRegistrationMode(value) }}</option>
             </select>
           </label>
           <label class="field">
@@ -306,29 +306,42 @@ onMounted(() => void loadRecord());
         <MarkdownEditorField v-model="form.bodyMarkdown" label="活动详情" placeholder="使用 Markdown 描述活动流程、议题和参与说明。" />
       </section>
 
-      <aside class="panel stacked-gap editor-sidebar">
-        <article class="insight-card stacked-gap-tight">
-          <span class="eyebrow">public url</span>
-          <strong>{{ publicUrl }}</strong>
-          <p>{{ record ? formatDateTime(record.updatedAt) : '未保存' }}</p>
-        </article>
-        <article class="insight-card stacked-gap-tight">
-          <span class="eyebrow">registration</span>
-          <strong>{{ form.registrationMode }}</strong>
-          <p>{{ form.registrationUrl || form.registrationNote || '暂未填写报名信息' }}</p>
-        </article>
-        <article v-if="selectedCoverAsset" class="insight-card stacked-gap-tight asset-preview-card">
-          <span class="eyebrow">cover preview</span>
-          <div v-if="selectedCoverAsset.publicUrl && selectedCoverAsset.mimeType.startsWith('image/')" class="asset-preview-frame">
-            <img :src="selectedCoverAsset.publicUrl" :alt="selectedCoverAsset.altText || selectedCoverAsset.originalFilename" />
+      <aside class="panel editor-sidebar">
+        <article class="summary-card">
+          <div class="eyebrow">发布信息</div>
+          <dl class="summary-grid">
+            <div class="summary-item">
+              <dt>公开地址</dt>
+              <dd>{{ publicUrl }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>状态</dt>
+              <dd>{{ formatContentStatus(form.status) }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>报名</dt>
+              <dd class="muted">{{ form.registrationUrl || form.registrationNote || '未填写' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>地点</dt>
+              <dd class="muted">{{ [form.city, form.location, form.venue].filter(Boolean).join(' / ') || '未填写' }}</dd>
+            </div>
+            <div v-if="record" class="summary-item">
+              <dt>更新时间</dt>
+              <dd class="muted">{{ formatDateTime(record.updatedAt) }}</dd>
+            </div>
+          </dl>
+
+          <div v-if="selectedCoverAsset" class="summary-item summary-asset">
+            <div v-if="selectedCoverAsset.publicUrl && selectedCoverAsset.mimeType.startsWith('image/')" class="asset-preview-frame">
+              <img :src="selectedCoverAsset.publicUrl" :alt="selectedCoverAsset.altText || selectedCoverAsset.originalFilename" />
+            </div>
+            <div class="summary-asset-copy">
+              <div class="eyebrow">封面</div>
+              <strong>{{ selectedCoverAsset.originalFilename }}</strong>
+              <p>{{ selectedCoverAsset.publicUrl || '未生成公开地址' }}</p>
+            </div>
           </div>
-          <strong>{{ selectedCoverAsset.originalFilename }}</strong>
-          <p>{{ selectedCoverAsset.publicUrl || '当前资源尚未生成公开地址。' }}</p>
-        </article>
-        <article class="insight-card stacked-gap-tight">
-          <span class="eyebrow">updated at</span>
-          <strong>{{ formatDateTime(record?.updatedAt) }}</strong>
-          <p>{{ [form.city, form.location, form.venue].filter(Boolean).join(' / ') || '未填写地点' }}</p>
         </article>
       </aside>
     </div>

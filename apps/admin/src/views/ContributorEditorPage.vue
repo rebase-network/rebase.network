@@ -167,7 +167,7 @@ onMounted(() => void loadRecord());
     <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
     <div v-if="loading" class="panel"><p>正在准备贡献者编辑器…</p></div>
 
-    <div v-else class="editor-grid editor-grid-focus">
+    <div v-else class="editor-grid editor-grid-focus editor-grid-summary">
       <section class="panel stacked-gap editor-main">
         <div class="field-grid field-grid-2">
           <label class="field">
@@ -240,29 +240,38 @@ onMounted(() => void loadRecord());
         </div>
       </section>
 
-      <aside class="panel stacked-gap editor-sidebar">
-        <article class="insight-card stacked-gap-tight">
-          <span class="eyebrow">roles</span>
-          <strong>{{ availableRoles.filter((role) => form.roleIds.includes(role.id)).map((role) => role.name).join('、') || '未分配角色' }}</strong>
-          <p>{{ form.roleIds.length }} 个角色</p>
-        </article>
-        <article class="insight-card stacked-gap-tight">
-          <span class="eyebrow">socials</span>
-          <strong>{{ form.twitterUrl || form.wechat || form.telegram || '待填写' }}</strong>
-          <p>{{ [form.twitterUrl, form.wechat, form.telegram].filter(Boolean).join(' / ') || '未填写联系方式' }}</p>
-        </article>
-        <article v-if="selectedAvatarAsset" class="insight-card stacked-gap-tight asset-preview-card">
-          <span class="eyebrow">avatar preview</span>
-          <div v-if="selectedAvatarAsset.publicUrl && selectedAvatarAsset.mimeType.startsWith('image/')" class="asset-preview-frame avatar-frame">
-            <img :src="selectedAvatarAsset.publicUrl" :alt="selectedAvatarAsset.altText || selectedAvatarAsset.originalFilename" />
+      <aside class="panel editor-sidebar">
+        <article class="summary-card">
+          <div class="eyebrow">资料摘要</div>
+          <dl class="summary-grid">
+            <div class="summary-item">
+              <dt>角色</dt>
+              <dd>{{ availableRoles.filter((role) => form.roleIds.includes(role.id)).map((role) => role.name).join('、') || '未分配' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>联系方式</dt>
+              <dd class="muted">{{ [form.twitterUrl, form.wechat, form.telegram].filter(Boolean).join(' / ') || '未填写' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>排序</dt>
+              <dd>{{ form.sortOrder }}</dd>
+            </div>
+            <div v-if="detail" class="summary-item">
+              <dt>更新时间</dt>
+              <dd class="muted">{{ formatDateTime(detail.contributor.updatedAt) }}</dd>
+            </div>
+          </dl>
+
+          <div v-if="selectedAvatarAsset" class="summary-item summary-asset">
+            <div v-if="selectedAvatarAsset.publicUrl && selectedAvatarAsset.mimeType.startsWith('image/')" class="asset-preview-frame avatar-frame">
+              <img :src="selectedAvatarAsset.publicUrl" :alt="selectedAvatarAsset.altText || selectedAvatarAsset.originalFilename" />
+            </div>
+            <div class="summary-asset-copy">
+              <div class="eyebrow">头像</div>
+              <strong>{{ selectedAvatarAsset.originalFilename }}</strong>
+              <p>{{ selectedAvatarAsset.publicUrl || '未生成公开地址' }}</p>
+            </div>
           </div>
-          <strong>{{ selectedAvatarAsset.originalFilename }}</strong>
-          <p>{{ selectedAvatarAsset.publicUrl || '当前资源尚未生成公开地址。' }}</p>
-        </article>
-        <article class="insight-card stacked-gap-tight" v-if="detail">
-          <span class="eyebrow">updated at</span>
-          <strong>{{ formatDateTime(detail.contributor.updatedAt) }}</strong>
-          <p>排序 {{ form.sortOrder }}</p>
         </article>
       </aside>
     </div>

@@ -25,7 +25,7 @@ onMounted(async () => {
   try {
     rows.value = await adminFetch<AdminGeekDailyListItem[]>('/api/admin/v1/geekdaily');
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '无法加载 GeekDaily 列表。';
+    errorMessage.value = error instanceof Error ? error.message : '无法加载极客日报列表。';
   } finally {
     loading.value = false;
   }
@@ -36,8 +36,8 @@ onMounted(async () => {
   <section class="stacked-gap">
     <header class="page-header page-header-row">
       <div>
-        <h2>GeekDaily</h2>
-        <p>episode 列表</p>
+        <h2>极客日报</h2>
+        <p>期刊列表</p>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link button-primary" to="/geekdaily/new">新增一期</RouterLink>
@@ -45,14 +45,14 @@ onMounted(async () => {
     </header>
 
     <div v-if="errorMessage" class="panel panel-danger"><p>{{ errorMessage }}</p></div>
-    <div v-else-if="loading" class="panel"><p>正在加载 GeekDaily 列表…</p></div>
+    <div v-else-if="loading" class="panel"><p>正在加载极客日报列表…</p></div>
 
     <template v-else>
       <div class="panel filter-panel">
         <div class="field-grid field-grid-2">
           <label class="field">
             <span>搜索</span>
-            <input v-model="filters.query" type="search" placeholder="搜索标题、episode 编号或 slug" />
+            <input v-model="filters.query" type="search" placeholder="搜索标题、期数或 slug" />
           </label>
           <label class="field">
             <span>状态</span>
@@ -64,7 +64,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div v-if="filteredRows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有 GeekDaily 内容。</p></div>
+      <div v-if="filteredRows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有极客日报内容。</p></div>
 
       <div v-else class="panel table-panel">
         <table class="data-table">
@@ -83,7 +83,7 @@ onMounted(async () => {
               <td>
                 <div class="table-cell-stack">
                   <strong>{{ row.title }}</strong>
-                  <div class="muted-row">episode {{ row.episodeNumber }}</div>
+                  <div class="muted-row">第 {{ row.episodeNumber }} 期</div>
                 </div>
               </td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>

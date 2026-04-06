@@ -9,7 +9,7 @@ import {
 } from '@rebase/shared';
 
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
-import { formatDateTime } from '../lib/format';
+import { formatDateTime, formatStaffAccountStatus } from '../lib/format';
 
 type StaffStatus = (typeof staffAccountStatusValues)[number];
 
@@ -42,20 +42,7 @@ const saving = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const fieldIssues = ref<Record<string, string>>({});
-const searchQuery = ref('');
 const form = reactive<StaffFormState>(createBlankForm());
-
-const filteredRows = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase();
-
-  return rows.value.filter((row) => {
-    if (!query) {
-      return true;
-    }
-
-    return [row.displayName, row.name, row.email, ...row.roleCodes].some((value) => value.toLowerCase().includes(query));
-  });
-});
 
 const isCreating = computed(() => selectedStaffId.value === 'new');
 const selectedStaff = computed(() => rows.value.find((row) => row.id === selectedStaffId.value) ?? null);
@@ -206,13 +193,10 @@ onMounted(() => {
       <section class="panel stacked-gap editor-main">
         <div class="panel-toolbar">
           <h3>账号列表</h3>
-          <label class="field compact-search-field">
-            <span>搜索</span>
-            <input v-model="searchQuery" type="search" placeholder="搜索昵称、邮箱或角色代码" />
-          </label>
+          <div class="panel-meta">{{ rows.length }} 个账号</div>
         </div>
 
-        <div v-if="filteredRows.length === 0" class="empty-state-card"><p>当前没有匹配的工作人员账号。</p></div>
+        <div v-if="rows.length === 0" class="empty-state-card"><p>当前还没有工作人员账号。</p></div>
 
         <table v-else class="data-table">
           <thead>
@@ -225,7 +209,7 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="row in filteredRows" :key="row.id">
+            <tr v-for="row in rows" :key="row.id">
               <td>
                 <div class="table-cell-stack">
                   <strong>{{ row.displayName }}</strong>
@@ -233,7 +217,7 @@ onMounted(() => {
                 </div>
               </td>
               <td>{{ row.roleCodes.join('、') || '未分配角色' }}</td>
-              <td><span class="status-pill">{{ row.status }}</span></td>
+              <td><span class="status-pill">{{ formatStaffAccountStatus(row.status) }}</span></td>
               <td>{{ formatDateTime(row.lastLoginAt) }}</td>
               <td class="table-actions-cell">
                 <div class="table-action-list">
@@ -248,7 +232,7 @@ onMounted(() => {
       <aside class="panel stacked-gap editor-sidebar">
         <div class="panel-toolbar">
           <h3>{{ isCreating ? '新建工作人员' : '编辑工作人员' }}</h3>
-          <div class="panel-meta">{{ selectedStaff?.status ?? form.status }}</div>
+          <div class="panel-meta">{{ formatStaffAccountStatus(selectedStaff?.status ?? form.status) }}</div>
         </div>
 
         <template v-if="isCreating">
@@ -273,10 +257,22 @@ onMounted(() => {
         </template>
 
         <template v-else>
-          <article class="insight-card stacked-gap-tight">
-            <span class="eyebrow">identity</span>
-            <strong>{{ detail?.staff.displayName }}</strong>
-            <p>{{ detail?.staff.email }} / {{ detail?.staff.name }}</p>
+          <article class="summary-card">
+            <div class="eyebrow">账号信息</div>
+            <dl class="summary-grid">
+              <div class="summary-item">
+                <dt>显示名称</dt>
+                <dd>{{ detail?.staff.displayName ?? '—' }}</dd>
+              </div>
+              <div class="summary-item">
+                <dt>登录邮箱</dt>
+                <dd class="muted">{{ detail?.staff.email ?? '—' }}</dd>
+              </div>
+              <div class="summary-item">
+                <dt>姓名</dt>
+                <dd class="muted">{{ detail?.staff.name ?? '—' }}</dd>
+              </div>
+            </dl>
           </article>
         </template>
 
@@ -289,7 +285,7 @@ onMounted(() => {
         <label v-if="!isCreating" class="field">
           <span>账号状态</span>
           <select v-model="form.status">
-            <option v-for="status in staffAccountStatusValues" :key="status" :value="status">{{ status }}</option>
+            <option v-for="status in staffAccountStatusValues" :key="status" :value="status">{{ formatStaffAccountStatus(status) }}</option>
           </select>
         </label>
 
@@ -310,15 +306,22 @@ onMounted(() => {
           <textarea v-model="form.notes" rows="4" placeholder="记录职责范围、交接信息或额外提醒。" />
         </label>
 
-        <article class="insight-card stacked-gap-tight">
-          <span class="eyebrow">access note</span>
-          <strong>{{ form.roleIds.length }} roles selected</strong>
-          <p>{{ form.roleIds.length }} 个角色 / {{ form.status }}</p>
-        </article>
-        <article v-if="selectedStaff" class="insight-card stacked-gap-tight">
-          <span class="eyebrow">last login</span>
-          <strong>{{ formatDateTime(selectedStaff.lastLoginAt) }}</strong>
-          <p>{{ detail?.staff.email ?? '创建后可登录' }}</p>
+        <article class="summary-card">
+          <div class="eyebrow">权限摘要</div>
+          <dl class="summary-grid">
+            <div class="summary-item">
+              <dt>角色数量</dt>
+              <dd>{{ form.roleIds.length }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>账号状态</dt>
+              <dd class="muted">{{ formatStaffAccountStatus(form.status) }}</dd>
+            </div>
+            <div v-if="selectedStaff" class="summary-item">
+              <dt>最近登录</dt>
+              <dd class="muted">{{ formatDateTime(selectedStaff.lastLoginAt) }}</dd>
+            </div>
+          </dl>
         </article>
       </aside>
     </div>

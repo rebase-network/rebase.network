@@ -108,7 +108,7 @@ code {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-columns: 198px minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -116,17 +116,17 @@ code {
   position: sticky;
   top: 0;
   height: 100vh;
-  padding: 0.85rem 0 0.85rem 0.85rem;
+  padding: 0.55rem 0 0.55rem 0.55rem;
 }
 
 .sidebar-inner {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 0.9rem;
+  gap: 0.62rem;
   height: 100%;
-  padding: 0.9rem;
+  padding: 0.62rem;
   border: 1px solid rgba(255, 255, 255, 0.32);
-  border-radius: 20px;
+  border-radius: 18px;
   background: rgba(255, 251, 245, 0.82);
   box-shadow: var(--shadow);
   backdrop-filter: blur(14px);
@@ -135,14 +135,14 @@ code {
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
+  gap: 0.6rem;
 }
 
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 2.2rem;
+  height: 2.2rem;
   border-radius: 0.8rem;
   background: linear-gradient(135deg, #0f6d64 0%, #ef9f45 100%);
   color: white;
@@ -157,32 +157,31 @@ code {
 }
 
 .brand strong {
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  font-size: 0.86rem;
+  letter-spacing: 0.02em;
 }
 
 .brand small {
   margin-top: 0.1rem;
   color: var(--muted);
-  font-size: 0.84rem;
+  font-size: 0.74rem;
 }
 
 .sidebar-nav {
   display: grid;
   align-content: start;
-  gap: 0.35rem;
+  gap: 0.18rem;
   overflow-y: auto;
-  padding-right: 0.15rem;
+  padding-right: 0.08rem;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
-  min-height: 2.5rem;
-  padding: 0.58rem 0.72rem;
+  min-height: 2.08rem;
+  padding: 0.42rem 0.5rem;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: 10px;
   transition:
     transform 0.18s ease,
     border-color 0.18s ease,
@@ -197,7 +196,7 @@ code {
 
 .nav-link span {
   font-weight: 700;
-  font-size: 0.92rem;
+  font-size: 0.85rem;
 }
 
 .nav-link.router-link-active {
@@ -207,24 +206,25 @@ code {
 
 .sidebar-footer {
   display: grid;
-  gap: 0.55rem;
+  gap: 0.38rem;
 }
 
 .sidebar-account {
   display: grid;
   gap: 0.18rem;
-  padding: 0.72rem 0.8rem;
-  border-radius: 12px;
+  padding: 0.5rem 0.56rem;
+  border-radius: 10px;
   background: rgba(15, 109, 100, 0.06);
 }
 
 .sidebar-account strong {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .sidebar-account span {
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.72rem;
+  word-break: break-word;
 }
 
 .nav-button {
@@ -467,6 +467,10 @@ code {
   grid-template-columns: minmax(0, 1.85fr) minmax(280px, 0.95fr);
 }
 
+.editor-grid-summary {
+  grid-template-columns: minmax(0, 1fr) 224px;
+}
+
 .editor-main,
 .editor-sidebar {
   min-width: 0;
@@ -617,6 +621,20 @@ code {
   text-align: left;
 }
 
+.role-chip strong,
+.role-chip small {
+  margin: 0;
+}
+
+.role-chip strong {
+  font-size: 0.86rem;
+}
+
+.role-chip small {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
 .role-chip.is-active {
   border-color: rgba(15, 109, 100, 0.28);
   background: rgba(15, 109, 100, 0.1);
@@ -633,6 +651,80 @@ code {
   border: 1px dashed rgba(25, 49, 45, 0.22);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.46);
+}
+
+.summary-card {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.summary-grid {
+  display: grid;
+  gap: 0.36rem;
+}
+
+.summary-item {
+  display: grid;
+  gap: 0.14rem;
+  padding: 0.48rem 0.56rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.summary-item dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.summary-item dd {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.38;
+  word-break: break-word;
+}
+
+.summary-item dd.muted {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.summary-asset {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 0.48rem;
+  align-items: start;
+}
+
+.summary-asset .asset-preview-frame {
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+}
+
+.summary-asset-copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.summary-asset-copy strong,
+.summary-asset-copy p {
+  margin: 0;
+}
+
+.summary-asset-copy strong {
+  font-size: 0.84rem;
+}
+
+.summary-asset-copy p {
+  color: var(--muted);
+  font-size: 0.76rem;
+  word-break: break-word;
 }
 
 .tab-strip {
@@ -773,6 +865,7 @@ code {
   }
 
   .editor-grid-focus,
+  .editor-grid-summary,
   .login-layout {
     grid-template-columns: 1fr;
   }

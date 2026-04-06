@@ -7,7 +7,7 @@ import { contentStatusOptions, type AdminJobRecord } from '@rebase/shared';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import StringListField from '../components/StringListField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
-import { formatDateTime, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
+import { formatContentStatus, formatDateTime, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
 
 interface JobFormState {
   slug: string;
@@ -206,7 +206,7 @@ onMounted(() => void loadRecord());
     <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
     <div v-if="loading" class="panel"><p>正在准备招聘编辑器…</p></div>
 
-    <div v-else class="editor-grid editor-grid-focus">
+    <div v-else class="editor-grid editor-grid-focus editor-grid-summary">
       <section class="panel stacked-gap editor-main">
         <div class="field-grid field-grid-2">
           <label class="field">
@@ -307,21 +307,31 @@ onMounted(() => void loadRecord());
         <MarkdownEditorField v-model="form.descriptionMarkdown" label="岗位详情" placeholder="使用 Markdown 描述岗位背景、要求和团队信息。" />
       </section>
 
-      <aside class="panel stacked-gap editor-sidebar">
-        <article class="insight-card stacked-gap-tight">
-          <span class="eyebrow">public url</span>
-          <strong>{{ publicUrl }}</strong>
-          <p>{{ record ? formatDateTime(record.updatedAt) : '未保存' }}</p>
-        </article>
-        <article class="insight-card stacked-gap-tight">
-          <span class="eyebrow">apply channel</span>
-          <strong>{{ form.applyUrl || form.contactValue || '待填写' }}</strong>
-          <p>{{ form.applyNote || form.contactLabel || '未填写补充说明' }}</p>
-        </article>
-        <article class="insight-card stacked-gap-tight">
-          <span class="eyebrow">updated at</span>
-          <strong>{{ formatDateTime(record?.updatedAt) }}</strong>
-          <p>{{ [form.workMode, form.location].filter(Boolean).join(' / ') || '未填写工作模式' }}</p>
+      <aside class="panel editor-sidebar">
+        <article class="summary-card">
+          <div class="eyebrow">发布信息</div>
+          <dl class="summary-grid">
+            <div class="summary-item">
+              <dt>公开地址</dt>
+              <dd>{{ publicUrl }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>状态</dt>
+              <dd>{{ formatContentStatus(form.status) }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>投递方式</dt>
+              <dd class="muted">{{ form.applyUrl || form.contactValue || '未填写' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>工作模式</dt>
+              <dd class="muted">{{ [form.workMode, form.location].filter(Boolean).join(' / ') || '未填写' }}</dd>
+            </div>
+            <div v-if="record" class="summary-item">
+              <dt>更新时间</dt>
+              <dd class="muted">{{ formatDateTime(record.updatedAt) }}</dd>
+            </div>
+          </dl>
         </article>
       </aside>
     </div>

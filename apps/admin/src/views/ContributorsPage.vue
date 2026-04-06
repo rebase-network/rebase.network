@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import {
@@ -19,7 +19,7 @@ const successMessage = ref('');
 const roleIssues = ref<Record<string, string>>({});
 const selectedRoleId = ref('new');
 const savingRole = ref(false);
-const contributorQuery = ref('');
+const showRoleManager = ref(false);
 
 const roleForm = reactive({
   slug: '',
@@ -27,17 +27,6 @@ const roleForm = reactive({
   description: '',
   sortOrder: 0,
   status: 'draft' as 'draft' | 'published' | 'archived',
-});
-
-const filteredContributors = computed(() => {
-  const query = contributorQuery.value.trim().toLowerCase();
-  return contributors.value.filter((row) => {
-    if (!query) {
-      return true;
-    }
-
-    return [row.name, row.slug, row.headline, ...row.roleNames].some((value) => value.toLowerCase().includes(query));
-  });
 });
 
 const resetRoleForm = () => {
@@ -51,6 +40,7 @@ const resetRoleForm = () => {
 };
 
 const applyRole = (role: AdminContributorRoleRecord) => {
+  showRoleManager.value = true;
   selectedRoleId.value = role.id;
   roleForm.slug = role.slug;
   roleForm.name = role.name;
@@ -58,6 +48,20 @@ const applyRole = (role: AdminContributorRoleRecord) => {
   roleForm.sortOrder = role.sortOrder;
   roleForm.status = role.status;
   roleIssues.value = {};
+};
+
+const openNewRoleForm = () => {
+  showRoleManager.value = true;
+  resetRoleForm();
+};
+
+const openRoleManager = () => {
+  showRoleManager.value = true;
+};
+
+const closeRoleManager = () => {
+  showRoleManager.value = false;
+  resetRoleForm();
 };
 
 const loadData = async () => {
@@ -100,7 +104,7 @@ const saveRole = async () => {
     });
     successMessage.value = selectedRoleId.value === 'new' ? '贡献者角色已创建。' : '贡献者角色已更新。';
     await loadData();
-    resetRoleForm();
+    closeRoleManager();
   } catch (error) {
     roleIssues.value = getValidationIssues(error);
     errorMessage.value = error instanceof Error ? error.message : '无法保存角色。';
@@ -120,6 +124,8 @@ onMounted(() => void loadData());
         <p>贡献者与角色</p>
       </div>
       <div class="page-actions">
+        <button v-if="showRoleManager" class="button-link" type="button" @click="closeRoleManager">收起角色管理</button>
+        <button v-else class="button-link" type="button" @click="openRoleManager">管理角色</button>
         <RouterLink class="button-link button-primary" to="/contributors/new">新增贡献者</RouterLink>
       </div>
     </header>
@@ -129,67 +135,80 @@ onMounted(() => void loadData());
     <div v-if="loading" class="panel"><p>正在加载贡献者数据…</p></div>
 
     <template v-else>
-      <div class="editor-grid editor-grid-focus">
-        <section class="panel stacked-gap editor-main">
-          <div class="panel-toolbar">
-            <h3>贡献者列表</h3>
-            <label class="field compact-search-field">
-              <span>搜索</span>
-              <input v-model="contributorQuery" type="search" placeholder="搜索姓名、slug 或角色" />
-            </label>
-          </div>
+      <section class="panel stacked-gap">
+        <div class="panel-toolbar">
+          <h3>贡献者列表</h3>
+          <div class="panel-meta">{{ contributors.length }} 人</div>
+        </div>
 
-          <div v-if="filteredContributors.length === 0" class="empty-state-card"><p>暂时没有匹配的贡献者。</p></div>
+        <div v-if="contributors.length === 0" class="empty-state-card"><p>暂时还没有贡献者。</p></div>
 
-          <table v-else class="data-table">
-            <thead>
-              <tr>
-                <th>贡献者</th>
-                <th>角色</th>
-                <th>状态</th>
-                <th>更新时间</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in filteredContributors" :key="row.id">
-                <td>
-                  <div class="table-cell-stack">
-                    <strong>{{ row.name }}</strong>
-                    <div class="muted-row">{{ row.headline }}</div>
-                  </div>
-                </td>
-                <td>{{ row.roleNames.join('、') || '未分配角色' }}</td>
-                <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
-                <td>{{ formatDateTime(row.updatedAt) }}</td>
-                <td class="table-actions-cell">
-                  <div class="table-action-list">
-                    <RouterLink class="table-link" :to="`/contributors/${row.id}/edit`">编辑</RouterLink>
-                    <a class="table-link" :href="`/contributors#${row.slug}`" target="_blank" rel="noreferrer">前台定位</a>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
+        <table v-else class="data-table">
+          <thead>
+            <tr>
+              <th>贡献者</th>
+              <th>角色</th>
+              <th>状态</th>
+              <th>更新时间</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in contributors" :key="row.id">
+              <td>
+                <div class="table-cell-stack">
+                  <strong>{{ row.name }}</strong>
+                  <div class="muted-row">{{ row.headline }}</div>
+                </div>
+              </td>
+              <td>{{ row.roleNames.join('、') || '未分配角色' }}</td>
+              <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
+              <td>{{ formatDateTime(row.updatedAt) }}</td>
+              <td class="table-actions-cell">
+                <div class="table-action-list">
+                  <RouterLink class="table-link" :to="`/contributors/${row.id}/edit`">编辑</RouterLink>
+                  <a class="table-link" :href="`/contributors#${row.slug}`" target="_blank" rel="noreferrer">前台定位</a>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
 
-        <aside class="panel stacked-gap editor-sidebar">
-          <div class="panel-toolbar">
+      <section class="panel stacked-gap">
+        <div class="panel-toolbar">
+          <div>
             <h3>角色分组</h3>
-            <button class="button-link" type="button" @click="resetRoleForm">新建角色</button>
+            <div class="panel-meta">{{ roles.length }} 个角色</div>
           </div>
+          <div v-if="showRoleManager" class="page-actions">
+            <button class="button-link" type="button" @click="openNewRoleForm">新建角色</button>
+          </div>
+        </div>
 
-          <div class="role-list">
-            <button
-              v-for="role in roles"
-              :key="role.id"
-              class="role-chip"
-              :class="{ 'is-active': role.id === selectedRoleId }"
-              type="button"
-              @click="applyRole(role)"
-            >
-              {{ role.name }}
-            </button>
+        <div v-if="roles.length === 0" class="empty-state-card"><p>暂时还没有角色分组。</p></div>
+
+        <div v-else class="role-list">
+          <button
+            v-for="role in roles"
+            :key="role.id"
+            class="role-chip"
+            :class="{ 'is-active': role.id === selectedRoleId && showRoleManager }"
+            type="button"
+            @click="applyRole(role)"
+          >
+            <strong>{{ role.name }}</strong>
+            <small>{{ role.slug }}</small>
+          </button>
+        </div>
+
+        <div v-if="showRoleManager" class="field-shell stacked-gap">
+          <div class="panel-toolbar">
+            <div>
+              <h3>{{ selectedRoleId === 'new' ? '新建角色' : '编辑角色' }}</h3>
+              <div class="panel-meta">{{ selectedRoleId === 'new' ? '新增一个角色分组' : '更新当前角色信息' }}</div>
+            </div>
+            <button class="button-link" type="button" @click="openNewRoleForm">重置</button>
           </div>
 
           <label class="field">
@@ -219,11 +238,14 @@ onMounted(() => void loadData());
             </label>
           </div>
 
-          <button class="button-link button-primary" type="button" :disabled="savingRole" @click="saveRole">
-            {{ savingRole ? '保存中…' : selectedRoleId === 'new' ? '创建角色' : '更新角色' }}
-          </button>
-        </aside>
-      </div>
+          <div class="page-actions">
+            <button class="button-link" type="button" @click="closeRoleManager">取消</button>
+            <button class="button-link button-primary" type="button" :disabled="savingRole" @click="saveRole">
+              {{ savingRole ? '保存中…' : selectedRoleId === 'new' ? '创建角色' : '更新角色' }}
+            </button>
+          </div>
+        </div>
+      </section>
     </template>
   </section>
 </template>

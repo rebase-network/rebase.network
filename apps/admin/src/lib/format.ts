@@ -1,4 +1,4 @@
-import type { ContentStatus } from '@rebase/shared';
+import type { ContentStatus, RegistrationMode, StaffAccountStatus } from '@rebase/shared';
 
 export const formatDateTime = (value?: string | null) => {
   if (!value) {
@@ -43,6 +43,32 @@ export const formatContentStatus = (status: ContentStatus) => {
       return '已归档';
     default:
       return status;
+  }
+};
+
+export const formatStaffAccountStatus = (status: StaffAccountStatus) => {
+  switch (status) {
+    case 'invited':
+      return '待激活';
+    case 'active':
+      return '启用';
+    case 'suspended':
+      return '暂停';
+    case 'disabled':
+      return '停用';
+    default:
+      return status;
+  }
+};
+
+export const formatRegistrationMode = (value: RegistrationMode) => {
+  switch (value) {
+    case 'external_url':
+      return '外部链接';
+    case 'announcement_only':
+      return '仅公告说明';
+    default:
+      return value;
   }
 };
 
