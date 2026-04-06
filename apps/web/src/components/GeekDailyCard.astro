@@ -19,7 +19,7 @@ const { episode } = Astro.props;
     <a href={getGeekDailyPath(episode.episodeNumber)}>{episode.title}</a>
   </h3>
   <p class="body">{episode.summary}</p>
-  <p class="item-count">{episode.items.length} community picks in this episode</p>
+  <p class="item-count">{episode.items.length} 条社区推荐</p>
   <ul class="tags">
     {episode.tags.map((tag) => <li>{tag}</li>)}
   </ul>

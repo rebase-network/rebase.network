@@ -18,8 +18,8 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
       <img class="cover image" src={article.coverImageUrl} alt="" loading="lazy" />
     ) : (
       <div class="cover fallback" style={`background:${article.coverAccent}`}>
-        <span class="cover-label">rebase article</span>
-        <strong>{article.tags[0] ?? article.authors[0]?.name ?? 'community memo'}</strong>
+        <span class="cover-label">Rebase 文章</span>
+        <strong>{article.tags[0] ?? article.authors[0]?.name ?? '社区手记'}</strong>
       </div>
     )}
   </a>

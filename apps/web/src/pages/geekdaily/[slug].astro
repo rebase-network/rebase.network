@@ -33,15 +33,15 @@ if (!episode) {
 
 <BaseLayout
   site={site}
-  title={episode ? episode.title : 'GeekDaily Not Found'}
-  description={episode ? episode.summary : 'The requested GeekDaily episode could not be found.'}
+  title={episode ? episode.title : 'GeekDaily 未找到'}
+  description={episode ? episode.summary : '你访问的 GeekDaily 内容暂时无法找到。'}
   noindex={!episode}
 >
   {episode ? (
     <>
       <section class="shell page-hero single">
         <article class="hero-panel card">
-          <p class="hero-kicker">geekdaily episode</p>
+          <p class="hero-kicker">GeekDaily 详情</p>
           <h1 class="hero-title">{episode.title}</h1>
           <p class="hero-summary">{episode.summary}</p>
         </article>
@@ -77,14 +77,14 @@ if (!episode) {
         </article>
 
         <aside class="card detail-sidebar">
-          <h2>episode info</h2>
+          <h2>期数信息</h2>
           <p>{episode.title}</p>
           <ul>
             <li>链接规范：<code>{getGeekDailyPath(episode.episodeNumber)}</code></li>
             <li><a href="/geekdaily/rss.xml">订阅 GeekDaily RSS</a></li>
             <li><a href="/geekdaily">回到 GeekDaily 列表</a></li>
           </ul>
-          <h2 class="related-title">related episodes</h2>
+          <h2 class="related-title">相关期数</h2>
           <ul>
             {related.map((item) => (
               <li><a href={getGeekDailyPath(item.episodeNumber)}>{item.title}</a></li>
@@ -98,7 +98,7 @@ if (!episode) {
       <article class="hero-panel card">
         <p class="hero-kicker">404</p>
         <h1 class="hero-title">这期 GeekDaily 暂时没有被找到。</h1>
-        <p class="hero-summary">你可以先回到 GeekDaily 列表，继续浏览最近和历史 episode。</p>
+        <p class="hero-summary">你可以先回到 GeekDaily 列表，继续浏览最近与历史归档。</p>
       </article>
     </section>
   )}

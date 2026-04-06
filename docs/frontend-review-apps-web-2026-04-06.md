@@ -100,6 +100,42 @@
 
 - `apps/web/src/layouts/BaseLayout.astro`
 
+### 6. 公共页面文案与日期展示进一步统一
+
+已完成：
+
+- 首页、列表页、详情页、导航、页脚与卡片组件中的主要公共文案已统一为中文表达。
+- `SectionHeader` 默认跳转文案、404 页标题、RSS 入口、筛选器、分页器和详情侧栏标签已与当前中文站点语境对齐。
+- 前台日期展示已统一固定到 `Asia/Shanghai`，减少不同构建环境导致的日期边界漂移。
+- GeekDaily 归档页中的前端日期格式化也已和全站 helper 保持同一时区语义。
+- 对应 smoke test 文案选择器已同步更新。
+
+涉及文件：
+
+- `apps/web/src/lib/dates.ts`
+- `apps/web/src/components/SectionHeader.astro`
+- `apps/web/src/components/ArticleCard.astro`
+- `apps/web/src/components/EventCard.astro`
+- `apps/web/src/components/JobCard.astro`
+- `apps/web/src/components/ContributorCard.astro`
+- `apps/web/src/components/GeekDailyCard.astro`
+- `apps/web/src/components/SiteHeader.astro`
+- `apps/web/src/components/SiteFooter.astro`
+- `apps/web/src/layouts/BaseLayout.astro`
+- `apps/web/src/pages/404.astro`
+- `apps/web/src/pages/about.astro`
+- `apps/web/src/pages/index.astro`
+- `apps/web/src/pages/articles/index.astro`
+- `apps/web/src/pages/articles/[slug].astro`
+- `apps/web/src/pages/events/index.astro`
+- `apps/web/src/pages/events/[slug].astro`
+- `apps/web/src/pages/who-is-hiring/index.astro`
+- `apps/web/src/pages/who-is-hiring/[slug].astro`
+- `apps/web/src/pages/contributors.astro`
+- `apps/web/src/pages/geekdaily/index.astro`
+- `apps/web/src/pages/geekdaily/[slug].astro`
+- `tests/smoke/geekdaily.spec.ts`
+
 ## 仍建议后续处理的项
 
 ### P1：SEO 字段仍未从后台内容链路接到前台
@@ -129,29 +165,18 @@
 2. 为日期搜索补一条 smoke test，防止文案和能力再次漂移。
 3. 这一项同样需要联动后端搜索索引生成逻辑。
 
-### P2：日期展示建议统一时区策略
-
-现状：
-
-- 前台不同位置对日期的格式化语义并不完全一致。
-- 构建环境变化时，日期边界理论上仍可能出现时区偏移问题。
-
-建议：
-
-1. 明确前台统一展示时区，例如固定为 `Asia/Shanghai`。
-2. 将 `formatDate()`、`formatEventWindow()` 及 GeekDaily 页面中的日期格式化统一到同一 helper。
-
 ## 自动化验证结果
 
 ### 已通过
 
-- `pnpm --filter @rebase/web check`
-- `pnpm --filter @rebase/web build`
-- `pnpm test:smoke`
+- `corepack pnpm --filter @rebase/web check`
+- `corepack pnpm --filter @rebase/web build`
+- `corepack pnpm test:smoke`
 
 ### 结果说明
 
 - 本轮前台修改完成后，前台类型检查、静态构建和 smoke tests 均已通过。
+- 在独立 worktree 中执行 smoke tests 时，需要补齐本地 `.env` 和未纳入 Git 的 `geekdaily.csv`；如果直接新建 worktree 而不带上该 CSV，seed 会出现 `geekdailyEpisodes: 0`，这属于本地验证环境差异，不是本轮前台改动引入的页面回归。
 - 前一轮报告中提到的活动路由失败、GeekDaily 总量硬编码问题，当前已消除。
 - `/healthz` smoke test 当前也已通过，说明测试基线与当前实现处于一致状态。
 
@@ -163,4 +188,4 @@
 
 1. 把 SEO 字段从后台内容链路接到前台页面。
 2. 决定 GeekDaily 是否真的要支持按日期搜索；如果要，就补索引与测试。
-3. 统一前台日期格式化的时区策略，减少构建环境差异带来的展示漂移。
+3. 把当前 worktree 的本地验证前置条件写得更明确，尤其是 `.env` 和 `geekdaily.csv` 这两个本地依赖，减少新 worktree 下的误判成本。

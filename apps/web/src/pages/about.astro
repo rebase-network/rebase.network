@@ -6,10 +6,10 @@ const [site, about] = await Promise.all([getSiteSettings(), getAboutContent()]);
 const { intro, sections } = about;
 ---
 
-<BaseLayout site={site} title="About Rebase" description={intro.summary}>
+<BaseLayout site={site} title="关于 Rebase" description={intro.summary}>
   <section class="shell page-hero single">
     <article class="hero-panel card">
-      <p class="hero-kicker">about rebase</p>
+      <p class="hero-kicker">关于 Rebase</p>
       <h1 class="hero-title">{intro.title}</h1>
       <p class="hero-summary">{intro.summary}</p>
     </article>

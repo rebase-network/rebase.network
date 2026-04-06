@@ -19,7 +19,7 @@ const pathname = Astro.url.pathname;
       </span>
     </a>
 
-    <nav aria-label="Primary navigation">
+    <nav aria-label="主导航">
       <ul>
         {site.navigation.map((item) => {
           const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));

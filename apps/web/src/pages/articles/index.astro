@@ -9,19 +9,19 @@ const leadArticle = articles[0];
 const archiveArticles = articles.slice(1);
 ---
 
-<BaseLayout site={site} title="Rebase Articles" description="Read community writing published by Rebase contributors.">
+<BaseLayout site={site} title="Rebase 文章" description="浏览 Rebase 社区发布的文章、复盘与方法总结。">
   <section class="shell page-hero single">
     <article class="hero-panel card archive-hero">
-      <p class="hero-kicker">articles</p>
+      <p class="hero-kicker">文章归档</p>
       <h1 class="hero-title">把社区里的想法、复盘和方法写成可以沉淀下来的文章。</h1>
       <p class="hero-summary">文章页承接更长线的讨论：产品、信息架构、社区运营和 builder workflow。</p>
       <div class="hero-facts">
         <article>
-          <span>archive size</span>
+          <span>文章总数</span>
           <strong>{articles.length}</strong>
         </article>
         <article>
-          <span>rss</span>
+          <span>订阅源</span>
           <strong>/articles/rss.xml</strong>
         </article>
       </div>
@@ -31,14 +31,14 @@ const archiveArticles = articles.slice(1);
   {leadArticle && (
     <section class="shell page-section">
       <SectionHeader
-        eyebrow="lead story"
+        eyebrow="主推荐"
         title="编辑台推荐阅读"
         description="文章页首页保留一个主稿入口，优先承接最能代表 Rebase 方法论的长文。"
       />
       <div class="lead-layout">
         <ArticleCard article={leadArticle} featured />
         <article class="card archive-note">
-          <p class="hero-kicker">reading note</p>
+          <p class="hero-kicker">阅读提示</p>
           <h2>公开写作不是宣传页，而是把社区如何思考、如何迭代、如何组织信息留下可复用的上下文。</h2>
           <p>文章和 GeekDaily、活动、招聘互相导流：日报负责更新速度，文章负责沉淀深度。</p>
           <a href="/articles/rss.xml">订阅文章 RSS</a>
@@ -49,11 +49,11 @@ const archiveArticles = articles.slice(1);
 
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="article feed"
+      eyebrow="文章列表"
       title="全部文章"
       description="第一版先聚焦结构清晰、可阅读、可订阅的社区写作体验。"
       href="/articles/rss.xml"
-      hrefLabel="rss"
+      hrefLabel="订阅 RSS"
     />
     <div class="grid-3">
       {archiveArticles.map((article) => <ArticleCard article={article} />)}

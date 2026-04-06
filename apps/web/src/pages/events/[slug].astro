@@ -29,8 +29,8 @@ if (!event) {
 
 <BaseLayout
   site={site}
-  title={event ? event.title : 'Event Not Found'}
-  description={event ? event.summary : 'The requested event could not be found.'}
+  title={event ? event.title : '活动未找到'}
+  description={event ? event.summary : '你访问的活动页面暂时无法找到。'}
   socialImage={event?.coverImageUrl}
   noindex={!event}
 >
@@ -38,7 +38,7 @@ if (!event) {
     <>
       <section class="shell page-hero single">
         <article class="hero-panel card">
-          <p class="hero-kicker">event detail</p>
+          <p class="hero-kicker">活动详情</p>
           <h1 class="hero-title">{event.title}</h1>
           <p class="hero-summary">{event.summary}</p>
         </article>
@@ -54,7 +54,7 @@ if (!event) {
         </article>
 
         <aside class="card detail-sidebar">
-          <h2>event info</h2>
+          <h2>活动信息</h2>
           <p>{event.registrationNote ?? '报名方式稍后公布。'}</p>
           <ul>
             {event.registrationUrl && (
@@ -65,7 +65,7 @@ if (!event) {
             <li><a href="/events/rss.xml">订阅活动 RSS</a></li>
             <li><a href="/events">回到活动列表</a></li>
           </ul>
-          <h2 class="related-title">related events</h2>
+          <h2 class="related-title">相关活动</h2>
           <ul>
             {related.map((item) => (
               <li><a href={getEventPath(item.startAt, item.slug)}>{item.title}</a></li>

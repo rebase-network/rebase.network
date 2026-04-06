@@ -14,7 +14,7 @@ const bioHtml = renderMarkdown(contributor.bio);
 
 <article class="contributor-card card">
   {contributor.avatarUrl ? (
-    <img class="avatar image" src={contributor.avatarUrl} alt={`${contributor.name} avatar`} loading="lazy" />
+    <img class="avatar image" src={contributor.avatarUrl} alt={`${contributor.name} 头像`} loading="lazy" />
   ) : (
     <div class="avatar" style={`background:${avatarBackground}`}>
       <span>{contributor.name.slice(0, 1)}</span>
@@ -26,10 +26,10 @@ const bioHtml = renderMarkdown(contributor.bio);
     <div class="bio" set:html={bioHtml} />
     <ul>
       {contributor.twitterUrl && (
-        <li><a href={contributor.twitterUrl} target="_blank" rel="noreferrer">twitter</a></li>
+        <li><a href={contributor.twitterUrl} target="_blank" rel="noreferrer">X / Twitter</a></li>
       )}
-      {contributor.wechat && <li>wechat: {contributor.wechat}</li>}
-      {contributor.telegram && <li>telegram: {contributor.telegram}</li>}
+      {contributor.wechat && <li>微信：{contributor.wechat}</li>}
+      {contributor.telegram && <li>Telegram：{contributor.telegram}</li>}
     </ul>
   </div>
 </article>

@@ -29,15 +29,15 @@ if (!job) {
 
 <BaseLayout
   site={site}
-  title={job ? `${job.roleTitle} · ${job.companyName}` : 'Job Not Found'}
-  description={job ? job.summary : 'The requested job could not be found.'}
+  title={job ? `${job.roleTitle} · ${job.companyName}` : '招聘未找到'}
+  description={job ? job.summary : '你访问的招聘信息暂时无法找到。'}
   noindex={!job}
 >
   {job ? (
     <>
       <section class="shell page-hero single">
         <article class="hero-panel card">
-          <p class="hero-kicker">job detail</p>
+          <p class="hero-kicker">岗位详情</p>
           <h1 class="hero-title">{job.roleTitle}</h1>
           <p class="hero-summary">{job.summary}</p>
         </article>
@@ -47,19 +47,19 @@ if (!job) {
         <article class="card article-detail job-detail">
           <div class="job-meta-grid">
             <article>
-              <span>company</span>
+              <span>公司</span>
               <strong>{job.companyName}</strong>
             </article>
             <article>
-              <span>salary</span>
+              <span>薪资</span>
               <strong>{job.salary}</strong>
             </article>
             <article>
-              <span>mode</span>
+              <span>模式</span>
               <strong>{job.workMode}</strong>
             </article>
             <article>
-              <span>location</span>
+              <span>地点</span>
               <strong>{job.location}</strong>
             </article>
           </div>
@@ -75,19 +75,19 @@ if (!job) {
         </article>
 
         <aside class="card detail-sidebar">
-          <h2>apply info</h2>
+          <h2>投递信息</h2>
           <p>{job.applyNote || (job.applyUrl ? '请通过下方外部链接投递。' : '请通过下方联系方式投递。')}</p>
           <ul>
             <li>发布时间：{formatDate(job.publishedAt)}</li>
-            <li>远程支持：{job.supportsRemote ? 'yes' : 'no'}</li>
-            {job.contactValue && <li>{job.contactLabel || 'contact'}: {job.contactValue}</li>}
+            <li>远程支持：{job.supportsRemote ? '支持' : '不支持'}</li>
+            {job.contactValue && <li>{job.contactLabel || '联系方式'}：{job.contactValue}</li>}
             {job.applyUrl && (
               <li>
                 <a href={job.applyUrl} target="_blank" rel="noreferrer">外部投递链接</a>
               </li>
             )}
           </ul>
-          <h2 class="related-title">related jobs</h2>
+          <h2 class="related-title">相关岗位</h2>
           <ul>
             {related.map((item) => (
               <li><a href={getJobPath(item.slug)}>{item.roleTitle}</a></li>
@@ -101,7 +101,7 @@ if (!job) {
       <article class="hero-panel card">
         <p class="hero-kicker">404</p>
         <h1 class="hero-title">这个招聘页面暂时没有被找到。</h1>
-        <p class="hero-summary">你可以先回到 Who-Is-Hiring 列表，浏览社区当前公开的招聘信息。</p>
+        <p class="hero-summary">你可以先回到招聘列表，浏览社区当前公开的岗位信息。</p>
       </article>
     </section>
   )}

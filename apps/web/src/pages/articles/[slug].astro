@@ -29,8 +29,8 @@ if (!article) {
 
 <BaseLayout
   site={site}
-  title={article ? article.title : 'Article Not Found'}
-  description={article ? article.summary : 'The requested article could not be found.'}
+  title={article ? article.title : '文章未找到'}
+  description={article ? article.summary : '你访问的文章暂时无法找到。'}
   socialImage={article?.coverImageUrl}
   noindex={!article}
 >
@@ -38,7 +38,7 @@ if (!article) {
     <>
       <section class="shell page-hero single">
         <article class="hero-panel card article-hero" style={`background:${article.coverAccent}`}>
-          <p class="hero-kicker light">article</p>
+          <p class="hero-kicker light">文章详情</p>
           <h1 class="hero-title light">{article.title}</h1>
           <p class="hero-summary light">{article.summary}</p>
         </article>
@@ -54,13 +54,13 @@ if (!article) {
         </article>
 
         <aside class="card detail-sidebar">
-          <h2>article details</h2>
+          <h2>文章信息</h2>
           <p>{article.tags.join(' · ')}</p>
           <ul>
             <li><a href="/articles/rss.xml">订阅文章 RSS</a></li>
             <li><a href="/articles">返回文章列表</a></li>
           </ul>
-          <h2 class="related-title">related reading</h2>
+          <h2 class="related-title">延伸阅读</h2>
           <ul>
             {related.map((item) => (
               <li><a href={getArticlePath(item.slug)}>{item.title}</a></li>

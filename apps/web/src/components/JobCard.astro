@@ -18,7 +18,7 @@ const companyInitial = job.companyName.slice(0, 1).toUpperCase();
       <p>{job.companyName}</p>
       <span>{formatDate(job.publishedAt)}</span>
     </div>
-    {job.supportsRemote && <strong class="remote-flag">remote</strong>}
+    {job.supportsRemote && <strong class="remote-flag">远程</strong>}
   </div>
   <h3>
     <a href={getJobPath(job.slug)}>{job.roleTitle}</a>
@@ -26,15 +26,15 @@ const companyInitial = job.companyName.slice(0, 1).toUpperCase();
   <p class="summary">{job.summary}</p>
   <dl>
     <div>
-      <dt>salary</dt>
+      <dt>薪资</dt>
       <dd>{job.salary}</dd>
     </div>
     <div>
-      <dt>mode</dt>
+      <dt>模式</dt>
       <dd>{job.workMode}</dd>
     </div>
     <div>
-      <dt>location</dt>
+      <dt>地点</dt>
       <dd>{job.location}</dd>
     </div>
   </dl>

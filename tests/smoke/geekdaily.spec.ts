@@ -14,7 +14,7 @@ test('GeekDaily search supports episode lookup and empty state', async ({ page }
   await searchInput.fill('definitely-no-match');
   await expect(page.getByRole('heading', { level: 2, name: '没有找到匹配的 GeekDaily' })).toBeVisible();
 
-  await page.getByRole('button', { name: 'clear filters' }).click();
+  await page.getByRole('button', { name: '清空筛选' }).click();
   await expect(page.locator('#results-count')).toHaveText(initialCount ?? '');
 });
 

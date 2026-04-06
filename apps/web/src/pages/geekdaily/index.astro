@@ -16,32 +16,32 @@ const featuredTags = overview.featuredTags;
 
 <BaseLayout
   site={site}
-  title="GeekDaily"
-  description="Browse and search GeekDaily episodes from the Rebase community archive."
+  title="GeekDaily 归档"
+  description="浏览、筛选并检索 Rebase 社区的 GeekDaily 历史归档。"
 >
   <section class="shell page-hero single">
     <article class="hero-panel card">
-      <p class="hero-kicker">geekdaily archive</p>
+      <p class="hero-kicker">GeekDaily 归档</p>
       <h1 class="hero-title">GeekDaily 是 Rebase 的持续现场，它应该被阅读、搜索和订阅。</h1>
       <p class="hero-summary">
-        第一版先用前端搜索做实用检索，并把 1800+ 期历史内容组织成一个更适合浏览的 episode archive。
+        第一版先用前端搜索做实用检索，并把 1800+ 期历史内容组织成一个更适合浏览的期数归档。
       </p>
     </article>
   </section>
 
   <section class="shell page-section archive-stats">
     <article class="card stat-card">
-      <span>archive size</span>
-      <strong>{overview.totalEpisodes} episodes</strong>
-      <p>按 episode 归档，避免把每一期拆散成难以理解的零碎列表。</p>
+      <span>归档总数</span>
+      <strong>{overview.totalEpisodes} 期</strong>
+      <p>按期数归档，避免把每一期拆散成难以理解的零碎列表。</p>
     </article>
     <article class="card stat-card">
-      <span>time range</span>
+      <span>时间跨度</span>
       <strong>{years.at(-1)} - {years[0]}</strong>
       <p>为历史日报保留稳定链接、可搜索入口和 RSS 输出。</p>
     </article>
     <article class="card stat-card">
-      <span>url rule</span>
+      <span>链接规则</span>
       <strong>/geekdaily/geekdaily-1915</strong>
       <p>统一使用 <code>geekdaily-&#123;episode-number&#125;</code> 规则，让期数含义和栏目来源一眼可辨。</p>
     </article>
@@ -63,7 +63,7 @@ const featuredTags = overview.featuredTags;
     <div class="card quick-filter-panel">
       {featuredTags.length > 0 && (
         <div>
-          <p class="panel-title">tag filter</p>
+          <p class="panel-title">标签筛选</p>
           <div class="chip-row" role="list">
             {featuredTags.map((tag) => (
               <button type="button" class="chip-button" data-tag={tag}>{tag}</button>
@@ -72,14 +72,14 @@ const featuredTags = overview.featuredTags;
         </div>
       )}
       <div>
-        <p class="panel-title">year filter</p>
+        <p class="panel-title">年份筛选</p>
         <div class="chip-row" role="list">
           {years.slice(0, 6).map((year) => (
             <button type="button" class="chip-button muted" data-year={year}>{year}</button>
           ))}
         </div>
       </div>
-      <button type="button" class="reset-button" id="reset-filters">clear filters</button>
+      <button type="button" class="reset-button" id="reset-filters">清空筛选</button>
     </div>
   </section>
 
@@ -89,7 +89,7 @@ const featuredTags = overview.featuredTags;
         <p id="results-count">共 {overview.totalEpisodes} 期</p>
         <span id="results-state">默认展示最近 {pageSize} 期。</span>
       </div>
-      <a href="/geekdaily/rss.xml">rss ↗</a>
+      <a href="/geekdaily/rss.xml">订阅 RSS ↗</a>
     </div>
 
     <div class="episode-list" id="results-list" data-total-episodes={overview.totalEpisodes}>
@@ -108,10 +108,10 @@ const featuredTags = overview.featuredTags;
       ))}
     </div>
 
-    <div class="pager card" aria-label="GeekDaily pagination">
-      <button type="button" id="pager-prev" disabled>previous</button>
+    <div class="pager card" aria-label="GeekDaily 分页">
+      <button type="button" id="pager-prev" disabled>上一页</button>
       <p id="pager-label">第 1 页</p>
-      <button type="button" id="pager-next" disabled={overview.totalEpisodes <= pageSize}>next</button>
+      <button type="button" id="pager-next" disabled={overview.totalEpisodes <= pageSize}>下一页</button>
     </div>
   </section>
 
@@ -151,11 +151,11 @@ const featuredTags = overview.featuredTags;
         .replaceAll("'", '&#39;');
 
     const formatPublishedAt = (value: string) =>
-      new Intl.DateTimeFormat('en-US', {
+      new Intl.DateTimeFormat('zh-CN', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
-        timeZone: 'UTC',
+        timeZone: 'Asia/Shanghai',
       }).format(new Date(value));
 
     if (input && list && count && stateLabel && prevButton && nextButton && pagerLabel && resetButton) {
@@ -293,7 +293,7 @@ const featuredTags = overview.featuredTags;
           list.innerHTML = `
             <article class="card empty-state">
               <h2>没有找到匹配的 GeekDaily</h2>
-              <p>你可以尝试换一个关键词，或者先清空 year filter 再继续搜索。</p>
+              <p>你可以尝试换一个关键词，或者先清空年份筛选再继续搜索。</p>
             </article>
           `;
         } else {

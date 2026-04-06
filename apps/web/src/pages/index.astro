@@ -15,17 +15,17 @@ const liveWire = feed.dynamicFeed.slice(0, 6);
 const recentGeekDaily = feed.recentGeekDaily.slice(0, 3);
 
 const liveWireTypeLabel = {
-  article: 'article',
-  job: 'hiring',
-  event: 'event',
-  geekdaily: 'geekdaily',
+  article: '文章',
+  job: '招聘',
+  event: '活动',
+  geekdaily: 'GeekDaily',
 } as const;
 ---
 
-<BaseLayout site={site} title="Rebase Community" description={site.description}>
+<BaseLayout site={site} title="Rebase 社区首页" description={site.description}>
   <section class="shell page-hero home-hero">
     <article class="hero-panel card masthead-panel">
-      <p class="hero-kicker">community media for builders</p>
+      <p class="hero-kicker">面向建设者的社区媒体</p>
       <h1 class="hero-title">{site.heroTitle}</h1>
       <p class="hero-summary">{site.heroSummary}</p>
       <div class="button-row">
@@ -34,13 +34,13 @@ const liveWireTypeLabel = {
       </div>
       <div class="hero-footnotes">
         <article>
-          <span>dual domain</span>
+          <span>双域名入口</span>
           <strong>{site.primaryDomain.replace('https://', '')}</strong>
           <p>默认内容主域名，第二域名保留社区入口一致性。</p>
         </article>
         <article>
-          <span>open reading</span>
-          <strong>no login required</strong>
+          <span>公开阅读</span>
+          <strong>无需登录</strong>
           <p>读者直接访问，管理侧通过专用后台维护结构化内容。</p>
         </article>
       </div>
@@ -48,7 +48,7 @@ const liveWireTypeLabel = {
 
     <aside class="signal-panel card live-desk">
       <SectionHeader
-        eyebrow="live wire"
+        eyebrow="社区实时线"
         title="正在发生什么"
         description="用一条实时更新的社区新闻线，把文章、活动、GeekDaily 和招聘放在同一个阅读入口里。"
       />
@@ -58,7 +58,7 @@ const liveWireTypeLabel = {
             <a href={item.href}>
               <div class="live-wire-meta">
                 <span>{liveWireTypeLabel[item.type]}</span>
-                <time>{item.publishedAt ? formatDate(item.publishedAt) : 'recently'}</time>
+                <time>{item.publishedAt ? formatDate(item.publishedAt) : '刚刚更新'}</time>
               </div>
               <h3>{item.title}</h3>
               <p>{item.summary}</p>
@@ -89,7 +89,7 @@ const liveWireTypeLabel = {
 
   <section class="shell page-section current-desk">
     <SectionHeader
-      eyebrow="front page"
+      eyebrow="首页编排"
       title="今天进入 Rebase 最值得先看的内容"
       description="首屏之下不是简单分栏，而是一份社区首页编辑台：主稿、日报、活动和招聘同时在线。"
     />
@@ -105,7 +105,7 @@ const liveWireTypeLabel = {
 
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="daily archive"
+      eyebrow="近期 GeekDaily"
       title="近期 GeekDaily"
       description="日报是 Rebase 最稳定的社区更新机制，也是搜索与 RSS 最常被消费的入口。"
       href="/geekdaily"
@@ -120,7 +120,7 @@ const liveWireTypeLabel = {
 
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="latest articles"
+      eyebrow="最新文章"
       title="近期文章"
       description="从产品、社区到信息架构，公开记录 Rebase 的想法与方法。"
       href="/articles"
@@ -135,7 +135,7 @@ const liveWireTypeLabel = {
 
   <section class="shell page-section dual-column">
     <SectionHeader
-      eyebrow="who is hiring"
+      eyebrow="社区招聘"
       title="新增招聘信息"
       description="帮助读者快速理解岗位背景、工作模式和联系方式。"
       href="/who-is-hiring"
@@ -150,7 +150,7 @@ const liveWireTypeLabel = {
 
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="events"
+      eyebrow="社区活动"
       title="社区活动"
       description="第一版先聚焦活动展示与外部报名入口，后续再扩展更复杂的活动能力。"
       href="/events"
@@ -165,7 +165,7 @@ const liveWireTypeLabel = {
 
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="contributors"
+      eyebrow="贡献者"
       title="让社区持续运转的人"
       description="贡献者不是站点背后的附属名单，而是这个社区媒介的一部分；他们负责组织、筛选、写作和回应。"
       href="/contributors"
@@ -181,15 +181,15 @@ const liveWireTypeLabel = {
   <section class="shell page-section">
     <article class="card feed-callout">
       <div>
-        <p class="hero-kicker">subscribe</p>
+        <p class="hero-kicker">订阅入口</p>
         <h2>如果你习惯用 RSS 追踪社区内容，Rebase 从第一版开始就把 feed 当成标准输出。</h2>
       </div>
       <div class="feed-links">
-        <a href="/rss.xml">site rss</a>
-        <a href="/geekdaily/rss.xml">geekdaily rss</a>
-        <a href="/articles/rss.xml">articles rss</a>
-        <a href="/events/rss.xml">events rss</a>
-        <a href="/who-is-hiring/rss.xml">hiring rss</a>
+        <a href="/rss.xml">全站 RSS</a>
+        <a href="/geekdaily/rss.xml">GeekDaily RSS</a>
+        <a href="/articles/rss.xml">文章 RSS</a>
+        <a href="/events/rss.xml">活动 RSS</a>
+        <a href="/who-is-hiring/rss.xml">招聘 RSS</a>
       </div>
     </article>
   </section>

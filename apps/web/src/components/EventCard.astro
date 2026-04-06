@@ -15,13 +15,13 @@ const { event } = Astro.props;
     <img class="cover-image" src={event.coverImageUrl} alt="" loading="lazy" />
   ) : (
     <div class:list={['cover-image', 'cover-fallback', event.status]}>
-      <span>{event.status === 'upcoming' ? 'up next' : 'archive'}</span>
+      <span>{event.status === 'upcoming' ? '即将开始' : '活动归档'}</span>
       <strong>{event.city}</strong>
     </div>
   )}
   <div class="status-row">
-    <p class="status">{event.status === 'upcoming' ? 'upcoming' : 'past event'}</p>
-    {event.registrationUrl && <span class="chip">external signup</span>}
+    <p class="status">{event.status === 'upcoming' ? '即将举行' : '往期活动'}</p>
+    {event.registrationUrl && <span class="chip">外部报名</span>}
   </div>
   <h3>
     <a href={getEventPath(event.startAt, event.slug)}>{event.title}</a>

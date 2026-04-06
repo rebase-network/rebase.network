@@ -10,19 +10,19 @@ const archiveJobs = jobs.slice(1);
 const remoteJobCount = jobs.filter((job) => job.supportsRemote).length;
 ---
 
-<BaseLayout site={site} title="Who-Is-Hiring" description="See current hiring opportunities shared by the Rebase community.">
+<BaseLayout site={site} title="社区招聘" description="查看 Rebase 社区当前公开的招聘信息与岗位详情。">
   <section class="shell page-hero single">
     <article class="hero-panel card jobs-hero">
-      <p class="hero-kicker">who is hiring</p>
+      <p class="hero-kicker">社区招聘</p>
       <h1 class="hero-title">让招聘信息不仅被发出来，还能被读懂、被订阅、被稳定地回看。</h1>
       <p class="hero-summary">第一版提供公开招聘列表、详情页与 RSS 输出，帮助求职者快速找到合适机会。</p>
       <div class="hero-facts">
         <article>
-          <span>open roles</span>
+          <span>开放岗位</span>
           <strong>{jobs.length}</strong>
         </article>
         <article>
-          <span>remote friendly</span>
+          <span>支持远程</span>
           <strong>{remoteJobCount}</strong>
         </article>
       </div>
@@ -43,14 +43,14 @@ const remoteJobCount = jobs.filter((job) => job.supportsRemote).length;
   {leadJob && (
     <section class="shell page-section">
       <SectionHeader
-        eyebrow="featured role"
+        eyebrow="主推岗位"
         title="本周优先浏览的岗位"
         description="招聘页也应该像媒体页面一样，有一个优先承接读者注意力的主职位。"
       />
       <div class="lead-layout">
         <JobCard job={leadJob} />
         <article class="card job-note">
-          <p class="hero-kicker">posting note</p>
+          <p class="hero-kicker">投递提示</p>
           <h2>职位信息不是口号，而是要把工作方式、薪资范围和投递方式讲明白。</h2>
           <p>第一版由后台人工录入，后续可以继续把历史 Who-Is-Hiring issue 数据结构化迁移过来。</p>
           <a href="/who-is-hiring/rss.xml">订阅招聘 RSS</a>
@@ -61,11 +61,11 @@ const remoteJobCount = jobs.filter((job) => job.supportsRemote).length;
 
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="job board"
+      eyebrow="岗位列表"
       title="社区招聘信息"
       description="feed 默认输出最近 3 条职位，详情页提供完整上下文。"
       href="/who-is-hiring/rss.xml"
-      hrefLabel="rss"
+      hrefLabel="订阅 RSS"
     />
     <div class="grid-3">
       {archiveJobs.map((job) => <JobCard job={job} />)}

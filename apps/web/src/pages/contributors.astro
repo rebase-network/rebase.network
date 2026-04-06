@@ -10,23 +10,23 @@ const totalContributors = groups.reduce((sum, group) => sum + group.contributors
 
 <BaseLayout
   site={site}
-  title="Rebase Contributors"
-  description="Meet the volunteers and GeekDaily advisors who keep the community moving."
+  title="Rebase 贡献者"
+  description="认识推动 Rebase 社区内容、活动与协作持续发生的贡献者。"
 >
   <section class="shell page-hero single">
     <article class="hero-panel card contributors-hero">
-      <p class="hero-kicker">contributors</p>
+      <p class="hero-kicker">贡献者网络</p>
       <h1 class="hero-title">社区不是抽象概念，它总是由具体的人把内容、活动和协作推着往前走。</h1>
       <p class="hero-summary">
         第一版先按志愿者和极客日报智囊团分组展示，后续可扩展更多角色类型。
       </p>
       <div class="hero-facts">
         <article>
-          <span>people</span>
+          <span>人数</span>
           <strong>{totalContributors}</strong>
         </article>
         <article>
-          <span>roles</span>
+          <span>角色组</span>
           <strong>{groups.length}</strong>
         </article>
       </div>

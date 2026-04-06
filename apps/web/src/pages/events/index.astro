@@ -12,19 +12,19 @@ const [site, upcomingEvents, pastEvents] = await Promise.all([
 const leadUpcomingEvent = upcomingEvents[0];
 ---
 
-<BaseLayout site={site} title="Rebase Events" description="See upcoming and past community events from Rebase.">
+<BaseLayout site={site} title="Rebase 活动" description="查看 Rebase 社区的当前活动与历史活动归档。">
   <section class="shell page-hero single">
     <article class="hero-panel card events-hero">
-      <p class="hero-kicker">events</p>
+      <p class="hero-kicker">活动归档</p>
       <h1 class="hero-title">活动页先做好表达与归档，再慢慢加深运营能力。</h1>
       <p class="hero-summary">第一版活动详情页不做站内报名表，但会清晰展示时间、地点、说明和外部报名入口。</p>
       <div class="hero-facts">
         <article>
-          <span>upcoming</span>
+          <span>当前活动</span>
           <strong>{upcomingEvents.length}</strong>
         </article>
         <article>
-          <span>archive</span>
+          <span>历史归档</span>
           <strong>{pastEvents.length}</strong>
         </article>
       </div>
@@ -34,14 +34,14 @@ const leadUpcomingEvent = upcomingEvents[0];
   {leadUpcomingEvent && (
     <section class="shell page-section">
       <SectionHeader
-        eyebrow="headline event"
+        eyebrow="重点活动"
         title="当前主推活动"
         description="如果近期有重点活动，活动页先给出一个足够明确的阅读与报名入口。"
       />
       <div class="lead-layout">
         <EventCard event={leadUpcomingEvent} />
         <article class="card event-note">
-          <p class="hero-kicker">event policy</p>
+          <p class="hero-kicker">活动说明</p>
           <h2>第一版先把活动上下文讲清楚。</h2>
           <p>活动详情页优先保证时间、地点、议题和报名信息准确清晰，站内报名留到后续版本迭代。</p>
           <a href="/events/rss.xml">订阅活动 RSS</a>
@@ -52,11 +52,11 @@ const leadUpcomingEvent = upcomingEvents[0];
 
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="upcoming"
+      eyebrow="近期活动"
       title="当前活动"
       description="公开展示当前活动与外部报名说明。"
       href="/events/rss.xml"
-      hrefLabel="rss"
+      hrefLabel="订阅 RSS"
     />
     <div class="grid-3">
       {upcomingEvents.map((event) => <EventCard event={event} />)}
@@ -65,7 +65,7 @@ const leadUpcomingEvent = upcomingEvents[0];
 
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="archive"
+      eyebrow="历史归档"
       title="历史活动"
       description="历史活动也应该保留上下文，而不是从社区记忆里消失。"
     />
