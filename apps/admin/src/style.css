@@ -108,7 +108,8 @@ code {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 182px minmax(0, 1fr);
+  grid-template-columns: 154px minmax(0, 1fr);
+  column-gap: 0.62rem;
   min-height: 100vh;
 }
 
@@ -122,9 +123,9 @@ code {
 .sidebar-inner {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 0.52rem;
+  gap: 0.44rem;
   height: 100%;
-  padding: 0.56rem;
+  padding: 0.48rem;
   border: 1px solid rgba(255, 255, 255, 0.32);
   border-radius: 18px;
   background: rgba(255, 251, 245, 0.82);
@@ -135,18 +136,18 @@ code {
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
 
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 0.8rem;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.7rem;
   background: linear-gradient(135deg, #0f6d64 0%, #ef9f45 100%);
   color: white;
-  font-size: 0.98rem;
+  font-size: 0.86rem;
   font-weight: 800;
   letter-spacing: 0.08em;
 }
@@ -157,20 +158,20 @@ code {
 }
 
 .brand strong {
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   letter-spacing: 0.02em;
 }
 
 .brand small {
-  margin-top: 0.1rem;
+  margin-top: 0.04rem;
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: 0.68rem;
 }
 
 .sidebar-nav {
   display: grid;
   align-content: start;
-  gap: 0.12rem;
+  gap: 0.08rem;
   overflow-y: auto;
   padding-right: 0.08rem;
 }
@@ -178,10 +179,10 @@ code {
 .nav-link {
   display: flex;
   align-items: center;
-  min-height: 1.92rem;
-  padding: 0.34rem 0.42rem;
+  min-height: 1.78rem;
+  padding: 0.28rem 0.34rem;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 9px;
   transition:
     transform 0.18s ease,
     border-color 0.18s ease,
@@ -196,7 +197,7 @@ code {
 
 .nav-link span {
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
 }
 
 .nav-link.router-link-active {
@@ -206,24 +207,24 @@ code {
 
 .sidebar-footer {
   display: grid;
-  gap: 0.3rem;
+  gap: 0.22rem;
 }
 
 .sidebar-account {
   display: grid;
   gap: 0.18rem;
-  padding: 0.46rem 0.5rem;
-  border-radius: 10px;
+  padding: 0.4rem 0.42rem;
+  border-radius: 9px;
   background: rgba(15, 109, 100, 0.06);
 }
 
 .sidebar-account strong {
-  font-size: 0.8rem;
+  font-size: 0.74rem;
 }
 
 .sidebar-account span {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   word-break: break-word;
 }
 
@@ -235,7 +236,7 @@ code {
 
 .main {
   min-width: 0;
-  padding: 0.72rem 0.72rem 0.72rem 0;
+  padding: 0.72rem 0.72rem 0.72rem 0.1rem;
 }
 
 .page-header {
@@ -434,17 +435,18 @@ code {
   gap: 0.65rem;
 }
 
-.dashboard-workspace-grid {
-  display: grid;
-  gap: 0.7rem;
-  grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.95fr);
-  align-items: start;
-}
-
-.dashboard-guidance-list,
-.dashboard-insight-grid {
+.dashboard-quick-links-wide,
+.dashboard-insight-row {
   display: grid;
   gap: 0.55rem;
+}
+
+.dashboard-quick-links-wide {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.dashboard-insight-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .compact-stat-grid {
@@ -894,37 +896,42 @@ code {
 
 .login-shell {
   min-height: 100vh;
-  padding: 1rem;
+  padding: 0;
 }
 
 .login-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
-  gap: 0.8rem;
-  min-height: calc(100vh - 2rem);
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+  gap: clamp(1rem, 3vw, 2rem);
+  min-height: 100vh;
+  padding: clamp(1.1rem, 3vw, 2rem);
 }
 
 .login-hero,
 .login-card {
   padding: 1rem;
   border-radius: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.36);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(16px);
 }
 
 .login-hero {
   display: grid;
-  align-content: space-between;
-  gap: 1rem;
-  background:
-    radial-gradient(circle at top left, rgba(15, 109, 100, 0.18), transparent 34%),
-    linear-gradient(180deg, rgba(255, 250, 243, 0.9), rgba(239, 249, 245, 0.84));
+  align-content: center;
+  gap: 1.2rem;
+  padding: clamp(1.2rem, 3vw, 2.2rem) 0 clamp(1rem, 2vw, 1.6rem);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .login-card {
   align-self: center;
+  justify-self: end;
+  max-width: 420px;
   background: rgba(255, 252, 246, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
 }
 
 .login-hero-copy h1,
@@ -977,13 +984,11 @@ code {
 @media (max-width: 1240px) {
   .panel-grid-3,
   .dashboard-quick-links,
+  .dashboard-quick-links-wide,
+  .dashboard-insight-row,
   .compact-stat-grid-4,
   .login-highlight-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .dashboard-workspace-grid {
-    grid-template-columns: 1fr;
   }
 
   .dashboard-stat-grid {
@@ -1004,6 +1009,7 @@ code {
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
+    column-gap: 0;
   }
 
   .sidebar {
@@ -1022,6 +1028,8 @@ code {
   .checkbox-list,
   .panel-grid-3,
   .dashboard-quick-links,
+  .dashboard-quick-links-wide,
+  .dashboard-insight-row,
   .compact-stat-grid-4,
   .login-highlight-grid,
   .summary-grid-2 {
