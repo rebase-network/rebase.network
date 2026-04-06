@@ -29,7 +29,7 @@ test('detail pages render expected content blocks', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: '把 Rebase 做成一个持续更新的社区媒体站点' })).toBeVisible();
   await expect(page.getByText('重新定义社区站点')).toBeVisible();
 
-  await page.goto('/events/rebase-shanghai-builder-night');
+  await page.goto('/events/2026-04-18-rebase-shanghai-builder-night');
   await expect(page.getByRole('heading', { level: 1, name: 'Rebase Shanghai Builder Night' })).toBeVisible();
   await expect(page.getByText('外部报名链接')).toBeVisible();
 

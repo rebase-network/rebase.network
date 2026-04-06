@@ -3,13 +3,13 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getEventBySlug, getEvents, getSiteSettings } from '@/lib/content';
 import { formatEventWindow } from '@/lib/dates';
-import { getEventPath } from '@/lib/paths';
+import { getEventPath, getEventRouteParam, getEventSlugFromRouteParam } from '@/lib/paths';
 import type { Event } from '@rebase/types';
 
 export async function getStaticPaths() {
   const events = await getEvents();
   return events.map((event) => ({
-    params: { slug: event.slug },
+    params: { slug: getEventRouteParam(event.startAt, event.slug) },
     props: {
       event,
       related: events.filter((item) => item.slug !== event.slug).slice(0, 2),
@@ -17,7 +17,7 @@ export async function getStaticPaths() {
   }));
 }
 
-const eventSlug = Astro.params.slug ?? '';
+const eventSlug = getEventSlugFromRouteParam(Astro.params.slug ?? '');
 const site = await getSiteSettings();
 const event = (Astro.props.event as Event | undefined) ?? (await getEventBySlug(eventSlug));
 const related = (Astro.props.related as Event[] | undefined) ?? [];

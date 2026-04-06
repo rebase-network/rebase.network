@@ -10,6 +10,7 @@ import type {
 } from '@rebase/types';
 
 import { fetchPublicApi } from '@/lib/api';
+import { getEventPath, getEventSlugFromRouteParam } from '@/lib/paths';
 
 interface PublicSiteConfigPayload {
   siteName: string;
@@ -244,6 +245,18 @@ export async function getHomeFeed() {
     latestEvents: payload.upcomingEvents,
     latestGeekDaily: payload.latestGeekDaily ? mapGeekDailyEpisode(payload.latestGeekDaily) : undefined,
     recentGeekDaily: payload.recentGeekDaily.map(mapGeekDailyEpisode),
-    dynamicFeed: payload.dynamicFeed,
+    dynamicFeed: payload.dynamicFeed.map((item) => {
+      if (item.type !== 'event' || !item.publishedAt || !item.href.startsWith('/events/')) {
+        return item;
+      }
+
+      const routeParam = item.href.slice('/events/'.length);
+      const slug = getEventSlugFromRouteParam(routeParam);
+
+      return {
+        ...item,
+        href: getEventPath(item.publishedAt, slug),
+      };
+    }),
   };
 }

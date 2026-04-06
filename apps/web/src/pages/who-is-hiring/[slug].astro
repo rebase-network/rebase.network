@@ -76,14 +76,16 @@ if (!job) {
 
         <aside class="card detail-sidebar">
           <h2>apply info</h2>
-          <p>{job.applyNote}</p>
+          <p>{job.applyNote || (job.applyUrl ? '请通过下方外部链接投递。' : '请通过下方联系方式投递。')}</p>
           <ul>
             <li>发布时间：{formatDate(job.publishedAt)}</li>
             <li>远程支持：{job.supportsRemote ? 'yes' : 'no'}</li>
-            <li>{job.contactLabel}: {job.contactValue}</li>
-            <li>
-              <a href={job.applyUrl} target="_blank" rel="noreferrer">外部投递链接</a>
-            </li>
+            {job.contactValue && <li>{job.contactLabel || 'contact'}: {job.contactValue}</li>}
+            {job.applyUrl && (
+              <li>
+                <a href={job.applyUrl} target="_blank" rel="noreferrer">外部投递链接</a>
+              </li>
+            )}
           </ul>
           <h2 class="related-title">related jobs</h2>
           <ul>

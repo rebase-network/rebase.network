@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('GeekDaily search supports episode lookup and empty state', async ({ page }) => {
   await page.goto('/geekdaily');
+  const initialCount = (await page.locator('#results-count').textContent())?.trim();
 
   const searchInput = page.getByLabel('搜索 GeekDaily');
   await searchInput.fill('1915');
@@ -14,7 +15,7 @@ test('GeekDaily search supports episode lookup and empty state', async ({ page }
   await expect(page.getByRole('heading', { level: 2, name: '没有找到匹配的 GeekDaily' })).toBeVisible();
 
   await page.getByRole('button', { name: 'clear filters' }).click();
-  await expect(page.locator('#results-count')).toContainText('共 1809 期');
+  await expect(page.locator('#results-count')).toHaveText(initialCount ?? '');
 });
 
 
