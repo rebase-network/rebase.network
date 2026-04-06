@@ -1,40 +1,109 @@
 # Local Development
 
-This document is transitional.
+This repository now treats the custom Rebase stack as the default local workflow.
 
-The repository currently contains a Directus-based local content prototype, but the target architecture is moving to a custom Rebase admin and API stack.
+## Local Stack
 
-## Current Situation
+The active local stack is:
 
-Today, the repository has:
+- PostgreSQL in Docker from `infra/postgres/docker-compose.yml`
+- Hono API in `apps/api`
+- Vue admin workspace in `apps/admin`
+- Astro public site in `apps/web`
+- shared validation and contracts in `packages/shared`
+- Drizzle schema, migrations, and seed data in `packages/db`
 
-- a working public Astro site in `apps/web`
-- a custom admin scaffold in `apps/admin`
-- a Hono API scaffold in `apps/api`
-- shared contracts in `packages/shared`
-- a Drizzle-backed schema package in `packages/db`
-- temporary Directus bootstrap scripts and SQL used to unblock frontend development
-- committed GeekDaily archive SQL generated from `geekdaily.csv`
+Legacy Directus files still exist in the repository, but only as migration-era reference material.
 
-The target direction is:
+## One-Time Setup
 
-- `apps/web` for the public site
-- `apps/admin` for the staff workspace
-- `apps/api` for admin and public APIs
-- `packages/db` for schema and migrations
-- `packages/shared` for contracts and validation helpers
+1. Copy `.env.example` to `.env`
+2. Install dependencies with `pnpm install`
+3. Run:
 
-## Temporary Prototype Stack
+```bash
+pnpm local:bootstrap
+```
 
-Until the custom admin migration lands, the current local prototype uses:
+`pnpm local:bootstrap` will:
 
-- PostgreSQL in Docker through `infra/directus/docker-compose.yml`
-- Directus in Docker at `http://127.0.0.1:8055`
-- Astro reading prototype content through the temporary Directus flow
+- start PostgreSQL
+- wait for the database container to become healthy
+- apply Drizzle migrations
+- seed baseline site content and the GeekDaily archive
+- bootstrap the default local admin account
 
-## Current Prototype Commands
+Default local operator credentials:
 
-Use these commands only to verify the existing frontend baseline during the transition period:
+- email: `admin@rebase.local`
+- password: `RebaseAdmin123456!`
+
+## Daily Development Commands
+
+Run the whole stack:
+
+```bash
+pnpm dev:stack
+```
+
+Run only the public site and API:
+
+```bash
+pnpm dev:public
+```
+
+Run only the admin workspace and API:
+
+```bash
+pnpm dev:ops
+```
+
+Run individual services:
+
+- `pnpm dev:web`
+- `pnpm dev:admin`
+- `pnpm dev:api`
+
+## Local Ports
+
+- public site: `http://127.0.0.1:4321`
+- admin: `http://127.0.0.1:5174`
+- API: `http://127.0.0.1:8788`
+- PostgreSQL: `127.0.0.1:55433`
+
+## Useful Maintenance Commands
+
+- `pnpm db:up`: start PostgreSQL only
+- `pnpm db:down`: stop PostgreSQL
+- `pnpm db:logs`: inspect PostgreSQL logs
+- `pnpm db:migrate`: apply Drizzle migrations
+- `pnpm db:seed`: reseed baseline content and GeekDaily archive
+- `pnpm admin:bootstrap`: recreate or refresh the default local operator account
+- `pnpm build:api`: build the API bundle
+- `pnpm build:admin`: build the admin workspace
+- `pnpm typecheck:api`: typecheck the API
+- `pnpm typecheck:admin`: typecheck the admin workspace
+- `pnpm test:smoke`: run Playwright smoke checks
+
+## GeekDaily Migration Input
+
+The committed GeekDaily archive still depends on `geekdaily.csv`.
+
+If the CSV is refreshed, regenerate the migration SQL with:
+
+```bash
+pnpm cms:generate:geekdaily
+```
+
+The generated file remains:
+
+- `infra/directus/sql/003_geekdaily_archive.sql`
+
+It is kept because it documents the imported historical archive, even though the runtime stack is no longer Directus-based.
+
+## Legacy Reference Commands
+
+Use these only if you intentionally need to inspect the old prototype artifacts:
 
 - `pnpm cms:up`
 - `pnpm cms:down`
@@ -44,69 +113,3 @@ Use these commands only to verify the existing frontend baseline during the tran
 - `pnpm cms:reset`
 - `pnpm cms:generate:schema`
 - `pnpm cms:generate:seed`
-- `pnpm cms:generate:geekdaily`
-
-Useful flow today:
-
-```bash
-pnpm cms:bootstrap
-pnpm dev
-```
-
-## Current Custom Workspace Commands
-
-The new custom admin and API foundation can already be run and validated locally:
-
-- `pnpm dev:admin`
-- `pnpm dev:api`
-- `pnpm build:admin`
-- `pnpm build:api`
-- `pnpm typecheck:admin`
-- `pnpm typecheck:api`
-
-Useful validation flow for the new workspace foundation:
-
-```bash
-pnpm typecheck:admin
-pnpm typecheck:api
-pnpm build:admin
-pnpm build:api
-```
-
-## Prototype Notes
-
-The current prototype still uses:
-
-- `infra/directus/sql/001_schema.sql`
-- `infra/directus/sql/002_seed.sql`
-- `infra/directus/sql/003_geekdaily_archive.sql`
-
-The third file remains valuable even after the admin rewrite because it captures the historical GeekDaily import baseline.
-
-## Target Local Development After Migration
-
-Once the custom admin migration lands, local development should converge on:
-
-1. PostgreSQL locally
-2. admin API locally
-3. admin frontend locally
-4. Astro public site locally
-5. optional local object storage or direct R2 integration for media testing
-
-That future stack should expose separate commands for:
-
-- database migrate and seed
-- bootstrap first admin user
-- run API
-- run admin
-- run web
-- run smoke and browser checks
-
-## Frontend Expectations
-
-During and after the migration:
-
-- readers do not log in
-- staff log in through the custom admin
-- the public site should eventually read Rebase-owned public APIs instead of the temporary Directus prototype
-- smoke tests should continue to validate the public routes throughout the migration

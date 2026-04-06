@@ -13,8 +13,6 @@ The legacy implementation has been removed from the working tree.
 
 Git history is preserved, and the repo is being rebuilt around a Rebase-specific architecture.
 
-A temporary Directus-based prototype still exists in the repository as a transition baseline for local content verification.
-
 The target architecture is no longer a headless CMS workflow.
 
 ## Target V1 Architecture
@@ -63,9 +61,9 @@ The target architecture is no longer a headless CMS workflow.
 Current reality in this repository:
 
 - the public Astro site is implemented and runnable today
-- the custom admin workspace and Hono API foundation are now scaffolded in the repo
-- the committed local content prototype still uses Directus bootstrap scripts
-- the long-term direction is to replace that prototype with a custom admin and API stack
+- the custom admin workspace and Hono API are the primary local stack
+- PostgreSQL, Drizzle seed data, and the bootstrapped operator account are all runnable from this repo
+- legacy Directus files remain only as migration-era reference material
 
 Install dependencies:
 
@@ -73,26 +71,50 @@ Install dependencies:
 pnpm install
 ```
 
-If you want to verify the current prototype data baseline before the custom admin migration lands:
+Bootstrap the custom local stack:
 
 ```bash
-pnpm cms:bootstrap
-pnpm dev
+cp .env.example .env
+pnpm local:bootstrap
 ```
 
 Useful current commands:
 
+- `pnpm local:bootstrap`: start PostgreSQL, apply migrations, seed content, and bootstrap the default admin account
+- `pnpm dev:stack`: run API, admin, and web together
+- `pnpm dev:public`: run API and the public site
+- `pnpm dev:ops`: run API and the admin workspace
 - `pnpm dev:admin`: run the Vue-based admin foundation locally
 - `pnpm dev:api`: run the Hono API foundation locally
+- `pnpm dev:web`: run the Astro public site locally
 - `pnpm build:admin`: build the admin frontend
 - `pnpm build:api`: build the API service
 - `pnpm typecheck:admin`: typecheck the admin app
 - `pnpm typecheck:api`: typecheck the API app
+- `pnpm db:up`: start PostgreSQL only
+- `pnpm db:migrate`: apply Drizzle migrations
+- `pnpm db:seed`: seed baseline content and the GeekDaily archive
+- `pnpm admin:bootstrap`: create or refresh the default local operator account
+- `pnpm test:smoke`: run Playwright smoke checks against the current build flow
+
+Local service ports:
+
+- public site: `http://127.0.0.1:4321`
+- admin: `http://127.0.0.1:5174`
+- API: `http://127.0.0.1:8788`
+- PostgreSQL: `127.0.0.1:55433`
+
+Default local operator account after `pnpm local:bootstrap`:
+
+- email: `admin@rebase.local`
+- password: `RebaseAdmin123456!`
+
+Legacy transition commands are still available if you need to inspect the old prototype artifacts:
+
 - `pnpm cms:logs`: inspect Directus prototype logs
 - `pnpm cms:down`: stop the local prototype containers
 - `pnpm cms:health`: verify the temporary prototype health path
 - `pnpm cms:reset`: recreate the local prototype database and baseline
-- `pnpm test:smoke`: bootstrap the current prototype, build the app, and run Playwright smoke tests
 
 If you receive a refreshed `geekdaily.csv`, regenerate the committed archive SQL with:
 
