@@ -323,6 +323,36 @@
 - `apps/web/src/pages/geekdaily/[slug].astro`
 - `apps/web/src/styles/global.css`
 
+## 第六轮 About / Contributors 品牌层细化
+
+这轮继续停留在公共前台页面，只收敛 `about` 和 `contributors` 两页，目标是把它们从“信息说明页”往前推成更有品牌辨识度的结构页面。
+
+### 15. About 页把“站点为什么存在”讲得更像一份社区 brief
+
+已完成：
+
+- About hero 补了 edition chip、品牌说明和三张结构信号卡，让关于页一打开就先交代 Rebase 这套公共结构的核心数字和主张。
+- 原本平铺的三段内容改成带序号的 story cards，并把第一张拉成 lead card，阅读节奏更接近 editorial brief 而不是普通 FAQ。
+- 在关于页底部新增 public surfaces 区，把 Articles、GeekDaily、Events、Who-Is-Hiring、Contributors 作为同一结构里的不同入口重新讲了一遍。
+
+涉及文件：
+
+- `apps/web/src/pages/about.astro`
+
+### 16. Contributors 页从名单展示升级成可导航的人物索引
+
+已完成：
+
+- Contributors hero 补了 `People Index` edition chip、角色跳转入口和更明确的说明文案，让这页更像“人物索引”而不是简单卡片列表。
+- 每个角色组都改成独立的品牌化 block，增加成员数、组别说明和角色说明文案，降低首次进入时的理解成本。
+- 第一位贡献者卡片升级成 featured 变体，其余成员保留在右侧网格，让“代表人物 + 其余成员”的层次更清楚。
+- `ContributorCard` 的联系方式改成更明确的 pills 样式，并补上 featured 标记，整页人物卡片的可读性和信息密度更稳定。
+
+涉及文件：
+
+- `apps/web/src/pages/contributors.astro`
+- `apps/web/src/components/ContributorCard.astro`
+
 ## 结论
 
 `apps/web` 当前已经具备完整可运行的公共站点形态，而且这轮前台修正后，活动详情 URL 规范、Markdown 链接安全、招聘详情降级处理、GeekDaily 搜索文案和语言标记这些明显问题都已经收敛。

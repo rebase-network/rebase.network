@@ -1,11 +1,33 @@
 ---
 import ContributorCard from '@/components/ContributorCard.astro';
-import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getContributorsByRole, getSiteSettings } from '@/lib/content';
 
 const [site, groups] = await Promise.all([getSiteSettings(), getContributorsByRole()]);
 const totalContributors = groups.reduce((sum, group) => sum + group.contributors.length, 0);
+
+const contributorSignals = [
+  {
+    value: String(totalContributors).padStart(2, '0'),
+    label: '已归档贡献者',
+    detail: '先把当前公开协作者明确标出来，而不是只在致谢里一笔带过。',
+  },
+  {
+    value: String(groups.length).padStart(2, '0'),
+    label: '角色组',
+    detail: '第一版按志愿者与 GeekDaily 智囊团分组，后续还能继续扩展。',
+  },
+  {
+    value: String(site.socialLinks.length).padStart(2, '0'),
+    label: '公开联系面',
+    detail: '让读者知道这些协作关系背后，也有真实可抵达的人和频道。',
+  },
+];
+
+const roleNotes: Record<string, string> = {
+  volunteers: '这组更靠近执行层：活动组织、内容协调、投稿跟进和日常社区推进都在这里落地。',
+  'geekdaily-advisors': '这组更靠近信号层：持续提供选题、推荐和行业感知，让 GeekDaily 保持长期的内容密度。',
+};
 ---
 
 <BaseLayout
@@ -15,43 +37,66 @@ const totalContributors = groups.reduce((sum, group) => sum + group.contributors
 >
   <section class="shell page-hero single">
     <article class="hero-panel card contributors-hero">
-      <p class="hero-kicker">贡献者网络</p>
+      <div class="hero-topline">
+        <p class="hero-kicker">贡献者网络</p>
+        <span class="edition-chip">People Index</span>
+      </div>
       <h1 class="hero-title">社区不是抽象概念，它总是由具体的人把内容、活动和协作推着往前走。</h1>
       <p class="hero-summary">
-        第一版先按志愿者和极客日报智囊团分组展示，后续可扩展更多角色类型。
+        这页先把当前公开的角色组、代表成员和可识别的协作关系整理出来，让 Rebase 的“人”也成为站点结构的一部分。
+      </p>
+      <p class="brand-note">
+        首页负责讲站点主张，详情页负责讲内容，而贡献者页应该回答另一个问题：到底是谁在把这些内容和协作真正维持下去。
       </p>
       <div class="hero-facts">
-        <article>
-          <span>人数</span>
-          <strong>{totalContributors}</strong>
-        </article>
-        <article>
-          <span>角色组</span>
-          <strong>{groups.length}</strong>
-        </article>
+        {contributorSignals.map((signal) => (
+          <article>
+            <strong>{signal.value}</strong>
+            <span>{signal.label}</span>
+            <p>{signal.detail}</p>
+          </article>
+        ))}
+      </div>
+      <div class="role-jump-list">
+        {groups.map((group) => (
+          <a href={`#${group.role.slug}`}>{group.role.name}</a>
+        ))}
       </div>
     </article>
   </section>
 
   <section class="shell page-section contributor-groups">
-    {groups.map((group) => (
-      <div class="group-block">
-        <SectionHeader
-          eyebrow={group.role.name}
-          title={group.role.name}
-          description={group.role.description}
-        />
+    {groups.map((group, index) => (
+      <section id={group.role.slug} class:list={['group-block', 'card', index % 2 === 0 ? 'tone-warm' : 'tone-cool']}>
+        <div class="group-head">
+          <div>
+            <p>0{index + 1} · {group.role.name}</p>
+            <h2>{group.role.name}</h2>
+          </div>
+          <span class="group-count">{group.contributors.length} 位成员</span>
+        </div>
+        <p class="group-description">{group.role.description}</p>
+        <p class="group-note">{roleNotes[group.role.slug] ?? '这组贡献者持续帮助 Rebase 保持内容与协作的长期连续性。'}</p>
+
         {group.contributors[0] ? (
           <div class="group-layout">
-            <ContributorCard contributor={group.contributors[0]} />
-            <div class="grid-2">
-              {group.contributors.slice(1).map((contributor) => (
-                <ContributorCard contributor={contributor} />
-              ))}
-            </div>
+            <ContributorCard contributor={group.contributors[0]} featured={true} />
+            {group.contributors.length > 1 ? (
+              <div class="group-grid">
+                {group.contributors.slice(1).map((contributor) => (
+                  <ContributorCard contributor={contributor} />
+                ))}
+              </div>
+            ) : (
+              <div class="group-empty card">
+                <p class="hero-kicker">持续扩展</p>
+                <h3>这组人物档案会继续补全。</h3>
+                <span>当前先保留代表成员，后续再把更多参与者、协作方式和故事补进来。</span>
+              </div>
+            )}
           </div>
         ) : null}
-      </div>
+      </section>
     ))}
   </section>
 </BaseLayout>
@@ -62,31 +107,93 @@ const totalContributors = groups.reduce((sum, group) => sum + group.contributors
   }
 
   .contributors-hero {
+    position: relative;
+    overflow: hidden;
     background:
-      radial-gradient(circle at top right, rgba(15, 118, 110, 0.16), transparent 26%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 252, 251, 0.9));
+      radial-gradient(circle at top left, rgba(243, 196, 110, 0.26), transparent 30%),
+      radial-gradient(circle at top right, rgba(15, 118, 110, 0.18), transparent 26%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 251, 0.9));
+    border-color: rgba(15, 118, 110, 0.14);
+    box-shadow: 0 28px 60px rgba(26, 40, 34, 0.12);
+  }
+
+  .contributors-hero::before {
+    content: 'PEOPLE';
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    color: rgba(17, 94, 89, 0.08);
+    font-family: var(--display-font);
+    font-size: clamp(4rem, 8vw, 6.8rem);
+    letter-spacing: 0.08em;
+    line-height: 0.82;
+    pointer-events: none;
+  }
+
+  .contributors-hero > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .edition-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.48rem 0.8rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .brand-note {
+    margin: 1rem 0 0;
+    max-width: 54ch;
+    color: rgba(17, 94, 89, 0.84);
+    font-size: 0.98rem;
+    line-height: 1.8;
   }
 
   .hero-facts {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.85rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
     margin-top: 1.4rem;
   }
 
   .hero-facts article {
     padding: 1rem;
     border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.66);
+    background: rgba(255, 255, 255, 0.72);
     border: 1px solid rgba(31, 41, 51, 0.08);
+    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.06);
   }
 
+  .hero-facts strong,
   .hero-facts span,
-  .hero-facts strong {
+  .hero-facts p {
     display: block;
+    margin: 0;
+  }
+
+  .hero-facts strong {
+    font-size: 1.6rem;
+    font-family: var(--display-font);
   }
 
   .hero-facts span {
+    margin-top: 0.35rem;
     color: var(--accent-strong);
     font-size: 0.72rem;
     font-weight: 800;
@@ -94,26 +201,170 @@ const totalContributors = groups.reduce((sum, group) => sum + group.contributors
     text-transform: uppercase;
   }
 
-  .hero-facts strong {
-    margin-top: 0.45rem;
-    font-size: 1.05rem;
+  .hero-facts p {
+    margin-top: 0.55rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .role-jump-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1.25rem;
+  }
+
+  .role-jump-list a {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.68rem 0.9rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--accent-strong);
+    font-weight: 700;
+    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  }
+
+  .role-jump-list a:hover,
+  .role-jump-list a:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(15, 118, 110, 0.26);
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
+    background: rgba(255, 255, 255, 0.92);
   }
 
   .contributor-groups {
     display: grid;
-    gap: 2rem;
+    gap: 1.4rem;
+  }
+
+  .group-block {
+    padding: 1.25rem;
+  }
+
+  .group-block.tone-warm {
+    background:
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.18), transparent 22%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 251, 245, 0.9));
+  }
+
+  .group-block.tone-cool {
+    background:
+      radial-gradient(circle at top right, rgba(125, 211, 252, 0.18), transparent 22%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 251, 252, 0.9));
+  }
+
+  .group-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .group-head p,
+  .group-head h2,
+  .group-count,
+  .group-description,
+  .group-note,
+  .group-empty p,
+  .group-empty h3,
+  .group-empty span {
+    margin: 0;
+  }
+
+  .group-head p {
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .group-head h2 {
+    margin-top: 0.45rem;
+    font-size: clamp(1.7rem, 2.8vw, 2.7rem);
+    line-height: 1.05;
+  }
+
+  .group-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--accent-strong);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .group-description {
+    margin-top: 0.75rem;
+    max-width: 60ch;
+    font-size: 1.02rem;
+    line-height: 1.8;
+  }
+
+  .group-note {
+    margin-top: 0.55rem;
+    max-width: 64ch;
+    color: var(--muted);
+    line-height: 1.75;
   }
 
   .group-layout {
     display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 1rem;
+    margin-top: 1.15rem;
+  }
+
+  .group-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
   }
 
-  @media (max-width: 960px) {
-    .hero-facts,
-    .group-layout {
+  .group-empty {
+    display: grid;
+    align-content: start;
+    gap: 0.7rem;
+    padding: 1.2rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 252, 250, 0.88));
+  }
+
+  .group-empty h3 {
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+
+  .group-empty span {
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  @media (max-width: 1100px) {
+    .group-layout,
+    .group-grid {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .hero-facts {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .hero-topline {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 </style>
