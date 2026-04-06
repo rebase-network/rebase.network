@@ -33,6 +33,17 @@ const createBlankForm = (): StaffFormState => ({
   notes: '',
 });
 
+const localizeRoleSummary = (role: AdminRoleRecord) => {
+  switch (role.code) {
+    case 'content_editor':
+      return '维护站点页面、文章、招聘、活动、贡献者与 GeekDaily。';
+    case 'super_admin':
+      return '拥有后台全部权限与配置能力。';
+    default:
+      return role.description || '暂无补充说明。';
+  }
+};
+
 const rows = ref<AdminStaffRecord[]>([]);
 const roles = ref<AdminRoleRecord[]>([]);
 const detail = ref<AdminStaffDetailPayload | null>(null);
@@ -68,6 +79,12 @@ const staffStats = computed(() => [
     detail: '暂停或停用',
   },
 ]);
+const roleSummaries = computed(() =>
+  roles.value.map((role) => ({
+    ...role,
+    memberCount: rows.value.filter((row) => row.roleIds.includes(role.id)).length,
+  })),
+);
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -212,26 +229,58 @@ onMounted(() => {
     <div v-if="loading" class="panel"><p>正在加载工作人员信息…</p></div>
 
     <div v-else class="editor-grid editor-grid-focus">
-      <section class="panel stacked-gap editor-main">
-        <div class="panel-toolbar">
-          <div>
-            <h3>账号列表</h3>
-            <div class="panel-meta">后台工作人员与角色权限</div>
+      <div class="stacked-gap editor-main">
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <div>
+              <h3>账号概览</h3>
+              <div class="panel-meta">后台工作人员与角色权限</div>
+            </div>
+            <div class="panel-meta">{{ rows.length }} 个账号</div>
           </div>
-          <div class="panel-meta">{{ rows.length }} 个账号</div>
-        </div>
 
-        <div class="compact-stat-grid compact-stat-grid-4">
-          <article v-for="item in staffStats" :key="item.label" class="compact-stat-card">
-            <span class="compact-stat-label">{{ item.label }}</span>
-            <strong>{{ item.value }}</strong>
-            <small>{{ item.detail }}</small>
-          </article>
-        </div>
+          <div class="compact-stat-grid compact-stat-grid-4">
+            <article v-for="item in staffStats" :key="item.label" class="compact-stat-card">
+              <span class="compact-stat-label">{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+              <small>{{ item.detail }}</small>
+            </article>
+          </div>
+        </section>
 
-        <div v-if="rows.length === 0" class="empty-state-card"><p>当前还没有工作人员账号。</p></div>
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <div>
+              <h3>角色覆盖</h3>
+              <div class="panel-meta">快速确认各角色是否已有负责人</div>
+            </div>
+            <div class="panel-meta">{{ roles.length }} 个角色</div>
+          </div>
 
-        <div v-else class="table-panel">
+          <div v-if="roleSummaries.length === 0" class="empty-inline">当前还没有可分配的角色。</div>
+
+          <div v-else class="role-overview-grid">
+            <article v-for="role in roleSummaries" :key="role.id" class="role-overview-card">
+              <strong>{{ role.name }}</strong>
+              <p>{{ localizeRoleSummary(role) }}</p>
+              <small>{{ role.code }}</small>
+              <span class="status-pill">{{ role.memberCount }} 人</span>
+            </article>
+          </div>
+        </section>
+
+        <section v-if="rows.length === 0" class="panel empty-state-card"><p>当前还没有工作人员账号。</p></section>
+
+        <section v-else class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <div>
+              <h3>账号列表</h3>
+              <div class="panel-meta">查看当前账号、角色与登录状态</div>
+            </div>
+            <div class="panel-meta">{{ rows.length }} 个账号</div>
+          </div>
+
+          <div class="table-panel">
           <table class="data-table dense-table">
             <thead>
               <tr>
@@ -261,87 +310,94 @@ onMounted(() => {
               </tr>
             </tbody>
           </table>
-        </div>
-      </section>
+          </div>
+        </section>
+      </div>
 
-      <aside class="panel stacked-gap editor-sidebar">
-        <div class="panel-toolbar">
-          <h3>{{ isCreating ? '新建工作人员' : '编辑工作人员' }}</h3>
-          <div class="panel-meta">{{ formatStaffAccountStatus(selectedStaff?.status ?? form.status) }}</div>
-        </div>
+      <aside class="stacked-gap editor-sidebar sticky-stack">
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>{{ isCreating ? '新建工作人员' : '编辑工作人员' }}</h3>
+            <div class="panel-meta">{{ formatStaffAccountStatus(selectedStaff?.status ?? form.status) }}</div>
+          </div>
 
-        <template v-if="isCreating">
-          <div class="field-grid field-grid-2">
+          <template v-if="isCreating">
+            <div class="field-grid field-grid-2">
+              <label class="field">
+                <span>登录邮箱</span>
+                <input v-model="form.email" type="email" autocomplete="off" placeholder="editor@rebase.network" />
+                <small v-if="fieldIssues.email" class="field-error">{{ fieldIssues.email }}</small>
+              </label>
+              <label class="field">
+                <span>姓名</span>
+                <input v-model="form.name" type="text" autocomplete="off" placeholder="rebase editor" />
+                <small v-if="fieldIssues.name" class="field-error">{{ fieldIssues.name }}</small>
+              </label>
+            </div>
+
             <label class="field">
-              <span>登录邮箱</span>
-              <input v-model="form.email" type="email" autocomplete="off" placeholder="editor@rebase.network" />
-              <small v-if="fieldIssues.email" class="field-error">{{ fieldIssues.email }}</small>
+              <span>初始密码</span>
+              <input v-model="form.password" type="password" autocomplete="new-password" placeholder="至少 8 位" />
+              <small v-if="fieldIssues.password" class="field-error">{{ fieldIssues.password }}</small>
             </label>
-            <label class="field">
-              <span>姓名</span>
-              <input v-model="form.name" type="text" autocomplete="off" placeholder="rebase editor" />
-              <small v-if="fieldIssues.name" class="field-error">{{ fieldIssues.name }}</small>
-            </label>
+          </template>
+
+          <template v-else>
+            <article class="summary-card">
+              <div class="eyebrow">账号信息</div>
+              <dl class="summary-grid summary-grid-2">
+                <div class="summary-item">
+                  <dt>显示名称</dt>
+                  <dd>{{ detail?.staff.displayName ?? '—' }}</dd>
+                </div>
+                <div class="summary-item">
+                  <dt>登录邮箱</dt>
+                  <dd class="muted">{{ detail?.staff.email ?? '—' }}</dd>
+                </div>
+                <div class="summary-item">
+                  <dt>姓名</dt>
+                  <dd class="muted">{{ detail?.staff.name ?? '—' }}</dd>
+                </div>
+                <div class="summary-item">
+                  <dt>最近登录</dt>
+                  <dd class="muted">{{ formatDateTime(selectedStaff?.lastLoginAt) }}</dd>
+                </div>
+              </dl>
+            </article>
+          </template>
+
+          <label class="field">
+            <span>显示名称</span>
+            <input v-model="form.displayName" type="text" placeholder="Rebase 编辑部" />
+            <small v-if="fieldIssues.displayName" class="field-error">{{ fieldIssues.displayName }}</small>
+          </label>
+
+          <label v-if="!isCreating" class="field">
+            <span>账号状态</span>
+            <select v-model="form.status">
+              <option v-for="status in staffAccountStatusValues" :key="status" :value="status">{{ formatStaffAccountStatus(status) }}</option>
+            </select>
+          </label>
+
+          <div class="field">
+            <span>角色权限</span>
+            <div class="checkbox-list">
+              <label v-for="role in roles" :key="role.id" class="checkbox-chip">
+                <input :checked="form.roleIds.includes(role.id)" type="checkbox" @change="toggleRole(role.id)" />
+                <span>{{ role.name }}</span>
+                <small>{{ role.code }}</small>
+              </label>
+            </div>
+            <small v-if="fieldIssues.roleIds" class="field-error">{{ fieldIssues.roleIds }}</small>
           </div>
 
           <label class="field">
-            <span>初始密码</span>
-            <input v-model="form.password" type="password" autocomplete="new-password" placeholder="至少 8 位" />
-            <small v-if="fieldIssues.password" class="field-error">{{ fieldIssues.password }}</small>
+            <span>备注</span>
+            <textarea v-model="form.notes" rows="4" placeholder="记录职责范围、交接信息或额外提醒。" />
           </label>
-        </template>
+        </section>
 
-        <template v-else>
-          <article class="summary-card">
-            <div class="eyebrow">账号信息</div>
-            <dl class="summary-grid">
-              <div class="summary-item">
-                <dt>显示名称</dt>
-                <dd>{{ detail?.staff.displayName ?? '—' }}</dd>
-              </div>
-              <div class="summary-item">
-                <dt>登录邮箱</dt>
-                <dd class="muted">{{ detail?.staff.email ?? '—' }}</dd>
-              </div>
-              <div class="summary-item">
-                <dt>姓名</dt>
-                <dd class="muted">{{ detail?.staff.name ?? '—' }}</dd>
-              </div>
-            </dl>
-          </article>
-        </template>
-
-        <label class="field">
-          <span>显示名称</span>
-          <input v-model="form.displayName" type="text" placeholder="Rebase 编辑部" />
-          <small v-if="fieldIssues.displayName" class="field-error">{{ fieldIssues.displayName }}</small>
-        </label>
-
-        <label v-if="!isCreating" class="field">
-          <span>账号状态</span>
-          <select v-model="form.status">
-            <option v-for="status in staffAccountStatusValues" :key="status" :value="status">{{ formatStaffAccountStatus(status) }}</option>
-          </select>
-        </label>
-
-        <div class="field">
-          <span>角色权限</span>
-          <div class="checkbox-list">
-            <label v-for="role in roles" :key="role.id" class="checkbox-chip">
-              <input :checked="form.roleIds.includes(role.id)" type="checkbox" @change="toggleRole(role.id)" />
-              <span>{{ role.name }}</span>
-              <small>{{ role.code }}</small>
-            </label>
-          </div>
-          <small v-if="fieldIssues.roleIds" class="field-error">{{ fieldIssues.roleIds }}</small>
-        </div>
-
-        <label class="field">
-          <span>备注</span>
-          <textarea v-model="form.notes" rows="4" placeholder="记录职责范围、交接信息或额外提醒。" />
-        </label>
-
-        <article class="summary-card">
+        <section class="panel stacked-gap">
           <div class="eyebrow">权限摘要</div>
           <dl class="summary-grid">
             <div class="summary-item">
@@ -352,12 +408,8 @@ onMounted(() => {
               <dt>账号状态</dt>
               <dd class="muted">{{ formatStaffAccountStatus(form.status) }}</dd>
             </div>
-            <div v-if="selectedStaff" class="summary-item">
-              <dt>最近登录</dt>
-              <dd class="muted">{{ formatDateTime(selectedStaff.lastLoginAt) }}</dd>
-            </div>
           </dl>
-        </article>
+        </section>
       </aside>
     </div>
   </section>
