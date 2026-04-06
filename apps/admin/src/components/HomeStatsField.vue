@@ -35,7 +35,7 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
           </label>
           <label class="field">
             <span>说明</span>
-            <input :value="item.label" placeholder="GeekDaily episodes mapped for migration" @input="updateItem(index, 'label', ($event.target as HTMLInputElement).value)" />
+            <input :value="item.label" placeholder="已迁移的极客日报期数" @input="updateItem(index, 'label', ($event.target as HTMLInputElement).value)" />
           </label>
         </div>
         <div class="panel-actions">

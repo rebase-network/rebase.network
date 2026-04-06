@@ -69,7 +69,7 @@ const signIn = async () => {
         <div class="login-highlight-grid">
           <article class="login-highlight-card">
             <span>内容组织</span>
-            <strong>首页、About、文章与极客日报</strong>
+            <strong>首页、关于页、文章与极客日报</strong>
             <p>编辑、发布、回看。</p>
           </article>
           <article class="login-highlight-card">

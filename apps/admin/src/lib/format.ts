@@ -116,6 +116,98 @@ export const formatFileSize = (value?: number | null) => {
   return `${size.toFixed(digits)} ${units[index]}`;
 };
 
+export const formatAuditAction = (action: string) => {
+  const [target, verb] = action.split('.');
+
+  const targetLabelMap: Record<string, string> = {
+    article: '文章',
+    asset: '媒体',
+    contributor: '贡献者',
+    contributor_role: '贡献者角色',
+    event: '活动',
+    geekdaily: '极客日报',
+    home: '首页',
+    job: '招聘',
+    site: '站点',
+    about: '关于页',
+    staff: '工作人员',
+  };
+
+  const verbLabelMap: Record<string, string> = {
+    create: '创建',
+    update: '更新',
+    publish: '发布',
+    archive: '归档',
+    upload: '上传',
+  };
+
+  if (!target || !verb) {
+    return action;
+  }
+
+  return `${verbLabelMap[verb] ?? verb} ${targetLabelMap[target] ?? target}`;
+};
+
+export const formatAuditTargetType = (targetType: string) => {
+  const targetTypeMap: Record<string, string> = {
+    about_page: '关于页',
+    article: '文章',
+    asset: '媒体资源',
+    contributor: '贡献者',
+    contributor_role: '贡献者角色',
+    event: '活动',
+    geekdaily_episode: '极客日报期数',
+    home_page: '首页',
+    job: '招聘信息',
+    site_settings: '站点设置',
+    staff_account: '工作人员账号',
+  };
+
+  return targetTypeMap[targetType] ?? targetType;
+};
+
+export const formatAuditSummary = (summary: string) => {
+  const rules: Array<[RegExp, (match: RegExpExecArray) => string]> = [
+    [/^Created staff account (.+)$/i, (m) => `已创建工作人员账号 ${m[1]}`],
+    [/^Updated staff account (.+)$/i, (m) => `已更新工作人员账号 ${m[1]}`],
+    [/^Created contributor role (.+)$/i, (m) => `已创建贡献者角色 ${m[1]}`],
+    [/^Updated contributor role (.+)$/i, (m) => `已更新贡献者角色 ${m[1]}`],
+    [/^Created contributor (.+)$/i, (m) => `已创建贡献者 ${m[1]}`],
+    [/^Updated contributor (.+)$/i, (m) => `已更新贡献者 ${m[1]}`],
+    [/^Created event (.+)$/i, (m) => `已创建活动 ${m[1]}`],
+    [/^Updated event (.+)$/i, (m) => `已更新活动 ${m[1]}`],
+    [/^Published event (.+)$/i, (m) => `已发布活动 ${m[1]}`],
+    [/^Archived event (.+)$/i, (m) => `已归档活动 ${m[1]}`],
+    [/^Created job (.+)$/i, (m) => `已创建招聘 ${m[1]}`],
+    [/^Updated job (.+)$/i, (m) => `已更新招聘 ${m[1]}`],
+    [/^Published job (.+)$/i, (m) => `已发布招聘 ${m[1]}`],
+    [/^Archived job (.+)$/i, (m) => `已归档招聘 ${m[1]}`],
+    [/^Created article (.+)$/i, (m) => `已创建文章 ${m[1]}`],
+    [/^Updated article (.+)$/i, (m) => `已更新文章 ${m[1]}`],
+    [/^Published article (.+)$/i, (m) => `已发布文章 ${m[1]}`],
+    [/^Archived article (.+)$/i, (m) => `已归档文章 ${m[1]}`],
+    [/^Created GeekDaily episode (.+)$/i, (m) => `已创建极客日报第 ${m[1]} 期`],
+    [/^Updated GeekDaily episode (.+)$/i, (m) => `已更新极客日报第 ${m[1]} 期`],
+    [/^Published GeekDaily episode (.+)$/i, (m) => `已发布极客日报第 ${m[1]} 期`],
+    [/^Archived GeekDaily episode (.+)$/i, (m) => `已归档极客日报第 ${m[1]} 期`],
+    [/^Created asset (.+)$/i, (m) => `已创建媒体记录 ${m[1]}`],
+    [/^Uploaded asset (.+)$/i, (m) => `已上传媒体资源 ${m[1]}`],
+    [/^Updated asset (.+)$/i, (m) => `已更新媒体记录 ${m[1]}`],
+    [/^Updated global site settings$/i, () => '已更新全局站点设置'],
+    [/^Updated homepage content$/i, () => '已更新首页内容'],
+    [/^Updated about page$/i, () => '已更新关于页'],
+  ];
+
+  for (const [pattern, formatter] of rules) {
+    const match = pattern.exec(summary);
+    if (match) {
+      return formatter(match);
+    }
+  }
+
+  return summary;
+};
+
 export const slugify = (value: string) =>
   value
     .trim()

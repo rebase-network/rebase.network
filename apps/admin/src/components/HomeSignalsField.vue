@@ -32,7 +32,7 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
         <div class="field-grid field-grid-2">
           <label class="field">
             <span>眉标题</span>
-            <input :value="item.eyebrow" placeholder="latest daily" @input="updateItem(index, 'eyebrow', ($event.target as HTMLInputElement).value)" />
+            <input :value="item.eyebrow" placeholder="最新日报" @input="updateItem(index, 'eyebrow', ($event.target as HTMLInputElement).value)" />
           </label>
           <label class="field">
             <span>链接</span>
@@ -49,7 +49,7 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
         </label>
         <label class="field">
           <span>补充标签</span>
-          <input :value="item.meta" placeholder="episode-led archive" @input="updateItem(index, 'meta', ($event.target as HTMLInputElement).value)" />
+          <input :value="item.meta" placeholder="按期数持续更新" @input="updateItem(index, 'meta', ($event.target as HTMLInputElement).value)" />
         </label>
         <div class="panel-actions">
           <button class="button-link button-danger" type="button" @click="removeItem(index)">删除信号</button>

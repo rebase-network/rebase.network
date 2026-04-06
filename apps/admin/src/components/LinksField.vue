@@ -46,7 +46,7 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
         <div class="field-grid" :class="showHandle ? 'field-grid-3' : 'field-grid-2'">
           <label class="field">
             <span>标签</span>
-            <input :value="item.label" placeholder="Twitter" @input="updateItem(index, 'label', ($event.target as HTMLInputElement).value)" />
+            <input :value="item.label" placeholder="X / Twitter" @input="updateItem(index, 'label', ($event.target as HTMLInputElement).value)" />
           </label>
           <label class="field">
             <span>链接</span>

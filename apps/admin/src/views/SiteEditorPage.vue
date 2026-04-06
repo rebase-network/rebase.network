@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 import type { AdminSiteEditorPayload, HomePageInput, SiteSettingsInput, AboutPageInput } from '@rebase/shared';
 
@@ -46,6 +46,29 @@ const saving = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 
+const siteStats = computed(() => [
+  {
+    label: '社交链接',
+    value: settings.socialLinks.length,
+    detail: '页脚与社区账号',
+  },
+  {
+    label: '页脚分组',
+    value: settings.footerGroups.length,
+    detail: 'footer 导航块',
+  },
+  {
+    label: '首页信号',
+    value: home.homeSignals.length,
+    detail: '首页动态卡片',
+  },
+  {
+    label: '关于分段',
+    value: about.sections.length,
+    detail: '关于页内容块',
+  },
+]);
+
 const applyPayload = (payload: AdminSiteEditorPayload) => {
   Object.assign(settings, payload.settings);
   Object.assign(home, payload.home);
@@ -88,8 +111,8 @@ onMounted(() => void loadSite());
   <section class="stacked-gap">
     <header class="page-header page-header-row">
       <div>
-        <h2>站点结构与页面</h2>
-        <p>站点与页面内容</p>
+        <h2>站点页面</h2>
+        <p>首页、关于页、页脚与域名配置</p>
       </div>
       <div class="page-actions">
         <button class="button-link button-primary" type="button" :disabled="loading || saving" @click="saveAll">
@@ -103,10 +126,18 @@ onMounted(() => void loadSite());
     <div v-if="loading" class="panel"><p>正在加载站点配置…</p></div>
 
     <div v-else class="stacked-gap">
+      <div class="compact-stat-grid compact-stat-grid-4">
+        <article v-for="item in siteStats" :key="item.label" class="compact-stat-card">
+          <span class="compact-stat-label">{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+          <small>{{ item.detail }}</small>
+        </article>
+      </div>
+
       <section class="panel stacked-gap">
         <div class="panel-toolbar">
           <h3>全局设置</h3>
-          <div class="panel-meta">全局</div>
+          <div class="panel-meta">域名与页脚</div>
         </div>
 
         <div class="field-grid field-grid-2">
@@ -116,7 +147,7 @@ onMounted(() => void loadSite());
           </label>
           <label class="field">
             <span>站点标语</span>
-            <input v-model="settings.tagline" type="text" placeholder="A community media network for builders..." />
+            <input v-model="settings.tagline" type="text" placeholder="面向 builder 与社区协作者的公共内容网络" />
           </label>
         </div>
 
@@ -144,7 +175,7 @@ onMounted(() => void loadSite());
         <FooterGroupsField v-model="settings.footerGroups" />
 
         <label class="field">
-          <span>Copyright</span>
+          <span>版权文案</span>
           <input v-model="settings.copyrightText" type="text" placeholder="Copyright © Rebase Community. All rights reserved." />
         </label>
       </section>
@@ -152,23 +183,23 @@ onMounted(() => void loadSite());
       <section class="panel stacked-gap">
         <div class="panel-toolbar">
           <h3>首页</h3>
-          <div class="panel-meta">首页</div>
+          <div class="panel-meta">首屏与动态</div>
         </div>
 
         <label class="field">
-          <span>Hero 标题</span>
+          <span>首屏标题</span>
           <input v-model="home.heroTitle" type="text" placeholder="把社区的日常内容，组织成一个值得反复访问的公共入口。" />
         </label>
 
         <label class="field">
-          <span>Hero 摘要</span>
+          <span>首屏摘要</span>
           <textarea v-model="home.heroSummary" rows="3" placeholder="描述首页想要传达给读者的核心价值。" />
         </label>
 
         <div class="field-grid field-grid-2">
           <label class="field">
             <span>主按钮文案</span>
-            <input v-model="home.heroPrimaryCtaLabel" type="text" placeholder="进入 GeekDaily" />
+            <input v-model="home.heroPrimaryCtaLabel" type="text" placeholder="进入极客日报" />
           </label>
           <label class="field">
             <span>主按钮链接</span>
@@ -193,8 +224,8 @@ onMounted(() => void loadSite());
 
       <section class="panel stacked-gap">
         <div class="panel-toolbar">
-          <h3>About 页面</h3>
-          <div class="panel-meta">About</div>
+          <h3>关于页</h3>
+          <div class="panel-meta">社区介绍</div>
         </div>
 
         <label class="field">
@@ -210,11 +241,11 @@ onMounted(() => void loadSite());
         <div class="field-grid field-grid-2">
           <label class="field">
             <span>SEO 标题</span>
-            <input v-model="about.seoTitle" type="text" placeholder="About Rebase" />
+            <input v-model="about.seoTitle" type="text" placeholder="关于 Rebase 社区" />
           </label>
           <label class="field">
             <span>SEO 描述</span>
-            <input v-model="about.seoDescription" type="text" placeholder="Learn about the Rebase community." />
+            <input v-model="about.seoDescription" type="text" placeholder="了解 Rebase 社区的定位、内容与参与方式。" />
           </label>
         </div>
 

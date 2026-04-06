@@ -53,7 +53,7 @@ export const adminModules: ReadonlyArray<AdminModule> = [
     key: 'site',
     label: '站点页面',
     href: '/site',
-    summary: '维护首页、About、页脚与全局设置。',
+    summary: '维护首页、关于页、页脚与全局设置。',
     permission: 'site.manage',
   },
   {
@@ -86,15 +86,15 @@ export interface AdminFoundationCard {
 
 export const adminFoundationCards: ReadonlyArray<AdminFoundationCard> = [
   {
-    title: 'Task-oriented editing',
-    body: 'The Rebase admin will be organized by operator workflows, not generic collections.',
+    title: '任务导向编辑',
+    body: 'Rebase 后台围绕运营动作组织，而不是直接暴露底层数据集合。',
   },
   {
-    title: 'Validated publishing',
-    body: 'All publish paths will move through explicit API validation and workflow states.',
+    title: '校验后发布',
+    body: '所有发布动作都通过明确的 API 校验和状态流转执行。',
   },
   {
-    title: 'Shared contracts',
-    body: 'Admin and API will share DTOs, enums, and module definitions from this package.',
+    title: '共享契约',
+    body: '后台与 API 共享同一套 DTO、枚举和模块定义。',
   },
 ];

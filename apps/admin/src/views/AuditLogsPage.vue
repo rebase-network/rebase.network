@@ -4,7 +4,7 @@ import { computed, onMounted, ref } from 'vue';
 import type { AdminAuditRecord } from '@rebase/shared';
 
 import { adminFetch } from '../lib/api';
-import { formatDateTime } from '../lib/format';
+import { formatAuditAction, formatAuditSummary, formatAuditTargetType, formatDateTime } from '../lib/format';
 
 const rows = ref<AdminAuditRecord[]>([]);
 const loading = ref(true);
@@ -23,6 +23,34 @@ const filteredRows = computed(() => {
       item.toLowerCase().includes(value),
     );
   });
+});
+
+const auditStats = computed(() => {
+  const today = new Date().toDateString();
+  const actorCount = new Set(rows.value.map((row) => row.actorEmail ?? row.actorDisplayName ?? 'system')).size;
+
+  return [
+    {
+      label: '日志总数',
+      value: rows.value.length,
+      detail: '全部审计记录',
+    },
+    {
+      label: '筛选结果',
+      value: filteredRows.value.length,
+      detail: '当前搜索结果',
+    },
+    {
+      label: '今日操作',
+      value: rows.value.filter((row) => new Date(row.createdAt).toDateString() === today).length,
+      detail: '当天新增记录',
+    },
+    {
+      label: '操作人员',
+      value: actorCount,
+      detail: '涉及账号数',
+    },
+  ];
 });
 
 onMounted(async () => {
@@ -52,7 +80,19 @@ onMounted(async () => {
     <div v-else-if="loading" class="panel"><p>正在加载审计日志…</p></div>
 
     <template v-else>
+      <div class="compact-stat-grid compact-stat-grid-4">
+        <article v-for="item in auditStats" :key="item.label" class="compact-stat-card">
+          <span class="compact-stat-label">{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+          <small>{{ item.detail }}</small>
+        </article>
+      </div>
+
       <div class="panel filter-panel">
+        <div class="panel-toolbar">
+          <h3>筛选</h3>
+          <div class="panel-meta">{{ filteredRows.length }} 条记录</div>
+        </div>
         <label class="field compact-search-field">
           <span>搜索</span>
           <input v-model="query" type="search" placeholder="搜索动作、目标类型、摘要或操作者" />
@@ -77,23 +117,23 @@ onMounted(async () => {
               <td>{{ formatDateTime(row.createdAt) }}</td>
               <td>
                 <div class="table-cell-stack">
-                  <strong>{{ row.action }}</strong>
-                  <div class="muted-row">{{ row.targetId ?? '—' }}</div>
+                  <strong>{{ formatAuditAction(row.action) }}</strong>
+                  <div class="muted-row">{{ row.action }}</div>
                 </div>
               </td>
               <td>
                 <div class="table-cell-stack">
-                  <strong>{{ row.targetType }}</strong>
+                  <strong>{{ formatAuditTargetType(row.targetType) }}</strong>
                   <div class="muted-row">{{ row.targetId ?? '未绑定目标 id' }}</div>
                 </div>
               </td>
               <td>
                 <div class="table-cell-stack">
-                  <strong>{{ row.actorDisplayName ?? 'system' }}</strong>
+                  <strong>{{ row.actorDisplayName ?? '系统' }}</strong>
                   <div class="muted-row">{{ row.actorEmail ?? '—' }}</div>
                 </div>
               </td>
-              <td>{{ row.summary }}</td>
+              <td>{{ formatAuditSummary(row.summary) }}</td>
             </tr>
           </tbody>
         </table>

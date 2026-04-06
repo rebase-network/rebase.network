@@ -60,7 +60,7 @@ const removeLink = (groupIndex: number, linkIndex: number) => {
         <div class="field-grid field-grid-2">
           <label class="field">
             <span>分组标题</span>
-            <input :value="group.title" placeholder="Social" @input="updateGroup(groupIndex, 'title', ($event.target as HTMLInputElement).value)" />
+            <input :value="group.title" placeholder="社交媒体" @input="updateGroup(groupIndex, 'title', ($event.target as HTMLInputElement).value)" />
           </label>
           <label class="field">
             <span>分组 slug</span>
@@ -81,7 +81,7 @@ const removeLink = (groupIndex: number, linkIndex: number) => {
               <div class="field-grid field-grid-2">
                 <label class="field">
                   <span>标签</span>
-                  <input :value="link.label" placeholder="Twitter" @input="updateLink(groupIndex, linkIndex, 'label', ($event.target as HTMLInputElement).value)" />
+                  <input :value="link.label" placeholder="X / Twitter" @input="updateLink(groupIndex, linkIndex, 'label', ($event.target as HTMLInputElement).value)" />
                 </label>
                 <label class="field">
                   <span>链接</span>

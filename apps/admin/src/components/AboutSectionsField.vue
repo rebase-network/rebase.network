@@ -20,7 +20,7 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
 <template>
   <section class="stacked-gap">
     <div class="field-row field-row-spread">
-      <h3>About 分段</h3>
+      <h3>关于页分段</h3>
       <button class="button-link" type="button" @click="addItem">新增分段</button>
     </div>
 
@@ -30,7 +30,7 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
       <div v-for="(item, index) in modelValue" :key="`about-section-${index}`" class="card-shell stacked-gap">
         <label class="field">
           <span>标题</span>
-          <input :value="item.title" placeholder="Why Rebase" @input="updateItem(index, 'title', ($event.target as HTMLInputElement).value)" />
+          <input :value="item.title" placeholder="为什么是 Rebase" @input="updateItem(index, 'title', ($event.target as HTMLInputElement).value)" />
         </label>
         <label class="field">
           <span>正文</span>
