@@ -130,22 +130,18 @@ const assetStats = computed(() => [
   {
     label: '媒体记录',
     value: rows.value.length,
-    detail: '已登记资源',
   },
   {
     label: '筛选结果',
     value: filteredRows.value.length,
-    detail: '当前列表',
   },
   {
     label: '公开资源',
     value: rows.value.filter((row) => row.visibility === 'public').length,
-    detail: '可直接引用',
   },
   {
     label: '图片资源',
     value: rows.value.filter((row) => row.assetType === 'image').length,
-    detail: '适合页面展示',
   },
 ]);
 
@@ -430,7 +426,6 @@ onBeforeUnmount(() => {
               <article v-for="item in assetStats" :key="item.label" class="compact-stat-card">
                 <span class="compact-stat-label">{{ item.label }}</span>
                 <strong>{{ item.value }}</strong>
-                <small>{{ item.detail }}</small>
               </article>
             </div>
           </section>
