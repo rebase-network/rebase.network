@@ -34,17 +34,6 @@ const createBlankForm = (): StaffFormState => ({
   notes: '',
 });
 
-const localizeRoleSummary = (role: AdminRoleRecord) => {
-  switch (role.code) {
-    case 'content_editor':
-      return '维护站点页面、文章、招聘、活动、贡献者与 GeekDaily。';
-    case 'super_admin':
-      return '拥有后台全部权限与配置能力。';
-    default:
-      return role.description || '暂无补充说明。';
-  }
-};
-
 const rows = ref<AdminStaffRecord[]>([]);
 const roles = ref<AdminRoleRecord[]>([]);
 const detail = ref<AdminStaffDetailPayload | null>(null);
@@ -298,8 +287,6 @@ onMounted(() => {
             <div v-else class="role-overview-grid">
               <article v-for="role in roleSummaries" :key="role.id" class="role-overview-card">
                 <strong>{{ role.name }}</strong>
-                <p>{{ localizeRoleSummary(role) }}</p>
-                <small>{{ role.code }}</small>
                 <span class="status-pill">{{ role.memberCount }} 人</span>
               </article>
             </div>
