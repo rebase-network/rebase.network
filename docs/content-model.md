@@ -46,7 +46,7 @@ This document focuses on public content domains and URL behavior.
 - who-is-hiring: `/who-is-hiring`
 - hiring detail: `/who-is-hiring/{slug}`
 - GeekDaily list: `/geekdaily`
-- GeekDaily detail: `/geekdaily/episode-{episode-number}`
+- GeekDaily detail: `/geekdaily/geekdaily-{episode-number}`
 - site RSS: `/rss.xml`
 - hiring RSS: `/who-is-hiring/rss.xml`
 - GeekDaily RSS: `/geekdaily/rss.xml`
@@ -258,7 +258,7 @@ Suggested fields:
 
 Public route:
 
-- `/geekdaily/episode-{episode-number}`
+- `/geekdaily/geekdaily-{episode-number}`
 
 ### `geekdaily_episode_items`
 

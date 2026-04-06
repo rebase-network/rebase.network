@@ -7,7 +7,7 @@ export function getEventPath(_date: string, slug: string) {
 }
 
 export function getGeekDailyPath(episodeNumber: number) {
-  return `/geekdaily/episode-${episodeNumber}`;
+  return `/geekdaily/geekdaily-${episodeNumber}`;
 }
 
 export function getJobPath(slug: string) {

@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
-import { contentStatusOptions, type AdminGeekDailyRecord } from '@rebase/shared';
+import { contentStatusOptions, getGeekDailyEpisodePath, type AdminGeekDailyRecord } from '@rebase/shared';
 
 import GeekDailyItemsField from '../components/GeekDailyItemsField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
@@ -46,7 +46,7 @@ const fieldIssues = ref<Record<string, string>>({});
 
 const geekdailyId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => geekdailyId.value.length === 0);
-const publicUrl = computed(() => (form.episodeNumber > 0 ? `/geekdaily/episode-${form.episodeNumber}` : '待生成'));
+const publicUrl = computed(() => (form.episodeNumber > 0 ? getGeekDailyEpisodePath(form.episodeNumber) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新增极客日报' : `编辑极客日报：#${record.value?.episodeNumber ?? ''}`));
 
 const resetFeedback = () => {

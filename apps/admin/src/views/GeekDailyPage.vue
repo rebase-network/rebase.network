@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
-import { contentStatusOptions, type AdminGeekDailyListItem } from '@rebase/shared';
+import { contentStatusOptions, getGeekDailyEpisodePath, type AdminGeekDailyListItem } from '@rebase/shared';
 
 import { adminFetch } from '../lib/api';
 import { formatContentStatus, formatDateTime } from '../lib/format';
@@ -128,7 +128,7 @@ onMounted(async () => {
               <td class="table-actions-cell">
                 <div class="table-action-list">
                   <RouterLink class="table-link" :to="`/geekdaily/${row.id}/edit`">编辑</RouterLink>
-                  <a class="table-link" :href="`/geekdaily/episode-${row.episodeNumber}`" target="_blank" rel="noreferrer">前台预览</a>
+                  <a class="table-link" :href="getGeekDailyEpisodePath(row.episodeNumber)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>
               </td>
             </tr>

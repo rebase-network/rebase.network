@@ -13,7 +13,7 @@ test('/sitemap.xml returns key public URLs', async ({ request }) => {
   expect(response.ok()).toBeTruthy();
   const body = await response.text();
   expect(body).toContain('<urlset');
-  expect(body).toContain('https://rebase.network/geekdaily/episode-1915');
+  expect(body).toContain('https://rebase.network/geekdaily/geekdaily-1915');
   expect(body).toContain('https://rebase.network/articles/building-rebase-in-public');
 });
 

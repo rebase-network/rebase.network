@@ -116,7 +116,7 @@ The hiring detail page is accepted when:
 The GeekDaily list page is accepted when:
 
 - episodes render as episode-level records rather than item-level rows
-- each episode links to `/geekdaily/episode-{episode-number}`
+- each episode links to `/geekdaily/geekdaily-{episode-number}`
 - pagination or list chunking works if included in the batch
 - the search entry point is visible and usable
 - the layout remains readable with realistic episode counts
@@ -125,7 +125,7 @@ The GeekDaily list page is accepted when:
 
 The GeekDaily detail page is accepted when:
 
-- the route matches the `episode-{episode-number}` convention
+- the route matches the `geekdaily-{episode-number}` convention
 - the episode metadata is shown correctly
 - all items in the episode are rendered in the correct order
 - source links work

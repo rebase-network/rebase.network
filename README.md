@@ -39,7 +39,7 @@ The target architecture is no longer a headless CMS workflow.
 - GeekDaily search is in scope for V1
 - RSS feeds are in scope for V1
 - hiring detail pages and hiring RSS are in scope for V1
-- GeekDaily detail URLs use `/geekdaily/episode-{episode-number}`
+- GeekDaily detail URLs use `/geekdaily/geekdaily-{episode-number}`
 - GeekDaily titles default to `极客日报#{episode-number}` during migration
 - RSS feeds default to the latest 3 items per feed in V1
 - the admin experience is task-oriented and Rebase-specific, not collection-oriented

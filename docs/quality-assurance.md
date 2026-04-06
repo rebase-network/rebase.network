@@ -182,7 +182,7 @@ Each feed should be checked for:
 
 Route conventions to verify:
 
-- GeekDaily items link to `/geekdaily/episode-{episode-number}`
+- GeekDaily items link to `/geekdaily/geekdaily-{episode-number}`
 - hiring items link to `/who-is-hiring/{slug}`
 - article items link to `/articles/{slug}`
 - event items link to `/events/{yyyy-mm-dd}-{slug}`

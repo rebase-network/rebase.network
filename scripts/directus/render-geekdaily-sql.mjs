@@ -119,7 +119,7 @@ function loadEpisodes() {
     if (!episodeMap.has(record.episode)) {
       episodeMap.set(record.episode, {
         episodeNumber: record.episode,
-        slug: `episode-${record.episode}`,
+        slug: `geekdaily-${record.episode}`,
         status: 'published',
         title: `极客日报#${record.episode}`,
         publishedAt: parseDate(record.time),

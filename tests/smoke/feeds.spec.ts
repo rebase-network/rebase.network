@@ -22,7 +22,7 @@ for (const path of feeds) {
 test('feed links use the agreed public route conventions', async ({ request }) => {
   const geekdailyFeed = await request.get('/geekdaily/rss.xml');
   const geekdailyBody = await geekdailyFeed.text();
-  expect(geekdailyBody).toContain('/geekdaily/episode-1915');
+  expect(geekdailyBody).toContain('/geekdaily/geekdaily-1915');
 
   const jobsFeed = await request.get('/who-is-hiring/rss.xml');
   const jobsBody = await jobsFeed.text();

@@ -42,8 +42,8 @@ const featuredTags = overview.featuredTags;
     </article>
     <article class="card stat-card">
       <span>url rule</span>
-      <strong>/geekdaily/episode-1915</strong>
-      <p>统一使用 episode 语义，公共链接更清晰，也更利于长期维护。</p>
+      <strong>/geekdaily/geekdaily-1915</strong>
+      <p>统一使用 <code>geekdaily-&#123;episode-number&#125;</code> 规则，让期数含义和栏目来源一眼可辨。</p>
     </article>
   </section>
 
@@ -54,10 +54,10 @@ const featuredTags = overview.featuredTags;
         id="geekdaily-search"
         name="q"
         type="search"
-        placeholder="搜索 episode、标题、摘要、条目标题、日期或推荐人"
+        placeholder="搜索期数、geekdaily-编号、标题、摘要、条目标题、日期或推荐人"
         autocomplete="off"
       />
-      <p>支持 episode number、标题、摘要、日期、推荐人和条目标题关键词。</p>
+      <p>支持期数编号、<code>geekdaily-1915</code>、标题、摘要、日期、推荐人和条目标题关键词。</p>
     </div>
 
     <div class="card quick-filter-panel">
@@ -260,7 +260,7 @@ const featuredTags = overview.featuredTags;
           return baseResults;
         }
 
-        const numericQuery = state.query.toLowerCase().replace(/^episode-/, '').replace(/^#/, '').trim();
+        const numericQuery = state.query.toLowerCase().replace(/^(geekdaily|episode)-/, '').replace(/^#/, '').trim();
         const exactEpisodeMatches = baseResults.filter((document) => String(document.episodeNumber) === numericQuery);
 
         if (/^\d+$/.test(numericQuery) && exactEpisodeMatches.length > 0) {
@@ -307,7 +307,7 @@ const featuredTags = overview.featuredTags;
               return `
                 <article class="card episode-card">
                   <p class="meta">${escapeHtml(item.title)} · ${escapeHtml(formatPublishedAt(item.publishedAt))}</p>
-                  <h2><a href="/geekdaily/${escapeHtml(item.slug)}">${escapeHtml(item.title)}</a></h2>
+                  <h2><a href="/geekdaily/geekdaily-${item.episodeNumber}">${escapeHtml(item.title)}</a></h2>
                   <p class="summary">${escapeHtml(item.summary)}</p>
                   <p class="body">${escapeHtml(item.body)}</p>
                   <ul>${itemPreview}</ul>

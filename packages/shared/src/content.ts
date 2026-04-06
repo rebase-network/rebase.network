@@ -285,6 +285,14 @@ export const geekdailyEpisodeSchema = z.object({
 
 export type GeekDailyEpisodeInput = z.infer<typeof geekdailyEpisodeSchema>;
 
+export function getGeekDailyEpisodeSlug(episodeNumber: number) {
+  return `geekdaily-${episodeNumber}`;
+}
+
+export function getGeekDailyEpisodePath(episodeNumber: number) {
+  return `/geekdaily/${getGeekDailyEpisodeSlug(episodeNumber)}`;
+}
+
 export const assetSchema = z.object({
   storageProvider: requiredTrimmedString('storage provider is required'),
   bucket: requiredTrimmedString('bucket is required'),

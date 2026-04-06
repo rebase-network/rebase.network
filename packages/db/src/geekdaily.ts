@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+import { getGeekDailyEpisodeSlug } from '@rebase/shared';
+
 export interface ImportedGeekDailyItem {
   title: string;
   authorName: string;
@@ -148,7 +150,7 @@ export function loadGeekDailyArchive(sourceArg = 'geekdaily.csv'): ImportedGeekD
   return [...episodeMap.entries()]
     .map(([episodeNumber, episode]) => ({
       episodeNumber,
-      slug: `episode-${episodeNumber}`,
+      slug: getGeekDailyEpisodeSlug(episodeNumber),
       title: `极客日报#${episodeNumber}`,
       summary: buildSummary(episode.items),
       bodyMarkdown: buildBody(episodeNumber, episode.items),

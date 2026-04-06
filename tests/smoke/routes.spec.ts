@@ -21,7 +21,7 @@ for (const route of primaryRoutes) {
 }
 
 test('detail pages render expected content blocks', async ({ page }) => {
-  await page.goto('/geekdaily/episode-1915');
+  await page.goto('/geekdaily/geekdaily-1915');
   await expect(page.getByRole('heading', { level: 1, name: '极客日报#1915' })).toBeVisible();
   await expect(page.getByText('推荐人：Cedric', { exact: true })).toBeVisible();
 

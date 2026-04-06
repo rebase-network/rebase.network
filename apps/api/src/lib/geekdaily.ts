@@ -1,7 +1,7 @@
 import { asc, desc, eq } from 'drizzle-orm';
 
 import { geekdailyEpisodeItems, geekdailyEpisodes } from '@rebase/db';
-import type { AdminGeekDailyListItem, GeekDailyEpisodeInput } from '@rebase/shared';
+import { getGeekDailyEpisodeSlug, type AdminGeekDailyListItem, type GeekDailyEpisodeInput } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { getDb } from './db.js';
@@ -27,9 +27,35 @@ const loadItemsByEpisodeId = async () => {
   return result;
 };
 
+const getAlternateGeekDailySlug = (slug: string) => {
+  if (/^geekdaily-\d+$/.test(slug)) {
+    return `episode-${slug.slice('geekdaily-'.length)}`;
+  }
+
+  if (/^episode-\d+$/.test(slug)) {
+    return getGeekDailyEpisodeSlug(Number(slug.slice('episode-'.length)));
+  }
+
+  return null;
+};
+
+const getEpisodeRecordBySlug = async (slug: string) => {
+  const db = getDb();
+  const candidates = [slug, getAlternateGeekDailySlug(slug)].filter((value, index, list): value is string => Boolean(value) && list.indexOf(value) === index);
+
+  for (const candidate of candidates) {
+    const rows = await db.select().from(geekdailyEpisodes).where(eq(geekdailyEpisodes.slug, candidate)).limit(1);
+    if (rows[0]) {
+      return rows[0];
+    }
+  }
+
+  return null;
+};
+
 const mapEpisodeDetail = (row: any, items: any[]) => ({
   id: row.id,
-  slug: row.slug,
+  slug: getGeekDailyEpisodeSlug(row.episodeNumber),
   episodeNumber: row.episodeNumber,
   title: row.title,
   summary: row.summary,
@@ -79,7 +105,7 @@ export const listAdminGeekDailyEpisodes = async (): Promise<AdminGeekDailyListIt
 
   return rows.map((row) => ({
     id: row.id,
-    slug: row.slug,
+    slug: getGeekDailyEpisodeSlug(row.episodeNumber),
     episodeNumber: row.episodeNumber,
     title: row.title,
     status: row.status,
@@ -106,7 +132,7 @@ export const createAdminGeekDailyEpisode = async (input: GeekDailyEpisodeInput, 
   const [created] = await db
     .insert(geekdailyEpisodes)
     .values({
-      slug: `episode-${input.episodeNumber}`,
+      slug: getGeekDailyEpisodeSlug(input.episodeNumber),
       episodeNumber: input.episodeNumber,
       title: input.title,
       summary: input.summary,
@@ -143,7 +169,7 @@ export const updateAdminGeekDailyEpisode = async (id: string, input: GeekDailyEp
   await db
     .update(geekdailyEpisodes)
     .set({
-      slug: `episode-${input.episodeNumber}`,
+      slug: getGeekDailyEpisodeSlug(input.episodeNumber),
       episodeNumber: input.episodeNumber,
       title: input.title,
       summary: input.summary,
@@ -234,7 +260,7 @@ export const listPublicGeekDailyEpisodes = async (limit = -1) => {
   const itemsByEpisode = await loadItemsByEpisodeId();
 
   return rows.map((row) => ({
-    slug: row.slug,
+    slug: getGeekDailyEpisodeSlug(row.episodeNumber),
     episodeNumber: row.episodeNumber,
     title: row.title,
     summary: row.summary,
@@ -246,18 +272,13 @@ export const listPublicGeekDailyEpisodes = async (limit = -1) => {
 };
 
 export const getPublicGeekDailyEpisodeBySlug = async (slug: string) => {
-  const db = getDb();
-  const [rows, itemsByEpisode] = await Promise.all([
-    db.select().from(geekdailyEpisodes).where(eq(geekdailyEpisodes.slug, slug)).limit(1),
-    loadItemsByEpisodeId(),
-  ]);
-  const row = rows[0] ?? null;
+  const [row, itemsByEpisode] = await Promise.all([getEpisodeRecordBySlug(slug), loadItemsByEpisodeId()]);
   if (!row || row.status !== 'published') {
     return null;
   }
 
   return {
-    slug: row.slug,
+    slug: getGeekDailyEpisodeSlug(row.episodeNumber),
     episodeNumber: row.episodeNumber,
     title: row.title,
     summary: row.summary,
