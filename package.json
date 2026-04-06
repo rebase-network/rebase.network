@@ -19,7 +19,7 @@
     "preview": "pnpm --filter @rebase/web preview",
     "typecheck": "pnpm --filter @rebase/web check",
     "lint": "pnpm --filter @rebase/web lint",
-    "pretest:smoke": "pnpm cms:bootstrap && pnpm build",
+    "pretest:smoke": "pnpm local:bootstrap && pnpm build:api",
     "test:smoke": "playwright test",
     "dev:web": "pnpm --filter @rebase/web dev",
     "dev:admin": "pnpm --filter @rebase/admin dev",

@@ -22,6 +22,8 @@ test('/healthz returns runtime health data', async ({ request }) => {
   expect(response.ok()).toBeTruthy();
   const payload = await response.json();
   expect(payload.status).toBe('ok');
-  expect(payload.checks.directus).toBe('ok');
+  expect(payload.checks.api).toBe('ok');
+  expect(payload.checks.database).toBe('ok');
+  expect(payload.checks.auth).toBe('ok');
   expect(payload.checks.publicContent).toBe('ok');
 });

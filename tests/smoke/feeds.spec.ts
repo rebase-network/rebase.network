@@ -30,5 +30,5 @@ test('feed links use the agreed public route conventions', async ({ request }) =
 
   const eventsFeed = await request.get('/events/rss.xml');
   const eventsBody = await eventsFeed.text();
-  expect(eventsBody).toContain('/events/2026-04-25-geekdaily-editor-roundtable');
+  expect(eventsBody).toContain('/events/geekdaily-editor-roundtable');
 });

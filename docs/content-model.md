@@ -36,7 +36,7 @@ This document focuses on public content domains and URL behavior.
 - use lowercase URLs
 - use `-` between words
 - avoid Chinese characters in public URLs
-- avoid trailing slash in canonical URLs
+- avoid trailing slash in canonical URLs outside the site root
 - keep published URLs stable
 
 ### Public Routes
@@ -54,7 +54,7 @@ This document focuses on public content domains and URL behavior.
 - article detail: `/articles/{slug}`
 - articles RSS: `/articles/rss.xml`
 - events list: `/events`
-- event detail: `/events/{yyyy-mm-dd}-{slug}`
+- event detail: `/events/{slug}`
 - events RSS: `/events/rss.xml`
 - contributors: `/contributors`
 
@@ -202,7 +202,7 @@ Suggested fields:
 
 URL rule:
 
-- public path uses `/events/{yyyy-mm-dd}-{slug}`
+- public path uses `/events/{slug}`
 - `slug` should remain stable once published
 
 ### `contributor_roles`

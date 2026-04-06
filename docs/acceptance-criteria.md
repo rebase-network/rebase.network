@@ -173,7 +173,7 @@ The events list page is accepted when:
 
 The event detail page is accepted when:
 
-- the URL matches `/events/{yyyy-mm-dd}-{slug}`
+- the URL matches `/events/{slug}`
 - date, time, location, and content render correctly
 - external registration links or registration notes are clearly visible
 - the page remains useful without an in-site registration form

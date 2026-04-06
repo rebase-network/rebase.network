@@ -20,7 +20,8 @@ const {
   noindex = false,
 } = Astro.props;
 
-const canonicalUrl = new URL(Astro.url.pathname, site.primaryDomain).toString();
+const canonicalPath = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/+$/, '');
+const canonicalUrl = new URL(canonicalPath, site.primaryDomain).toString();
 const socialImageUrl = new URL(socialImage ?? '/social-card.svg', site.primaryDomain).toString();
 const robots = noindex ? 'noindex, nofollow' : 'index, follow';
 ---
