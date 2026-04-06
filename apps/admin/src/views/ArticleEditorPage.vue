@@ -65,6 +65,8 @@ const isNew = computed(() => articleId.value.length === 0);
 const publicUrl = computed(() => (form.slug ? `/articles/${form.slug}` : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新建文章' : `编辑文章：${article.value?.title ?? ''}`));
 const selectedCoverAsset = computed(() => assets.value.find((asset) => asset.id === form.coverAssetId) ?? null);
+const authorSummary = computed(() => form.authors.map((item) => item.name).filter(Boolean).join('、') || '未填写');
+const tagSummary = computed(() => form.tags.join('、') || '未填写');
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -269,29 +271,45 @@ onMounted(() => void loadArticle());
         <MarkdownEditorField v-model="form.bodyMarkdown" label="正文" placeholder="使用 Markdown 编写文章正文。" :error="fieldIssues.bodyMarkdown" />
       </section>
 
-      <aside class="panel editor-sidebar">
-        <article class="summary-card">
-          <div class="eyebrow">发布信息</div>
+      <aside class="stacked-gap editor-sidebar sticky-stack">
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>发布信息</h3>
+            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
+          </div>
           <dl class="summary-grid">
             <div class="summary-item">
               <dt>公开地址</dt>
               <dd>{{ publicUrl }}</dd>
             </div>
             <div class="summary-item">
-              <dt>状态</dt>
-              <dd>{{ formatContentStatus(form.status) }}</dd>
+              <dt>发布时间</dt>
+              <dd class="muted">{{ form.publishedAt || '未设置' }}</dd>
             </div>
             <div class="summary-item">
               <dt>作者</dt>
-              <dd>{{ form.authors.map((item) => item.name).filter(Boolean).join('、') || '未填写' }}</dd>
+              <dd>{{ authorSummary }}</dd>
             </div>
             <div class="summary-item">
-              <dt>标签</dt>
-              <dd class="muted">{{ form.tags.join('、') || '未填写' }}</dd>
-            </div>
-            <div v-if="article" class="summary-item">
               <dt>更新时间</dt>
-              <dd class="muted">{{ formatDateTime(article.updatedAt) }}</dd>
+              <dd class="muted">{{ article ? formatDateTime(article.updatedAt) : '新建后生成' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>封面与标签</h3>
+            <div class="panel-meta">{{ selectedCoverAsset ? '已选择封面' : '未选择封面' }}</div>
+          </div>
+          <dl class="summary-grid">
+            <div class="summary-item">
+              <dt>标签</dt>
+              <dd class="muted">{{ tagSummary }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>阅读时长</dt>
+              <dd class="muted">{{ form.readingTime || '未填写' }}</dd>
             </div>
           </dl>
 
@@ -305,7 +323,8 @@ onMounted(() => void loadArticle());
               <p>{{ selectedCoverAsset.publicUrl || '未生成公开地址' }}</p>
             </div>
           </div>
-        </article>
+          <div v-else class="empty-inline">当前未绑定封面资源。</div>
+        </section>
       </aside>
     </div>
   </section>

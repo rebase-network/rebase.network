@@ -15,7 +15,7 @@ const props = withDefaults(
     label: 'Markdown',
     placeholder: '',
     error: '',
-    rows: 16,
+    rows: 12,
   },
 );
 

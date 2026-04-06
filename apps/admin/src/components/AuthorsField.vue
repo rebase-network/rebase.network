@@ -28,6 +28,10 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
 
     <div v-else class="stacked-gap">
       <div v-for="(item, index) in modelValue" :key="`author-${index}`" class="card-shell stacked-gap">
+        <div class="field-row field-row-spread">
+          <h3>作者 {{ index + 1 }}</h3>
+          <button class="button-link button-danger" type="button" @click="removeItem(index)">删除作者</button>
+        </div>
         <div class="field-grid field-grid-2">
           <label class="field">
             <span>姓名</span>
@@ -37,9 +41,6 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
             <span>角色说明</span>
             <input :value="item.role ?? ''" placeholder="Community steward" @input="updateItem(index, 'role', ($event.target as HTMLInputElement).value)" />
           </label>
-        </div>
-        <div class="panel-actions">
-          <button class="button-link button-danger" type="button" @click="removeItem(index)">删除作者</button>
         </div>
       </div>
     </div>

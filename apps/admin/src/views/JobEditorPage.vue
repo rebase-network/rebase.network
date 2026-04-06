@@ -72,6 +72,9 @@ const jobId = computed(() => (typeof route.params.id === 'string' ? route.params
 const isNew = computed(() => jobId.value.length === 0);
 const publicUrl = computed(() => (form.slug ? `/who-is-hiring/${form.slug}` : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新增招聘' : `编辑招聘：${record.value?.roleTitle ?? ''}`));
+const deliverySummary = computed(() => form.applyUrl || form.contactValue || '未填写');
+const workModeSummary = computed(() => [form.workMode, form.location].filter(Boolean).join(' / ') || '未填写');
+const tagSummary = computed(() => form.tags.join('、') || '未填写');
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -307,32 +310,56 @@ onMounted(() => void loadRecord());
         <MarkdownEditorField v-model="form.descriptionMarkdown" label="岗位详情" placeholder="使用 Markdown 描述岗位背景、要求和团队信息。" />
       </section>
 
-      <aside class="panel editor-sidebar">
-        <article class="summary-card">
-          <div class="eyebrow">发布信息</div>
+      <aside class="stacked-gap editor-sidebar sticky-stack">
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>发布信息</h3>
+            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
+          </div>
           <dl class="summary-grid">
             <div class="summary-item">
               <dt>公开地址</dt>
               <dd>{{ publicUrl }}</dd>
             </div>
             <div class="summary-item">
-              <dt>状态</dt>
-              <dd>{{ formatContentStatus(form.status) }}</dd>
+              <dt>发布时间</dt>
+              <dd class="muted">{{ form.publishedAt || '未设置' }}</dd>
             </div>
             <div class="summary-item">
+              <dt>过期时间</dt>
+              <dd class="muted">{{ form.expiresAt || '未设置' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>更新时间</dt>
+              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '新建后生成' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>投递摘要</h3>
+            <div class="panel-meta">{{ form.supportsRemote ? '支持远程' : '现场为主' }}</div>
+          </div>
+          <dl class="summary-grid">
+            <div class="summary-item">
               <dt>投递方式</dt>
-              <dd class="muted">{{ form.applyUrl || form.contactValue || '未填写' }}</dd>
+              <dd class="muted">{{ deliverySummary }}</dd>
             </div>
             <div class="summary-item">
               <dt>工作模式</dt>
-              <dd class="muted">{{ [form.workMode, form.location].filter(Boolean).join(' / ') || '未填写' }}</dd>
+              <dd class="muted">{{ workModeSummary }}</dd>
             </div>
-            <div v-if="record" class="summary-item">
-              <dt>更新时间</dt>
-              <dd class="muted">{{ formatDateTime(record.updatedAt) }}</dd>
+            <div class="summary-item">
+              <dt>薪资范围</dt>
+              <dd class="muted">{{ form.salary || '未填写' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>标签</dt>
+              <dd class="muted">{{ tagSummary }}</dd>
             </div>
           </dl>
-        </article>
+        </section>
       </aside>
     </div>
   </section>

@@ -75,6 +75,9 @@ const isNew = computed(() => eventId.value.length === 0);
 const publicUrl = computed(() => (form.slug ? `/events/${form.slug}` : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新增活动' : `编辑活动：${record.value?.title ?? ''}`));
 const selectedCoverAsset = computed(() => assets.value.find((asset) => asset.id === form.coverAssetId) ?? null);
+const locationSummary = computed(() => [form.city, form.location, form.venue].filter(Boolean).join(' / ') || '未填写');
+const registrationSummary = computed(() => form.registrationUrl || form.registrationNote || '未填写');
+const tagSummary = computed(() => form.tags.join('、') || '未填写');
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -306,29 +309,45 @@ onMounted(() => void loadRecord());
         <MarkdownEditorField v-model="form.bodyMarkdown" label="活动详情" placeholder="使用 Markdown 描述活动流程、议题和参与说明。" />
       </section>
 
-      <aside class="panel editor-sidebar">
-        <article class="summary-card">
-          <div class="eyebrow">发布信息</div>
+      <aside class="stacked-gap editor-sidebar sticky-stack">
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>发布信息</h3>
+            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
+          </div>
           <dl class="summary-grid">
             <div class="summary-item">
               <dt>公开地址</dt>
               <dd>{{ publicUrl }}</dd>
             </div>
             <div class="summary-item">
-              <dt>状态</dt>
-              <dd>{{ formatContentStatus(form.status) }}</dd>
+              <dt>开始 / 结束</dt>
+              <dd class="muted">{{ form.startAt || '未设置' }} -> {{ form.endAt || '未设置' }}</dd>
             </div>
             <div class="summary-item">
               <dt>报名</dt>
-              <dd class="muted">{{ form.registrationUrl || form.registrationNote || '未填写' }}</dd>
+              <dd class="muted">{{ registrationSummary }}</dd>
             </div>
             <div class="summary-item">
-              <dt>地点</dt>
-              <dd class="muted">{{ [form.city, form.location, form.venue].filter(Boolean).join(' / ') || '未填写' }}</dd>
-            </div>
-            <div v-if="record" class="summary-item">
               <dt>更新时间</dt>
-              <dd class="muted">{{ formatDateTime(record.updatedAt) }}</dd>
+              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '新建后生成' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>地点与封面</h3>
+            <div class="panel-meta">{{ selectedCoverAsset ? '已选择封面' : '未选择封面' }}</div>
+          </div>
+          <dl class="summary-grid">
+            <div class="summary-item">
+              <dt>地点</dt>
+              <dd class="muted">{{ locationSummary }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>标签</dt>
+              <dd class="muted">{{ tagSummary }}</dd>
             </div>
           </dl>
 
@@ -342,7 +361,8 @@ onMounted(() => void loadRecord());
               <p>{{ selectedCoverAsset.publicUrl || '未生成公开地址' }}</p>
             </div>
           </div>
-        </article>
+          <div v-else class="empty-inline">当前未绑定封面资源。</div>
+        </section>
       </aside>
     </div>
   </section>

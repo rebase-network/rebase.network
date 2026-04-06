@@ -452,7 +452,7 @@ code {
   gap: 0.3rem;
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 0.82rem;
+  padding: 0.74rem;
   background: rgba(255, 255, 255, 0.72);
 }
 
@@ -851,7 +851,7 @@ code {
 }
 
 .markdown-preview {
-  min-height: 18rem;
+  min-height: 14rem;
   padding: 0.85rem;
   border: 1px solid var(--line);
   border-radius: 14px;

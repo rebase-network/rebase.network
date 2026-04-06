@@ -12,7 +12,7 @@ import {
 
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
-import { formatDateTime, slugify } from '../lib/format';
+import { formatContentStatus, formatDateTime, slugify } from '../lib/format';
 
 interface ContributorFormState extends Omit<ContributorInput, 'avatarAssetId' | 'roleIds'> {
   avatarAssetId: string;
@@ -42,6 +42,8 @@ const contributorId = computed(() => (typeof route.params.id === 'string' ? rout
 const isNew = computed(() => contributorId.value.length === 0);
 const pageTitle = computed(() => (isNew.value ? '新增贡献者' : `编辑贡献者：${detail.value?.contributor.name ?? ''}`));
 const selectedAvatarAsset = computed(() => assets.value.find((asset) => asset.id === form.avatarAssetId) ?? null);
+const roleSummary = computed(() => availableRoles.value.filter((role) => form.roleIds.includes(role.id)).map((role) => role.name).join('、') || '未分配');
+const contactSummary = computed(() => [form.twitterUrl, form.wechat, form.telegram].filter(Boolean).join(' / ') || '未填写');
 
 const detail = ref<AdminContributorDetailPayload | null>(null);
 const assets = ref<AdminAssetRecord[]>([]);
@@ -185,7 +187,7 @@ onMounted(() => void loadRecord());
           <input v-model="form.headline" type="text" placeholder="Community steward" />
         </label>
 
-        <MarkdownEditorField v-model="form.bio" label="详细介绍" placeholder="使用 Markdown 编写贡献者介绍。" />
+        <MarkdownEditorField v-model="form.bio" label="详细介绍" placeholder="使用 Markdown 编写贡献者介绍。" :rows="8" />
 
         <div class="field-grid field-grid-3">
           <label class="field">
@@ -240,25 +242,45 @@ onMounted(() => void loadRecord());
         </div>
       </section>
 
-      <aside class="panel editor-sidebar">
-        <article class="summary-card">
-          <div class="eyebrow">资料摘要</div>
+      <aside class="stacked-gap editor-sidebar sticky-stack">
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>资料摘要</h3>
+            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
+          </div>
           <dl class="summary-grid">
             <div class="summary-item">
               <dt>角色</dt>
-              <dd>{{ availableRoles.filter((role) => form.roleIds.includes(role.id)).map((role) => role.name).join('、') || '未分配' }}</dd>
+              <dd>{{ roleSummary }}</dd>
             </div>
             <div class="summary-item">
               <dt>联系方式</dt>
-              <dd class="muted">{{ [form.twitterUrl, form.wechat, form.telegram].filter(Boolean).join(' / ') || '未填写' }}</dd>
+              <dd class="muted">{{ contactSummary }}</dd>
             </div>
             <div class="summary-item">
               <dt>排序</dt>
               <dd>{{ form.sortOrder }}</dd>
             </div>
-            <div v-if="detail" class="summary-item">
+            <div class="summary-item">
               <dt>更新时间</dt>
-              <dd class="muted">{{ formatDateTime(detail.contributor.updatedAt) }}</dd>
+              <dd class="muted">{{ detail ? formatDateTime(detail.contributor.updatedAt) : '新建后生成' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>头像设置</h3>
+            <div class="panel-meta">{{ selectedAvatarAsset ? '上传资源' : '头像种子' }}</div>
+          </div>
+          <dl class="summary-grid">
+            <div class="summary-item">
+              <dt>头像种子</dt>
+              <dd class="muted">{{ form.avatarSeed || '未填写' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>URL 标识</dt>
+              <dd>{{ form.slug || '待生成' }}</dd>
             </div>
           </dl>
 
@@ -272,7 +294,8 @@ onMounted(() => void loadRecord());
               <p>{{ selectedAvatarAsset.publicUrl || '未生成公开地址' }}</p>
             </div>
           </div>
-        </article>
+          <div v-else class="empty-inline">当前未绑定上传头像，将依赖头像种子生成默认形象。</div>
+        </section>
       </aside>
     </div>
   </section>

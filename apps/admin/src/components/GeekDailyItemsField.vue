@@ -28,6 +28,10 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
 
     <div v-else class="stacked-gap">
       <div v-for="(item, index) in modelValue" :key="`geekdaily-item-${index}`" class="card-shell stacked-gap">
+        <div class="field-row field-row-spread">
+          <h3>条目 {{ index + 1 }}</h3>
+          <button class="button-link button-danger" type="button" @click="removeItem(index)">删除条目</button>
+        </div>
         <div class="field-grid field-grid-2">
           <label class="field">
             <span>标题</span>
@@ -44,11 +48,8 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
         </label>
         <label class="field">
           <span>摘要</span>
-          <textarea rows="3" :value="item.summary" placeholder="补充推荐理由和内容摘要。" @input="updateItem(index, 'summary', ($event.target as HTMLTextAreaElement).value)" />
+          <textarea rows="2" :value="item.summary" placeholder="补充推荐理由和内容摘要。" @input="updateItem(index, 'summary', ($event.target as HTMLTextAreaElement).value)" />
         </label>
-        <div class="panel-actions">
-          <button class="button-link button-danger" type="button" @click="removeItem(index)">删除条目</button>
-        </div>
       </div>
     </div>
   </section>
