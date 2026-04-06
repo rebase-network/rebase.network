@@ -51,6 +51,18 @@ const contributorStats = computed(() => [
     detail: `${roles.value.filter((item) => item.status === 'published').length} 个已启用`,
   },
 ]);
+const publishedRoleCount = computed(() => roles.value.filter((item) => item.status === 'published').length);
+const activeRoleLabel = computed(() => {
+  if (!showRoleManager.value) {
+    return '未展开';
+  }
+
+  if (selectedRoleId.value === 'new') {
+    return '新建角色';
+  }
+
+  return roles.value.find((item) => item.id === selectedRoleId.value)?.name ?? '未选择';
+});
 
 const resetRoleForm = () => {
   selectedRoleId.value = 'new';
@@ -158,12 +170,53 @@ onMounted(() => void loadData());
     <div v-if="loading" class="panel"><p>正在加载贡献者数据…</p></div>
 
     <template v-else>
-      <div class="compact-stat-grid compact-stat-grid-4">
-        <article v-for="item in contributorStats" :key="item.label" class="compact-stat-card">
-          <span class="compact-stat-label">{{ item.label }}</span>
-          <strong>{{ item.value }}</strong>
-          <small>{{ item.detail }}</small>
-        </article>
+      <div class="panel-grid panel-grid-2">
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <div>
+              <h3>贡献者概览</h3>
+              <div class="panel-meta">查看成员库存与发布状态</div>
+            </div>
+            <div class="panel-meta">{{ contributors.length }} 人</div>
+          </div>
+
+          <div class="compact-stat-grid compact-stat-grid-4">
+            <article v-for="item in contributorStats" :key="item.label" class="compact-stat-card">
+              <span class="compact-stat-label">{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+              <small>{{ item.detail }}</small>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <div>
+              <h3>角色概览</h3>
+              <div class="panel-meta">贡献者角色作为次级维护界面</div>
+            </div>
+            <div class="panel-meta">{{ roles.length }} 个角色</div>
+          </div>
+
+          <dl class="summary-grid summary-grid-2">
+            <div class="summary-item">
+              <dt>已启用角色</dt>
+              <dd>{{ publishedRoleCount }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>维护状态</dt>
+              <dd class="muted">{{ showRoleManager ? '编辑中' : '待展开' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>当前角色</dt>
+              <dd class="muted">{{ activeRoleLabel }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>角色维护</dt>
+              <dd class="muted">点击顶部“管理角色”进入次级界面</dd>
+            </div>
+          </dl>
+        </section>
       </div>
 
       <section class="panel stacked-gap">

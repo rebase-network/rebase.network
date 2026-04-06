@@ -95,23 +95,36 @@ onMounted(async () => {
     <div v-else-if="loading" class="panel"><p>正在加载审计日志…</p></div>
 
     <template v-else>
-      <div class="compact-stat-grid compact-stat-grid-4">
-        <article v-for="item in auditStats" :key="item.label" class="compact-stat-card">
-          <span class="compact-stat-label">{{ item.label }}</span>
-          <strong>{{ item.value }}</strong>
-          <small>{{ item.detail }}</small>
-        </article>
-      </div>
+      <div class="panel-grid panel-grid-2">
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <div>
+              <h3>日志概览</h3>
+              <div class="panel-meta">查看操作密度与涉及账号</div>
+            </div>
+            <div class="panel-meta">{{ rows.length }} 条记录</div>
+          </div>
 
-      <div class="panel filter-panel">
-        <div class="panel-toolbar">
-          <h3>筛选</h3>
-          <div class="panel-meta">{{ filteredRows.length }} 条记录</div>
-        </div>
-        <label class="field compact-search-field">
-          <span>搜索</span>
-          <input v-model="query" type="search" placeholder="搜索动作、目标类型、摘要或操作者" />
-        </label>
+          <div class="compact-stat-grid compact-stat-grid-4">
+            <article v-for="item in auditStats" :key="item.label" class="compact-stat-card">
+              <span class="compact-stat-label">{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+              <small>{{ item.detail }}</small>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel filter-panel">
+          <div class="panel-toolbar">
+            <h3>筛选</h3>
+            <div class="panel-meta">{{ filteredRows.length }} 条记录</div>
+          </div>
+          <label class="field compact-search-field">
+            <span>搜索</span>
+            <input v-model="query" type="search" placeholder="搜索动作、目标类型、摘要或操作者" />
+          </label>
+          <div class="panel-meta">建议优先搜索动作关键词、目标类型或操作者邮箱。</div>
+        </section>
       </div>
 
       <div v-if="filteredRows.length === 0" class="stacked-gap">

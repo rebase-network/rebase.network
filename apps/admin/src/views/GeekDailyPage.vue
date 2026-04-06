@@ -71,32 +71,44 @@ onMounted(async () => {
     <div v-else-if="loading" class="panel"><p>正在加载极客日报列表…</p></div>
 
     <template v-else>
-      <div class="compact-stat-grid compact-stat-grid-4">
-        <article v-for="item in geekdailyStats" :key="item.label" class="compact-stat-card">
-          <span class="compact-stat-label">{{ item.label }}</span>
-          <strong>{{ item.value }}</strong>
-          <small>{{ item.detail }}</small>
-        </article>
-      </div>
+      <div class="panel-grid panel-grid-2">
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <div>
+              <h3>期刊概览</h3>
+              <div class="panel-meta">查看期数库存与累计推荐条目</div>
+            </div>
+            <div class="panel-meta">{{ rows.length }} 期内容</div>
+          </div>
 
-      <div class="panel filter-panel">
-        <div class="panel-toolbar">
-          <h3>筛选</h3>
-          <div class="panel-meta">{{ filteredRows.length }} 期内容</div>
-        </div>
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>搜索</span>
-            <input v-model="filters.query" type="search" placeholder="搜索标题、期数或 slug" />
-          </label>
-          <label class="field">
-            <span>状态</span>
-            <select v-model="filters.status">
-              <option value="all">全部状态</option>
-              <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-            </select>
-          </label>
-        </div>
+          <div class="compact-stat-grid compact-stat-grid-4">
+            <article v-for="item in geekdailyStats" :key="item.label" class="compact-stat-card">
+              <span class="compact-stat-label">{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+              <small>{{ item.detail }}</small>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel filter-panel">
+          <div class="panel-toolbar">
+            <h3>筛选</h3>
+            <div class="panel-meta">{{ filteredRows.length }} 期内容</div>
+          </div>
+          <div class="field-grid field-grid-2">
+            <label class="field">
+              <span>搜索</span>
+              <input v-model="filters.query" type="search" placeholder="搜索标题、期数或 slug" />
+            </label>
+            <label class="field">
+              <span>状态</span>
+              <select v-model="filters.status">
+                <option value="all">全部状态</option>
+                <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+              </select>
+            </label>
+          </div>
+        </section>
       </div>
 
       <div v-if="filteredRows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有极客日报内容。</p></div>

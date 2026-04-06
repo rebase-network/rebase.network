@@ -633,6 +633,10 @@ code {
   vertical-align: top;
 }
 
+.data-table tbody tr:hover {
+  background: rgba(15, 109, 100, 0.035);
+}
+
 .data-table th {
   color: var(--muted);
   font-size: 0.78rem;
@@ -646,7 +650,6 @@ code {
 }
 
 .table-cell-stack,
-.table-action-list,
 .role-list,
 .checkbox-list,
 .panel-actions,
@@ -664,8 +667,15 @@ code {
   white-space: nowrap;
 }
 
+.table-cell-stack {
+  gap: 0.18rem;
+}
+
 .table-action-list {
-  justify-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
 }
 
 .status-pill {
