@@ -9,6 +9,7 @@ import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import StringListField from '../components/StringListField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime, fromDateTimeInputValue, toDateTimeInputValue } from '../lib/format';
+import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface GeekDailyFormState {
   episodeNumber: number;
@@ -46,7 +47,7 @@ const fieldIssues = ref<Record<string, string>>({});
 
 const geekdailyId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => geekdailyId.value.length === 0);
-const publicUrl = computed(() => (form.episodeNumber > 0 ? getGeekDailyEpisodePath(form.episodeNumber) : '待生成'));
+const publicUrl = computed(() => (form.episodeNumber > 0 ? getPublicSiteUrl(getGeekDailyEpisodePath(form.episodeNumber)) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新增极客日报' : `编辑极客日报：#${record.value?.episodeNumber ?? ''}`));
 const itemAuthorSummary = computed(() =>
   Array.from(new Set(form.items.map((item) => item.authorName.trim()).filter(Boolean))).join('、') || '未填写',

@@ -8,6 +8,7 @@ import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import StringListField from '../components/StringListField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
+import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface JobFormState {
   slug: string;
@@ -70,7 +71,7 @@ const slugTouched = ref(false);
 
 const jobId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => jobId.value.length === 0);
-const publicUrl = computed(() => (form.slug ? `/who-is-hiring/${form.slug}` : '待生成'));
+const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/who-is-hiring/${form.slug}`) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新增招聘' : `编辑招聘：${record.value?.roleTitle ?? ''}`));
 const deliverySummary = computed(() => form.applyUrl || form.contactValue || '未填写');
 const workModeSummary = computed(() => [form.workMode, form.location].filter(Boolean).join(' / ') || '未填写');

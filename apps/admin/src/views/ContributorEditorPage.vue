@@ -13,6 +13,7 @@ import {
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime, slugify } from '../lib/format';
+import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface ContributorFormState extends Omit<ContributorInput, 'avatarAssetId' | 'roleIds'> {
   avatarAssetId: string;
@@ -44,7 +45,7 @@ const pageTitle = computed(() => (isNew.value ? '新增贡献者' : `编辑贡�
 const selectedAvatarAsset = computed(() => assets.value.find((asset) => asset.id === form.avatarAssetId) ?? null);
 const roleSummary = computed(() => availableRoles.value.filter((role) => form.roleIds.includes(role.id)).map((role) => role.name).join('、') || '未分配');
 const contactSummary = computed(() => [form.twitterUrl, form.wechat, form.telegram].filter(Boolean).join(' / ') || '未填写');
-const publicUrl = computed(() => (form.slug ? `/contributors#${form.slug}` : '待生成'));
+const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/contributors#${form.slug}`) : '待生成'));
 const socialChannelCount = computed(() => [form.twitterUrl, form.wechat, form.telegram].filter(Boolean).length);
 
 const detail = ref<AdminContributorDetailPayload | null>(null);

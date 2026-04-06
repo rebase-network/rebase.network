@@ -6,6 +6,7 @@ import { contentStatusOptions, getGeekDailyEpisodePath, type AdminGeekDailyListI
 
 import { adminFetch } from '../lib/api';
 import { formatContentStatus, formatDateTime } from '../lib/format';
+import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const rows = ref<AdminGeekDailyListItem[]>([]);
 const loading = ref(true);
@@ -140,7 +141,7 @@ onMounted(async () => {
               <td class="table-actions-cell">
                 <div class="table-action-list">
                   <RouterLink class="table-link" :to="`/geekdaily/${row.id}/edit`">编辑</RouterLink>
-                  <a class="table-link" :href="getGeekDailyEpisodePath(row.episodeNumber)" target="_blank" rel="noreferrer">前台预览</a>
+                  <a class="table-link" :href="getPublicSiteUrl(getGeekDailyEpisodePath(row.episodeNumber))" target="_blank" rel="noreferrer">前台预览</a>
                 </div>
               </td>
             </tr>

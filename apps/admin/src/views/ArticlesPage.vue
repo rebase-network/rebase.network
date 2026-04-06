@@ -6,6 +6,7 @@ import { contentStatusOptions, type AdminArticleListItem } from '@rebase/shared'
 
 import { adminFetch } from '../lib/api';
 import { formatContentStatus, formatDateTime } from '../lib/format';
+import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const rows = ref<AdminArticleListItem[]>([]);
 const loading = ref(true);
@@ -145,7 +146,7 @@ onMounted(async () => {
               <td class="table-actions-cell">
                 <div class="table-action-list">
                   <RouterLink class="table-link" :to="`/articles/${row.id}/edit`">编辑</RouterLink>
-                  <a class="table-link" :href="`/articles/${row.slug}`" target="_blank" rel="noreferrer">前台预览</a>
+                  <a class="table-link" :href="getPublicSiteUrl(`/articles/${row.slug}`)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>
               </td>
             </tr>

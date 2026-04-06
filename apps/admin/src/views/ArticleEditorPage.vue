@@ -12,6 +12,7 @@ import AuthorsField from '../components/AuthorsField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
+import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface ArticleFormState {
   slug: string;
@@ -61,7 +62,7 @@ const slugTouched = ref(false);
 
 const articleId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => articleId.value.length === 0);
-const publicUrl = computed(() => (form.slug ? `/articles/${form.slug}` : '待生成'));
+const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/articles/${form.slug}`) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新建文章' : `编辑文章：${article.value?.title ?? ''}`));
 
 const resetFeedback = () => {

@@ -12,6 +12,7 @@ import {
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatRegistrationMode, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
+import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface EventFormState {
   slug: string;
@@ -71,7 +72,14 @@ const slugTouched = ref(false);
 
 const eventId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => eventId.value.length === 0);
-const publicUrl = computed(() => (form.slug ? `/events/${form.slug}` : '待生成'));
+const publicUrl = computed(() => {
+  if (!form.slug) {
+    return '待生成';
+  }
+
+  const routeParam = form.startAt ? `${form.startAt.slice(0, 10)}-${form.slug}` : form.slug;
+  return getPublicSiteUrl(`/events/${routeParam}`);
+});
 const pageTitle = computed(() => (isNew.value ? '新增活动' : `编辑活动：${record.value?.title ?? ''}`));
 
 const resetFeedback = () => {

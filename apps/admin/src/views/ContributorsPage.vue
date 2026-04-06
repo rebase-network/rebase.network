@@ -10,6 +10,7 @@ import {
 
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime } from '../lib/format';
+import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const contributors = ref<AdminContributorListItem[]>([]);
 const roles = ref<AdminContributorRoleRecord[]>([]);
@@ -255,7 +256,7 @@ onMounted(() => void loadData());
                 <td class="table-actions-cell">
                   <div class="table-action-list">
                     <RouterLink class="table-link" :to="`/contributors/${row.id}/edit`">编辑</RouterLink>
-                    <a class="table-link" :href="`/contributors#${row.slug}`" target="_blank" rel="noreferrer">前台定位</a>
+                    <a class="table-link" :href="getPublicSiteUrl(`/contributors#${row.slug}`)" target="_blank" rel="noreferrer">前台定位</a>
                   </div>
                 </td>
               </tr>

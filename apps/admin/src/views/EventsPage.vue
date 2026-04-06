@@ -6,6 +6,7 @@ import { contentStatusOptions, type AdminEventListItem } from '@rebase/shared';
 
 import { adminFetch } from '../lib/api';
 import { formatContentStatus, formatDateTime } from '../lib/format';
+import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const rows = ref<AdminEventListItem[]>([]);
 const loading = ref(true);
@@ -20,6 +21,8 @@ const filteredRows = computed(() => {
     return matchesQuery && matchesStatus;
   });
 });
+
+const getEventPreviewUrl = (startAt: string, slug: string) => getPublicSiteUrl(`/events/${startAt.slice(0, 10)}-${slug}`);
 
 const eventStats = computed(() => {
   const now = Date.now();
@@ -149,7 +152,7 @@ onMounted(async () => {
               <td class="table-actions-cell">
                 <div class="table-action-list">
                   <RouterLink class="table-link" :to="`/events/${row.id}/edit`">编辑</RouterLink>
-                  <a class="table-link" :href="`/events/${row.slug}`" target="_blank" rel="noreferrer">前台预览</a>
+                  <a class="table-link" :href="getEventPreviewUrl(row.startAt, row.slug)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>
               </td>
             </tr>
