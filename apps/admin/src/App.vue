@@ -77,12 +77,12 @@ onMounted(() => {
             <span>{{ me?.user?.email ?? (loadingMe ? '正在读取账号信息…' : '未登录') }}</span>
           </div>
 
+          <button class="nav-link nav-button" type="button" @click="signOut">退出登录</button>
+
           <div class="sidebar-version">
             <span>版本 {{ adminVersionLabel }}</span>
             <code>{{ adminBuildLabel }}</code>
           </div>
-
-          <button class="nav-link nav-button" type="button" @click="signOut">退出登录</button>
         </div>
       </div>
     </aside>

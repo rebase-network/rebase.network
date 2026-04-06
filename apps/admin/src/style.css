@@ -251,11 +251,12 @@ code {
 .sidebar-version {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem;
-  padding: 0 0.22rem;
+  justify-content: flex-start;
+  gap: 0.3rem;
+  padding: 0 0.3rem 0.02rem;
   color: var(--muted);
   font-size: 0.71rem;
+  text-align: left;
 }
 
 .sidebar-version span {
