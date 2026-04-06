@@ -21,6 +21,33 @@ const filteredRows = computed(() => {
   });
 });
 
+const eventStats = computed(() => {
+  const now = Date.now();
+
+  return [
+    {
+      label: '活动总数',
+      value: rows.value.length,
+      detail: '全部活动',
+    },
+    {
+      label: '筛选结果',
+      value: filteredRows.value.length,
+      detail: '当前列表',
+    },
+    {
+      label: '进行中 / 即将开始',
+      value: rows.value.filter((row) => new Date(row.endAt).getTime() >= now).length,
+      detail: '还可展示',
+    },
+    {
+      label: '已发布',
+      value: rows.value.filter((row) => row.status === 'published').length,
+      detail: '前台可见',
+    },
+  ];
+});
+
 onMounted(async () => {
   try {
     rows.value = await adminFetch<AdminEventListItem[]>('/api/admin/v1/events');
@@ -48,7 +75,19 @@ onMounted(async () => {
     <div v-else-if="loading" class="panel"><p>正在加载活动列表…</p></div>
 
     <template v-else>
+      <div class="compact-stat-grid compact-stat-grid-4">
+        <article v-for="item in eventStats" :key="item.label" class="compact-stat-card">
+          <span class="compact-stat-label">{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+          <small>{{ item.detail }}</small>
+        </article>
+      </div>
+
       <div class="panel filter-panel">
+        <div class="panel-toolbar">
+          <h3>筛选</h3>
+          <div class="panel-meta">{{ filteredRows.length }} 场活动</div>
+        </div>
         <div class="field-grid field-grid-2">
           <label class="field">
             <span>搜索</span>
@@ -67,7 +106,7 @@ onMounted(async () => {
       <div v-if="filteredRows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有活动。</p></div>
 
       <div v-else class="panel table-panel">
-        <table class="data-table">
+        <table class="data-table dense-table">
           <thead>
             <tr>
               <th>活动</th>

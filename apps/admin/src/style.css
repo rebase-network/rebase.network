@@ -582,6 +582,12 @@ code {
   letter-spacing: 0.04em;
 }
 
+.dense-table th,
+.dense-table td {
+  padding-top: 0.56rem;
+  padding-bottom: 0.56rem;
+}
+
 .table-cell-stack,
 .table-action-list,
 .role-list,
