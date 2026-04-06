@@ -37,7 +37,7 @@ const totalContributors = groups.reduce((sum, group) => sum + group.contributors
     {groups.map((group) => (
       <div class="group-block">
         <SectionHeader
-          eyebrow={group.role.slug}
+          eyebrow={group.role.name}
           title={group.role.name}
           description={group.role.description}
         />

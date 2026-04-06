@@ -66,7 +66,15 @@ const featuredTags = overview.featuredTags;
           <p class="panel-title">标签筛选</p>
           <div class="chip-row" role="list">
             {featuredTags.map((tag) => (
-              <button type="button" class="chip-button" data-tag={tag}>{tag}</button>
+              <button
+                type="button"
+                class="chip-button"
+                data-tag={tag}
+                aria-pressed="false"
+                aria-controls="results-list"
+              >
+                {tag}
+              </button>
             ))}
           </div>
         </div>
@@ -75,24 +83,32 @@ const featuredTags = overview.featuredTags;
         <p class="panel-title">年份筛选</p>
         <div class="chip-row" role="list">
           {years.slice(0, 6).map((year) => (
-            <button type="button" class="chip-button muted" data-year={year}>{year}</button>
+            <button
+              type="button"
+              class="chip-button muted"
+              data-year={year}
+              aria-pressed="false"
+              aria-controls="results-list"
+            >
+              {year}
+            </button>
           ))}
         </div>
       </div>
-      <button type="button" class="reset-button" id="reset-filters">清空筛选</button>
+      <button type="button" class="reset-button" id="reset-filters" aria-controls="results-list">清空筛选</button>
     </div>
   </section>
 
   <section class="shell page-section">
     <div class="results-head">
-      <div>
+      <div id="results-status" role="status" aria-live="polite" aria-atomic="true">
         <p id="results-count">共 {overview.totalEpisodes} 期</p>
         <span id="results-state">默认展示最近 {pageSize} 期。</span>
       </div>
       <a href="/geekdaily/rss.xml">订阅 RSS ↗</a>
     </div>
 
-    <div class="episode-list" id="results-list" data-total-episodes={overview.totalEpisodes}>
+    <div class="episode-list" id="results-list" data-total-episodes={overview.totalEpisodes} aria-busy="false">
       {episodes.map((episode) => (
         <article class="card episode-card">
           <p class="meta">{episode.title} · {formatDate(episode.publishedAt)}</p>
@@ -173,12 +189,20 @@ const featuredTags = overview.featuredTags;
         input.value = state.query;
 
         for (const button of tagButtons) {
-          button.dataset.active = button.dataset.tag === state.tag ? 'true' : 'false';
+          const active = button.dataset.tag === state.tag;
+          button.dataset.active = active ? 'true' : 'false';
+          button.setAttribute('aria-pressed', active ? 'true' : 'false');
         }
 
         for (const button of yearButtons) {
-          button.dataset.active = button.dataset.year === state.year ? 'true' : 'false';
+          const active = button.dataset.year === state.year;
+          button.dataset.active = active ? 'true' : 'false';
+          button.setAttribute('aria-pressed', active ? 'true' : 'false');
         }
+      };
+
+      const setBusyState = (busy: boolean) => {
+        list.setAttribute('aria-busy', busy ? 'true' : 'false');
       };
 
       const updateUrl = () => {
@@ -230,6 +254,7 @@ const featuredTags = overview.featuredTags;
         pagerLabel.textContent = '第 1 页';
         prevButton.disabled = true;
         nextButton.disabled = totalEpisodes <= pageSize;
+        setBusyState(false);
         syncControls();
         updateUrl();
       };
@@ -237,12 +262,20 @@ const featuredTags = overview.featuredTags;
       const loadDocuments = async () => {
         if (!documentsPromise) {
           stateLabel.textContent = '正在加载历史检索数据...';
+          setBusyState(true);
           documentsPromise = fetch('/api/geekdaily-search.json')
             .then((response) => {
               if (!response.ok) {
                 throw new Error(`search index request failed: ${response.status}`);
               }
               return response.json() as Promise<SearchDocument[]>;
+            })
+            .catch((error) => {
+              documentsPromise = undefined;
+              throw error;
+            })
+            .finally(() => {
+              setBusyState(false);
             });
         }
 
@@ -328,8 +361,26 @@ const featuredTags = overview.featuredTags;
       };
 
       const loadAndRender = async () => {
-        const documents = await loadDocuments();
-        render(documents);
+        try {
+          const documents = await loadDocuments();
+          render(documents);
+        } catch (error) {
+          console.error(error);
+          list.innerHTML = `
+            <article class="card empty-state">
+              <h2>暂时无法加载 GeekDaily 检索数据</h2>
+              <p>你可以稍后刷新重试，或者先直接浏览默认归档列表。</p>
+            </article>
+          `;
+          count.textContent = '检索暂不可用';
+          stateLabel.textContent = '历史检索数据加载失败。';
+          pagerLabel.textContent = '第 1 页';
+          prevButton.disabled = true;
+          nextButton.disabled = true;
+          setBusyState(false);
+          syncControls();
+          updateUrl();
+        }
       };
 
       input.addEventListener('input', async () => {
@@ -516,7 +567,7 @@ const featuredTags = overview.featuredTags;
   .reset-button,
   .pager button {
     background: rgba(31, 41, 51, 0.08);
-    color: var(--ink);
+    color: var(--text);
     font-weight: 700;
   }
 

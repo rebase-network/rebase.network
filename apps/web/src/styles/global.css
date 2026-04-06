@@ -56,6 +56,11 @@ a {
   text-decoration: none;
 }
 
+:where(a, button, input, textarea, select, summary):focus-visible {
+  outline: 3px solid rgba(15, 118, 110, 0.28);
+  outline-offset: 3px;
+}
+
 img {
   display: block;
   max-width: 100%;

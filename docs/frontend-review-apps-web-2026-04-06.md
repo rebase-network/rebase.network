@@ -180,6 +180,61 @@
 - 前一轮报告中提到的活动路由失败、GeekDaily 总量硬编码问题，当前已消除。
 - `/healthz` smoke test 当前也已通过，说明测试基线与当前实现处于一致状态。
 
+## 第二轮视觉与交互细调
+
+在第二轮复查里，我把前一轮新增发现的几个前台细节问题也一并收敛了，范围仍然只落在 `apps/web`。
+
+### 7. 移动端 sticky header 压缩为更紧凑的两行结构
+
+已完成：
+
+- 移动端 header 保留 sticky，但不再把品牌说明和完整导航堆成过高的首屏占位。
+- 小屏下隐藏 tagline，并把导航改成单行横向滚动，避免导航换行把正文整体向下推太多。
+- 这一调整不改变桌面端结构，也不影响现有路由与链接。
+
+涉及文件：
+
+- `apps/web/src/components/SiteHeader.astro`
+
+验证结果：
+
+- 用 Playwright 快速测了桌面和 Pixel 7 视口。
+- 移动端首页与 GeekDaily 页的 `main` 顶部位置从约 `287.7px` 降到约 `143.8px`，首屏正文占比明显恢复。
+- 当前没有发现新的横向溢出问题。
+
+### 8. GeekDaily 搜索筛选补齐可访问状态反馈
+
+已完成：
+
+- 标签筛选与年份筛选按钮补上了 `aria-pressed`。
+- 结果状态区域补上 `role="status"` 与 `aria-live="polite"`，让筛选结果变化更容易被读屏感知。
+- 结果列表补上 `aria-busy`，在异步加载检索索引时会明确标记为忙碌状态。
+- 同时补了检索索引加载失败时的前台降级提示，避免 silent failure。
+
+涉及文件：
+
+- `apps/web/src/pages/geekdaily/index.astro`
+
+验证结果：
+
+- Playwright 快速检查确认 GeekDaily 页的结果状态区已带 `aria-live="polite"`。
+- 年份筛选按钮默认带 `aria-pressed="false"`，结果列表默认带 `aria-busy="false"`。
+- 既有 smoke tests 继续通过。
+
+### 9. 第二轮顺手收敛的低风险细节
+
+已完成：
+
+- 修正 GeekDaily 控件未定义的 `var(--ink)`，改回站点已有颜色 token，避免按钮颜色退回默认继承。
+- Contributors 页面分组 eyebrow 不再直接暴露内部 `slug`，改为使用可直接面向读者展示的角色名称。
+- 全站交互元素补了一层统一的 `:focus-visible` 样式，让键盘导航时的焦点反馈更稳定。
+
+涉及文件：
+
+- `apps/web/src/pages/geekdaily/index.astro`
+- `apps/web/src/pages/contributors.astro`
+- `apps/web/src/styles/global.css`
+
 ## 结论
 
 `apps/web` 当前已经具备完整可运行的公共站点形态，而且这轮前台修正后，活动详情 URL 规范、Markdown 链接安全、招聘详情降级处理、GeekDaily 搜索文案和语言标记这些明显问题都已经收敛。
