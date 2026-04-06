@@ -211,7 +211,78 @@ onMounted(() => void loadRecord());
     <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
     <div v-if="loading" class="panel"><p>正在准备活动编辑器…</p></div>
 
-    <div v-else class="editor-grid editor-grid-focus editor-grid-summary">
+    <div v-else class="stacked-gap">
+      <div class="editor-overview-grid">
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>发布信息</h3>
+            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
+          </div>
+          <dl class="summary-grid summary-grid-2">
+            <div class="summary-item">
+              <dt>公开地址</dt>
+              <dd>{{ publicUrl }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>开始 / 结束</dt>
+              <dd class="muted">{{ form.startAt || '未设置' }} -> {{ form.endAt || '未设置' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>发布时间</dt>
+              <dd class="muted">{{ form.publishedAt || '未设置' }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>更新时间</dt>
+              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '新建后生成' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>报名与地点</h3>
+            <div class="panel-meta">{{ formatRegistrationMode(form.registrationMode) }}</div>
+          </div>
+          <dl class="summary-grid summary-grid-2">
+            <div class="summary-item">
+              <dt>报名方式</dt>
+              <dd class="muted">{{ registrationSummary }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>地点</dt>
+              <dd class="muted">{{ locationSummary }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>标签</dt>
+              <dd class="muted">{{ tagSummary }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>封面资源</dt>
+              <dd class="muted">{{ selectedCoverAsset ? '已绑定资源' : '未绑定资源' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel stacked-gap">
+          <div class="panel-toolbar">
+            <h3>封面预览</h3>
+            <div class="panel-meta">{{ selectedCoverAsset ? '已选择封面' : '未选择封面' }}</div>
+          </div>
+
+          <div v-if="selectedCoverAsset" class="summary-item summary-asset">
+            <div v-if="selectedCoverAsset.publicUrl && selectedCoverAsset.mimeType.startsWith('image/')" class="asset-preview-frame">
+              <img :src="selectedCoverAsset.publicUrl" :alt="selectedCoverAsset.altText || selectedCoverAsset.originalFilename" />
+            </div>
+            <div class="summary-asset-copy">
+              <div class="eyebrow">封面</div>
+              <strong>{{ selectedCoverAsset.originalFilename }}</strong>
+              <p>{{ selectedCoverAsset.publicUrl || '未生成公开地址' }}</p>
+            </div>
+          </div>
+          <div v-else class="empty-inline">当前未绑定封面资源。</div>
+        </section>
+      </div>
+
       <section class="panel stacked-gap editor-main">
         <div class="field-grid field-grid-2">
           <label class="field">
@@ -308,62 +379,6 @@ onMounted(() => void loadRecord());
 
         <MarkdownEditorField v-model="form.bodyMarkdown" label="活动详情" placeholder="使用 Markdown 描述活动流程、议题和参与说明。" />
       </section>
-
-      <aside class="stacked-gap editor-sidebar sticky-stack">
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>发布信息</h3>
-            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
-          </div>
-          <dl class="summary-grid">
-            <div class="summary-item">
-              <dt>公开地址</dt>
-              <dd>{{ publicUrl }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>开始 / 结束</dt>
-              <dd class="muted">{{ form.startAt || '未设置' }} -> {{ form.endAt || '未设置' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>报名</dt>
-              <dd class="muted">{{ registrationSummary }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>更新时间</dt>
-              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '新建后生成' }}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>地点与封面</h3>
-            <div class="panel-meta">{{ selectedCoverAsset ? '已选择封面' : '未选择封面' }}</div>
-          </div>
-          <dl class="summary-grid">
-            <div class="summary-item">
-              <dt>地点</dt>
-              <dd class="muted">{{ locationSummary }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>标签</dt>
-              <dd class="muted">{{ tagSummary }}</dd>
-            </div>
-          </dl>
-
-          <div v-if="selectedCoverAsset" class="summary-item summary-asset">
-            <div v-if="selectedCoverAsset.publicUrl && selectedCoverAsset.mimeType.startsWith('image/')" class="asset-preview-frame">
-              <img :src="selectedCoverAsset.publicUrl" :alt="selectedCoverAsset.altText || selectedCoverAsset.originalFilename" />
-            </div>
-            <div class="summary-asset-copy">
-              <div class="eyebrow">封面</div>
-              <strong>{{ selectedCoverAsset.originalFilename }}</strong>
-              <p>{{ selectedCoverAsset.publicUrl || '未生成公开地址' }}</p>
-            </div>
-          </div>
-          <div v-else class="empty-inline">当前未绑定封面资源。</div>
-        </section>
-      </aside>
     </div>
   </section>
 </template>

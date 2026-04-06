@@ -386,6 +386,10 @@ code {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.panel-grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .dashboard-stat-grid {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
@@ -552,6 +556,13 @@ code {
   grid-template-columns: minmax(0, 1fr) 208px;
 }
 
+.editor-overview-grid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+
 .editor-main,
 .editor-sidebar {
   min-width: 0;
@@ -608,6 +619,10 @@ code {
 .data-table {
   width: 100%;
   border-collapse: collapse;
+}
+
+.table-panel {
+  overflow-x: auto;
 }
 
 .data-table th,
@@ -976,10 +991,12 @@ code {
 
 @media (max-width: 1240px) {
   .panel-grid-3,
+  .panel-grid-2,
   .dashboard-quick-links,
   .dashboard-quick-links-wide,
   .dashboard-insight-row,
-  .compact-stat-grid-4 {
+  .compact-stat-grid-4,
+  .editor-overview-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1028,10 +1045,12 @@ code {
   .field-grid-3,
   .checkbox-list,
   .panel-grid-3,
+  .panel-grid-2,
   .dashboard-quick-links,
   .dashboard-quick-links-wide,
   .dashboard-insight-row,
   .compact-stat-grid-4,
+  .editor-overview-grid,
   .summary-grid-2 {
     grid-template-columns: 1fr;
   }

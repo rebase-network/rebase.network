@@ -230,44 +230,46 @@ onMounted(() => {
 
     <div v-else class="editor-grid editor-grid-focus">
       <div class="stacked-gap editor-main">
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <div>
-              <h3>账号概览</h3>
-              <div class="panel-meta">后台工作人员与角色权限</div>
+        <div class="panel-grid panel-grid-2">
+          <section class="panel stacked-gap">
+            <div class="panel-toolbar">
+              <div>
+                <h3>账号概览</h3>
+                <div class="panel-meta">后台工作人员与角色权限</div>
+              </div>
+              <div class="panel-meta">{{ rows.length }} 个账号</div>
             </div>
-            <div class="panel-meta">{{ rows.length }} 个账号</div>
-          </div>
 
-          <div class="compact-stat-grid compact-stat-grid-4">
-            <article v-for="item in staffStats" :key="item.label" class="compact-stat-card">
-              <span class="compact-stat-label">{{ item.label }}</span>
-              <strong>{{ item.value }}</strong>
-              <small>{{ item.detail }}</small>
-            </article>
-          </div>
-        </section>
-
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <div>
-              <h3>角色覆盖</h3>
-              <div class="panel-meta">快速确认各角色是否已有负责人</div>
+            <div class="compact-stat-grid compact-stat-grid-4">
+              <article v-for="item in staffStats" :key="item.label" class="compact-stat-card">
+                <span class="compact-stat-label">{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+                <small>{{ item.detail }}</small>
+              </article>
             </div>
-            <div class="panel-meta">{{ roles.length }} 个角色</div>
-          </div>
+          </section>
 
-          <div v-if="roleSummaries.length === 0" class="empty-inline">当前还没有可分配的角色。</div>
+          <section class="panel stacked-gap">
+            <div class="panel-toolbar">
+              <div>
+                <h3>角色覆盖</h3>
+                <div class="panel-meta">快速确认各角色是否已有负责人</div>
+              </div>
+              <div class="panel-meta">{{ roles.length }} 个角色</div>
+            </div>
 
-          <div v-else class="role-overview-grid">
-            <article v-for="role in roleSummaries" :key="role.id" class="role-overview-card">
-              <strong>{{ role.name }}</strong>
-              <p>{{ localizeRoleSummary(role) }}</p>
-              <small>{{ role.code }}</small>
-              <span class="status-pill">{{ role.memberCount }} 人</span>
-            </article>
-          </div>
-        </section>
+            <div v-if="roleSummaries.length === 0" class="empty-inline">当前还没有可分配的角色。</div>
+
+            <div v-else class="role-overview-grid">
+              <article v-for="role in roleSummaries" :key="role.id" class="role-overview-card">
+                <strong>{{ role.name }}</strong>
+                <p>{{ localizeRoleSummary(role) }}</p>
+                <small>{{ role.code }}</small>
+                <span class="status-pill">{{ role.memberCount }} 人</span>
+              </article>
+            </div>
+          </section>
+        </div>
 
         <section v-if="rows.length === 0" class="panel empty-state-card"><p>当前还没有工作人员账号。</p></section>
 
@@ -281,35 +283,35 @@ onMounted(() => {
           </div>
 
           <div class="table-panel">
-          <table class="data-table dense-table">
-            <thead>
-              <tr>
-                <th>工作人员</th>
-                <th>角色</th>
-                <th>状态</th>
-                <th>最后登录</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in rows" :key="row.id">
-                <td>
-                  <div class="table-cell-stack">
-                    <strong>{{ row.displayName }}</strong>
-                    <div class="muted-row">{{ row.email }}</div>
-                  </div>
-                </td>
-                <td>{{ row.roleCodes.join('、') || '未分配角色' }}</td>
-                <td><span class="status-pill">{{ formatStaffAccountStatus(row.status) }}</span></td>
-                <td>{{ formatDateTime(row.lastLoginAt) }}</td>
-                <td class="table-actions-cell">
-                  <div class="table-action-list">
-                    <button class="table-link table-link-button" type="button" @click="selectStaff(row.id)">编辑</button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            <table class="data-table dense-table">
+              <thead>
+                <tr>
+                  <th>工作人员</th>
+                  <th>角色</th>
+                  <th>状态</th>
+                  <th>最后登录</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in rows" :key="row.id">
+                  <td>
+                    <div class="table-cell-stack">
+                      <strong>{{ row.displayName }}</strong>
+                      <div class="muted-row">{{ row.email }}</div>
+                    </div>
+                  </td>
+                  <td>{{ row.roleCodes.join('、') || '未分配角色' }}</td>
+                  <td><span class="status-pill">{{ formatStaffAccountStatus(row.status) }}</span></td>
+                  <td>{{ formatDateTime(row.lastLoginAt) }}</td>
+                  <td class="table-actions-cell">
+                    <div class="table-action-list">
+                      <button class="table-link table-link-button" type="button" @click="selectStaff(row.id)">编辑</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </section>
       </div>
@@ -393,22 +395,22 @@ onMounted(() => {
 
           <label class="field">
             <span>备注</span>
-            <textarea v-model="form.notes" rows="4" placeholder="记录职责范围、交接信息或额外提醒。" />
+            <textarea v-model="form.notes" rows="3" placeholder="记录职责范围、交接信息或额外提醒。" />
           </label>
-        </section>
 
-        <section class="panel stacked-gap">
-          <div class="eyebrow">权限摘要</div>
-          <dl class="summary-grid">
-            <div class="summary-item">
-              <dt>角色数量</dt>
-              <dd>{{ form.roleIds.length }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>账号状态</dt>
-              <dd class="muted">{{ formatStaffAccountStatus(form.status) }}</dd>
-            </div>
-          </dl>
+          <div class="field-shell stacked-gap">
+            <div class="eyebrow">权限摘要</div>
+            <dl class="summary-grid summary-grid-2">
+              <div class="summary-item">
+                <dt>角色数量</dt>
+                <dd>{{ form.roleIds.length }}</dd>
+              </div>
+              <div class="summary-item">
+                <dt>账号状态</dt>
+                <dd class="muted">{{ formatStaffAccountStatus(form.status) }}</dd>
+              </div>
+            </dl>
+          </div>
         </section>
       </aside>
     </div>

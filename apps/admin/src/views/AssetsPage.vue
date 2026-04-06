@@ -340,50 +340,52 @@ onBeforeUnmount(() => {
 
     <div v-else class="editor-grid editor-grid-focus">
       <div class="stacked-gap editor-main">
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <div>
-              <h3>媒体概览</h3>
-              <div class="panel-meta">上传、筛选并复用站点资源</div>
+        <div class="panel-grid panel-grid-2">
+          <section class="panel stacked-gap">
+            <div class="panel-toolbar">
+              <div>
+                <h3>媒体概览</h3>
+                <div class="panel-meta">上传、筛选并复用站点资源</div>
+              </div>
+              <div class="panel-meta">{{ rows.length }} 条记录</div>
             </div>
-            <div class="panel-meta">{{ rows.length }} 条记录</div>
-          </div>
 
-          <div class="compact-stat-grid compact-stat-grid-4">
-            <article v-for="item in assetStats" :key="item.label" class="compact-stat-card">
-              <span class="compact-stat-label">{{ item.label }}</span>
-              <strong>{{ item.value }}</strong>
-              <small>{{ item.detail }}</small>
-            </article>
-          </div>
-        </section>
+            <div class="compact-stat-grid compact-stat-grid-4">
+              <article v-for="item in assetStats" :key="item.label" class="compact-stat-card">
+                <span class="compact-stat-label">{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+                <small>{{ item.detail }}</small>
+              </article>
+            </div>
+          </section>
 
-        <section class="panel stacked-gap filter-panel">
-          <div class="panel-toolbar">
-            <h3>筛选</h3>
-            <div class="panel-meta">{{ filteredRows.length }} 条结果</div>
-          </div>
-          <div class="field-grid field-grid-3">
-            <label class="field">
-              <span>搜索</span>
-              <input v-model="filters.query" type="search" placeholder="搜索文件名、对象路径或类型" />
-            </label>
-            <label class="field">
-              <span>状态</span>
-              <select v-model="filters.status">
-                <option value="all">全部状态</option>
-                <option v-for="status in assetStatusValues" :key="status" :value="status">{{ formatAssetStatus(status) }}</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>可见性</span>
-              <select v-model="filters.visibility">
-                <option value="all">全部可见性</option>
-                <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ formatAssetVisibility(visibility) }}</option>
-              </select>
-            </label>
-          </div>
-        </section>
+          <section class="panel stacked-gap filter-panel">
+            <div class="panel-toolbar">
+              <h3>筛选</h3>
+              <div class="panel-meta">{{ filteredRows.length }} 条结果</div>
+            </div>
+            <div class="field-grid field-grid-3">
+              <label class="field">
+                <span>搜索</span>
+                <input v-model="filters.query" type="search" placeholder="搜索文件名、对象路径或类型" />
+              </label>
+              <label class="field">
+                <span>状态</span>
+                <select v-model="filters.status">
+                  <option value="all">全部状态</option>
+                  <option v-for="status in assetStatusValues" :key="status" :value="status">{{ formatAssetStatus(status) }}</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>可见性</span>
+                <select v-model="filters.visibility">
+                  <option value="all">全部可见性</option>
+                  <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ formatAssetVisibility(visibility) }}</option>
+                </select>
+              </label>
+            </div>
+          </section>
+        </div>
 
         <section v-if="filteredRows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有媒体记录。</p></section>
 
