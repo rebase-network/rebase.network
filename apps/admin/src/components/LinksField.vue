@@ -41,17 +41,25 @@ const removeItem = (index: number) => {
 <template>
   <section class="stacked-gap">
     <div class="field-row field-row-spread">
-      <h3>{{ title }}</h3>
-      <button class="button-link" type="button" @click="addItem">{{ addLabel }}</button>
+      <div class="stacked-gap-tight">
+        <h3>{{ title }}</h3>
+        <div class="panel-meta">{{ modelValue.length }} 条链接</div>
+      </div>
+      <button class="button-link button-compact" type="button" @click="addItem">{{ addLabel }}</button>
     </div>
 
     <div v-if="modelValue.length === 0" class="empty-inline">暂时还没有内容。</div>
 
-    <div v-else class="stacked-gap">
-      <div v-for="(item, index) in modelValue" :key="`${title}-${index}`" class="card-shell stacked-gap">
-        <div class="field-grid" :class="showHandle ? 'field-grid-3' : 'field-grid-2'">
+    <div v-else class="compact-editor-list">
+      <div v-for="(item, index) in modelValue" :key="`${title}-${index}`" class="card-shell compact-editor-card">
+        <div class="compact-editor-head">
+          <strong>{{ item.label || `链接 ${index + 1}` }}</strong>
+          <button class="button-link button-danger button-compact" type="button" @click="removeItem(index)">删除</button>
+        </div>
+
+        <div class="field-grid field-grid-compact" :class="showHandle ? 'field-grid-3' : 'field-grid-2'">
           <label class="field">
-            <span>标签</span>
+            <span>名称</span>
             <input :value="item.label" placeholder="X / Twitter" @input="updateItem(index, 'label', ($event.target as HTMLInputElement).value)" />
           </label>
           <label class="field">
@@ -62,9 +70,6 @@ const removeItem = (index: number) => {
             <span>补充信息</span>
             <input :value="item.handle ?? ''" placeholder="@rebase_network" @input="updateItem(index, 'handle', ($event.target as HTMLInputElement).value)" />
           </label>
-        </div>
-        <div class="panel-actions">
-          <button class="button-link button-danger button-compact" type="button" @click="removeItem(index)">删除链接</button>
         </div>
       </div>
     </div>

@@ -559,6 +559,10 @@ code {
   grid-template-columns: minmax(0, 2.05fr) minmax(260px, 0.82fr);
 }
 
+.site-editor-layout {
+  grid-template-columns: minmax(0, 2.38fr) minmax(220px, 0.72fr);
+}
+
 .editor-grid-summary {
   grid-template-columns: minmax(0, 1fr) 208px;
 }
@@ -603,11 +607,92 @@ code {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.field-grid-compact {
+  gap: 0.56rem;
+}
+
 .field-shell {
   padding: 0.85rem;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.62);
+}
+
+.site-section-stack {
+  display: grid;
+  gap: 0.78rem;
+}
+
+.site-section-card {
+  display: grid;
+  gap: 0.72rem;
+  padding: 0.8rem 0.84rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.site-section-head,
+.compact-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.site-section-head {
+  align-items: start;
+}
+
+.site-section-head h4,
+.compact-editor-head strong {
+  margin: 0;
+}
+
+.site-section-head h4 {
+  font-size: 0.94rem;
+}
+
+.site-section-note {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.compact-editor-list {
+  display: grid;
+  gap: 0.58rem;
+}
+
+.compact-editor-card {
+  gap: 0.56rem;
+  padding: 0.72rem 0.78rem;
+}
+
+.compact-editor-head strong {
+  font-size: 0.9rem;
+}
+
+.inline-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+}
+
+.footer-link-list {
+  display: grid;
+  gap: 0.48rem;
+}
+
+.footer-link-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: end;
+  padding: 0.62rem 0.68rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.76);
 }
 
 .field-error {
@@ -1026,6 +1111,7 @@ code {
   }
 
   .editor-grid-focus,
+  .site-editor-layout,
   .editor-grid-summary {
     grid-template-columns: 1fr;
   }
@@ -1072,7 +1158,8 @@ code {
   .dashboard-insight-row,
   .compact-stat-grid-4,
   .editor-overview-grid,
-  .summary-grid-2 {
+  .summary-grid-2,
+  .footer-link-row {
     grid-template-columns: 1fr;
   }
 
