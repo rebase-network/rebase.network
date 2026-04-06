@@ -512,7 +512,6 @@ onBeforeUnmount(() => {
                     <div class="table-action-list">
                       <button class="table-link table-link-button" type="button" @click="selectAsset(row.id)">编辑元数据</button>
                       <button class="table-link table-link-button" type="button" @click="copyToClipboard(row.objectKey, '对象路径')">复制路径</button>
-                      <a v-if="row.publicUrl" class="table-link" :href="row.publicUrl" target="_blank" rel="noreferrer">打开</a>
                     </div>
                   </td>
                 </tr>

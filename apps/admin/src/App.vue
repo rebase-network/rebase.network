@@ -60,7 +60,7 @@ onMounted(() => {
         <RouterLink class="brand" to="/dashboard">
           <div class="brand-mark">RB</div>
           <div>
-            <strong>rebase 后台</strong>
+            <strong>Rebase 后台</strong>
             <small>社区运营工作台</small>
           </div>
         </RouterLink>
@@ -80,7 +80,7 @@ onMounted(() => {
           <button class="nav-link nav-button" type="button" @click="signOut">退出登录</button>
 
           <div class="sidebar-version">
-            <span>版本 {{ adminVersionLabel }}</span>
+            <span>{{ adminVersionLabel }}</span>
             <code>{{ adminBuildLabel }}</code>
           </div>
         </div>
