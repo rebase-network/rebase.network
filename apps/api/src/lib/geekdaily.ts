@@ -1,11 +1,13 @@
-import { asc, desc, eq } from 'drizzle-orm';
+import { asc, count, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 
 import { geekdailyEpisodeItems, geekdailyEpisodes } from '@rebase/db';
-import { getGeekDailyEpisodeSlug, type AdminGeekDailyListItem, type GeekDailyEpisodeInput } from '@rebase/shared';
+import { getGeekDailyEpisodeSlug, type AdminGeekDailyListItem, type ContentStatus, type GeekDailyEpisodeInput, type PaginatedResult } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
+import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
+import { combineFilters, toContainsPattern } from './query-filters.js';
 import { toIsoString } from './utils.js';
 
 const loadItemsByEpisodeId = async () => {
@@ -96,23 +98,78 @@ const replaceItems = async (episodeId: string, items: GeekDailyEpisodeInput['ite
   );
 };
 
-export const listAdminGeekDailyEpisodes = async (): Promise<AdminGeekDailyListItem[]> => {
+interface ListAdminGeekDailyEpisodesInput extends PaginationInput {
+  query?: string;
+  status?: ContentStatus;
+}
+
+const countItemsByEpisodeIds = async (episodeIds: string[]) => {
   const db = getDb();
-  const [rows, itemsByEpisode] = await Promise.all([
-    db.select().from(geekdailyEpisodes).orderBy(desc(geekdailyEpisodes.episodeNumber)),
-    loadItemsByEpisodeId(),
+  if (episodeIds.length === 0) {
+    return new Map<string, number>();
+  }
+
+  const rows = await db
+    .select({
+      episodeId: geekdailyEpisodeItems.episodeId,
+      value: count(),
+    })
+    .from(geekdailyEpisodeItems)
+    .where(inArray(geekdailyEpisodeItems.episodeId, episodeIds))
+    .groupBy(geekdailyEpisodeItems.episodeId);
+
+  return new Map(rows.map((row) => [row.episodeId, row.value]));
+};
+
+export const listAdminGeekDailyEpisodes = async (
+  input: ListAdminGeekDailyEpisodesInput = {},
+): Promise<PaginatedResult<AdminGeekDailyListItem>> => {
+  const db = getDb();
+  const normalizedQuery = input.query?.trim() ?? '';
+  const where = combineFilters([
+    input.status ? eq(geekdailyEpisodes.status, input.status) : undefined,
+    normalizedQuery
+      ? or(
+          ilike(geekdailyEpisodes.title, toContainsPattern(normalizedQuery)),
+          ilike(geekdailyEpisodes.slug, toContainsPattern(normalizedQuery)),
+          sql`${geekdailyEpisodes.episodeNumber}::text ilike ${toContainsPattern(normalizedQuery)}`,
+        )
+      : undefined,
   ]);
 
-  return rows.map((row) => ({
-    id: row.id,
-    slug: getGeekDailyEpisodeSlug(row.episodeNumber),
-    episodeNumber: row.episodeNumber,
-    title: row.title,
-    status: row.status,
-    publishedAt: toIsoString(row.publishedAt) ?? new Date().toISOString(),
-    itemCount: (itemsByEpisode.get(row.id) ?? []).length,
-    updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
-  }));
+  const [countRow, totalAllRow] = await Promise.all([
+    db.select({ value: count() }).from(geekdailyEpisodes).where(where),
+    normalizedQuery || input.status ? db.select({ value: count() }).from(geekdailyEpisodes) : Promise.resolve([{ value: 0 }]),
+  ]);
+
+  const totalItems = countRow[0]?.value ?? 0;
+  const pagination = resolvePagination(input, totalItems);
+  const rows =
+    totalItems === 0
+      ? []
+      : await db
+          .select()
+          .from(geekdailyEpisodes)
+          .where(where)
+          .orderBy(desc(geekdailyEpisodes.episodeNumber))
+          .limit(pagination.pageSize)
+          .offset(pagination.offset);
+
+  const itemCounts = await countItemsByEpisodeIds(rows.map((row) => row.id));
+
+  return {
+    items: rows.map((row) => ({
+      id: row.id,
+      slug: getGeekDailyEpisodeSlug(row.episodeNumber),
+      episodeNumber: row.episodeNumber,
+      title: row.title,
+      status: row.status,
+      publishedAt: toIsoString(row.publishedAt) ?? new Date().toISOString(),
+      itemCount: itemCounts.get(row.id) ?? 0,
+      updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
+    })),
+    meta: buildPaginatedMeta(pagination, normalizedQuery || input.status ? totalAllRow[0]?.value ?? totalItems : totalItems),
+  };
 };
 
 export const getAdminGeekDailyEpisode = async (id: string) => {

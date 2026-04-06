@@ -1,58 +1,95 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 
-import { contentStatusOptions, type AdminJobListItem } from '@rebase/shared';
+import { contentStatusOptions, defaultAdminPageSize, type AdminJobListItem, type PaginatedMeta } from '@rebase/shared';
 
-import { adminFetch } from '../lib/api';
+import PaginationBar from '../components/PaginationBar.vue';
+import { adminFetchWithMeta } from '../lib/api';
 import { formatBoolean, formatContentStatus, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const rows = ref<AdminJobListItem[]>([]);
+const pagination = ref<PaginatedMeta | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
+const page = ref(1);
 const filters = reactive({ query: '', status: 'all' });
 
-const filteredRows = computed(() => {
-  const query = filters.query.trim().toLowerCase();
-  return rows.value.filter((row) => {
-    const matchesQuery = query.length === 0 || [row.companyName, row.roleTitle, row.slug].some((value) => value.toLowerCase().includes(query));
-    const matchesStatus = filters.status === 'all' || row.status === filters.status;
-    return matchesQuery && matchesStatus;
+const buildRequestPath = () => {
+  const params = new URLSearchParams({
+    page: String(page.value),
+    pageSize: String(defaultAdminPageSize),
   });
-});
+
+  if (filters.query.trim()) {
+    params.set('query', filters.query.trim());
+  }
+
+  if (filters.status !== 'all') {
+    params.set('status', filters.status);
+  }
+
+  return `/api/admin/v1/jobs?${params.toString()}`;
+};
 
 const jobStats = computed(() => [
   {
     label: '招聘总数',
-    value: rows.value.length,
+    value: pagination.value?.totalAllItems ?? pagination.value?.totalItems ?? rows.value.length,
     detail: '全部岗位',
   },
   {
     label: '筛选结果',
-    value: filteredRows.value.length,
-    detail: '当前列表',
+    value: pagination.value?.totalItems ?? rows.value.length,
+    detail: '当前条件',
   },
   {
-    label: '支持远程',
+    label: '当前页',
+    value: rows.value.length,
+    detail: `第 ${pagination.value?.page ?? 1} 页`,
+  },
+  {
+    label: '本页远程',
     value: rows.value.filter((row) => row.supportsRemote).length,
-    detail: '可远程协作',
-  },
-  {
-    label: '已发布',
-    value: rows.value.filter((row) => row.status === 'published').length,
-    detail: '对外可见',
+    detail: '当前页数据',
   },
 ]);
 
-onMounted(async () => {
+const loadRows = async () => {
+  loading.value = true;
+  errorMessage.value = '';
+
   try {
-    rows.value = await adminFetch<AdminJobListItem[]>('/api/admin/v1/jobs');
+    const response = await adminFetchWithMeta<AdminJobListItem[], PaginatedMeta>(buildRequestPath());
+    rows.value = response.data;
+    pagination.value = response.meta ?? null;
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '无法加载招聘列表。';
   } finally {
     loading.value = false;
   }
+};
+
+const goToPage = (nextPage: number) => {
+  page.value = nextPage;
+};
+
+watch([() => filters.query, () => filters.status], () => {
+  if (page.value === 1) {
+    void loadRows();
+    return;
+  }
+
+  page.value = 1;
+});
+
+watch(page, () => {
+  void loadRows();
+});
+
+onMounted(() => {
+  void loadRows();
 });
 </script>
 
@@ -79,7 +116,7 @@ onMounted(async () => {
               <h3>岗位概览</h3>
               <div class="panel-meta">查看招聘库存与远程分布</div>
             </div>
-            <div class="panel-meta">{{ rows.length }} 条招聘</div>
+            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 条招聘</div>
           </div>
 
           <div class="compact-stat-grid compact-stat-grid-4">
@@ -94,7 +131,7 @@ onMounted(async () => {
         <section class="panel filter-panel">
           <div class="panel-toolbar">
             <h3>筛选</h3>
-            <div class="panel-meta">{{ filteredRows.length }} 条招聘</div>
+            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 条招聘</div>
           </div>
           <div class="field-grid field-grid-2">
             <label class="field">
@@ -112,7 +149,7 @@ onMounted(async () => {
         </section>
       </div>
 
-      <div v-if="filteredRows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有招聘信息。</p></div>
+      <div v-if="rows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有招聘信息。</p></div>
 
       <div v-else class="panel table-panel">
         <table class="data-table dense-table">
@@ -127,7 +164,7 @@ onMounted(async () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="row in filteredRows" :key="row.id">
+            <tr v-for="row in rows" :key="row.id">
               <td>
                 <div class="table-cell-stack">
                   <strong>{{ row.companyName }}</strong>
@@ -147,6 +184,8 @@ onMounted(async () => {
             </tr>
           </tbody>
         </table>
+
+        <PaginationBar :meta="pagination" :current-count="rows.length" item-label="条" :loading="loading" @change-page="goToPage" />
       </div>
     </template>
   </section>

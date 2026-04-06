@@ -4,16 +4,20 @@ import { RouterLink } from 'vue-router';
 
 import {
   contentStatusOptions,
+  defaultAdminPageSize,
   type AdminContributorListItem,
   type AdminContributorRoleRecord,
+  type PaginatedMeta,
 } from '@rebase/shared';
 
-import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
+import PaginationBar from '../components/PaginationBar.vue';
+import { adminFetch, adminFetchWithMeta, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const contributors = ref<AdminContributorListItem[]>([]);
 const roles = ref<AdminContributorRoleRecord[]>([]);
+const pagination = ref<PaginatedMeta | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
 const successMessage = ref('');
@@ -21,6 +25,7 @@ const roleIssues = ref<Record<string, string>>({});
 const selectedRoleId = ref('new');
 const savingRole = ref(false);
 const showRoleManager = ref(false);
+const contributorPage = ref(1);
 
 const roleForm = reactive({
   slug: '',
@@ -33,18 +38,23 @@ const roleForm = reactive({
 const contributorStats = computed(() => [
   {
     label: '贡献者总数',
-    value: contributors.value.length,
+    value: pagination.value?.totalAllItems ?? pagination.value?.totalItems ?? contributors.value.length,
     detail: '全部成员记录',
   },
   {
-    label: '已发布',
-    value: contributors.value.filter((item) => item.status === 'published').length,
-    detail: '前台可见',
+    label: '筛选结果',
+    value: pagination.value?.totalItems ?? contributors.value.length,
+    detail: '当前列表',
   },
   {
-    label: '草稿中',
-    value: contributors.value.filter((item) => item.status === 'draft').length,
-    detail: '待继续完善',
+    label: '当前页',
+    value: contributors.value.length,
+    detail: `第 ${pagination.value?.page ?? 1} 页`,
+  },
+  {
+    label: '本页已发布',
+    value: contributors.value.filter((item) => item.status === 'published').length,
+    detail: '当前页数据',
   },
   {
     label: '角色分组',
@@ -100,16 +110,23 @@ const closeRoleManager = () => {
   resetRoleForm();
 };
 
+const buildContributorsRequestPath = () =>
+  `/api/admin/v1/contributors?${new URLSearchParams({
+    page: String(contributorPage.value),
+    pageSize: String(defaultAdminPageSize),
+  }).toString()}`;
+
 const loadData = async () => {
   loading.value = true;
   errorMessage.value = '';
   try {
     const [nextRoles, nextContributors] = await Promise.all([
       adminFetch<AdminContributorRoleRecord[]>('/api/admin/v1/contributors/roles'),
-      adminFetch<AdminContributorListItem[]>('/api/admin/v1/contributors'),
+      adminFetchWithMeta<AdminContributorListItem[], PaginatedMeta>(buildContributorsRequestPath()),
     ]);
     roles.value = nextRoles;
-    contributors.value = nextContributors;
+    contributors.value = nextContributors.data;
+    pagination.value = nextContributors.meta ?? null;
     if (selectedRoleId.value === 'new') {
       resetRoleForm();
     } else {
@@ -125,6 +142,11 @@ const loadData = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const goToContributorPage = async (nextPage: number) => {
+  contributorPage.value = nextPage;
+  await loadData();
 };
 
 const saveRole = async () => {
@@ -178,7 +200,7 @@ onMounted(() => void loadData());
               <h3>贡献者概览</h3>
               <div class="panel-meta">查看成员库存与发布状态</div>
             </div>
-            <div class="panel-meta">{{ contributors.length }} 人</div>
+            <div class="panel-meta">{{ pagination?.totalItems ?? contributors.length }} 人</div>
           </div>
 
           <div class="compact-stat-grid compact-stat-grid-4">
@@ -226,7 +248,7 @@ onMounted(() => void loadData());
             <h3>贡献者列表</h3>
             <div class="panel-meta">集中维护头像、介绍与角色归属</div>
           </div>
-          <div class="panel-meta">{{ contributors.length }} 人</div>
+          <div class="panel-meta">{{ pagination?.totalItems ?? contributors.length }} 人</div>
         </div>
 
         <div v-if="contributors.length === 0" class="empty-state-card"><p>暂时还没有贡献者。</p></div>
@@ -262,6 +284,8 @@ onMounted(() => void loadData());
               </tr>
             </tbody>
           </table>
+
+          <PaginationBar :meta="pagination" :current-count="contributors.length" item-label="人" :loading="loading" @change-page="goToContributorPage" />
         </div>
       </section>
 

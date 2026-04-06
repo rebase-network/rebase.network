@@ -2,13 +2,16 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
+  defaultAdminPageSize,
   staffAccountStatusValues,
   type AdminRoleRecord,
   type AdminStaffDetailPayload,
   type AdminStaffRecord,
+  type PaginatedMeta,
 } from '@rebase/shared';
 
-import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
+import PaginationBar from '../components/PaginationBar.vue';
+import { adminFetch, adminFetchWithMeta, adminRequest, getValidationIssues } from '../lib/api';
 import { formatAdminRoleLabel, formatAdminRoleList, formatDateTime, formatStaffAccountStatus } from '../lib/format';
 
 type StaffStatus = (typeof staffAccountStatusValues)[number];
@@ -36,10 +39,12 @@ const createBlankForm = (): StaffFormState => ({
 
 const rows = ref<AdminStaffRecord[]>([]);
 const roles = ref<AdminRoleRecord[]>([]);
+const pagination = ref<PaginatedMeta | null>(null);
 const detail = ref<AdminStaffDetailPayload | null>(null);
 const activeWorkspaceMode = ref<StaffWorkspaceMode>('create');
 const selectedStaffId = ref<string | null>(null);
 const manualCreateMode = ref(true);
+const staffPage = ref(1);
 const loading = ref(true);
 const saving = ref(false);
 const errorMessage = ref('');
@@ -54,21 +59,21 @@ const saveButtonLabel = computed(() => (saving.value ? '保存中…' : isCreati
 const staffStats = computed(() => [
   {
     label: '账号总数',
-    value: rows.value.length,
+    value: pagination.value?.totalAllItems ?? pagination.value?.totalItems ?? rows.value.length,
     detail: '后台工作人员',
   },
   {
-    label: '已启用',
+    label: '当前页',
+    value: rows.value.length,
+    detail: `第 ${pagination.value?.page ?? 1} 页`,
+  },
+  {
+    label: '本页已启用',
     value: rows.value.filter((row) => row.status === 'active').length,
     detail: '可正常登录',
   },
   {
-    label: '待激活',
-    value: rows.value.filter((row) => row.status === 'invited').length,
-    detail: '待初始化账号',
-  },
-  {
-    label: '受限账号',
+    label: '本页受限',
     value: rows.value.filter((row) => row.status === 'suspended' || row.status === 'disabled').length,
     detail: '暂停或停用',
   },
@@ -113,20 +118,27 @@ const applyDetail = (payload: AdminStaffDetailPayload) => {
   });
 };
 
+const buildStaffRequestPath = () =>
+  `/api/admin/v1/staff?${new URLSearchParams({
+    page: String(staffPage.value),
+    pageSize: String(defaultAdminPageSize),
+  }).toString()}`;
+
 const loadStaff = async (nextSelectedId: string | null = selectedStaffId.value, preserveDraft = manualCreateMode.value) => {
   loading.value = true;
   errorMessage.value = '';
 
   try {
     const [nextRows, nextRoles] = await Promise.all([
-      adminFetch<AdminStaffRecord[]>('/api/admin/v1/staff'),
+      adminFetchWithMeta<AdminStaffRecord[], PaginatedMeta>(buildStaffRequestPath()),
       adminFetch<AdminRoleRecord[]>('/api/admin/v1/roles'),
     ]);
 
-    rows.value = nextRows;
+    rows.value = nextRows.data;
+    pagination.value = nextRows.meta ?? null;
     roles.value = nextRoles;
 
-    if (nextSelectedId && nextRows.some((row) => row.id === nextSelectedId)) {
+    if (nextSelectedId && nextRows.data.some((row) => row.id === nextSelectedId)) {
       selectedStaffId.value = nextSelectedId;
       applyDetail(await adminFetch<AdminStaffDetailPayload>(`/api/admin/v1/staff/${nextSelectedId}`));
     } else if (preserveDraft) {
@@ -219,6 +231,7 @@ const saveStaff = async () => {
     );
 
     successMessage.value = isCreating.value ? '工作人员账号已创建。' : '工作人员账号已更新。';
+    staffPage.value = 1;
     await loadStaff(nextDetail?.staff.id ?? null, false);
     activeWorkspaceMode.value = 'edit';
   } catch (error) {
@@ -232,6 +245,11 @@ const saveStaff = async () => {
 onMounted(() => {
   void loadStaff();
 });
+
+const goToStaffPage = async (nextPage: number) => {
+  staffPage.value = nextPage;
+  await loadStaff(selectedStaffId.value, false);
+};
 </script>
 
 <template>
@@ -261,7 +279,7 @@ onMounted(() => {
                 <h3>账号概览</h3>
                 <div class="panel-meta">后台工作人员与角色权限</div>
               </div>
-              <div class="panel-meta">{{ rows.length }} 个账号</div>
+              <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 个账号</div>
             </div>
 
             <div class="compact-stat-grid compact-stat-grid-4">
@@ -277,7 +295,7 @@ onMounted(() => {
             <div class="panel-toolbar">
               <div>
                 <h3>角色覆盖</h3>
-                <div class="panel-meta">快速确认各角色是否已有负责人</div>
+                <div class="panel-meta">查看当前页账号覆盖到的角色</div>
               </div>
               <div class="panel-meta">{{ roles.length }} 个角色</div>
             </div>
@@ -301,7 +319,7 @@ onMounted(() => {
               <h3>账号列表</h3>
               <div class="panel-meta">查看当前账号、角色与登录状态</div>
             </div>
-            <div class="panel-meta">{{ rows.length }} 个账号</div>
+            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 个账号</div>
           </div>
 
           <div class="table-panel">
@@ -335,6 +353,8 @@ onMounted(() => {
               </tbody>
             </table>
           </div>
+
+          <PaginationBar :meta="pagination" :current-count="rows.length" item-label="个账号" :loading="loading" @change-page="goToStaffPage" />
         </section>
       </div>
 

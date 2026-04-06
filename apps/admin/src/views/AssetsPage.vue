@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 
-import { assetStatusValues, type AdminAssetRecord, type AdminAssetUploadConfig } from '@rebase/shared';
+import { assetStatusValues, defaultAdminPageSize, type AdminAssetRecord, type AdminAssetUploadConfig, type PaginatedMeta } from '@rebase/shared';
 
-import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
+import PaginationBar from '../components/PaginationBar.vue';
+import { adminFetch, adminFetchWithMeta, adminRequest, getValidationIssues } from '../lib/api';
 import { formatAssetStatus, formatAssetVisibility, formatDateTime, formatFileSize } from '../lib/format';
 
 type AssetStatus = (typeof assetStatusValues)[number];
@@ -62,6 +63,7 @@ const createUploadForm = (): UploadFormState => ({
 });
 
 const rows = ref<AdminAssetRecord[]>([]);
+const pagination = ref<PaginatedMeta | null>(null);
 const uploadConfig = ref<AdminAssetUploadConfig | null>(null);
 const loading = ref(true);
 const saving = ref(false);
@@ -73,6 +75,7 @@ const fieldIssues = ref<Record<string, string>>({});
 const activeWorkspaceMode = ref<AssetWorkspaceMode>('upload');
 const selectedAssetId = ref<string | null>(null);
 const manualCreateMode = ref(false);
+const assetPage = ref(1);
 const uploadFile = ref<File | null>(null);
 const uploadPreviewUrl = ref('');
 const form = reactive<AssetFormState>(createBlankForm());
@@ -81,20 +84,6 @@ const filters = reactive({
   query: '',
   status: 'all',
   visibility: 'all',
-});
-
-const filteredRows = computed(() => {
-  const query = filters.query.trim().toLowerCase();
-
-  return rows.value.filter((row) => {
-    const matchesQuery =
-      query.length === 0 ||
-      [row.originalFilename, row.objectKey, row.assetType, row.altText ?? ''].some((value) => value.toLowerCase().includes(query));
-    const matchesStatus = filters.status === 'all' || row.status === filters.status;
-    const matchesVisibility = filters.visibility === 'all' || row.visibility === filters.visibility;
-
-    return matchesQuery && matchesStatus && matchesVisibility;
-  });
 });
 
 const selectedAsset = computed(() => rows.value.find((row) => row.id === selectedAssetId.value) ?? null);
@@ -129,18 +118,18 @@ const uploadStatusMessage = computed(() => {
 const assetStats = computed(() => [
   {
     label: '媒体记录',
-    value: rows.value.length,
+    value: pagination.value?.totalAllItems ?? pagination.value?.totalItems ?? rows.value.length,
   },
   {
     label: '筛选结果',
-    value: filteredRows.value.length,
+    value: pagination.value?.totalItems ?? rows.value.length,
   },
   {
-    label: '公开资源',
-    value: rows.value.filter((row) => row.visibility === 'public').length,
+    label: '当前页',
+    value: rows.value.length,
   },
   {
-    label: '图片资源',
+    label: '本页图片',
     value: rows.value.filter((row) => row.assetType === 'image').length,
   },
 ]);
@@ -266,17 +255,39 @@ const selectAsset = async (id: string) => {
   }
 };
 
+const buildAssetsRequestPath = () => {
+  const params = new URLSearchParams({
+    page: String(assetPage.value),
+    pageSize: String(defaultAdminPageSize),
+  });
+
+  if (filters.query.trim()) {
+    params.set('query', filters.query.trim());
+  }
+
+  if (filters.status !== 'all') {
+    params.set('status', filters.status);
+  }
+
+  if (filters.visibility !== 'all') {
+    params.set('visibility', filters.visibility);
+  }
+
+  return `/api/admin/v1/assets?${params.toString()}`;
+};
+
 const loadPage = async (nextSelectedId: string | null = selectedAssetId.value, preserveDraft = manualCreateMode.value) => {
   loading.value = true;
   errorMessage.value = '';
 
   try {
     const [assetRows, nextConfig] = await Promise.all([
-      adminFetch<AdminAssetRecord[]>('/api/admin/v1/assets'),
+      adminFetchWithMeta<AdminAssetRecord[], PaginatedMeta>(buildAssetsRequestPath()),
       adminFetch<AdminAssetUploadConfig>('/api/admin/v1/assets/upload-config'),
     ]);
 
-    rows.value = assetRows;
+    rows.value = assetRows.data;
+    pagination.value = assetRows.meta ?? null;
     uploadConfig.value = nextConfig;
 
     if (nextSelectedId && rows.value.some((row) => row.id === nextSelectedId)) {
@@ -323,6 +334,7 @@ const uploadAsset = async () => {
     successMessage.value = '文件已上传到 R2，并自动登记到媒体库。';
     upload.altText = '';
     setUploadFile(null);
+    assetPage.value = 1;
     await loadPage(asset.id, false);
     activeWorkspaceMode.value = 'edit';
   } catch (error) {
@@ -368,6 +380,7 @@ const saveAsset = async () => {
     );
 
     successMessage.value = isCreating.value ? '媒体记录已创建。' : '媒体记录已更新。';
+    assetPage.value = 1;
     await loadPage(asset.id, false);
     activeWorkspaceMode.value = 'edit';
   } catch (error) {
@@ -382,6 +395,11 @@ onMounted(() => {
   void loadPage();
 });
 
+watch([() => filters.query, () => filters.status, () => filters.visibility], () => {
+  assetPage.value = 1;
+  void loadPage();
+});
+
 onBeforeUnmount(() => {
   revokePreviewUrl();
 
@@ -389,6 +407,11 @@ onBeforeUnmount(() => {
     window.clearTimeout(copyFeedbackTimer);
   }
 });
+
+const goToAssetPage = async (nextPage: number) => {
+  assetPage.value = nextPage;
+  await loadPage();
+};
 </script>
 
 <template>
@@ -419,7 +442,7 @@ onBeforeUnmount(() => {
                 <h3>媒体概览</h3>
                 <div class="panel-meta">上传、筛选并复用站点资源</div>
               </div>
-              <div class="panel-meta">{{ rows.length }} 条记录</div>
+              <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 条记录</div>
             </div>
 
             <div class="compact-stat-grid compact-stat-grid-4">
@@ -433,7 +456,7 @@ onBeforeUnmount(() => {
           <section class="panel stacked-gap filter-panel">
             <div class="panel-toolbar">
               <h3>筛选</h3>
-              <div class="panel-meta">{{ filteredRows.length }} 条结果</div>
+              <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 条结果</div>
             </div>
             <div class="field-grid field-grid-3">
               <label class="field">
@@ -458,7 +481,7 @@ onBeforeUnmount(() => {
           </section>
         </div>
 
-        <section v-if="filteredRows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有媒体记录。</p></section>
+        <section v-if="rows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有媒体记录。</p></section>
 
         <section v-else class="panel stacked-gap">
           <div class="panel-toolbar">
@@ -466,7 +489,7 @@ onBeforeUnmount(() => {
               <h3>媒体记录</h3>
               <div class="panel-meta">按文件、对象路径与状态快速查找资源</div>
             </div>
-            <div class="panel-meta">{{ filteredRows.length }} 条结果</div>
+            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 条结果</div>
           </div>
 
           <div class="table-panel">
@@ -482,7 +505,7 @@ onBeforeUnmount(() => {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="row in filteredRows" :key="row.id" :class="{ 'is-selected': !isCreating && selectedAssetId === row.id }">
+                <tr v-for="row in rows" :key="row.id" :class="{ 'is-selected': !isCreating && selectedAssetId === row.id }">
                   <td>
                     <div class="asset-thumb">
                       <img v-if="row.publicUrl && row.mimeType.startsWith('image/')" :src="row.publicUrl" :alt="row.altText || row.originalFilename" />
@@ -518,6 +541,8 @@ onBeforeUnmount(() => {
               </tbody>
             </table>
           </div>
+
+          <PaginationBar :meta="pagination" :current-count="rows.length" item-label="条" :loading="loading" @change-page="goToAssetPage" />
         </section>
       </div>
 

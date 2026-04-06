@@ -1,28 +1,39 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 
-import { contentStatusOptions, type AdminEventListItem } from '@rebase/shared';
+import { contentStatusOptions, defaultAdminPageSize, type AdminEventListItem, type PaginatedMeta } from '@rebase/shared';
 
-import { adminFetch } from '../lib/api';
+import PaginationBar from '../components/PaginationBar.vue';
+import { adminFetchWithMeta } from '../lib/api';
 import { formatContentStatus, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const rows = ref<AdminEventListItem[]>([]);
+const pagination = ref<PaginatedMeta | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
+const page = ref(1);
 const filters = reactive({ query: '', status: 'all' });
 
-const filteredRows = computed(() => {
-  const query = filters.query.trim().toLowerCase();
-  return rows.value.filter((row) => {
-    const matchesQuery = query.length === 0 || [row.title, row.slug, row.city].some((value) => value.toLowerCase().includes(query));
-    const matchesStatus = filters.status === 'all' || row.status === filters.status;
-    return matchesQuery && matchesStatus;
-  });
-});
-
 const getEventPreviewUrl = (startAt: string, slug: string) => getPublicSiteUrl(`/events/${startAt.slice(0, 10)}-${slug}`);
+
+const buildRequestPath = () => {
+  const params = new URLSearchParams({
+    page: String(page.value),
+    pageSize: String(defaultAdminPageSize),
+  });
+
+  if (filters.query.trim()) {
+    params.set('query', filters.query.trim());
+  }
+
+  if (filters.status !== 'all') {
+    params.set('status', filters.status);
+  }
+
+  return `/api/admin/v1/events?${params.toString()}`;
+};
 
 const eventStats = computed(() => {
   const now = Date.now();
@@ -30,35 +41,61 @@ const eventStats = computed(() => {
   return [
     {
       label: '活动总数',
-      value: rows.value.length,
+      value: pagination.value?.totalAllItems ?? pagination.value?.totalItems ?? rows.value.length,
       detail: '全部活动',
     },
     {
       label: '筛选结果',
-      value: filteredRows.value.length,
-      detail: '当前列表',
+      value: pagination.value?.totalItems ?? rows.value.length,
+      detail: '当前条件',
     },
     {
-      label: '进行中 / 即将开始',
+      label: '当前页',
+      value: rows.value.length,
+      detail: `第 ${pagination.value?.page ?? 1} 页`,
+    },
+    {
+      label: '本页可展示',
       value: rows.value.filter((row) => new Date(row.endAt).getTime() >= now).length,
-      detail: '还可展示',
-    },
-    {
-      label: '已发布',
-      value: rows.value.filter((row) => row.status === 'published').length,
-      detail: '前台可见',
+      detail: '当前页数据',
     },
   ];
 });
 
-onMounted(async () => {
+const loadRows = async () => {
+  loading.value = true;
+  errorMessage.value = '';
+
   try {
-    rows.value = await adminFetch<AdminEventListItem[]>('/api/admin/v1/events');
+    const response = await adminFetchWithMeta<AdminEventListItem[], PaginatedMeta>(buildRequestPath());
+    rows.value = response.data;
+    pagination.value = response.meta ?? null;
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '无法加载活动列表。';
   } finally {
     loading.value = false;
   }
+};
+
+const goToPage = (nextPage: number) => {
+  page.value = nextPage;
+};
+
+watch([() => filters.query, () => filters.status], () => {
+  if (page.value === 1) {
+    void loadRows();
+    return;
+  }
+
+  page.value = 1;
+});
+
+watch(page, () => {
+  void loadRows();
+});
+
+onMounted(() => {
+  void loadRows();
 });
 </script>
 
@@ -85,7 +122,7 @@ onMounted(async () => {
               <h3>活动概览</h3>
               <div class="panel-meta">查看活动库存与时间状态</div>
             </div>
-            <div class="panel-meta">{{ rows.length }} 场活动</div>
+            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 场活动</div>
           </div>
 
           <div class="compact-stat-grid compact-stat-grid-4">
@@ -100,7 +137,7 @@ onMounted(async () => {
         <section class="panel filter-panel">
           <div class="panel-toolbar">
             <h3>筛选</h3>
-            <div class="panel-meta">{{ filteredRows.length }} 场活动</div>
+            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 场活动</div>
           </div>
           <div class="field-grid field-grid-2">
             <label class="field">
@@ -118,7 +155,7 @@ onMounted(async () => {
         </section>
       </div>
 
-      <div v-if="filteredRows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有活动。</p></div>
+      <div v-if="rows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有活动。</p></div>
 
       <div v-else class="panel table-panel">
         <table class="data-table dense-table">
@@ -133,7 +170,7 @@ onMounted(async () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="row in filteredRows" :key="row.id">
+            <tr v-for="row in rows" :key="row.id">
               <td>
                 <div class="table-cell-stack">
                   <strong>{{ row.title }}</strong>
@@ -158,6 +195,8 @@ onMounted(async () => {
             </tr>
           </tbody>
         </table>
+
+        <PaginationBar :meta="pagination" :current-count="rows.length" item-label="场" :loading="loading" @change-page="goToPage" />
       </div>
     </template>
   </section>

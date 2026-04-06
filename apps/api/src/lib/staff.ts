@@ -1,12 +1,13 @@
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray } from 'drizzle-orm';
 
 import { roles, staffAccounts, staffRoleBindings, users } from '@rebase/db';
-import type { AdminRoleRecord, AdminStaffDetailPayload, AdminStaffRecord, StaffCreateInput, StaffUpdateInput } from '@rebase/shared';
+import type { AdminRoleRecord, AdminStaffDetailPayload, AdminStaffRecord, PaginatedResult, StaffCreateInput, StaffUpdateInput } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { getAuth } from './auth.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
+import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
 import { toIsoString } from './utils.js';
 
 const buildRoleMaps = async () => {
@@ -18,9 +19,11 @@ const buildRoleMaps = async () => {
   };
 };
 
-const loadBindings = async () => {
+const loadBindings = async (staffIds?: string[]) => {
   const db = getDb();
-  const rows = await db.select().from(staffRoleBindings);
+  const rows = staffIds?.length
+    ? await db.select().from(staffRoleBindings).where(inArray(staffRoleBindings.staffAccountId, staffIds))
+    : await db.select().from(staffRoleBindings);
   const result = new Map<string, string[]>();
 
   for (const row of rows) {
@@ -60,29 +63,42 @@ export const listAdminRoles = async (): Promise<AdminRoleRecord[]> => {
   return roles;
 };
 
-export const listAdminStaff = async (): Promise<AdminStaffRecord[]> => {
+export const listAdminStaff = async (input: PaginationInput = {}): Promise<PaginatedResult<AdminStaffRecord>> => {
   const db = getDb();
-  const [roleMeta, bindings, rows] = await Promise.all([
+  const [countRow, roleMeta] = await Promise.all([
+    db.select({ value: count() }).from(staffAccounts),
     buildRoleMaps(),
-    loadBindings(),
-    db
-      .select({
-        user: users,
-        staff: staffAccounts,
-      })
-      .from(staffAccounts)
-      .innerJoin(users, eq(users.id, staffAccounts.userId))
-      .orderBy(asc(staffAccounts.displayName)),
   ]);
 
-  return rows.map((row) => mapStaffRecord(row.user, row.staff, bindings.get(row.staff.id) ?? [], roleMeta.roleCodeById));
+  const totalItems = countRow[0]?.value ?? 0;
+  const pagination = resolvePagination(input, totalItems);
+  const rows =
+    totalItems === 0
+      ? []
+      : await db
+          .select({
+            user: users,
+            staff: staffAccounts,
+          })
+          .from(staffAccounts)
+          .innerJoin(users, eq(users.id, staffAccounts.userId))
+          .orderBy(desc(staffAccounts.updatedAt), asc(staffAccounts.displayName))
+          .limit(pagination.pageSize)
+          .offset(pagination.offset);
+
+  const bindings = await loadBindings(rows.map((row) => row.staff.id));
+
+  return {
+    items: rows.map((row) => mapStaffRecord(row.user, row.staff, bindings.get(row.staff.id) ?? [], roleMeta.roleCodeById)),
+    meta: buildPaginatedMeta(pagination),
+  };
 };
 
 export const getAdminStaff = async (id: string): Promise<AdminStaffDetailPayload | null> => {
   const db = getDb();
   const [roleMeta, bindings, rows] = await Promise.all([
     buildRoleMaps(),
-    loadBindings(),
+    loadBindings([id]),
     db
       .select({
         user: users,

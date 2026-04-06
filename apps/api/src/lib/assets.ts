@@ -1,12 +1,14 @@
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, inArray, or } from 'drizzle-orm';
 
 import { assets } from '@rebase/db';
-import type { AdminAssetRecord, AssetInput } from '@rebase/shared';
+import type { AdminAssetRecord, AssetInput, AssetStatus, PaginatedResult } from '@rebase/shared';
 
 import { getAssetUploadConfig, type UploadAssetOptions, uploadAssetToR2 } from './asset-storage.js';
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
+import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
+import { combineFilters, toContainsPattern } from './query-filters.js';
 import { toIsoString } from './utils.js';
 
 const mapAsset = (row: any): AdminAssetRecord => ({
@@ -38,10 +40,45 @@ const ensureUniqueObjectKey = async (objectKey: string, currentId?: string) => {
   }
 };
 
-export const listAdminAssets = async (): Promise<AdminAssetRecord[]> => {
+interface ListAdminAssetsInput extends PaginationInput {
+  query?: string;
+  status?: AssetStatus;
+  visibility?: 'public' | 'private';
+}
+
+export const listAdminAssets = async (input: ListAdminAssetsInput = {}): Promise<PaginatedResult<AdminAssetRecord>> => {
   const db = getDb();
-  const rows = await db.select().from(assets).orderBy(desc(assets.updatedAt));
-  return rows.map(mapAsset);
+  const normalizedQuery = input.query?.trim() ?? '';
+  const where = combineFilters([
+    input.status ? eq(assets.status, input.status) : undefined,
+    input.visibility ? eq(assets.visibility, input.visibility) : undefined,
+    normalizedQuery
+      ? or(
+          ilike(assets.originalFilename, toContainsPattern(normalizedQuery)),
+          ilike(assets.objectKey, toContainsPattern(normalizedQuery)),
+          ilike(assets.assetType, toContainsPattern(normalizedQuery)),
+          ilike(assets.altText, toContainsPattern(normalizedQuery)),
+        )
+      : undefined,
+  ]);
+
+  const hasFilters = Boolean(normalizedQuery || input.status || input.visibility);
+  const [countRow, totalAllRow] = await Promise.all([
+    db.select({ value: count() }).from(assets).where(where),
+    hasFilters ? db.select({ value: count() }).from(assets) : Promise.resolve([{ value: 0 }]),
+  ]);
+
+  const totalItems = countRow[0]?.value ?? 0;
+  const pagination = resolvePagination(input, totalItems);
+  const rows =
+    totalItems === 0
+      ? []
+      : await db.select().from(assets).where(where).orderBy(desc(assets.updatedAt)).limit(pagination.pageSize).offset(pagination.offset);
+
+  return {
+    items: rows.map(mapAsset),
+    meta: buildPaginatedMeta(pagination, hasFilters ? totalAllRow[0]?.value ?? totalItems : totalItems),
+  };
 };
 
 export const listPublicAssetUrlsById = async (assetIds: Array<string | null | undefined>) => {

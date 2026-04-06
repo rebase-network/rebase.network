@@ -948,6 +948,35 @@ code {
   gap: 0.55rem;
 }
 
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  padding-top: 0.72rem;
+  border-top: 1px solid rgba(25, 49, 45, 0.08);
+}
+
+.pagination-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.pagination-summary strong {
+  color: var(--text);
+  font-size: 0.86rem;
+}
+
+.pagination-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -1347,6 +1376,11 @@ code {
 
   .page-actions {
     justify-content: flex-start;
+  }
+
+  .pagination-bar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 

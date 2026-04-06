@@ -1,9 +1,11 @@
-import { desc, eq } from 'drizzle-orm';
+import { count, desc, eq, ilike, or } from 'drizzle-orm';
 
 import { auditLogs, staffAccounts, users } from '@rebase/db';
-import type { AdminAuditRecord } from '@rebase/shared';
+import type { AdminAuditRecord, PaginatedResult } from '@rebase/shared';
 
 import { getDb } from './db.js';
+import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
+import { toContainsPattern } from './query-filters.js';
 import { toIsoString } from './utils.js';
 
 export interface AuditActor {
@@ -39,8 +41,35 @@ export const createAuditEntry = async (input: AuditEntryInput) => {
   });
 };
 
-export const listAuditEntries = async (): Promise<AdminAuditRecord[]> => {
+interface ListAuditEntriesInput extends PaginationInput {
+  query?: string;
+}
+
+export const listAuditEntries = async (input: ListAuditEntriesInput = {}): Promise<PaginatedResult<AdminAuditRecord>> => {
   const db = getDb();
+  const normalizedQuery = input.query?.trim() ?? '';
+  const where = normalizedQuery
+    ? or(
+        ilike(auditLogs.action, toContainsPattern(normalizedQuery)),
+        ilike(auditLogs.targetType, toContainsPattern(normalizedQuery)),
+        ilike(auditLogs.summary, toContainsPattern(normalizedQuery)),
+        ilike(staffAccounts.displayName, toContainsPattern(normalizedQuery)),
+        ilike(users.email, toContainsPattern(normalizedQuery)),
+      )
+    : undefined;
+
+  const [countRow, totalAllRow] = await Promise.all([
+    db
+      .select({ value: count() })
+      .from(auditLogs)
+      .leftJoin(staffAccounts, eq(staffAccounts.id, auditLogs.actorStaffAccountId))
+      .leftJoin(users, eq(users.id, auditLogs.actorUserId))
+      .where(where),
+    normalizedQuery ? db.select({ value: count() }).from(auditLogs) : Promise.resolve([{ value: 0 }]),
+  ]);
+
+  const totalItems = countRow[0]?.value ?? 0;
+  const pagination = resolvePagination(input, totalItems);
 
   const rows = await db
     .select({
@@ -56,17 +85,22 @@ export const listAuditEntries = async (): Promise<AdminAuditRecord[]> => {
     .from(auditLogs)
     .leftJoin(staffAccounts, eq(staffAccounts.id, auditLogs.actorStaffAccountId))
     .leftJoin(users, eq(users.id, auditLogs.actorUserId))
+    .where(where)
     .orderBy(desc(auditLogs.createdAt))
-    .limit(100);
+    .limit(pagination.pageSize)
+    .offset(pagination.offset);
 
-  return rows.map((row) => ({
-    id: row.id,
-    action: row.action,
-    targetType: row.targetType,
-    targetId: row.targetId,
-    summary: row.summary,
-    actorDisplayName: row.actorDisplayName,
-    actorEmail: row.actorEmail,
-    createdAt: toIsoString(row.createdAt) ?? new Date().toISOString(),
-  }));
+  return {
+    items: rows.map((row) => ({
+      id: row.id,
+      action: row.action,
+      targetType: row.targetType,
+      targetId: row.targetId,
+      summary: row.summary,
+      actorDisplayName: row.actorDisplayName,
+      actorEmail: row.actorEmail,
+      createdAt: toIsoString(row.createdAt) ?? new Date().toISOString(),
+    })),
+    meta: buildPaginatedMeta(pagination, normalizedQuery ? totalAllRow[0]?.value ?? totalItems : totalItems),
+  };
 };

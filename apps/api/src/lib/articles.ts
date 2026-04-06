@@ -1,12 +1,14 @@
-import { desc, eq } from 'drizzle-orm';
+import { count, desc, eq, ilike, or, sql } from 'drizzle-orm';
 
 import { articles } from '@rebase/db';
-import type { AdminArticleListItem, ArticleInput } from '@rebase/shared';
+import type { AdminArticleListItem, ArticleInput, ContentStatus, PaginatedResult } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { listPublicAssetUrlsById } from './assets.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
+import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
+import { combineFilters, toContainsPattern } from './query-filters.js';
 import { ensurePublishedAt, toIsoString } from './utils.js';
 
 const mapArticleListItem = (row: any): AdminArticleListItem => ({
@@ -49,10 +51,41 @@ const ensureUniqueSlug = async (slug: string, currentId?: string) => {
   }
 };
 
-export const listAdminArticles = async (): Promise<AdminArticleListItem[]> => {
+interface ListAdminArticlesInput extends PaginationInput {
+  query?: string;
+  status?: ContentStatus;
+}
+
+export const listAdminArticles = async (input: ListAdminArticlesInput = {}): Promise<PaginatedResult<AdminArticleListItem>> => {
   const db = getDb();
-  const rows = await db.select().from(articles).orderBy(desc(articles.updatedAt));
-  return rows.map(mapArticleListItem);
+  const normalizedQuery = input.query?.trim() ?? '';
+  const where = combineFilters([
+    input.status ? eq(articles.status, input.status) : undefined,
+    normalizedQuery
+      ? or(
+          ilike(articles.title, toContainsPattern(normalizedQuery)),
+          ilike(articles.slug, toContainsPattern(normalizedQuery)),
+          sql`${articles.authorsJson}::text ilike ${toContainsPattern(normalizedQuery)}`,
+        )
+      : undefined,
+  ]);
+
+  const [countRow, totalAllRow] = await Promise.all([
+    db.select({ value: count() }).from(articles).where(where),
+    normalizedQuery || input.status ? db.select({ value: count() }).from(articles) : Promise.resolve([{ value: 0 }]),
+  ]);
+
+  const totalItems = countRow[0]?.value ?? 0;
+  const pagination = resolvePagination(input, totalItems);
+  const rows =
+    totalItems === 0
+      ? []
+      : await db.select().from(articles).where(where).orderBy(desc(articles.updatedAt)).limit(pagination.pageSize).offset(pagination.offset);
+
+  return {
+    items: rows.map(mapArticleListItem),
+    meta: buildPaginatedMeta(pagination, normalizedQuery || input.status ? totalAllRow[0]?.value ?? totalItems : totalItems),
+  };
 };
 
 export const getAdminArticle = async (id: string) => {

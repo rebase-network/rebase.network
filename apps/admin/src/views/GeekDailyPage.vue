@@ -1,58 +1,101 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 
-import { contentStatusOptions, getGeekDailyEpisodePath, type AdminGeekDailyListItem } from '@rebase/shared';
+import {
+  contentStatusOptions,
+  defaultAdminPageSize,
+  getGeekDailyEpisodePath,
+  type AdminGeekDailyListItem,
+  type PaginatedMeta,
+} from '@rebase/shared';
 
-import { adminFetch } from '../lib/api';
+import PaginationBar from '../components/PaginationBar.vue';
+import { adminFetchWithMeta } from '../lib/api';
 import { formatContentStatus, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const rows = ref<AdminGeekDailyListItem[]>([]);
+const pagination = ref<PaginatedMeta | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
+const page = ref(1);
 const filters = reactive({ query: '', status: 'all' });
 
-const filteredRows = computed(() => {
-  const query = filters.query.trim().toLowerCase();
-  return rows.value.filter((row) => {
-    const matchesQuery = query.length === 0 || [row.title, row.slug, String(row.episodeNumber)].some((value) => value.toLowerCase().includes(query));
-    const matchesStatus = filters.status === 'all' || row.status === filters.status;
-    return matchesQuery && matchesStatus;
+const buildRequestPath = () => {
+  const params = new URLSearchParams({
+    page: String(page.value),
+    pageSize: String(defaultAdminPageSize),
   });
-});
+
+  if (filters.query.trim()) {
+    params.set('query', filters.query.trim());
+  }
+
+  if (filters.status !== 'all') {
+    params.set('status', filters.status);
+  }
+
+  return `/api/admin/v1/geekdaily?${params.toString()}`;
+};
 
 const geekdailyStats = computed(() => [
   {
     label: '期数总数',
-    value: rows.value.length,
+    value: pagination.value?.totalAllItems ?? pagination.value?.totalItems ?? rows.value.length,
     detail: '全部期刊',
   },
   {
     label: '筛选结果',
-    value: filteredRows.value.length,
-    detail: '当前列表',
+    value: pagination.value?.totalItems ?? rows.value.length,
+    detail: '当前条件',
   },
   {
-    label: '收录条目',
+    label: '当前页条目',
     value: rows.value.reduce((total, row) => total + row.itemCount, 0),
-    detail: '累计推荐内容',
+    detail: `第 ${pagination.value?.page ?? 1} 页`,
   },
   {
-    label: '最新期数',
+    label: '本页最新期数',
     value: rows.value.reduce((latest, row) => Math.max(latest, row.episodeNumber), 0),
-    detail: '当前最高编号',
+    detail: '当前页数据',
   },
 ]);
 
-onMounted(async () => {
+const loadRows = async () => {
+  loading.value = true;
+  errorMessage.value = '';
+
   try {
-    rows.value = await adminFetch<AdminGeekDailyListItem[]>('/api/admin/v1/geekdaily');
+    const response = await adminFetchWithMeta<AdminGeekDailyListItem[], PaginatedMeta>(buildRequestPath());
+    rows.value = response.data;
+    pagination.value = response.meta ?? null;
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '无法加载极客日报列表。';
   } finally {
     loading.value = false;
   }
+};
+
+const goToPage = (nextPage: number) => {
+  page.value = nextPage;
+};
+
+watch([() => filters.query, () => filters.status], () => {
+  if (page.value === 1) {
+    void loadRows();
+    return;
+  }
+
+  page.value = 1;
+});
+
+watch(page, () => {
+  void loadRows();
+});
+
+onMounted(() => {
+  void loadRows();
 });
 </script>
 
@@ -77,9 +120,9 @@ onMounted(async () => {
           <div class="panel-toolbar">
             <div>
               <h3>期刊概览</h3>
-              <div class="panel-meta">查看期数库存与累计推荐条目</div>
+              <div class="panel-meta">查看期数库存与分页结果</div>
             </div>
-            <div class="panel-meta">{{ rows.length }} 期内容</div>
+            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 期内容</div>
           </div>
 
           <div class="compact-stat-grid compact-stat-grid-4">
@@ -94,7 +137,7 @@ onMounted(async () => {
         <section class="panel filter-panel">
           <div class="panel-toolbar">
             <h3>筛选</h3>
-            <div class="panel-meta">{{ filteredRows.length }} 期内容</div>
+            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 期内容</div>
           </div>
           <div class="field-grid field-grid-2">
             <label class="field">
@@ -112,7 +155,7 @@ onMounted(async () => {
         </section>
       </div>
 
-      <div v-if="filteredRows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有极客日报内容。</p></div>
+      <div v-if="rows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有极客日报内容。</p></div>
 
       <div v-else class="panel table-panel">
         <table class="data-table dense-table">
@@ -127,7 +170,7 @@ onMounted(async () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="row in filteredRows" :key="row.id">
+            <tr v-for="row in rows" :key="row.id">
               <td>
                 <div class="table-cell-stack">
                   <strong>{{ row.title }}</strong>
@@ -147,6 +190,8 @@ onMounted(async () => {
             </tr>
           </tbody>
         </table>
+
+        <PaginationBar :meta="pagination" :current-count="rows.length" item-label="期" :loading="loading" @change-page="goToPage" />
       </div>
     </template>
   </section>

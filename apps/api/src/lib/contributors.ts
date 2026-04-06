@@ -1,12 +1,20 @@
-import { asc, desc, eq, inArray } from 'drizzle-orm';
+import { asc, count, desc, eq, inArray } from 'drizzle-orm';
 
 import { contributorRoleBindings, contributorRoles, contributors } from '@rebase/db';
-import type { AdminContributorDetailPayload, AdminContributorListItem, AdminContributorRoleRecord, ContributorInput, ContributorRoleInput } from '@rebase/shared';
+import type {
+  AdminContributorDetailPayload,
+  AdminContributorListItem,
+  AdminContributorRoleRecord,
+  ContributorInput,
+  ContributorRoleInput,
+  PaginatedResult,
+} from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { listPublicAssetUrlsById } from './assets.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
+import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
 import { toIsoString } from './utils.js';
 
 const mapRoleRecord = (row: any): AdminContributorRoleRecord => ({
@@ -26,9 +34,11 @@ const contributorRoleMap = async () => {
   return new Map(rows.map((row) => [row.id, row]));
 };
 
-const contributorBindingsMap = async () => {
+const contributorBindingsMap = async (contributorIds?: string[]) => {
   const db = getDb();
-  const rows = await db.select().from(contributorRoleBindings);
+  const rows = contributorIds?.length
+    ? await db.select().from(contributorRoleBindings).where(inArray(contributorRoleBindings.contributorId, contributorIds))
+    : await db.select().from(contributorRoleBindings);
   const result = new Map<string, string[]>();
 
   for (const row of rows) {
@@ -153,24 +163,40 @@ export const updateAdminContributorRole = async (id: string, input: ContributorR
   return mapRoleRecord(updated);
 };
 
-export const listAdminContributors = async (): Promise<AdminContributorListItem[]> => {
+export const listAdminContributors = async (input: PaginationInput = {}): Promise<PaginatedResult<AdminContributorListItem>> => {
   const db = getDb();
-  const [rows, roleMap, bindings] = await Promise.all([
-    db.select().from(contributors).orderBy(asc(contributors.sortOrder), desc(contributors.updatedAt)),
+  const [countRow, roleMap] = await Promise.all([
+    db.select({ value: count() }).from(contributors),
     contributorRoleMap(),
-    contributorBindingsMap(),
   ]);
 
-  return rows.map((row) => ({
-    id: row.id,
-    slug: row.slug,
-    name: row.name,
-    headline: row.headline,
-    status: row.status,
-    roleNames: (bindings.get(row.id) ?? []).map((roleId) => roleMap.get(roleId)?.name ?? '').filter(Boolean),
-    sortOrder: row.sortOrder,
-    updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
-  }));
+  const totalItems = countRow[0]?.value ?? 0;
+  const pagination = resolvePagination(input, totalItems);
+  const rows =
+    totalItems === 0
+      ? []
+      : await db
+          .select()
+          .from(contributors)
+          .orderBy(asc(contributors.sortOrder), desc(contributors.updatedAt))
+          .limit(pagination.pageSize)
+          .offset(pagination.offset);
+
+  const bindings = await contributorBindingsMap(rows.map((row) => row.id));
+
+  return {
+    items: rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      headline: row.headline,
+      status: row.status,
+      roleNames: (bindings.get(row.id) ?? []).map((roleId) => roleMap.get(roleId)?.name ?? '').filter(Boolean),
+      sortOrder: row.sortOrder,
+      updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
+    })),
+    meta: buildPaginatedMeta(pagination),
+  };
 };
 
 export const getAdminContributor = async (id: string): Promise<AdminContributorDetailPayload | null> => {
@@ -178,7 +204,7 @@ export const getAdminContributor = async (id: string): Promise<AdminContributorD
   const [rows, roles, bindings] = await Promise.all([
     db.select().from(contributors).where(eq(contributors.id, id)).limit(1),
     listAdminContributorRoles(),
-    contributorBindingsMap(),
+    contributorBindingsMap([id]),
   ]);
   const row = rows[0] ?? null;
   if (!row) {

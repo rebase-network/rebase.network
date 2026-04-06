@@ -95,7 +95,7 @@ const loadArticle = async () => {
   resetFeedback();
   loading.value = true;
   try {
-    assets.value = await adminFetch<AdminAssetRecord[]>('/api/admin/v1/assets');
+    assets.value = await adminFetch<AdminAssetRecord[]>('/api/admin/v1/assets?page=1&pageSize=200');
 
     if (isNew.value) {
       article.value = null;

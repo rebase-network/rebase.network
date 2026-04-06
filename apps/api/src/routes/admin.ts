@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 
 import {
+  assetStatusValues,
+  contentStatusValues,
   validateAboutPageInput,
   validateArticleInput,
   validateAssetInput,
@@ -27,6 +29,7 @@ import { createAdminJob, getAdminJob, listAdminJobs, publishAdminJob, updateAdmi
 import { getAdminSite, updateAboutPage, updateHomePage, updateSiteSettings } from '../lib/site.js';
 import { createAdminStaff, getAdminStaff, listAdminRoles, listAdminStaff, updateAdminStaff } from '../lib/staff.js';
 import { getAdminMePayload, requireActiveStaff, type AppVariables } from '../middleware/auth.js';
+import { readPaginationInput } from '../lib/pagination.js';
 
 export const adminRoutes = new Hono<{ Variables: AppVariables }>();
 
@@ -54,6 +57,9 @@ const expectValid = <T>(c: any, result: { valid: boolean; data?: T; issues?: { p
 };
 
 const readOptionalString = (value: FormDataEntryValue | null) => (typeof value === 'string' ? value : '');
+const readEnumQueryValue = <T extends readonly string[]>(value: string | undefined, allowed: T): T[number] | undefined =>
+  value && (allowed as readonly string[]).includes(value) ? (value as T[number]) : undefined;
+const readAssetVisibility = (value: string | undefined) => (value === 'public' || value === 'private' ? value : undefined);
 
 adminRoutes.use('*', requireActiveStaff());
 
@@ -74,7 +80,14 @@ adminRoutes.patch('/site/about', requireActiveStaff('site.manage'), async (c) =>
   return c.json(ok(await updateAboutPage(payload, getAuditActor(c))));
 });
 
-adminRoutes.get('/articles', requireActiveStaff('article.read'), async (c) => c.json(ok(await listAdminArticles())));
+adminRoutes.get('/articles', requireActiveStaff('article.read'), async (c) => {
+  const result = await listAdminArticles({
+    ...readPaginationInput({ page: c.req.query('page'), pageSize: c.req.query('pageSize') }),
+    query: c.req.query('query') ?? '',
+    status: readEnumQueryValue(c.req.query('status'), contentStatusValues),
+  });
+  return c.json(ok(result.items, result.meta));
+});
 adminRoutes.post('/articles', requireActiveStaff('article.write'), async (c) => {
   const payload = expectValid(c, validateArticleInput(await c.req.json().catch(() => null)));
   return c.json(ok(await createAdminArticle(payload, getAuditActor(c))), 201);
@@ -93,7 +106,14 @@ adminRoutes.patch('/articles/:id', requireActiveStaff('article.write'), async (c
 adminRoutes.post('/articles/:id/publish', requireActiveStaff('article.publish'), async (c) => c.json(ok(await publishAdminArticle(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.post('/articles/:id/archive', requireActiveStaff('article.publish'), async (c) => c.json(ok(await archiveAdminArticle(c.req.param('id'), getAuditActor(c)))));
 
-adminRoutes.get('/jobs', requireActiveStaff('job.read'), async (c) => c.json(ok(await listAdminJobs())));
+adminRoutes.get('/jobs', requireActiveStaff('job.read'), async (c) => {
+  const result = await listAdminJobs({
+    ...readPaginationInput({ page: c.req.query('page'), pageSize: c.req.query('pageSize') }),
+    query: c.req.query('query') ?? '',
+    status: readEnumQueryValue(c.req.query('status'), contentStatusValues),
+  });
+  return c.json(ok(result.items, result.meta));
+});
 adminRoutes.post('/jobs', requireActiveStaff('job.write'), async (c) => {
   const payload = expectValid(c, validateJobInput(await c.req.json().catch(() => null)));
   return c.json(ok(await createAdminJob(payload, getAuditActor(c))), 201);
@@ -112,7 +132,14 @@ adminRoutes.patch('/jobs/:id', requireActiveStaff('job.write'), async (c) => {
 adminRoutes.post('/jobs/:id/publish', requireActiveStaff('job.publish'), async (c) => c.json(ok(await publishAdminJob(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.post('/jobs/:id/archive', requireActiveStaff('job.publish'), async (c) => c.json(ok(await archiveAdminJob(c.req.param('id'), getAuditActor(c)))));
 
-adminRoutes.get('/events', requireActiveStaff('event.read'), async (c) => c.json(ok(await listAdminEvents())));
+adminRoutes.get('/events', requireActiveStaff('event.read'), async (c) => {
+  const result = await listAdminEvents({
+    ...readPaginationInput({ page: c.req.query('page'), pageSize: c.req.query('pageSize') }),
+    query: c.req.query('query') ?? '',
+    status: readEnumQueryValue(c.req.query('status'), contentStatusValues),
+  });
+  return c.json(ok(result.items, result.meta));
+});
 adminRoutes.post('/events', requireActiveStaff('event.write'), async (c) => {
   const payload = expectValid(c, validateEventInput(await c.req.json().catch(() => null)));
   return c.json(ok(await createAdminEvent(payload, getAuditActor(c))), 201);
@@ -140,7 +167,10 @@ adminRoutes.patch('/contributors/roles/:id', requireActiveStaff('contributor.wri
   const payload = expectValid(c, validateContributorRoleInput(await c.req.json().catch(() => null)));
   return c.json(ok(await updateAdminContributorRole(c.req.param('id'), payload, getAuditActor(c))));
 });
-adminRoutes.get('/contributors', requireActiveStaff('contributor.read'), async (c) => c.json(ok(await listAdminContributors())));
+adminRoutes.get('/contributors', requireActiveStaff('contributor.read'), async (c) => {
+  const result = await listAdminContributors(readPaginationInput({ page: c.req.query('page'), pageSize: c.req.query('pageSize') }));
+  return c.json(ok(result.items, result.meta));
+});
 adminRoutes.post('/contributors', requireActiveStaff('contributor.write'), async (c) => {
   const payload = expectValid(c, validateContributorInput(await c.req.json().catch(() => null)));
   return c.json(ok(await createAdminContributor(payload, getAuditActor(c))), 201);
@@ -157,7 +187,14 @@ adminRoutes.patch('/contributors/:id', requireActiveStaff('contributor.write'), 
   return c.json(ok(await updateAdminContributor(c.req.param('id'), payload, getAuditActor(c))));
 });
 
-adminRoutes.get('/geekdaily', requireActiveStaff('geekdaily.read'), async (c) => c.json(ok(await listAdminGeekDailyEpisodes())));
+adminRoutes.get('/geekdaily', requireActiveStaff('geekdaily.read'), async (c) => {
+  const result = await listAdminGeekDailyEpisodes({
+    ...readPaginationInput({ page: c.req.query('page'), pageSize: c.req.query('pageSize') }),
+    query: c.req.query('query') ?? '',
+    status: readEnumQueryValue(c.req.query('status'), contentStatusValues),
+  });
+  return c.json(ok(result.items, result.meta));
+});
 adminRoutes.post('/geekdaily', requireActiveStaff('geekdaily.write'), async (c) => {
   const payload = expectValid(c, validateGeekDailyEpisodeInput(await c.req.json().catch(() => null)));
   return c.json(ok(await createAdminGeekDailyEpisode(payload, getAuditActor(c))), 201);
@@ -204,7 +241,15 @@ adminRoutes.post('/assets/upload', requireActiveStaff('asset.manage'), async (c)
     201,
   );
 });
-adminRoutes.get('/assets', requireActiveStaff('asset.manage'), async (c) => c.json(ok(await listAdminAssets())));
+adminRoutes.get('/assets', requireActiveStaff('asset.manage'), async (c) => {
+  const result = await listAdminAssets({
+    ...readPaginationInput({ page: c.req.query('page'), pageSize: c.req.query('pageSize') }),
+    query: c.req.query('query') ?? '',
+    status: readEnumQueryValue(c.req.query('status'), assetStatusValues),
+    visibility: readAssetVisibility(c.req.query('visibility')),
+  });
+  return c.json(ok(result.items, result.meta));
+});
 adminRoutes.post('/assets', requireActiveStaff('asset.manage'), async (c) => {
   const payload = expectValid(c, validateAssetInput(await c.req.json().catch(() => null)));
   return c.json(ok(await createAdminAsset(payload, getAuditActor(c))), 201);
@@ -222,7 +267,10 @@ adminRoutes.patch('/assets/:id', requireActiveStaff('asset.manage'), async (c) =
 });
 
 adminRoutes.get('/roles', requireActiveStaff('staff.manage'), async (c) => c.json(ok(await listAdminRoles())));
-adminRoutes.get('/staff', requireActiveStaff('staff.manage'), async (c) => c.json(ok(await listAdminStaff())));
+adminRoutes.get('/staff', requireActiveStaff('staff.manage'), async (c) => {
+  const result = await listAdminStaff(readPaginationInput({ page: c.req.query('page'), pageSize: c.req.query('pageSize') }));
+  return c.json(ok(result.items, result.meta));
+});
 adminRoutes.post('/staff', requireActiveStaff('staff.manage'), async (c) => {
   const payload = expectValid(c, validateStaffCreateInput(await c.req.json().catch(() => null)));
   return c.json(ok(await createAdminStaff(payload, getAuditActor(c))), 201);
@@ -239,7 +287,13 @@ adminRoutes.patch('/staff/:id', requireActiveStaff('staff.manage'), async (c) =>
   return c.json(ok(await updateAdminStaff(c.req.param('id'), payload, getAuditActor(c))));
 });
 
-adminRoutes.get('/audit', requireActiveStaff('audit_log.read'), async (c) => c.json(ok(await listAuditEntries())));
+adminRoutes.get('/audit', requireActiveStaff('audit_log.read'), async (c) => {
+  const result = await listAuditEntries({
+    ...readPaginationInput({ page: c.req.query('page'), pageSize: c.req.query('pageSize') }),
+    query: c.req.query('query') ?? '',
+  });
+  return c.json(ok(result.items, result.meta));
+});
 
 adminRoutes.onError((error, c) => {
   try {

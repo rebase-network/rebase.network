@@ -88,7 +88,7 @@ const loadRecord = async () => {
   resetFeedback();
   loading.value = true;
   try {
-    assets.value = await adminFetch<AdminAssetRecord[]>('/api/admin/v1/assets');
+    assets.value = await adminFetch<AdminAssetRecord[]>('/api/admin/v1/assets?page=1&pageSize=200');
 
     if (isNew.value) {
       availableRoles.value = await adminFetch<AdminContributorRoleRecord[]>('/api/admin/v1/contributors/roles');

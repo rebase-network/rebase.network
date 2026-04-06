@@ -1,29 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
-import type { AdminAuditRecord } from '@rebase/shared';
+import { defaultAdminPageSize, type AdminAuditRecord, type PaginatedMeta } from '@rebase/shared';
 
-import { adminFetch } from '../lib/api';
+import PaginationBar from '../components/PaginationBar.vue';
+import { adminFetchWithMeta } from '../lib/api';
 import { formatAuditAction, formatAuditSummary, formatAuditTargetType, formatDateTime } from '../lib/format';
 
 const rows = ref<AdminAuditRecord[]>([]);
+const pagination = ref<PaginatedMeta | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
 const query = ref('');
-
-const filteredRows = computed(() => {
-  const value = query.value.trim().toLowerCase();
-
-  return rows.value.filter((row) => {
-    if (!value) {
-      return true;
-    }
-
-    return [row.action, row.targetType, row.summary, row.actorDisplayName ?? '', row.actorEmail ?? ''].some((item) =>
-      item.toLowerCase().includes(value),
-    );
-  });
-});
+const page = ref(1);
 
 const auditStats = computed(() => {
   const today = new Date().toDateString();
@@ -32,23 +21,23 @@ const auditStats = computed(() => {
   return [
     {
       label: '日志总数',
-      value: rows.value.length,
+      value: pagination.value?.totalAllItems ?? pagination.value?.totalItems ?? rows.value.length,
       detail: '全部审计记录',
     },
     {
       label: '筛选结果',
-      value: filteredRows.value.length,
+      value: pagination.value?.totalItems ?? rows.value.length,
       detail: '当前搜索结果',
     },
     {
-      label: '今日操作',
-      value: rows.value.filter((row) => new Date(row.createdAt).toDateString() === today).length,
-      detail: '当天新增记录',
+      label: '当前页',
+      value: rows.value.length,
+      detail: `第 ${pagination.value?.page ?? 1} 页`,
     },
     {
-      label: '操作人员',
+      label: '本页操作者',
       value: actorCount,
-      detail: '涉及账号数',
+      detail: rows.value.filter((row) => new Date(row.createdAt).toDateString() === today).length ? '含今日记录' : '当前页统计',
     },
   ];
 });
@@ -68,17 +57,53 @@ const emptyGuides = [
   },
 ] as const;
 
-onMounted(async () => {
+const buildRequestPath = () => {
+  const params = new URLSearchParams({
+    page: String(page.value),
+    pageSize: String(defaultAdminPageSize),
+  });
+
+  if (query.value.trim()) {
+    params.set('query', query.value.trim());
+  }
+
+  return `/api/admin/v1/audit?${params.toString()}`;
+};
+
+const loadRows = async () => {
   loading.value = true;
   errorMessage.value = '';
 
   try {
-    rows.value = await adminFetch<AdminAuditRecord[]>('/api/admin/v1/audit');
+    const response = await adminFetchWithMeta<AdminAuditRecord[], PaginatedMeta>(buildRequestPath());
+    rows.value = response.data;
+    pagination.value = response.meta ?? null;
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '无法加载审计日志。';
   } finally {
     loading.value = false;
   }
+};
+
+const goToPage = (nextPage: number) => {
+  page.value = nextPage;
+};
+
+watch(query, () => {
+  if (page.value === 1) {
+    void loadRows();
+    return;
+  }
+
+  page.value = 1;
+});
+
+watch(page, () => {
+  void loadRows();
+});
+
+onMounted(() => {
+  void loadRows();
 });
 </script>
 
@@ -102,7 +127,7 @@ onMounted(async () => {
               <h3>日志概览</h3>
               <div class="panel-meta">查看操作密度与涉及账号</div>
             </div>
-            <div class="panel-meta">{{ rows.length }} 条记录</div>
+            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 条记录</div>
           </div>
 
           <div class="compact-stat-grid compact-stat-grid-4">
@@ -117,7 +142,7 @@ onMounted(async () => {
         <section class="panel filter-panel">
           <div class="panel-toolbar">
             <h3>筛选</h3>
-            <div class="panel-meta">{{ filteredRows.length }} 条记录</div>
+            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 条记录</div>
           </div>
           <label class="field compact-search-field">
             <span>搜索</span>
@@ -127,9 +152,9 @@ onMounted(async () => {
         </section>
       </div>
 
-      <div v-if="filteredRows.length === 0" class="stacked-gap">
+      <div v-if="rows.length === 0" class="stacked-gap">
         <div class="panel empty-state-card">
-          <p>{{ rows.length === 0 ? '当前还没有审计记录。' : '当前没有匹配的审计记录。' }}</p>
+          <p>{{ pagination?.totalAllItems === 0 ? '当前还没有审计记录。' : '当前没有匹配的审计记录。' }}</p>
         </div>
 
         <div class="panel-grid panel-grid-3">
@@ -152,7 +177,7 @@ onMounted(async () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="row in filteredRows" :key="row.id">
+            <tr v-for="row in rows" :key="row.id">
               <td>{{ formatDateTime(row.createdAt) }}</td>
               <td>
                 <div class="table-cell-stack">
@@ -176,6 +201,8 @@ onMounted(async () => {
             </tr>
           </tbody>
         </table>
+
+        <PaginationBar :meta="pagination" :current-count="rows.length" item-label="条" :loading="loading" @change-page="goToPage" />
       </div>
     </template>
   </section>

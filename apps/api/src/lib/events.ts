@@ -1,12 +1,14 @@
-import { asc, desc, eq } from 'drizzle-orm';
+import { asc, count, desc, eq, ilike, or } from 'drizzle-orm';
 
 import { events } from '@rebase/db';
-import type { AdminEventListItem, EventInput } from '@rebase/shared';
+import type { AdminEventListItem, ContentStatus, EventInput, PaginatedResult } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { listPublicAssetUrlsById } from './assets.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
+import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
+import { combineFilters, toContainsPattern } from './query-filters.js';
 import { ensurePublishedAt, toIsoString } from './utils.js';
 
 const mapEventListItem = (row: any): AdminEventListItem => ({
@@ -54,10 +56,41 @@ const ensureUniqueSlug = async (slug: string, currentId?: string) => {
   }
 };
 
-export const listAdminEvents = async (): Promise<AdminEventListItem[]> => {
+interface ListAdminEventsInput extends PaginationInput {
+  query?: string;
+  status?: ContentStatus;
+}
+
+export const listAdminEvents = async (input: ListAdminEventsInput = {}): Promise<PaginatedResult<AdminEventListItem>> => {
   const db = getDb();
-  const rows = await db.select().from(events).orderBy(desc(events.startAt));
-  return rows.map(mapEventListItem);
+  const normalizedQuery = input.query?.trim() ?? '';
+  const where = combineFilters([
+    input.status ? eq(events.status, input.status) : undefined,
+    normalizedQuery
+      ? or(
+          ilike(events.title, toContainsPattern(normalizedQuery)),
+          ilike(events.slug, toContainsPattern(normalizedQuery)),
+          ilike(events.city, toContainsPattern(normalizedQuery)),
+        )
+      : undefined,
+  ]);
+
+  const [countRow, totalAllRow] = await Promise.all([
+    db.select({ value: count() }).from(events).where(where),
+    normalizedQuery || input.status ? db.select({ value: count() }).from(events) : Promise.resolve([{ value: 0 }]),
+  ]);
+
+  const totalItems = countRow[0]?.value ?? 0;
+  const pagination = resolvePagination(input, totalItems);
+  const rows =
+    totalItems === 0
+      ? []
+      : await db.select().from(events).where(where).orderBy(desc(events.startAt)).limit(pagination.pageSize).offset(pagination.offset);
+
+  return {
+    items: rows.map(mapEventListItem),
+    meta: buildPaginatedMeta(pagination, normalizedQuery || input.status ? totalAllRow[0]?.value ?? totalItems : totalItems),
+  };
 };
 
 export const getAdminEvent = async (id: string) => {
