@@ -42,6 +42,13 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
     display: grid;
   }
 
+  .article-card:hover,
+  .article-card:focus-within {
+    transform: translateY(-4px);
+    border-color: rgba(15, 118, 110, 0.2);
+    box-shadow: var(--shadow-strong);
+  }
+
   .cover {
     min-height: 11rem;
   }
@@ -50,12 +57,18 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 260ms ease;
   }
 
   .cover-link {
     display: block;
     overflow: hidden;
     background: rgba(17, 94, 89, 0.08);
+  }
+
+  .article-card:hover .image,
+  .article-card:focus-within .image {
+    transform: scale(1.03);
   }
 
   .fallback {
@@ -103,6 +116,15 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
     margin: 0;
     color: var(--muted);
     line-height: 1.7;
+  }
+
+  h3 a {
+    transition: color 160ms ease;
+  }
+
+  .article-card:hover h3 a,
+  .article-card:focus-within h3 a {
+    color: var(--accent-strong);
   }
 
   .author-line {

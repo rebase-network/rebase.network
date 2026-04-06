@@ -468,6 +468,11 @@ const featuredTags = overview.featuredTags;
     padding: 1.2rem;
   }
 
+  .stat-card {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 251, 249, 0.88));
+  }
+
   .stat-card span,
   .panel-title,
   .search-panel label,
@@ -514,6 +519,8 @@ const featuredTags = overview.featuredTags;
   .search-panel {
     display: grid;
     gap: 0.9rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(240, 249, 246, 0.88));
   }
 
   .search-panel input {
@@ -529,6 +536,8 @@ const featuredTags = overview.featuredTags;
     display: grid;
     gap: 1rem;
     align-content: start;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 249, 239, 0.9));
   }
 
   .chip-row {
@@ -583,9 +592,53 @@ const featuredTags = overview.featuredTags;
     margin-bottom: 1rem;
   }
 
+  .results-head a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.72rem 0.95rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: 0 10px 20px rgba(15, 118, 110, 0.08);
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  }
+
+  .results-head a:hover,
+  .results-head a:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(15, 118, 110, 0.28);
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.12);
+  }
+
   .episode-list {
     display: grid;
     gap: 1rem;
+  }
+
+  .episode-card {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    gap: 0.35rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(253, 250, 244, 0.9));
+  }
+
+  .episode-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 5px;
+    background: linear-gradient(180deg, #0f766e 0%, #f59e0b 100%);
+    opacity: 0.86;
+  }
+
+  .episode-card:hover,
+  .episode-card:focus-within {
+    transform: translateY(-4px);
+    border-color: rgba(15, 118, 110, 0.18);
+    box-shadow: var(--shadow-strong);
   }
 
   .episode-card h2,
@@ -593,6 +646,15 @@ const featuredTags = overview.featuredTags;
     margin: 0.35rem 0 0.65rem;
     font-size: clamp(1.45rem, 2vw, 1.9rem);
     line-height: 1.08;
+  }
+
+  .episode-card h2 a {
+    transition: color 160ms ease;
+  }
+
+  .episode-card:hover h2 a,
+  .episode-card:focus-within h2 a {
+    color: var(--accent-strong);
   }
 
   .meta,
@@ -606,6 +668,10 @@ const featuredTags = overview.featuredTags;
   .body {
     margin-top: 0.75rem;
     white-space: pre-line;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
   }
 
   .episode-card ul {
@@ -613,6 +679,8 @@ const featuredTags = overview.featuredTags;
     margin-top: 0.95rem;
     color: var(--muted);
     line-height: 1.7;
+    columns: 2;
+    column-gap: 1.6rem;
   }
 
   .empty-state {
@@ -632,6 +700,10 @@ const featuredTags = overview.featuredTags;
     .archive-stats,
     .controls-grid {
       grid-template-columns: 1fr;
+    }
+
+    .episode-card ul {
+      columns: 1;
     }
   }
 </style>

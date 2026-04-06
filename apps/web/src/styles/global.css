@@ -9,6 +9,7 @@
   --accent-soft: #d9f1ea;
   --line: rgba(31, 41, 51, 0.12);
   --shadow: 0 18px 40px rgba(26, 40, 34, 0.08);
+  --shadow-strong: 0 24px 56px rgba(26, 40, 34, 0.14);
   --radius-lg: 32px;
   --radius-md: 20px;
   --radius-sm: 14px;
@@ -82,10 +83,11 @@ main {
   box-shadow: var(--shadow);
   backdrop-filter: blur(18px);
   animation: card-rise 420ms ease both;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease, background 180ms ease;
 }
 
 .page-section {
-  padding: 1.5rem 0;
+  padding: 1.8rem 0;
 }
 
 .page-hero {
@@ -313,6 +315,10 @@ h4 {
   :root {
     --radius-lg: 24px;
     --radius-md: 18px;
+  }
+
+  .page-section {
+    padding: 1.45rem 0;
   }
 
   .shell {

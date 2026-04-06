@@ -235,6 +235,54 @@
 - `apps/web/src/pages/contributors.astro`
 - `apps/web/src/styles/global.css`
 
+## 第三轮视觉层打磨
+
+这轮继续只做前台视觉层 refinement，不改路由、数据结构和页面文案语义，重点是让公共页面的层次、动效和归档阅读体验更完整。
+
+### 10. Section CTA 与全站卡片的视觉反馈进一步统一
+
+已完成：
+
+- `SectionHeader` 的右侧跳转入口从普通文本链接提升为轻按钮式 CTA，补上边框、背景和 hover / focus 态。
+- 公共卡片组件补上统一的悬停抬升、阴影加强和标题着色反馈。
+- 有封面的卡片在 hover / focus 时会轻微放大封面图，减少页面“静态列表”感。
+
+涉及文件：
+
+- `apps/web/src/components/SectionHeader.astro`
+- `apps/web/src/components/ArticleCard.astro`
+- `apps/web/src/components/EventCard.astro`
+- `apps/web/src/components/JobCard.astro`
+- `apps/web/src/components/GeekDailyCard.astro`
+- `apps/web/src/components/ContributorCard.astro`
+- `apps/web/src/styles/global.css`
+
+### 11. 首页实时线与 RSS 区块强化视觉节奏
+
+已完成：
+
+- 首页 live wire 条目补上 hover / focus 反馈，和右侧信号面板的其余卡片保持一致。
+- RSS 订阅区块补了更明确的背景层次和链接按钮反馈，降低页面底部“纯链接堆叠”的感觉。
+- feed links 在桌面端改成双列排布，页面结尾的结构更紧凑。
+
+涉及文件：
+
+- `apps/web/src/pages/index.astro`
+
+### 12. GeekDaily 归档页提升扫描效率
+
+已完成：
+
+- 归档统计卡、搜索面板、筛选面板补了更明确的分区背景。
+- 结果头部里的 RSS 入口改成更稳定的 pill CTA 样式。
+- episode 卡片新增左侧强调条和更清晰的 hover 层次。
+- 归档列表中的长正文改为多行截断，避免列表页被整段正文撑得过长。
+- 条目预览列表在桌面端改成双列，移动端自动退回单列，提高长列表的浏览密度。
+
+涉及文件：
+
+- `apps/web/src/pages/geekdaily/index.astro`
+
 ## 结论
 
 `apps/web` 当前已经具备完整可运行的公共站点形态，而且这轮前台修正后，活动详情 URL 规范、Markdown 链接安全、招聘详情降级处理、GeekDaily 搜索文案和语言标记这些明显问题都已经收敛。

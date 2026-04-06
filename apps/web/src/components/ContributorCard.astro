@@ -40,6 +40,15 @@ const bioHtml = renderMarkdown(contributor.bio);
     grid-template-columns: auto 1fr;
     gap: 1rem;
     padding: 1.15rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(247, 252, 250, 0.86));
+  }
+
+  .contributor-card:hover,
+  .contributor-card:focus-within {
+    transform: translateY(-4px);
+    border-color: rgba(15, 118, 110, 0.18);
+    box-shadow: var(--shadow-strong);
   }
 
   .avatar {
