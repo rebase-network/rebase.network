@@ -181,13 +181,15 @@ code {
 .nav-link {
   display: flex;
   align-items: center;
-  min-height: 1.74rem;
-  padding: 0.26rem 0.32rem;
+  position: relative;
+  min-height: 1.82rem;
+  padding: 0.3rem 0.38rem;
   border: 1px solid transparent;
   border-radius: 9px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  line-height: 1.18;
+  font-size: 0.94rem;
+  font-weight: 750;
+  line-height: 1.2;
+  overflow: hidden;
   transition:
     transform 0.18s ease,
     border-color 0.18s ease,
@@ -202,11 +204,25 @@ code {
 
 .nav-link span {
   font: inherit;
+  letter-spacing: 0.01em;
 }
 
 .nav-link.router-link-active {
-  border-color: rgba(15, 109, 100, 0.18);
-  background: rgba(15, 109, 100, 0.1);
+  border-color: rgba(15, 109, 100, 0.22);
+  background: linear-gradient(90deg, rgba(15, 109, 100, 0.16), rgba(15, 109, 100, 0.06));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.nav-link.router-link-active::before {
+  content: '';
+  position: absolute;
+  left: 0.24rem;
+  top: 50%;
+  width: 3px;
+  height: 62%;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: translateY(-50%);
 }
 
 .sidebar-footer {
