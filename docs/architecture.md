@@ -2,64 +2,83 @@
 
 ## Overview
 
-The new Rebase website is designed as a content-first platform.
+The new Rebase website is now designed around a custom community publishing stack.
 
 It separates:
 
 - the public website
-- the content management backend
+- the Rebase admin workspace
+- the Rebase admin and public API layer
 - the media storage layer
 - the primary relational database
 
-This keeps V1 simple while avoiding the scaling limits of a pure full-site static rebuild workflow.
+This keeps the public experience lightweight while giving staff a purpose-built internal tool instead of a generic headless CMS.
+
+## Current Transition State
+
+A temporary Directus-based prototype still exists in the repository.
+
+That prototype was used to unblock the public frontend quickly.
+
+It is no longer the target architecture.
+
+The target architecture for Rebase is the custom admin and API stack described in this document.
 
 ## Technology Stack
 
-- frontend framework: Astro
-- runtime and deployment: Cloudflare Workers
-- CMS: Directus
+- public frontend: Astro
+- public runtime and deployment: Cloudflare Workers
+- admin frontend: Vue
+- admin and public API: Hono
+- auth: Better Auth
 - primary database: PostgreSQL
+- schema and migrations: Drizzle
 - media storage: Cloudflare R2
 
 ## Product and Editorial Defaults
 
 - visual direction: community media
 - editorial format: structured fields plus Markdown bodies
-- GeekDaily search implementation in V1: frontend search
+- GeekDaily search implementation in V1: frontend search backed by a Rebase-owned search index payload
 - future search expansion may use a third-party service or plugin if needed
 
 ## Why This Architecture
 
 ### Astro
 
-- good fit for content-heavy websites
+- good fit for content-heavy public experiences
 - strong component model
 - flexible rendering strategies
 - works well with Cloudflare deployment targets
 
-### Cloudflare Workers
+### Custom Admin Frontend
 
-- suitable for the public website runtime
-- avoids relying on full-site rebuilds for every content update
-- supports edge caching and custom cache control
-- aligns well with the existing Cloudflare ecosystem used for domain and media setup
+- lets Rebase shape the UI around staff tasks such as publishing GeekDaily or jobs
+- avoids forcing operators to think in raw collections and schema tables
+- can reuse proven interaction patterns from the TGO admin implementation
 
-### Directus
+### Hono API Layer
 
-- provides admin login and content editing out of the box
-- offers REST and GraphQL APIs for content delivery
-- allows flexible collection modeling for Rebase-specific content types
+- keeps write access behind explicit authenticated APIs
+- centralizes validation, workflow transitions, permissions, and audit logging
+- gives the public site a stable read API instead of coupling it to admin-only structures
 
-### PostgreSQL
+### Better Auth
 
-- strong fit for Directus
-- safer long-term default than D1 for a CMS-centered content platform
-- supports future reporting, filtering, and relational modeling needs
+- handles identity and sessions cleanly
+- keeps authentication concerns separate from business permissions
+- aligns with the existing custom-admin pattern already proven in TGO
+
+### PostgreSQL plus Drizzle
+
+- strong fit for structured editorial and operational data
+- supports explicit constraints and indexes for publication workflows
+- keeps schema and migrations in version control
 
 ### R2
 
-- keeps content media separate from code
-- fits the Cloudflare-based deployment model
+- keeps staff-managed media separate from code
+- fits the Cloudflare-based delivery model
 - avoids storing operational content media in git history
 
 ## System Diagram
@@ -70,20 +89,26 @@ reader browser
     v
 cloudflare -> astro app on workers
                  |
-                 +--> directus api
-                 |        |
-                 |        v
-                 |     postgresql
+                 v
+            public api
                  |
-                 +--> media urls on r2
+                 v
+             postgresql
+                 |
+                 v
+                 r2
 
-admin browser
+staff browser
     |
     v
- directus admin
+   admin app
     |
     v
-postgresql + r2
+   admin api
+    |
+    +--> better auth
+    +--> postgresql
+    +--> r2
 ```
 
 ## Runtime Model
@@ -92,18 +117,20 @@ postgresql + r2
 
 1. A reader requests a public page.
 2. The Astro app runs on Cloudflare Workers.
-3. The page fetches content from Directus.
-4. Directus reads structured content from PostgreSQL and media metadata from its file layer.
+3. The page fetches published content from the public API.
+4. The API reads structured content from PostgreSQL and media metadata from the assets table.
 5. Media assets are served from R2-backed URLs.
 6. Cloudflare cache is applied to improve repeat access performance.
 
-### Admin Content Flow
+### Staff Content Flow
 
-1. An admin logs into Directus.
-2. The admin creates or updates content.
-3. Directus persists structured data to PostgreSQL.
-4. Uploaded media is stored in R2.
-5. Public pages read the latest published content through Directus APIs.
+1. A staff member logs into the custom admin.
+2. The admin app calls authenticated admin API routes.
+3. The API validates the request, checks permissions, and applies business rules.
+4. Structured data is written to PostgreSQL.
+5. Uploaded media is stored in R2 and referenced by metadata records.
+6. Sensitive actions write audit logs.
+7. The public site reads the latest published content through the public API.
 
 ## Deployment Targets
 
@@ -112,9 +139,15 @@ Recommended public deployment:
 - Astro site on Cloudflare Workers
 - public media served behind Cloudflare on top of R2
 
-Planned CMS and database host target for V1:
+Recommended admin and database host target for V1:
 
 - `rebase@101.33.75.240`
+
+Recommended runtime split on the server:
+
+- `apps/api`
+- PostgreSQL
+- admin static assets or admin app host
 
 ## Rendering Strategy
 
@@ -146,12 +179,13 @@ Public domains:
 
 Operational domains:
 
-- recommended CMS domain: `admin.rebase.network`
+- recommended admin domain: `admin.rebase.network`
 - recommended media domain: `media.rebase.network`
+- optional API domain: `api.rebase.network`
 
 Preferred behavior:
 
-- both domains should access the site directly if practical
+- both public domains should access the site directly if practical
 
 Fallback behavior:
 
@@ -159,19 +193,23 @@ Fallback behavior:
 
 ## API Boundary
 
-### Content Read API
+### Public Read API
 
-V1 should read content directly from Directus APIs.
+V1 should read published content from Rebase-owned public API routes.
 
-There is no need to introduce a custom read BFF before the real complexity appears.
+The public site should not depend on a generic CMS delivery API.
+
+### Admin Write API
+
+All admin writes should go through authenticated admin routes.
+
+There should be no direct browser-to-database write path.
 
 ### Public Write API
 
-V1 does not include event registration forms.
+V1 still does not include event registration forms.
 
 As a result, V1 does not require a public write API for forms or submissions.
-
-This intentionally keeps the first release simpler.
 
 ## Media Strategy
 
@@ -181,14 +219,15 @@ This intentionally keeps the first release simpler.
 - favicon
 - fixed decorative assets
 - default placeholders
+- fallback social card assets
 
 ### Store in R2
 
 - article cover images
 - event posters
-- GeekDaily media
 - contributor avatars
 - job-related media
+- future GeekDaily media attachments if needed
 
 ## Caching Strategy
 
@@ -209,12 +248,12 @@ V1 includes GeekDaily search only.
 Recommended scope:
 
 - search against episode-level metadata
-- include title, summary, tags, date, and episode number
+- include title, summary, tags, date, episode number, and recommendation item titles
 - keep the first version lightweight and practical
 
 V1 does not require a heavyweight dedicated search engine.
 
-V1 should implement GeekDaily search in the frontend.
+V1 should implement GeekDaily search in the frontend while sourcing a Rebase-owned search index payload from the API or build layer.
 
 ## Feed Strategy
 
@@ -228,7 +267,7 @@ Recommended feeds:
 - `/events/rss.xml`
 - `/who-is-hiring/rss.xml`
 
-Feed generation should happen in the public website layer and consume published content from Directus.
+Feed generation should happen in the public website layer and consume published content from the Rebase public API.
 
 GeekDaily feed items should map to episode pages, not individual links inside an episode.
 
@@ -247,9 +286,9 @@ V1 should include a simple health-check strategy for backend services.
 Recommended baseline:
 
 - a public website health endpoint at `/healthz`
-- a CMS health endpoint
-- a local CMS verification command such as `pnpm cms:health`
-- a database reachability check through CMS or deployment tooling
+- an API liveness endpoint such as `/health`
+- an API readiness endpoint such as `/ready`
+- a database reachability check through API readiness or deployment tooling
 - follow-up external periodic checks and notifications may be implemented from another repository with GitHub Actions
 
 ## SEO Baseline
@@ -267,15 +306,15 @@ Recommended baseline:
 ## Security Baseline
 
 - readers never need authentication
-- admin access is handled by Directus
-- CMS credentials never reach the public client
-- media write access stays behind the CMS
+- admin access is handled by Better Auth plus application-level staff permissions
+- admin credentials never reach the public client
+- media write access stays behind authenticated admin APIs
 - public site only consumes published content
 
 ## V1 Non-Goals
 
-- custom member system
 - complex event operations
+- public member system
 - advanced workflow automation
 - full-site search across all collections
 - multi-language content system

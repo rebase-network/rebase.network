@@ -46,6 +46,7 @@ They should cover:
 - key page structure
 - feed output
 - major UI regressions
+- admin and public API basics where applicable
 
 ### 3. Sample Content Validation
 
@@ -99,6 +100,7 @@ Pages that should always be reviewed manually:
 - `/events`
 - a sample event detail page
 - `/contributors`
+- key admin list and editor screens once the custom admin is implemented
 
 ## Automated Checks Plan
 
@@ -114,7 +116,7 @@ Purpose:
 
 - catch syntax and type issues
 - confirm route generation or runtime wiring
-- catch RSS generation failures
+- catch feed generation failures
 
 ### Route Smoke Tests
 
@@ -195,6 +197,17 @@ GeekDaily search checks should verify:
 - empty search results render a clear state
 - search results link to valid episode pages
 
+### Admin Workflow Checks
+
+Once the custom admin lands, add checks for:
+
+- admin login
+- dashboard availability
+- content list loading
+- content editor validation states
+- publish and archive action success paths for key modules
+- permission-based navigation visibility
+
 ### Visual Regression Checks
 
 Visual regression is optional for the earliest phase, but recommended once the main UI is stable.
@@ -206,11 +219,13 @@ Start with screenshots for:
 - GeekDaily detail page
 - hiring list page
 - hiring detail page
+- admin dashboard
+- one admin editor page
 
 Capture at least:
 
 - one desktop viewport
-- one mobile viewport
+- one mobile viewport for public pages
 
 The goal is to catch major layout regressions, not pixel-perfect design policing.
 
@@ -230,6 +245,7 @@ Playwright is a good fit because it can:
 - enter search input
 - capture screenshots
 - verify feed responses
+- cover admin screens later in the project
 
 ## Definition of Done for Testing
 
@@ -247,5 +263,5 @@ After the initial build is stable, QA can be expanded with:
 - richer visual regression coverage
 - accessibility checks
 - performance budget checks
-- schema validation for CMS responses
+- schema validation for admin and public API responses
 - redirect validation for future URL migrations

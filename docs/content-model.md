@@ -2,12 +2,13 @@
 
 ## Goals
 
-The data model should support:
+The Rebase content model should support:
 
 - structured community content
 - simple operator workflows
 - scalable GeekDaily organization
 - stable public URLs
+- a custom admin experience that edits meaningful editorial objects rather than raw tables
 
 ## Editorial Format
 
@@ -18,11 +19,15 @@ Use:
 
 Recommended Markdown-backed fields include:
 
-- `about_page.content`
-- `articles.content`
-- `events.content`
+- `about_page` sections when needed
+- `articles.body`
+- `events.body`
 - `jobs.description`
 - `geekdaily_episodes.body`
+
+Detailed backend schema notes live in `docs/admin-data-model.md`.
+
+This document focuses on public content domains and URL behavior.
 
 ## URL Conventions
 
@@ -68,7 +73,7 @@ Who-Is-Hiring examples:
 - `/who-is-hiring?location=shanghai`
 - `/who-is-hiring?mode=remote`
 
-## CMS Collections
+## Public Content Domains
 
 ### `site_settings`
 
@@ -77,26 +82,29 @@ Singleton for global site configuration.
 Suggested fields:
 
 - `site_name`
-- `site_description`
+- `tagline`
+- `description`
 - `primary_domain`
 - `secondary_domain`
-- `seo_title`
-- `seo_description`
+- `media_domain`
 - `social_links`
+- `footer_groups`
 - `copyright_text`
 
 ### `home_page`
 
-Singleton for home page editorial content.
+Singleton for home-page editorial structure.
 
 Suggested fields:
 
 - `hero_title`
-- `hero_description`
-- `hero_cta_label`
-- `hero_cta_url`
-- `featured_about_excerpt`
-- `featured_sections_enabled`
+- `hero_summary`
+- `hero_primary_cta_label`
+- `hero_primary_cta_url`
+- `hero_secondary_cta_label`
+- `hero_secondary_cta_url`
+- `home_signals`
+- `home_stats`
 
 ### `about_page`
 
@@ -106,7 +114,7 @@ Suggested fields:
 
 - `title`
 - `summary`
-- `content`
+- `sections`
 - `seo_title`
 - `seo_description`
 
@@ -130,20 +138,19 @@ Suggested fields:
 - `apply_note`
 - `contact_label`
 - `contact_value`
-- `logo`
+- `logo_asset_id`
 - `status`
 - `published_at`
 - `expires_at`
-- `sort_date`
 - `seo_title`
 - `seo_description`
 
 Notes:
 
-- `status` should support at least draft, published, archived
 - public path should use `/who-is-hiring/{slug}`
 - `slug` should be stable after publication
 - `description` should support Markdown
+- at least one of `apply_url` or contact info should exist before publication
 
 ### `articles`
 
@@ -154,7 +161,7 @@ Suggested fields:
 - `title`
 - `slug`
 - `summary`
-- `content`
+- `body`
 - `cover_image`
 - `authors`
 - `tags`
@@ -177,20 +184,21 @@ Suggested fields:
 
 - `title`
 - `slug`
-- `event_date`
-- `end_date`
-- `timezone`
+- `start_at`
+- `end_at`
+- `city`
 - `location`
-- `venue_name`
+- `venue`
 - `summary`
-- `content`
+- `body`
 - `cover_image`
 - `registration_mode`
 - `registration_url`
 - `registration_note`
 - `status`
 - `published_at`
-- `is_past_event`
+- `seo_title`
+- `seo_description`
 
 URL rule:
 
@@ -228,230 +236,47 @@ Suggested fields:
 - `twitter_url`
 - `wechat`
 - `telegram`
-- `social_links`
 - `sort_order`
 - `status`
 
 V1 only requires the public list page, not individual contributor detail pages.
 
-### `footer_link_groups`
-
-Groups of footer links.
-
-Suggested fields:
-
-- `name`
-- `slug`
-- `sort_order`
-
-Suggested groups:
-
-- social
-- supported-projects
-- media-resources
-- friendly-links
-
-### `footer_links`
-
-Items within each footer group.
-
-Suggested fields:
-
-- `group`
-- `label`
-- `url`
-- `description`
-- `sort_order`
-- `status`
-
-## GeekDaily Data Model
-
-The provided `geekdaily.csv` shows that one episode contains multiple content items.
-
-That means the public GeekDaily detail page should be modeled by episode, not by row.
-
-### Source Observation
-
-Current CSV structure:
-
-- `episode`
-- `time`
-- `title`
-- `author`
-- `url`
-- `introduce`
-
-Current reference snapshot from `geekdaily.csv`:
-
-- total rows: 5458
-- unique episodes: 1809
-- latest observed episode: 1915
-
-This should be treated as reference data for V1 planning and migration.
-
 ### `geekdaily_episodes`
 
-Episode-level public pages.
+The core GeekDaily episode record.
 
 Suggested fields:
 
 - `episode_number`
 - `slug`
-- `published_at`
 - `title`
 - `summary`
 - `body`
+- `published_at`
 - `tags`
-- `hero_image`
 - `status`
-- `seo_title`
-- `seo_description`
 
-Slug rule:
+Public route:
 
-- generated as `episode-{episode_number}`
-- example: `episode-1915`
+- `/geekdaily/episode-{episode-number}`
 
-Title default during migration:
+### `geekdaily_episode_items`
 
-- `极客日报#{episode_number}`
-
-Public URL:
-
-- `/geekdaily/episode-1915`
-
-### `geekdaily_items`
-
-Items contained within an episode.
+Ordered recommendation items inside an episode.
 
 Suggested fields:
 
-- `episode`
+- `episode_id`
+- `sort_order`
 - `title`
-- `author`
+- `author_name`
 - `source_url`
 - `summary`
-- `sort_order`
 
-CSV mapping:
+## RSS Rules
 
-- `episode` -> `geekdaily_episodes.episode_number`
-- `time` -> `geekdaily_episodes.published_at`
-- `title` -> `geekdaily_items.title`
-- `author` -> `geekdaily_items.author`
-- `url` -> `geekdaily_items.source_url`
-- `introduce` -> `geekdaily_items.summary`
-
-Migration approach:
-
-- the historical `geekdaily.csv` file is the source input
-- generate SQL from CSV after the final schema is defined
-- commit the generated SQL migration files to this repository
-- import all available historical episodes in one batch
-
-## Search Model for GeekDaily
-
-V1 search should be episode-centric.
-
-Recommended searchable fields:
-
-- `episode_number`
-- `title`
-- `summary`
-- `tags`
-- `published_at`
-- optional derived text from item titles
-
-V1 should not rely on a heavyweight full-text architecture.
-
-## RSS Model
-
-### Site Feed
-
-`/rss.xml` should aggregate recent published items from:
-
-- `geekdaily_episodes`
-- `articles`
-- `events`
-- `jobs`
-
-### GeekDaily Feed
-
-`/geekdaily/rss.xml` should publish one feed item per episode.
-
-V1 limit:
-
-- latest 3 published episodes
-
-Suggested feed fields:
-
-- title
-- link
-- description
-- publication date
-- episode number
-
-Description rule:
-
-- use episode body content when available
-- otherwise use a generated body-like summary derived from the episode content
-
-### Articles Feed
-
-`/articles/rss.xml` should publish one feed item per article.
-
-V1 limit:
-
-- latest 3 published articles
-
-Description rule:
-
-- use article summary
-
-### Events Feed
-
-`/events/rss.xml` should publish one feed item per event.
-
-Event feed items should only include public published events.
-
-V1 limit:
-
-- latest 3 published events
-
-Description rule:
-
-- use event summary
-
-### Hiring Feed
-
-`/who-is-hiring/rss.xml` should publish one feed item per public job entry.
-
-V1 limit:
-
-- latest 3 published job entries
-
-Suggested feed fields:
-
-- title
-- link
-- description
-- publication date
-- company name
-- location
-- work mode
-
-Feed links should point to public hiring detail pages, not directly to the external application URL.
-
-Description rule:
-
-- use job summary
-
-## Shared Content Status Convention
-
-Suggested status values:
-
-- `draft`
-- `published`
-- `archived`
-
-This should apply across content collections where relevant.
+- all feeds should only include published content
+- site-wide feed should aggregate the latest 3 public items across core content types
+- GeekDaily feed items should use episode pages
+- hiring feed items should use public hiring detail pages
+- feed descriptions should follow the previously agreed summary/body rules

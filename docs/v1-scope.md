@@ -2,9 +2,9 @@
 
 ## Product Goal
 
-Build a new Rebase community website in this repository.
+Build a new Rebase community website and a maintainable Rebase-specific admin workspace in this repository.
 
-V1 should establish a stable public-facing content platform with a maintainable admin workflow.
+V1 should establish a stable public-facing content platform plus a task-oriented internal tool for community staff.
 
 The first release should prioritize:
 
@@ -13,6 +13,7 @@ The first release should prioritize:
 - strong mobile and desktop reading experience
 - sustainable content publishing
 - scalable handling of GeekDaily history
+- an operator-friendly custom admin instead of a generic headless CMS
 - room for future expansion without overbuilding V1
 
 ## Product Positioning
@@ -23,12 +24,13 @@ V1 is:
 - a content hub
 - an operations-friendly publishing platform
 - a community-media experience that helps readers discover what is happening inside Rebase
+- a custom admin workspace for staff content maintenance
 
 V1 is not:
 
 - a full community member product
 - a complex event operations platform
-- a custom-built CMS
+- a social product with accounts, comments, or feeds for readers
 
 ## Target Users
 
@@ -66,7 +68,7 @@ The home page should surface:
 
 ### Admin Capabilities
 
-Admins should be able to manage:
+Staff should be able to manage:
 
 - home page content
 - about page content
@@ -77,6 +79,8 @@ Admins should be able to manage:
 - contributors
 - footer content
 - media uploads
+- staff roles and permissions
+- audit visibility for sensitive changes
 
 ### Editorial Format
 
@@ -98,10 +102,11 @@ The first version should support search by:
 - tags
 - episode number
 - date
+- recommendation item title
 
 V1 search should optimize for practical discovery, not heavyweight full-text search quality.
 
-The first implementation should use frontend search.
+The first implementation should use frontend search over a Rebase-owned search payload.
 
 If future needs grow, the project may later integrate a third-party search service or plugin.
 
@@ -141,12 +146,12 @@ The following items are explicitly excluded from V1:
 - comments
 - likes, favorites, or notifications
 - multilingual support
-- custom-built admin dashboard
 - complex editorial approval workflows
 - advanced recommendation systems
 - full-site unified search
 - email subscription systems
 - advanced feed distribution workflows
+- member self-service profile editing
 
 ## Event Module Boundary
 
@@ -177,7 +182,7 @@ V1 does not support:
 
 - in-site job application forms
 - applicant tracking
-- recruiter dashboards beyond CMS content management
+- recruiter dashboards beyond staff content management
 
 Suggested hiring detail content includes:
 
@@ -190,13 +195,32 @@ Suggested hiring detail content includes:
 - work location
 - contact or application method
 
+## Admin Experience Boundary
+
+V1 admin should support:
+
+- login for staff
+- task-oriented list and editor screens
+- validation before publish
+- media selection and upload
+- draft, publish, and archive actions
+- role-based access control
+- audit visibility for sensitive operations
+
+V1 admin does not need:
+
+- realtime collaborative editing
+- multi-step approval workflows
+- low-code schema editing
+- page-builder-style drag-and-drop composition
+
 ## Success Criteria
 
 V1 is successful when:
 
 - the core public pages are implemented
 - the site works well on desktop and mobile
-- admins can manage the main content types through the CMS
+- staff can manage the main content types through the custom admin workspace
 - GeekDaily history can be browsed and searched reliably
 - media assets are managed through a stable storage solution
 - the architecture supports long-term operation and expansion

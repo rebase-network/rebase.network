@@ -26,9 +26,12 @@ Examples:
 
 - Start with `README.md` for the current project baseline and document index.
 - Use `docs/v1-scope.md` for product scope and non-goals.
-- Use `docs/architecture.md` for architecture, deployment, caching, and runtime decisions.
-- Use `docs/content-model.md` for CMS collections, URL rules, RSS rules, and migration assumptions.
+- Use `docs/architecture.md` for target architecture, deployment, caching, and runtime decisions.
+- Use `docs/content-model.md` for public content domains, URL rules, RSS rules, and editorial assumptions.
+- Use `docs/admin-architecture.md` for the custom admin, API, auth, and media architecture.
+- Use `docs/admin-information-architecture.md` for operator workflows and admin module structure.
+- Use `docs/admin-data-model.md` for backend tables, workflow states, and validation-critical constraints.
 - Use `docs/implementation-plan.md` for delivery phases and milestone expectations.
 - Use `docs/acceptance-criteria.md` and `docs/quality-assurance.md` for review and validation standards.
 - Use `docs/launch-checklist.md` for launch routes, health checks, domain preparation, and observability notes.
-- Use `docs/local-development.md` for local Directus, PostgreSQL, SQL bootstrap, and testing commands.
+- Use `docs/local-development.md` for transition-era local setup notes and current prototype commands.

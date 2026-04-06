@@ -10,7 +10,7 @@ Each feature batch should be checked from four perspectives:
 
 - content model correctness
 - public page behavior
-- CMS and operations workflow
+- admin workspace and operations workflow
 - release readiness
 
 ## Acceptance Levels
@@ -21,14 +21,14 @@ Use this level to confirm that the data shape supports real editorial work.
 
 Questions to verify:
 
-- does the collection structure match the intended public page structure
+- does the data model match the intended public page structure
 - are required fields present
 - are field names clear and stable
 - are status values consistent
 - are media fields correctly separated from code assets
 - do slug rules and URL rules support long-term stability
 
-This level is complete only when the CMS model is strong enough to hold real content rather than placeholder assumptions.
+This level is complete only when the data model is strong enough to hold real content rather than placeholder assumptions.
 
 ### Level 2: Page Presentation Acceptance
 
@@ -46,12 +46,12 @@ Questions to verify:
 
 ### Level 3: Operations Workflow Acceptance
 
-Use this level to confirm that operators can maintain the site through the CMS.
+Use this level to confirm that operators can maintain the site through the Rebase admin workspace.
 
 Questions to verify:
 
-- can admins log in
-- can admins create, edit, publish, archive, and update content
+- can staff log in
+- can staff create, edit, publish, archive, and update content
 - do published changes appear on the public site
 - do unpublished or archived changes behave correctly
 - do uploaded images appear correctly on the public site
@@ -89,13 +89,13 @@ The About page is accepted when:
 - the core Rebase description is present
 - the page supports long-form content cleanly
 - typography remains readable on mobile
-- metadata can be configured through the CMS
+- metadata can be configured through the admin workspace
 
 ### Who-Is-Hiring List Page
 
 The hiring list page is accepted when:
 
-- jobs render from CMS data
+- jobs render from published admin data
 - active jobs are clearly readable and scannable
 - expired or archived jobs are not incorrectly shown as active
 - filtering or search behavior works if implemented in the current batch
@@ -158,7 +158,7 @@ The article detail page is accepted when:
 - the article URL matches `/articles/{slug}`
 - title, body, author information, and cover image render correctly
 - rich content remains readable on desktop and mobile
-- metadata can be configured through the CMS
+- metadata can be configured through the admin workspace
 
 ### Events List Page
 
@@ -210,9 +210,9 @@ RSS output is accepted when:
 - every feed item has a stable title, link, description, and publication date
 - hiring feed items point to public hiring detail pages
 
-## CMS Workflow Criteria
+## Admin Workflow Criteria
 
-The CMS workflow is accepted when admins can complete the following flows successfully:
+The admin workflow is accepted when staff can complete the following flows successfully:
 
 - create and publish an article
 - create and publish a GeekDaily episode with multiple items
@@ -226,8 +226,8 @@ The CMS workflow is accepted when admins can complete the following flows succes
 
 A feature batch is ready to merge or release when:
 
-- the relevant content model is stable
+- the relevant data model is stable
 - the relevant public pages pass browser review
 - the related automated checks pass
-- the CMS workflow has been validated for the affected feature
+- the admin workflow has been validated for the affected feature
 - unresolved issues are either fixed or explicitly accepted

@@ -11,85 +11,102 @@ Each completed batch of work should be committed promptly following the reposito
 ```text
 apps/
   web/
+  admin/
+  api/
 packages/
+  db/
+  shared/
   ui/
-  types/
 docs/
 ```
 
-V1 does not require a custom admin application in this repository.
+The Rebase admin is now in scope for this repository.
 
-The CMS can be managed as a separately deployed Directus service while schema and integration notes remain documented here.
+The repository should converge on a custom admin and API stack rather than a separately managed headless CMS.
 
-Planned CMS and database deployment target:
+Planned admin/API and database deployment target:
 
 - `rebase@101.33.75.240`
 
-## Phase 1: Foundation
+## Phase 1: Foundation and Direction Reset
 
 Deliverables:
 
-- workspace initialization
-- Astro app bootstrap in `apps/web`
-- shared package scaffolding
-- baseline code quality setup
-- Cloudflare Workers deployment baseline
+- freeze the custom-admin architecture and data model
+- update docs and implementation assumptions
+- preserve the current public frontend baseline while planning the transition away from Directus
 
 Definition of done:
 
-- the repo can install dependencies cleanly
-- the web app can run locally
-- the web app can build and deploy to Workers
+- the custom admin direction is documented clearly
+- the repo has an agreed target structure
+- the transition plan away from the prototype is explicit
 
-## Phase 2: Information Architecture and Design System
+## Phase 2: Backend and Shared Foundations
 
 Deliverables:
 
-- route skeleton for all V1 public pages
-- navigation and footer structure
-- base layout
-- community-media visual direction
-- responsive design tokens
-- reusable content modules
+- scaffold `apps/admin`, `apps/api`, `packages/db`, and `packages/shared`
+- Better Auth baseline
+- RBAC baseline
+- PostgreSQL schema and migrations
+- health and observability baseline
+- media metadata model
 
 Definition of done:
 
-- all agreed V1 routes exist
-- desktop and mobile navigation work
-- the visual system is coherent and reusable
+- staff can authenticate into the admin shell
+- admin and public API baselines run locally
+- schema and migrations are reproducible
 
-## Phase 3: Content Integration
+## Phase 3: Core Rebase Admin Modules
 
 Deliverables:
 
-- Directus content contract definition
-- frontend data fetching layer
-- integration for home, about, jobs, job detail pages, articles, events, contributors
-- R2-backed media handling
-- Markdown rendering pipeline for long-form content
+- site settings and singleton pages
+- articles admin flows
+- jobs admin flows
+- events admin flows
+- contributors and role management
+- media library baseline
+- audit log baseline
 
 Definition of done:
 
-- pages can render CMS-backed content
-- content updates flow through the system correctly
+- staff can create, edit, publish, and archive the core content types through the custom admin
+- public API routes can serve published content for those modules
 
-## Phase 4: GeekDaily Model and Search
+## Phase 4: GeekDaily Workflow
 
 Deliverables:
 
-- episode-based GeekDaily data model
-- list and detail page implementation
+- episode-based GeekDaily schema
+- dedicated episode and item editor UX
 - CSV-informed migration strategy
-- V1 GeekDaily search
-- SQL generation workflow for historical GeekDaily import
+- search index output for frontend search
+- SQL or import workflow for historical GeekDaily archive
 
 Definition of done:
 
 - GeekDaily list and detail pages work with episode-level URLs
-- search can find practical results quickly
-- historical CSV import output can be generated as committed SQL
+- staff can edit episodes through a dedicated workflow rather than generic JSON editing
+- historical CSV import output remains reproducible
 
-## Phase 5: Hardening and Launch Preparation
+## Phase 5: Public Site Data Transition
+
+Deliverables:
+
+- replace Directus-based frontend fetching with Rebase public API fetching
+- preserve existing public routes and RSS behavior
+- keep R2-backed media handling aligned with the new API
+- remove obsolete data access assumptions from the public site
+
+Definition of done:
+
+- pages render published content through Rebase-owned public APIs
+- the public site no longer depends on the temporary Directus prototype
+
+## Phase 6: Hardening and Launch Preparation
 
 Deliverables:
 
@@ -100,6 +117,7 @@ Deliverables:
 - domain configuration checklist
 - analytics and observability basics
 - simple backend health-check baseline
+- deployment runbooks for admin, API, and database
 
 Definition of done:
 
@@ -113,10 +131,12 @@ Definition of done:
 - whether both public domains can remain directly accessible in production
 - exact Cloudflare cache policy by route
 - final analytics stack
+- whether the admin UI is served directly from the server or a separate static host
 
 ## Working Rules During Implementation
 
 - keep V1 scope tight
-- avoid adding registration, user systems, or custom admin features
+- avoid adding registration, user systems, or custom member features beyond staff auth
 - prefer stable and maintainable choices over clever complexity
 - commit after each coherent batch of completed work
+- treat the existing Directus prototype as temporary migration scaffolding, not the end state

@@ -24,6 +24,16 @@ Before production rollout, verify that these routes return successfully:
 - `/sitemap.xml`
 - `/healthz`
 
+## Admin and API Routes
+
+Before production rollout, verify these internal or operational routes:
+
+- admin login page
+- admin dashboard
+- API liveness endpoint such as `/health`
+- API readiness endpoint such as `/ready`
+- API version endpoint such as `/version`
+
 ## Domain Preparation
 
 Primary public domain:
@@ -40,21 +50,24 @@ Media domain:
 - `media.rebase.network` should point to the Cloudflare R2 public bucket after the bucket is created
 - until then, use the default R2 public URL for testing and local integration
 
-Operational domain suggestion:
+Operational domain suggestions:
 
-- `admin.rebase.network` for Directus when production CMS is exposed
+- `admin.rebase.network` for the admin workspace
+- `api.rebase.network` if a dedicated API hostname is preferred
 
 ## Health and Operations Baseline
 
-Current local baseline:
+Recommended baseline:
 
-- `pnpm cms:health` verifies Directus core health and the public website-token read path
-- `/healthz` verifies the public site can still reach Directus and load public site settings
+- `/healthz` verifies the public site runtime
+- `/health` verifies API liveness
+- `/ready` verifies API readiness and key dependencies
+- external monitoring should probe the public site and API regularly
 
 Recommended production follow-up:
 
 - monitor `/healthz` from an external GitHub Actions workflow or another uptime tool
-- monitor the CMS endpoint `/server/health`
+- monitor the API readiness endpoint
 - alert on repeated failures rather than single transient failures
 
 ## SEO and Discovery Baseline
@@ -74,5 +87,5 @@ V1 does not require a finalized frontend analytics stack before launch.
 Current agreement:
 
 - frontend analytics can be added later
-- backend observability starts with health checks and external periodic probing
+- backend observability starts with health checks, audit logs, and external periodic probing
 - deeper metrics, dashboards, and alerts can evolve after the first release

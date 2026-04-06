@@ -2,25 +2,30 @@
 
 This repository contains the new Rebase community website.
 
-The first version focuses on:
+The project is now converging on two parallel deliverables:
 
-- public community content pages
-- an admin-managed CMS workflow
-- a scalable GeekDaily information architecture
-- a maintainable frontend deployed on Cloudflare Workers
+- a public Rebase website for readers
+- a custom Rebase admin workspace for community operators
 
 ## Project Status
 
 The legacy implementation has been removed from the working tree.
 
-Git history is preserved, and the repo is now being rebuilt from scratch with a new architecture.
+Git history is preserved, and the repo is being rebuilt around a Rebase-specific architecture.
 
-## V1 Baseline
+A temporary Directus-based prototype still exists in the repository as a transition baseline for local content verification.
+
+The target architecture is no longer a headless CMS workflow.
+
+## Target V1 Architecture
 
 - frontend: Astro
-- runtime and deployment: Cloudflare Workers
-- CMS: Directus
+- public runtime and deployment: Cloudflare Workers
+- admin frontend: Vue
+- admin and public API: Hono
+- auth: Better Auth
 - primary database: PostgreSQL
+- database toolkit: Drizzle
 - media storage: Cloudflare R2
 - visual direction: community media
 - editorial format: structured fields plus Markdown bodies
@@ -29,7 +34,7 @@ Git history is preserved, and the repo is now being rebuilt from scratch with a 
 
 - V1 is a content platform, not a complex business platform
 - readers do not need to log in
-- admins log in through the CMS backend
+- staff log in through a custom admin workspace
 - event registration is out of scope for V1
 - GeekDaily search is in scope for V1
 - RSS feeds are in scope for V1
@@ -37,19 +42,29 @@ Git history is preserved, and the repo is now being rebuilt from scratch with a 
 - GeekDaily detail URLs use `/geekdaily/episode-{episode-number}`
 - GeekDaily titles default to `极客日报#{episode-number}` during migration
 - RSS feeds default to the latest 3 items per feed in V1
+- the admin experience is task-oriented and Rebase-specific, not collection-oriented
 
 ## Documentation
 
 - `docs/v1-scope.md`: V1 goals, scope, and non-goals
-- `docs/architecture.md`: architecture, runtime model, deployment, and integration decisions
-- `docs/content-model.md`: CMS collections, field design, and URL conventions
+- `docs/architecture.md`: target system architecture, deployment, caching, and runtime decisions
+- `docs/content-model.md`: public content domains, field design, and URL conventions
+- `docs/admin-architecture.md`: custom admin and API architecture for Rebase operators
+- `docs/admin-information-architecture.md`: admin modules, operator workflows, and task-oriented UI structure
+- `docs/admin-data-model.md`: backend tables, relations, constraints, and workflow states
 - `docs/implementation-plan.md`: development phases and milestone plan
-- `docs/acceptance-criteria.md`: module-level acceptance criteria for product, content, and page behavior
+- `docs/acceptance-criteria.md`: module-level acceptance criteria for product, content, and operations
 - `docs/quality-assurance.md`: browser checks, automated checks, sample content, and release validation flow
-- `docs/local-development.md`: local Directus, PostgreSQL, SQL bootstrap, and daily development commands
+- `docs/local-development.md`: current local prototype notes and migration-era development guidance
 - `docs/launch-checklist.md`: launch-critical routes, domain preparation, health checks, and observability baseline
 
 ## Local Development
+
+Current reality in this repository:
+
+- the public Astro site is implemented and runnable today
+- the committed local content prototype still uses Directus bootstrap scripts
+- the long-term direction is to replace that prototype with a custom admin and API stack
 
 Install dependencies:
 
@@ -57,25 +72,20 @@ Install dependencies:
 pnpm install
 ```
 
-Bootstrap the local CMS, seed baseline content, and import the committed GeekDaily archive SQL:
+If you want to verify the current prototype data baseline before the custom admin migration lands:
 
 ```bash
 pnpm cms:bootstrap
-```
-
-Then start the frontend:
-
-```bash
 pnpm dev
 ```
 
-Other useful commands:
+Useful current commands:
 
-- `pnpm cms:logs`: inspect Directus logs
-- `pnpm cms:down`: stop local CMS containers
-- `pnpm cms:health`: verify Directus and the public content read path
-- `pnpm cms:reset`: recreate the local database and reapply the baseline
-- `pnpm test:smoke`: bootstrap CMS, build the app, and run Playwright smoke tests
+- `pnpm cms:logs`: inspect Directus prototype logs
+- `pnpm cms:down`: stop the local prototype containers
+- `pnpm cms:health`: verify the temporary prototype health path
+- `pnpm cms:reset`: recreate the local prototype database and baseline
+- `pnpm test:smoke`: bootstrap the current prototype, build the app, and run Playwright smoke tests
 
 If you receive a refreshed `geekdaily.csv`, regenerate the committed archive SQL with:
 
@@ -85,7 +95,9 @@ pnpm cms:generate:geekdaily
 
 ## Deployment Note
 
-The planned CMS and database deployment target for V1 is the server at `rebase@101.33.75.240`.
+The planned production host target for the Rebase admin/API and database stack is `rebase@101.33.75.240`.
+
+The public website remains planned for Cloudflare Workers.
 
 ## Repository Conventions
 
