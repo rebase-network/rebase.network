@@ -58,15 +58,14 @@ onMounted(() => {
         <RouterLink class="brand" to="/dashboard">
           <div class="brand-mark">RB</div>
           <div>
-            <strong>rebase control desk</strong>
-            <small>community media operations</small>
+            <strong>rebase admin</strong>
+            <small>content operations</small>
           </div>
         </RouterLink>
 
         <nav class="nav sidebar-nav" aria-label="后台导航">
           <RouterLink v-for="item in sidebarModules" :key="item.key" :to="item.href" class="nav-link">
             <span>{{ item.label }}</span>
-            <small>{{ item.summary }}</small>
           </RouterLink>
         </nav>
 

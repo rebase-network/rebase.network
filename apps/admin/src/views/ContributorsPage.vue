@@ -117,7 +117,7 @@ onMounted(() => void loadData());
     <header class="page-header page-header-row">
       <div>
         <h2>社区贡献者</h2>
-        <p>维护贡献者角色分组、个人档案和公开展示顺序。</p>
+        <p>贡献者与角色</p>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link button-primary" to="/contributors/new">新增贡献者</RouterLink>

@@ -284,7 +284,7 @@ onBeforeUnmount(() => {
     <header class="page-header page-header-row">
       <div>
         <h2>媒体库</h2>
-        <p>R2 直传已经接入；上传后的资源可以直接在文章、活动和贡献者内容里复用。</p>
+        <p>上传与复用媒体资源</p>
       </div>
       <div class="page-actions">
         <button class="button-link" type="button" @click="selectNew">新建空记录</button>
@@ -514,7 +514,7 @@ onBeforeUnmount(() => {
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">record status</span>
           <strong>{{ selectedAsset?.status ?? form.status }}</strong>
-          <p>上传入口服务于真实媒体工作流，手动表单用于补充元数据、修正链接与维护状态。</p>
+          <p>{{ form.objectKey || '未设置对象路径' }}</p>
         </article>
         <article v-if="selectedAsset" class="insight-card stacked-gap-tight">
           <span class="eyebrow">updated at</span>

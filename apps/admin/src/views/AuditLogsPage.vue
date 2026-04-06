@@ -44,7 +44,7 @@ onMounted(async () => {
     <header class="page-header">
       <div>
         <h2>审计日志</h2>
-        <p>追踪内容发布、权限调整与关键台账变更，帮助团队定位责任边界与回溯操作历史。</p>
+        <p>关键操作记录</p>
       </div>
     </header>
 

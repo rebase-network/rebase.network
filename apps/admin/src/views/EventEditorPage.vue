@@ -192,7 +192,7 @@ onMounted(() => void loadRecord());
     <header class="page-header page-header-row">
       <div>
         <h2>{{ pageTitle }}</h2>
-        <p>维护当前活动与历史活动，并为公开页提供清晰的时间地点和报名说明。</p>
+        <p>活动信息与报名说明</p>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link" to="/events">返回列表</RouterLink>
@@ -310,7 +310,7 @@ onMounted(() => void loadRecord());
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">public url</span>
           <strong>{{ publicUrl }}</strong>
-          <p>公开页后续可继续升级成带日期前缀的稳定 URL。</p>
+          <p>{{ record ? formatDateTime(record.updatedAt) : '未保存' }}</p>
         </article>
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">registration</span>
@@ -328,7 +328,7 @@ onMounted(() => void loadRecord());
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">updated at</span>
           <strong>{{ formatDateTime(record?.updatedAt) }}</strong>
-          <p>活动发布后建议手动检查时间、地点和报名链接是否正确。</p>
+          <p>{{ [form.city, form.location, form.venue].filter(Boolean).join(' / ') || '未填写地点' }}</p>
         </article>
       </aside>
     </div>

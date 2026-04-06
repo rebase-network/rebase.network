@@ -37,7 +37,7 @@ onMounted(async () => {
     <header class="page-header page-header-row">
       <div>
         <h2>社区活动</h2>
-        <p>维护当前活动、历史活动以及公开报名说明。</p>
+        <p>活动列表</p>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link button-primary" to="/events/new">新增活动</RouterLink>

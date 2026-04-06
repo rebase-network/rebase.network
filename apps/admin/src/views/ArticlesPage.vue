@@ -42,7 +42,7 @@ onMounted(async () => {
     <header class="page-header page-header-row">
       <div>
         <h2>社区文章</h2>
-        <p>面向运营编辑的文章管理列表，支持草稿、发布和归档状态。</p>
+        <p>文章列表</p>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link button-primary" to="/articles/new">新建文章</RouterLink>

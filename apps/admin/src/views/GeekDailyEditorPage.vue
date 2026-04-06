@@ -150,7 +150,7 @@ onMounted(() => void loadRecord());
     <header class="page-header page-header-row">
       <div>
         <h2>{{ pageTitle }}</h2>
-        <p>以 episode 为中心维护每日推荐内容，并服务前台归档、搜索与 RSS 输出。</p>
+        <p>episode 内容与条目</p>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link" to="/geekdaily">返回列表</RouterLink>
@@ -205,17 +205,17 @@ onMounted(() => void loadRecord());
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">public url</span>
           <strong>{{ publicUrl }}</strong>
-          <p>读者通过固定的 episode URL 访问具体期数内容。</p>
+          <p>{{ record ? formatDateTime(record.updatedAt) : '未保存' }}</p>
         </article>
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">items</span>
           <strong>{{ form.items.length }}</strong>
-          <p>推荐条目会同时参与前台搜索索引与 RSS 摘要生成。</p>
+          <p>{{ form.summary || '未填写摘要' }}</p>
         </article>
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">updated at</span>
           <strong>{{ formatDateTime(record?.updatedAt) }}</strong>
-          <p>若导入历史数据，建议优先核对 episode 编号和发布时间。</p>
+          <p>{{ form.tags.join('、') || '未填写标签' }}</p>
         </article>
       </aside>
     </div>

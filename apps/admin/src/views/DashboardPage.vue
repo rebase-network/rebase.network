@@ -46,7 +46,7 @@ onMounted(async () => {
     <header class="page-header page-header-row">
       <div>
         <h2>仪表盘</h2>
-        <p>围绕内容发布、人员协作和站点维护建立的运营工作台。</p>
+        <p>今日工作台</p>
       </div>
 
       <div class="page-actions">
@@ -64,7 +64,7 @@ onMounted(async () => {
     </div>
 
     <template v-else>
-      <div class="panel-grid panel-grid-3">
+      <div class="panel-grid dashboard-stat-grid">
         <article v-for="item in cards" :key="item.label" class="panel stat-panel dashboard-stat-card">
           <span class="dashboard-stat-label">{{ item.label }}</span>
           <strong>{{ item.value }}</strong>
@@ -74,33 +74,33 @@ onMounted(async () => {
       <article class="panel stacked-gap">
         <div class="panel-toolbar">
           <h3>快捷入口</h3>
-          <div class="panel-meta">内容与结构化信息统一维护</div>
+          <div class="panel-meta">常用模块</div>
         </div>
 
         <div class="dashboard-quick-links">
           <RouterLink class="dashboard-quick-link" to="/articles">
             <strong>社区文章</strong>
-            <span>查看草稿、发布文章、维护作者信息</span>
+            <span>草稿、发布、作者</span>
           </RouterLink>
           <RouterLink class="dashboard-quick-link" to="/jobs">
             <strong>Who-Is-Hiring</strong>
-            <span>维护招聘信息与投递方式</span>
+            <span>岗位与投递入口</span>
           </RouterLink>
           <RouterLink class="dashboard-quick-link" to="/events">
             <strong>社区活动</strong>
-            <span>维护活动详情、时间与报名链接</span>
+            <span>时间、地点、报名</span>
           </RouterLink>
           <RouterLink class="dashboard-quick-link" to="/contributors">
             <strong>贡献者</strong>
-            <span>维护角色分组、头像、社交信息与介绍</span>
+            <span>角色、头像、社交</span>
           </RouterLink>
           <RouterLink class="dashboard-quick-link" to="/staff">
             <strong>工作人员</strong>
-            <span>管理后台账号、角色权限和状态</span>
+            <span>账号与权限</span>
           </RouterLink>
           <RouterLink class="dashboard-quick-link" to="/audit-logs">
             <strong>审计日志</strong>
-            <span>查看关键内容与权限变更留痕</span>
+            <span>关键操作留痕</span>
           </RouterLink>
         </div>
       </article>

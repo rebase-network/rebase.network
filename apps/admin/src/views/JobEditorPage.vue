@@ -189,7 +189,7 @@ onMounted(() => void loadRecord());
     <header class="page-header page-header-row">
       <div>
         <h2>{{ pageTitle }}</h2>
-        <p>让招聘信息通过结构化表单维护，而不是零散 issue 或临时文档。</p>
+        <p>招聘信息与投递方式</p>
       </div>
 
       <div class="page-actions">
@@ -311,17 +311,17 @@ onMounted(() => void loadRecord());
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">public url</span>
           <strong>{{ publicUrl }}</strong>
-          <p>对外页面固定为招聘 slug，便于分享和 RSS 订阅。</p>
+          <p>{{ record ? formatDateTime(record.updatedAt) : '未保存' }}</p>
         </article>
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">apply channel</span>
           <strong>{{ form.applyUrl || form.contactValue || '待填写' }}</strong>
-          <p>招聘信息至少需要一个投递入口或联系方式。</p>
+          <p>{{ form.applyNote || form.contactLabel || '未填写补充说明' }}</p>
         </article>
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">updated at</span>
           <strong>{{ formatDateTime(record?.updatedAt) }}</strong>
-          <p>建议更新后尽快检查公开页和 RSS 是否符合预期。</p>
+          <p>{{ [form.workMode, form.location].filter(Boolean).join(' / ') || '未填写工作模式' }}</p>
         </article>
       </aside>
     </div>

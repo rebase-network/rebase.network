@@ -183,7 +183,7 @@ onMounted(() => void loadArticle());
     <header class="page-header page-header-row">
       <div>
         <h2>{{ pageTitle }}</h2>
-        <p>使用 Markdown 和结构化字段维护 Rebase 社区文章。</p>
+        <p>文章内容与元数据</p>
       </div>
 
       <div class="page-actions">
@@ -273,13 +273,13 @@ onMounted(() => void loadArticle());
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">public url</span>
           <strong>{{ publicUrl }}</strong>
-          <p>保存后即可通过固定 URL 在前台访问。</p>
+          <p>{{ article ? formatDateTime(article.updatedAt) : '未保存' }}</p>
         </article>
 
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">publish status</span>
           <strong>{{ form.status }}</strong>
-          <p>最近更新时间：{{ formatDateTime(article?.updatedAt) }}</p>
+          <p>{{ form.authors.map((item) => item.name).filter(Boolean).join('、') || '未填写作者' }}</p>
         </article>
 
         <article v-if="selectedCoverAsset" class="insight-card stacked-gap-tight asset-preview-card">
@@ -294,7 +294,7 @@ onMounted(() => void loadArticle());
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">authors</span>
           <strong>{{ form.authors.map((item) => item.name).filter(Boolean).join('、') || '暂未填写' }}</strong>
-          <p>建议至少保留一位可展示的作者。</p>
+          <p>{{ form.tags.join('、') || '未填写标签' }}</p>
         </article>
       </aside>
     </div>

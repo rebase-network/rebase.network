@@ -37,7 +37,7 @@ onMounted(async () => {
     <header class="page-header page-header-row">
       <div>
         <h2>Who-Is-Hiring</h2>
-        <p>维护社区内招聘岗位、投递方式和到期状态。</p>
+        <p>招聘列表</p>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link button-primary" to="/jobs/new">新增招聘</RouterLink>

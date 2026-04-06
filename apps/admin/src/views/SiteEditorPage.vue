@@ -89,7 +89,7 @@ onMounted(() => void loadSite());
     <header class="page-header page-header-row">
       <div>
         <h2>站点结构与页面</h2>
-        <p>统一维护域名、导航、首页表达、About 页面与 footer 资源链接。</p>
+        <p>站点与页面内容</p>
       </div>
       <div class="page-actions">
         <button class="button-link button-primary" type="button" :disabled="loading || saving" @click="saveAll">
@@ -106,7 +106,7 @@ onMounted(() => void loadSite());
       <section class="panel stacked-gap">
         <div class="panel-toolbar">
           <h3>全局设置</h3>
-          <div class="panel-meta">域名、社交入口与 footer</div>
+          <div class="panel-meta">全局</div>
         </div>
 
         <div class="field-grid field-grid-2">
@@ -152,7 +152,7 @@ onMounted(() => void loadSite());
       <section class="panel stacked-gap">
         <div class="panel-toolbar">
           <h3>首页</h3>
-          <div class="panel-meta">Hero 区域与动态信号卡片</div>
+          <div class="panel-meta">首页</div>
         </div>
 
         <label class="field">
@@ -194,7 +194,7 @@ onMounted(() => void loadSite());
       <section class="panel stacked-gap">
         <div class="panel-toolbar">
           <h3>About 页面</h3>
-          <div class="panel-meta">社区介绍与结构化分段</div>
+          <div class="panel-meta">About</div>
         </div>
 
         <label class="field">

@@ -188,7 +188,7 @@ onMounted(() => {
     <header class="page-header page-header-row">
       <div>
         <h2>工作人员与权限</h2>
-        <p>为社区运营同学分配后台入口、角色权限与账号状态，不再直接面向数据库操作。</p>
+        <p>账号、角色、权限</p>
       </div>
       <div class="page-actions">
         <button class="button-link" type="button" @click="selectNew">新增工作人员</button>
@@ -313,12 +313,12 @@ onMounted(() => {
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">access note</span>
           <strong>{{ form.roleIds.length }} roles selected</strong>
-          <p>建议只赋予实际需要的权限，后续通过审计日志追踪敏感变更。</p>
+          <p>{{ form.roleIds.length }} 个角色 / {{ form.status }}</p>
         </article>
         <article v-if="selectedStaff" class="insight-card stacked-gap-tight">
           <span class="eyebrow">last login</span>
           <strong>{{ formatDateTime(selectedStaff.lastLoginAt) }}</strong>
-          <p>创建完成后即可用对应邮箱和密码登录后台。</p>
+          <p>{{ detail?.staff.email ?? '创建后可登录' }}</p>
         </article>
       </aside>
     </div>

@@ -63,26 +63,24 @@ const signIn = async () => {
         <div class="brand-tag">工作人员后台</div>
         <div class="login-hero-copy">
           <h1>Rebase 社区运营后台</h1>
-          <p>
-            这里不是一个“面向数据库”的控制台，而是面向社区运营工作流的内容工作台。文章、GeekDaily、招聘、活动、贡献者、站点结构与人员权限都在这里统一维护。
-          </p>
+          <p>统一维护文章、GeekDaily、招聘、活动、贡献者与站点内容。</p>
         </div>
 
         <div class="login-highlight-grid">
           <article class="login-highlight-card">
             <span>内容组织</span>
             <strong>首页、About、文章与 GeekDaily</strong>
-            <p>将社区持续更新的内容整理成清晰、可发布、可回看的公共入口。</p>
+            <p>编辑、发布、回看。</p>
           </article>
           <article class="login-highlight-card">
             <span>机会流转</span>
             <strong>招聘、活动与贡献者信息</strong>
-            <p>让运营同学通过结构化表单维护社区机会与参与路径，而不是直接操作数据库。</p>
+            <p>结构化录入与维护。</p>
           </article>
           <article class="login-highlight-card">
             <span>权限边界</span>
             <strong>Better Auth + 角色权限</strong>
-            <p>只有工作人员可以进入后台，所有敏感变更都有可追溯的角色与审计记录。</p>
+            <p>仅工作人员可访问。</p>
           </article>
         </div>
       </aside>
@@ -91,7 +89,7 @@ const signIn = async () => {
         <div class="login-card-head stacked-gap-tight">
           <div class="brand-tag">local bootstrap</div>
           <h2>登录控制台</h2>
-          <p>本地环境已预置开发管理员账号，便于快速验证后台工作流。</p>
+          <p>使用本地默认账号即可进入。</p>
         </div>
 
         <div class="login-credential-note">

@@ -153,7 +153,7 @@ onMounted(() => void loadRecord());
     <header class="page-header page-header-row">
       <div>
         <h2>{{ pageTitle }}</h2>
-        <p>维护贡献者介绍、社交信息、头像和角色分组。</p>
+        <p>资料、角色、头像</p>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link" to="/contributors">返回列表</RouterLink>
@@ -244,12 +244,12 @@ onMounted(() => void loadRecord());
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">roles</span>
           <strong>{{ availableRoles.filter((role) => form.roleIds.includes(role.id)).map((role) => role.name).join('、') || '未分配角色' }}</strong>
-          <p>贡献者可以属于多个角色分组，例如志愿者与 GeekDaily 智囊团。</p>
+          <p>{{ form.roleIds.length }} 个角色</p>
         </article>
         <article class="insight-card stacked-gap-tight">
           <span class="eyebrow">socials</span>
           <strong>{{ form.twitterUrl || form.wechat || form.telegram || '待填写' }}</strong>
-          <p>至少保留一种社区成员可以联系到该贡献者的方式。</p>
+          <p>{{ [form.twitterUrl, form.wechat, form.telegram].filter(Boolean).join(' / ') || '未填写联系方式' }}</p>
         </article>
         <article v-if="selectedAvatarAsset" class="insight-card stacked-gap-tight asset-preview-card">
           <span class="eyebrow">avatar preview</span>
@@ -262,7 +262,7 @@ onMounted(() => void loadRecord());
         <article class="insight-card stacked-gap-tight" v-if="detail">
           <span class="eyebrow">updated at</span>
           <strong>{{ formatDateTime(detail.contributor.updatedAt) }}</strong>
-          <p>建议保存后核对前台展示顺序和角色分组是否正确。</p>
+          <p>排序 {{ form.sortOrder }}</p>
         </article>
       </aside>
     </div>

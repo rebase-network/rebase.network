@@ -37,7 +37,7 @@ onMounted(async () => {
     <header class="page-header page-header-row">
       <div>
         <h2>GeekDaily</h2>
-        <p>以 episode 为核心维护每日推荐内容与公开归档页面。</p>
+        <p>episode 列表</p>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link button-primary" to="/geekdaily/new">新增一期</RouterLink>

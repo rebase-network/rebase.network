@@ -1,7 +1,7 @@
 :root {
   color-scheme: light;
-  --page-bg: #f3ede0;
-  --surface: rgba(255, 252, 246, 0.92);
+  --page-bg: #efe7d7;
+  --surface: rgba(255, 252, 246, 0.94);
   --surface-strong: #fffdf8;
   --surface-accent: rgba(14, 73, 68, 0.08);
   --surface-danger: rgba(167, 52, 32, 0.08);
@@ -15,10 +15,10 @@
   --accent-soft: #dff1eb;
   --danger: #a73420;
   --success: #1e7853;
-  --shadow: 0 24px 60px rgba(33, 41, 35, 0.12);
-  --radius-lg: 24px;
-  --radius-md: 18px;
-  --radius-sm: 14px;
+  --shadow: 0 12px 28px rgba(33, 41, 35, 0.08);
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
   font-family: 'IBM Plex Sans', 'Noto Sans SC', 'Segoe UI', sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -38,9 +38,9 @@ body {
   margin: 0;
   color: var(--text);
   background:
-    radial-gradient(circle at top left, rgba(211, 232, 223, 0.92), transparent 26%),
-    radial-gradient(circle at top right, rgba(245, 205, 153, 0.58), transparent 28%),
-    linear-gradient(180deg, #f3ede0 0%, #f7f3ea 42%, #ece7db 100%);
+    radial-gradient(circle at top left, rgba(211, 232, 223, 0.82), transparent 22%),
+    radial-gradient(circle at top right, rgba(245, 205, 153, 0.48), transparent 24%),
+    linear-gradient(180deg, #efe7d7 0%, #f5f0e6 42%, #ece6da 100%);
 }
 
 body::before {
@@ -49,8 +49,8 @@ body::before {
   inset: 0;
   pointer-events: none;
   background-image: linear-gradient(rgba(15, 109, 100, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 109, 100, 0.035) 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: radial-gradient(circle at center, black 30%, transparent 86%);
+  background-size: 18px 18px;
+  mask-image: radial-gradient(circle at center, black 24%, transparent 82%);
 }
 
 a {
@@ -76,7 +76,7 @@ select {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  padding: 0.78rem 0.92rem;
+  padding: 0.68rem 0.82rem;
   color: var(--text);
   background: rgba(255, 255, 255, 0.88);
   transition:
@@ -99,16 +99,16 @@ textarea {
 }
 
 code {
-  padding: 0.15rem 0.4rem;
+  padding: 0.12rem 0.36rem;
   border-radius: 999px;
   background: rgba(15, 109, 100, 0.1);
   font-family: 'IBM Plex Mono', 'SFMono-Regular', monospace;
-  font-size: 0.92em;
+  font-size: 0.88em;
 }
 
 .app-shell {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: 248px minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -116,37 +116,37 @@ code {
   position: sticky;
   top: 0;
   height: 100vh;
-  padding: 1.25rem;
+  padding: 0.85rem 0 0.85rem 0.85rem;
 }
 
 .sidebar-inner {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 1.2rem;
+  gap: 0.9rem;
   height: 100%;
-  padding: 1.2rem;
+  padding: 0.9rem;
   border: 1px solid rgba(255, 255, 255, 0.32);
-  border-radius: 28px;
-  background: rgba(255, 251, 245, 0.74);
+  border-radius: 20px;
+  background: rgba(255, 251, 245, 0.82);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(14px);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.95rem;
+  gap: 0.7rem;
 }
 
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 1rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.8rem;
   background: linear-gradient(135deg, #0f6d64 0%, #ef9f45 100%);
   color: white;
-  font-size: 1.15rem;
+  font-size: 0.98rem;
   font-weight: 800;
   letter-spacing: 0.08em;
 }
@@ -157,30 +157,32 @@ code {
 }
 
 .brand strong {
-  font-size: 0.94rem;
+  font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
 
 .brand small {
-  margin-top: 0.18rem;
+  margin-top: 0.1rem;
   color: var(--muted);
+  font-size: 0.84rem;
 }
 
 .sidebar-nav {
   display: grid;
   align-content: start;
-  gap: 0.55rem;
+  gap: 0.35rem;
   overflow-y: auto;
   padding-right: 0.15rem;
 }
 
 .nav-link {
-  display: grid;
-  gap: 0.24rem;
-  padding: 0.85rem 0.95rem;
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0.58rem 0.72rem;
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   transition:
     transform 0.18s ease,
     border-color 0.18s ease,
@@ -195,11 +197,7 @@ code {
 
 .nav-link span {
   font-weight: 700;
-}
-
-.nav-link small {
-  color: var(--muted);
-  line-height: 1.45;
+  font-size: 0.92rem;
 }
 
 .nav-link.router-link-active {
@@ -209,24 +207,24 @@ code {
 
 .sidebar-footer {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.55rem;
 }
 
 .sidebar-account {
   display: grid;
   gap: 0.18rem;
-  padding: 0.9rem 1rem;
-  border-radius: var(--radius-md);
+  padding: 0.72rem 0.8rem;
+  border-radius: 12px;
   background: rgba(15, 109, 100, 0.06);
 }
 
 .sidebar-account strong {
-  font-size: 0.98rem;
+  font-size: 0.9rem;
 }
 
 .sidebar-account span {
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.82rem;
 }
 
 .nav-button {
@@ -237,17 +235,17 @@ code {
 
 .main {
   min-width: 0;
-  padding: 1.25rem 1.25rem 1.6rem 0;
+  padding: 0.85rem 0.85rem 0.85rem 0;
 }
 
 .page-header {
   display: grid;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .page-header-row {
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
+  align-items: center;
 }
 
 .page-header h2,
@@ -263,13 +261,14 @@ code {
 .field p {
   margin: 0;
   color: var(--muted);
+  font-size: 0.92rem;
 }
 
 .page-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 0.7rem;
+  gap: 0.45rem;
 }
 
 .button-link,
@@ -278,12 +277,13 @@ code {
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  min-height: 2.75rem;
-  padding: 0.68rem 1rem;
+  min-height: 2.25rem;
+  padding: 0.5rem 0.82rem;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
   color: var(--text);
+  font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
   transition:
@@ -334,12 +334,12 @@ code {
 
 .stacked-gap {
   display: grid;
-  gap: 1rem;
+  gap: 0.8rem;
 }
 
 .stacked-gap-tight {
   display: grid;
-  gap: 0.45rem;
+  gap: 0.3rem;
 }
 
 .panel {
@@ -347,8 +347,8 @@ code {
   border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(16px);
-  padding: 1.2rem;
+  backdrop-filter: blur(14px);
+  padding: 0.92rem;
 }
 
 .panel-danger {
@@ -363,11 +363,15 @@ code {
 
 .panel-grid {
   display: grid;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .panel-grid-3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dashboard-stat-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .panel-toolbar,
@@ -375,7 +379,7 @@ code {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.85rem;
+  gap: 0.6rem;
 }
 
 .field-row-spread {
@@ -398,21 +402,21 @@ code {
 
 .dashboard-stat-card {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.2rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(15, 109, 100, 0.08));
 }
 
 .dashboard-stat-card strong {
-  font-size: clamp(2rem, 2.4vw, 2.6rem);
+  font-size: clamp(1.5rem, 2vw, 2rem);
 }
 
 .dashboard-stat-label,
 .eyebrow,
 .brand-tag,
 .preview-label {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -425,7 +429,7 @@ code {
 .dashboard-quick-links {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.85rem;
+  gap: 0.65rem;
 }
 
 .dashboard-quick-link,
@@ -434,10 +438,10 @@ code {
 .inline-editor-card,
 .login-highlight-card {
   display: grid;
-  gap: 0.45rem;
+  gap: 0.3rem;
   border: 1px solid var(--line);
-  border-radius: 20px;
-  padding: 1rem;
+  border-radius: 14px;
+  padding: 0.82rem;
   background: rgba(255, 255, 255, 0.72);
 }
 
@@ -456,11 +460,11 @@ code {
 
 .editor-grid {
   display: grid;
-  gap: 1rem;
+  gap: 0.8rem;
 }
 
 .editor-grid-focus {
-  grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.9fr);
+  grid-template-columns: minmax(0, 1.85fr) minmax(280px, 0.95fr);
 }
 
 .editor-main,
@@ -470,16 +474,17 @@ code {
 
 .field {
   display: grid;
-  gap: 0.45rem;
+  gap: 0.35rem;
 }
 
 .field span {
   font-weight: 700;
+  font-size: 0.9rem;
 }
 
 .field-grid {
   display: grid;
-  gap: 0.9rem;
+  gap: 0.72rem;
 }
 
 .field-grid-2 {
@@ -491,9 +496,9 @@ code {
 }
 
 .field-shell {
-  padding: 1rem;
+  padding: 0.85rem;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.62);
 }
 
@@ -503,11 +508,11 @@ code {
 
 .filter-panel {
   display: grid;
-  gap: 1rem;
+  gap: 0.7rem;
 }
 
 .compact-search-field {
-  min-width: min(280px, 100%);
+  min-width: min(220px, 100%);
 }
 
 .data-table {
@@ -517,7 +522,7 @@ code {
 
 .data-table th,
 .data-table td {
-  padding: 0.9rem 0.55rem;
+  padding: 0.68rem 0.45rem;
   border-bottom: 1px solid rgba(25, 49, 45, 0.08);
   text-align: left;
   vertical-align: top;
@@ -525,7 +530,7 @@ code {
 
 .data-table th {
   color: var(--muted);
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   letter-spacing: 0.04em;
 }
 
@@ -557,11 +562,11 @@ code {
 .status-pill {
   display: inline-flex;
   align-items: center;
-  padding: 0.32rem 0.62rem;
+  padding: 0.24rem 0.55rem;
   border-radius: 999px;
   background: rgba(15, 109, 100, 0.1);
   color: var(--accent-strong);
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
@@ -582,9 +587,9 @@ code {
 .role-chip {
   display: grid;
   gap: 0.2rem;
-  padding: 0.7rem 0.82rem;
+  padding: 0.58rem 0.68rem;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.8);
 }
 
@@ -624,9 +629,9 @@ code {
 
 .empty-state-card,
 .empty-inline {
-  padding: 1rem;
+  padding: 0.82rem;
   border: 1px dashed rgba(25, 49, 45, 0.22);
-  border-radius: 18px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.46);
 }
 
@@ -634,17 +639,18 @@ code {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.22rem;
+  padding: 0.16rem;
   border-radius: 999px;
   background: rgba(15, 109, 100, 0.08);
 }
 
 .tab-button {
   min-width: 4.4rem;
-  padding: 0.45rem 0.72rem;
+  padding: 0.34rem 0.62rem;
   border-radius: 999px;
   color: var(--muted);
   font-weight: 700;
+  font-size: 0.86rem;
   cursor: pointer;
 }
 
@@ -656,9 +662,9 @@ code {
 
 .markdown-preview {
   min-height: 18rem;
-  padding: 1rem;
+  padding: 0.85rem;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.8);
 }
 
@@ -675,20 +681,20 @@ code {
 
 .login-shell {
   min-height: 100vh;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .login-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
-  gap: 1rem;
-  min-height: calc(100vh - 3rem);
+  gap: 0.8rem;
+  min-height: calc(100vh - 2rem);
 }
 
 .login-hero,
 .login-card {
-  padding: 1.4rem;
-  border-radius: 32px;
+  padding: 1rem;
+  border-radius: 22px;
   border: 1px solid rgba(255, 255, 255, 0.36);
   box-shadow: var(--shadow);
   backdrop-filter: blur(16px);
@@ -697,7 +703,7 @@ code {
 .login-hero {
   display: grid;
   align-content: space-between;
-  gap: 2rem;
+  gap: 1rem;
   background:
     radial-gradient(circle at top left, rgba(15, 109, 100, 0.18), transparent 34%),
     linear-gradient(180deg, rgba(255, 250, 243, 0.9), rgba(239, 249, 245, 0.84));
@@ -711,7 +717,7 @@ code {
 .login-hero-copy h1,
 .login-card h2 {
   margin: 0;
-  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-size: clamp(1.65rem, 3vw, 2.4rem);
   line-height: 1.05;
 }
 
@@ -726,13 +732,22 @@ code {
 }
 
 .login-highlight-card strong {
-  font-size: 1.02rem;
+  font-size: 0.95rem;
 }
 
 .login-credential-note {
-  padding: 0.95rem 1rem;
-  border-radius: 20px;
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
   background: rgba(15, 109, 100, 0.08);
+}
+
+.page-header h2 {
+  font-size: 1.35rem;
+}
+
+.panel h3,
+.field-row h3 {
+  font-size: 1rem;
 }
 
 .login-credential-note p {
@@ -751,6 +766,10 @@ code {
   .dashboard-quick-links,
   .login-highlight-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .editor-grid-focus,
@@ -782,6 +801,10 @@ code {
   .dashboard-quick-links,
   .login-highlight-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .page-actions {
