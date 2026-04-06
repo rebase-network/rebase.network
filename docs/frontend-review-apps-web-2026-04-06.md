@@ -301,6 +301,28 @@
 
 - `apps/web/src/pages/index.astro`
 
+## 第五轮详情页导览与操作信息补强
+
+这轮继续只做前台页面层，重点不再是首页，而是把文章、活动、招聘、GeekDaily 这几类详情页从“只有正文和一个侧栏”提升成更清晰的阅读 / 操作入口。
+
+### 14. 四类详情页补齐 hero meta、操作入口和侧栏分区
+
+已完成：
+
+- 文章、活动、招聘、GeekDaily 详情页的 hero 区统一补上更清晰的 meta pills，让发布时间、地点、模式、期数、阅读时长这些关键信息更早进入首屏。
+- 活动和招聘详情页把最主要的外部动作前移到 hero 区，报名 / 投递不再只藏在右侧说明里。
+- 统一把 detail sidebar 改成深色信息面板，并拆成信息、操作、相关推荐三个 section，减少“长列表 + 默认 bullet”带来的扫描负担。
+- 文章 / 活动 / 招聘 / GeekDaily 的 tags 和关键信息改成更结构化的 chips 与 facts list，侧栏更像导览卡，而不是补充备注。
+- GeekDaily 详情页里的逐条推荐卡片补上 hover / focus 反馈，详情页内部的信息层次和可点性更明确。
+
+涉及文件：
+
+- `apps/web/src/pages/articles/[slug].astro`
+- `apps/web/src/pages/events/[slug].astro`
+- `apps/web/src/pages/who-is-hiring/[slug].astro`
+- `apps/web/src/pages/geekdaily/[slug].astro`
+- `apps/web/src/styles/global.css`
+
 ## 结论
 
 `apps/web` 当前已经具备完整可运行的公共站点形态，而且这轮前台修正后，活动详情 URL 规范、Markdown 链接安全、招聘详情降级处理、GeekDaily 搜索文案和语言标记这些明显问题都已经收敛。

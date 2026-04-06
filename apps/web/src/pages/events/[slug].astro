@@ -21,6 +21,8 @@ const eventSlug = getEventSlugFromRouteParam(Astro.params.slug ?? '');
 const site = await getSiteSettings();
 const event = (Astro.props.event as Event | undefined) ?? (await getEventBySlug(eventSlug));
 const related = (Astro.props.related as Event[] | undefined) ?? [];
+const eventStatusLabel = event ? (event.status === 'upcoming' ? '即将举办' : '活动归档') : '';
+const registrationModeLabel = event ? (event.registrationUrl ? '开放报名' : '仅信息说明') : '';
 
 if (!event) {
   Astro.response.status = 404;
@@ -37,16 +39,31 @@ if (!event) {
   {event ? (
     <>
       <section class="shell page-hero single">
-        <article class="hero-panel card">
-          <p class="hero-kicker">活动详情</p>
-          <h1 class="hero-title">{event.title}</h1>
-          <p class="hero-summary">{event.summary}</p>
+        <article class="hero-panel card detail-hero event-hero">
+          <div class="detail-topline">
+            <p class="hero-kicker light">活动详情</p>
+            <span class="detail-edition">{eventStatusLabel}</span>
+          </div>
+          <h1 class="hero-title light">{event.title}</h1>
+          <p class="hero-summary light">{event.summary}</p>
+          <div class="detail-meta-strip">
+            <span class="detail-meta-pill">{event.city}</span>
+            <span class="detail-meta-pill">{event.venue}</span>
+            <span class="detail-meta-pill">{registrationModeLabel}</span>
+          </div>
+          <p class="detail-hero-note light">{formatEventWindow(event.startAt, event.endAt)} · {event.location}</p>
+          <div class="button-row">
+            {event.registrationUrl && (
+              <a class="button-link" href={event.registrationUrl} target="_blank" rel="noreferrer">外部报名 <span>↗</span></a>
+            )}
+            <a class="button-link secondary" href="/events">返回活动列表</a>
+          </div>
         </article>
       </section>
 
       <section class="shell page-section detail-shell">
-        <article class="card article-detail">
-          <div class="event-meta">
+        <article class="card detail-body-card event-detail">
+          <div class="detail-body-lead event-meta">
             <p>{formatEventWindow(event.startAt, event.endAt)}</p>
             <p>{event.location} · {event.venue}</p>
           </div>
@@ -54,23 +71,53 @@ if (!event) {
         </article>
 
         <aside class="card detail-sidebar">
-          <h2>活动信息</h2>
-          <p>{event.registrationNote ?? '报名方式稍后公布。'}</p>
-          <ul>
-            {event.registrationUrl && (
+          <section class="detail-sidebar-section">
+            <h2>活动信息</h2>
+            <ul class="detail-fact-list">
               <li>
-                <a href={event.registrationUrl} target="_blank" rel="noreferrer">外部报名链接</a>
+                <strong>活动状态</strong>
+                <span>{eventStatusLabel}</span>
               </li>
+              <li>
+                <strong>时间窗口</strong>
+                <span>{formatEventWindow(event.startAt, event.endAt)}</span>
+              </li>
+              <li>
+                <strong>地点</strong>
+                <span>{event.location} · {event.venue}</span>
+              </li>
+            </ul>
+            <p class="detail-sidebar-copy">{event.registrationNote ?? '报名方式稍后公布，当前页面先保证活动信息可读、可归档、可订阅。'}</p>
+            {event.tags.length > 0 && (
+              <ul class="detail-tag-list">
+                {event.tags.map((tag) => <li>{tag}</li>)}
+              </ul>
             )}
-            <li><a href="/events/rss.xml">订阅活动 RSS</a></li>
-            <li><a href="/events">回到活动列表</a></li>
-          </ul>
-          <h2 class="related-title">相关活动</h2>
-          <ul>
-            {related.map((item) => (
-              <li><a href={getEventPath(item.startAt, item.slug)}>{item.title}</a></li>
-            ))}
-          </ul>
+          </section>
+
+          <section class="detail-sidebar-section">
+            <h2>继续追踪</h2>
+            <ul class="detail-sidebar-list">
+              {event.registrationUrl && (
+                <li>
+                  <a href={event.registrationUrl} target="_blank" rel="noreferrer">打开外部报名链接</a>
+                </li>
+              )}
+              <li><a href="/events/rss.xml">订阅活动 RSS</a></li>
+              <li><a href="/events">回到活动列表</a></li>
+            </ul>
+          </section>
+
+          {related.length > 0 && (
+            <section class="detail-sidebar-section">
+              <h2>相关活动</h2>
+              <ul class="related-list">
+                {related.map((item) => (
+                  <li><a href={getEventPath(item.startAt, item.slug)}>{item.title}</a></li>
+                ))}
+              </ul>
+            </section>
+          )}
         </aside>
       </section>
     </>
@@ -90,30 +137,16 @@ if (!event) {
     grid-template-columns: 1fr;
   }
 
-  .article-detail {
-    padding: 1.4rem;
+  .event-hero {
+    color: white;
+    background:
+      radial-gradient(circle at top right, rgba(245, 158, 11, 0.26), transparent 24%),
+      linear-gradient(135deg, rgba(16, 37, 34, 0.98), rgba(17, 94, 89, 0.92));
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 28px 60px rgba(16, 37, 34, 0.24);
   }
 
-  .event-meta {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .event-meta p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.84rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .related-title {
-    margin-top: 1.2rem !important;
+  .light {
+    color: white;
   }
 </style>

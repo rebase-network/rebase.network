@@ -40,16 +40,25 @@ if (!episode) {
   {episode ? (
     <>
       <section class="shell page-hero single">
-        <article class="hero-panel card">
-          <p class="hero-kicker">GeekDaily 详情</p>
-          <h1 class="hero-title">{episode.title}</h1>
-          <p class="hero-summary">{episode.summary}</p>
+        <article class="hero-panel card detail-hero episode-hero">
+          <div class="detail-topline">
+            <p class="hero-kicker light">GeekDaily 详情</p>
+            <span class="detail-edition">No. {episode.episodeNumber}</span>
+          </div>
+          <h1 class="hero-title light">{episode.title}</h1>
+          <p class="hero-summary light">{episode.summary}</p>
+          <div class="detail-meta-strip">
+            <span class="detail-meta-pill">{formatDate(episode.publishedAt)}</span>
+            <span class="detail-meta-pill">{episode.items.length} 条推荐</span>
+            <span class="detail-meta-pill">持续归档</span>
+          </div>
+          <p class="detail-hero-note light">这期内容既保留正文，也把逐条推荐保留下来，方便搜索、订阅和回看。</p>
         </article>
       </section>
 
       <section class="shell page-section detail-shell">
-        <article class="card episode-detail">
-          <div class="lead">
+        <article class="card detail-body-card episode-detail">
+          <div class="detail-body-lead lead">
             <p>{formatDate(episode.publishedAt)}</p>
             {episode.tags.length > 0 && (
               <ul>
@@ -77,19 +86,48 @@ if (!episode) {
         </article>
 
         <aside class="card detail-sidebar">
-          <h2>期数信息</h2>
-          <p>{episode.title}</p>
-          <ul>
-            <li>链接规范：<code>{getGeekDailyPath(episode.episodeNumber)}</code></li>
-            <li><a href="/geekdaily/rss.xml">订阅 GeekDaily RSS</a></li>
-            <li><a href="/geekdaily">回到 GeekDaily 列表</a></li>
-          </ul>
-          <h2 class="related-title">相关期数</h2>
-          <ul>
-            {related.map((item) => (
-              <li><a href={getGeekDailyPath(item.episodeNumber)}>{item.title}</a></li>
-            ))}
-          </ul>
+          <section class="detail-sidebar-section">
+            <h2>期数信息</h2>
+            <ul class="detail-fact-list">
+              <li>
+                <strong>发布时间</strong>
+                <span>{formatDate(episode.publishedAt)}</span>
+              </li>
+              <li>
+                <strong>条目数量</strong>
+                <span>{episode.items.length} 条推荐</span>
+              </li>
+              <li>
+                <strong>链接规范</strong>
+                <span><code>{getGeekDailyPath(episode.episodeNumber)}</code></span>
+              </li>
+            </ul>
+            {episode.tags.length > 0 && (
+              <ul class="detail-tag-list">
+                {episode.tags.map((tag) => <li>{tag}</li>)}
+              </ul>
+            )}
+          </section>
+
+          <section class="detail-sidebar-section">
+            <h2>继续追踪</h2>
+            <p class="detail-sidebar-copy">GeekDaily 详情页除了正文，还保留了逐条推荐和固定路径，适合从搜索结果重新进入。</p>
+            <ul class="detail-sidebar-list">
+              <li><a href="/geekdaily/rss.xml">订阅 GeekDaily RSS</a></li>
+              <li><a href="/geekdaily">回到 GeekDaily 列表</a></li>
+            </ul>
+          </section>
+
+          {related.length > 0 && (
+            <section class="detail-sidebar-section">
+              <h2>相关期数</h2>
+              <ul class="related-list">
+                {related.map((item) => (
+                  <li><a href={getGeekDailyPath(item.episodeNumber)}>{item.title}</a></li>
+                ))}
+              </ul>
+            </section>
+          )}
         </aside>
       </section>
     </>
@@ -109,26 +147,17 @@ if (!episode) {
     grid-template-columns: 1fr;
   }
 
-  .episode-detail {
-    padding: 1.4rem;
+  .episode-hero {
+    color: white;
+    background:
+      radial-gradient(circle at top right, rgba(245, 158, 11, 0.24), transparent 24%),
+      linear-gradient(135deg, rgba(67, 32, 14, 0.98), rgba(15, 118, 110, 0.92));
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 28px 60px rgba(39, 26, 18, 0.24);
   }
 
-  .lead {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .lead p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.84rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .light {
+    color: white;
   }
 
   .lead ul {
@@ -163,6 +192,15 @@ if (!episode) {
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.76);
     border: 1px solid rgba(31, 41, 51, 0.08);
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+
+  .item-card:hover,
+  .item-card:focus-within {
+    transform: translateY(-3px);
+    border-color: rgba(15, 118, 110, 0.16);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 18px 32px rgba(15, 118, 110, 0.08);
   }
 
   .item-card span {
@@ -198,9 +236,5 @@ if (!episode) {
     margin-top: 0.65rem;
     color: var(--muted);
     line-height: 1.75;
-  }
-
-  .related-title {
-    margin-top: 1.2rem !important;
   }
 </style>
