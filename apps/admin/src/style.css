@@ -461,8 +461,7 @@ code {
 .dashboard-quick-link,
 .insight-card,
 .card-shell,
-.inline-editor-card,
-.login-highlight-card {
+.inline-editor-card {
   display: grid;
   gap: 0.3rem;
   border: 1px solid var(--line);
@@ -625,8 +624,6 @@ code {
 .panel-actions,
 .login-card-head,
 .login-form,
-.login-highlight-grid,
-.login-hero-copy,
 .login-credential-note,
 .markdown-preview,
 .inline-editor-row {
@@ -900,59 +897,42 @@ code {
 }
 
 .login-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
-  gap: clamp(1rem, 3vw, 2rem);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: min(1180px, 100%);
   min-height: 100vh;
+  margin: 0 auto;
   padding: clamp(1.1rem, 3vw, 2rem);
 }
 
-.login-hero,
 .login-card {
+  width: min(100%, 430px);
   padding: 1rem;
   border-radius: 22px;
-}
-
-.login-hero {
-  display: grid;
-  align-content: center;
-  gap: 1.2rem;
-  padding: clamp(1.2rem, 3vw, 2.2rem) 0 clamp(1rem, 2vw, 1.6rem);
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.login-card {
-  align-self: center;
-  justify-self: end;
-  max-width: 420px;
   background: rgba(255, 252, 246, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.36);
   box-shadow: var(--shadow);
   backdrop-filter: blur(16px);
 }
 
-.login-hero-copy h1,
-.login-card h2 {
-  margin: 0;
-  font-size: clamp(1.65rem, 3vw, 2.4rem);
-  line-height: 1.05;
+.login-card-head {
+  gap: 0.45rem;
 }
 
-.login-hero-copy p,
-.login-highlight-card p,
+.login-card-head h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  line-height: 1.08;
+}
+
+.login-card-head p,
 .login-credential-note p {
   color: var(--muted);
 }
 
-.login-highlight-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.login-highlight-card strong {
-  font-size: 0.95rem;
+.login-card-head p {
+  max-width: 26ch;
 }
 
 .login-credential-note {
@@ -986,8 +966,7 @@ code {
   .dashboard-quick-links,
   .dashboard-quick-links-wide,
   .dashboard-insight-row,
-  .compact-stat-grid-4,
-  .login-highlight-grid {
+  .compact-stat-grid-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -996,8 +975,7 @@ code {
   }
 
   .editor-grid-focus,
-  .editor-grid-summary,
-  .login-layout {
+  .editor-grid-summary {
     grid-template-columns: 1fr;
   }
 
@@ -1031,7 +1009,6 @@ code {
   .dashboard-quick-links-wide,
   .dashboard-insight-row,
   .compact-stat-grid-4,
-  .login-highlight-grid,
   .summary-grid-2 {
     grid-template-columns: 1fr;
   }
@@ -1054,8 +1031,7 @@ code {
 
   .sidebar-inner,
   .panel,
-  .login-card,
-  .login-hero {
+  .login-card {
     border-radius: 22px;
   }
 

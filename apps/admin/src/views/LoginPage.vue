@@ -59,37 +59,11 @@ const signIn = async () => {
 <template>
   <main class="login-shell">
     <section class="login-layout">
-      <aside class="login-hero">
-        <div class="brand-tag">工作人员后台</div>
-        <div class="login-hero-copy">
+      <section class="panel login-card stacked-gap">
+        <div class="login-card-head">
+          <div class="brand-tag">工作人员后台</div>
           <h1>Rebase 社区运营后台</h1>
           <p>统一维护文章、极客日报、招聘、活动、贡献者与站点内容。</p>
-        </div>
-
-        <div class="login-highlight-grid">
-          <article class="login-highlight-card">
-            <span>内容组织</span>
-            <strong>首页、关于页、文章与极客日报</strong>
-            <p>编辑、发布、回看。</p>
-          </article>
-          <article class="login-highlight-card">
-            <span>机会流转</span>
-            <strong>招聘、活动与贡献者信息</strong>
-            <p>结构化录入与维护。</p>
-          </article>
-          <article class="login-highlight-card">
-            <span>权限边界</span>
-            <strong>Better Auth + 角色权限</strong>
-            <p>仅工作人员可访问。</p>
-          </article>
-        </div>
-      </aside>
-
-      <section class="panel login-card stacked-gap">
-        <div class="login-card-head stacked-gap-tight">
-          <div class="brand-tag">本地调试</div>
-          <h2>登录控制台</h2>
-          <p>使用本地默认账号即可进入。</p>
         </div>
 
         <div class="login-credential-note">
