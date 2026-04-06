@@ -130,18 +130,22 @@ const assetStats = computed(() => [
   {
     label: '媒体记录',
     value: rows.value.length,
+    detail: '已登记资源',
   },
   {
     label: '筛选结果',
     value: filteredRows.value.length,
+    detail: '当前列表',
   },
   {
     label: '公开资源',
     value: rows.value.filter((row) => row.visibility === 'public').length,
+    detail: '可直接引用',
   },
   {
     label: '图片资源',
     value: rows.value.filter((row) => row.assetType === 'image').length,
+    detail: '适合页面展示',
   },
 ]);
 
@@ -426,6 +430,7 @@ onBeforeUnmount(() => {
               <article v-for="item in assetStats" :key="item.label" class="compact-stat-card">
                 <span class="compact-stat-label">{{ item.label }}</span>
                 <strong>{{ item.value }}</strong>
+                <small>{{ item.detail }}</small>
               </article>
             </div>
           </section>
@@ -477,7 +482,7 @@ onBeforeUnmount(() => {
                   <th>文件</th>
                   <th>类型</th>
                   <th>状态</th>
-                  <th>更新</th>
+                  <th>更新时间</th>
                   <th></th>
                 </tr>
               </thead>
@@ -793,48 +798,16 @@ onBeforeUnmount(() => {
 <style scoped>
 .asset-table th:first-child,
 .asset-table td:first-child {
-  width: 4.8rem;
-}
-
-.asset-table th,
-.asset-table td {
-  padding: 0.46rem 0.34rem;
-}
-
-.asset-table .table-cell-stack {
-  gap: 0.12rem;
-}
-
-.asset-table .table-cell-stack strong {
-  font-size: 0.88rem;
-  line-height: 1.2;
-}
-
-.asset-table .muted-row {
-  font-size: 0.74rem;
-  line-height: 1.25;
-}
-
-.asset-table .table-action-list {
-  gap: 0.34rem;
-}
-
-.asset-table .table-link {
-  font-size: 0.78rem;
-}
-
-.asset-table .status-pill {
-  padding: 0.18rem 0.48rem;
-  font-size: 0.72rem;
+  width: 5.4rem;
 }
 
 .asset-thumb {
   display: grid;
-  width: 2.9rem;
-  height: 2.9rem;
+  width: 3.45rem;
+  height: 3.45rem;
   place-items: center;
   overflow: hidden;
-  border-radius: 0.78rem;
+  border-radius: 0.9rem;
   background: rgba(15, 118, 110, 0.08);
   color: #0f766e;
   font-size: 0.68rem;
