@@ -762,6 +762,16 @@ code {
   border-top: 1px solid rgba(25, 49, 45, 0.08);
 }
 
+.collapsed-section-note {
+  padding: 0.1rem 0 0.05rem;
+}
+
+.collapsed-section-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
 .footer-link-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

@@ -227,7 +227,7 @@ onMounted(() => void loadSite());
                 </div>
               </div>
 
-              <LinksField v-model="settings.socialLinks" title="社交链接" add-label="新增社交链接" :show-handle="true" />
+              <LinksField v-model="settings.socialLinks" title="社交链接" add-label="新增社交链接" :show-handle="true" :collapsible="true" />
             </article>
 
             <article class="site-section-card">
