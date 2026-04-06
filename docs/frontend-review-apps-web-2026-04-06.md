@@ -283,6 +283,24 @@
 
 - `apps/web/src/pages/geekdaily/index.astro`
 
+## 第四轮首页品牌表达强化
+
+这轮继续只收敛首页，不碰数据接口和后台依赖，目标是把首页从“信息聚合页”再往前推一步，强化成更像社区媒体头版的阅读入口。
+
+### 13. 首页 masthead 与 live desk 的品牌辨识度进一步拉开
+
+已完成：
+
+- 首页 hero 顶部补了 `Rebase Front Page` edition chip、品牌说明和头版式 highlights 区，让首屏更像一张可持续更新的社区 front page。
+- masthead 背景从轻卡片改成更明显的暖色 / teal editorial 渐层，并加入大号 `REBASE` watermark，提升首页第一眼的品牌记忆点。
+- 右侧 live desk 改成深色 signal desk 语气，和左侧 masthead 拉出更明确的功能分工：左边讲“这是一个什么站”，右边讲“现在在发生什么”。
+- hero highlights 直接复用 live wire 的前三条内容，避免新视觉层引入额外维护成本，同时把“实时更新”这一站点特点提前到首屏。
+- 桌面和移动端都补了对应的 responsive 调整，保证新增头版卡片区不会把首页首屏挤坏。
+
+涉及文件：
+
+- `apps/web/src/pages/index.astro`
+
 ## 结论
 
 `apps/web` 当前已经具备完整可运行的公共站点形态，而且这轮前台修正后，活动详情 URL 规范、Markdown 链接安全、招聘详情降级处理、GeekDaily 搜索文案和语言标记这些明显问题都已经收敛。
