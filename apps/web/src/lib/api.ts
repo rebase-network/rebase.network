@@ -16,51 +16,32 @@ const nodeEnv =
     : {};
 
 const API_BASE_URL = (import.meta.env.API_BASE_URL ?? nodeEnv.API_BASE_URL ?? 'http://127.0.0.1:8788').replace(/\/$/, '');
-const requestCache = new Map<string, Promise<unknown>>();
 
 export function getApiBaseUrl() {
   return API_BASE_URL;
 }
 
 export async function fetchPublicApi<T>(pathname: string): Promise<T> {
-  const cacheKey = pathname;
-  const cached = requestCache.get(cacheKey);
+  const url = new URL(pathname, `${API_BASE_URL}/`);
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/json',
+    },
+  });
 
-  if (cached) {
-    return cached as Promise<T>;
+  const text = await response.text();
+  const payload = text ? (JSON.parse(text) as ApiSuccess<T> | ApiErrorShape) : null;
+
+  if (!response.ok || (payload && 'error' in payload)) {
+    const message = payload && 'error' in payload ? payload.error.message : `request failed with status ${response.status}`;
+    throw new Error(`public api request failed for ${url.toString()}: ${message}`);
   }
 
-  const task = (async () => {
-    const url = new URL(pathname, `${API_BASE_URL}/`);
-    const response = await fetch(url, {
-      headers: {
-        Accept: 'application/json',
-      },
-    });
-
-    const text = await response.text();
-    const payload = text ? (JSON.parse(text) as ApiSuccess<T> | ApiErrorShape) : null;
-
-    if (!response.ok || (payload && 'error' in payload)) {
-      const message = payload && 'error' in payload ? payload.error.message : `request failed with status ${response.status}`;
-      throw new Error(`public api request failed for ${url.toString()}: ${message}`);
-    }
-
-    if (!payload || !('data' in payload)) {
-      throw new Error(`public api request failed for ${url.toString()}: missing data field`);
-    }
-
-    return payload.data;
-  })();
-
-  requestCache.set(cacheKey, task);
-
-  try {
-    return await task;
-  } catch (error) {
-    requestCache.delete(cacheKey);
-    throw error;
+  if (!payload || !('data' in payload)) {
+    throw new Error(`public api request failed for ${url.toString()}: missing data field`);
   }
+
+  return payload.data;
 }
 
 export async function fetchApiReady() {

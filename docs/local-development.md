@@ -15,6 +15,8 @@ The active local stack is:
 
 Legacy Directus files still exist in the repository, but only as migration-era reference material.
 
+The public site now runs in Astro server mode with the Cloudflare adapter, so published content changes should appear on the next request instead of waiting for a full static rebuild.
+
 ## One-Time Setup
 
 1. Copy `.env.example` to `.env`

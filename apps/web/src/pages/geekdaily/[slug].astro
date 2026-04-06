@@ -6,27 +6,10 @@ import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getGeekDailyEpisodeBySlug, getGeekDailyEpisodes, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 import { getGeekDailyPath } from '@/lib/paths';
-import type { GeekDailyEpisode } from '@rebase/types';
-
-export async function getStaticPaths() {
-  const episodes = await getGeekDailyEpisodes();
-  return episodes.map((episode, index) => {
-    const related = episodes.slice(index + 1, index + 3);
-
-    return {
-      params: { slug: episode.slug },
-      props: {
-        episode,
-        related: related.length > 0 ? related : episodes.filter((item) => item.slug !== episode.slug).slice(0, 2),
-      },
-    };
-  });
-}
 
 const slug = Astro.params.slug ?? '';
-const site = await getSiteSettings();
-const episode = (Astro.props.episode as GeekDailyEpisode | undefined) ?? (await getGeekDailyEpisodeBySlug(slug));
-const related = (Astro.props.related as GeekDailyEpisode[] | undefined) ?? [];
+const [site, episode, episodes] = await Promise.all([getSiteSettings(), getGeekDailyEpisodeBySlug(slug), getGeekDailyEpisodes()]);
+const related = episode ? episodes.filter((item) => item.slug !== episode.slug).slice(0, 2) : [];
 const episodeBreadcrumbs = episode
   ? [
       { href: '/', label: '首页' },
