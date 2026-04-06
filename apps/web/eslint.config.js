@@ -4,9 +4,20 @@ import astroPlugin from 'eslint-plugin-astro';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 export default [
+  {
+    ignores: ['dist', '.astro', '.wrangler', 'node_modules/.mf'],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...astroPlugin.configs.recommended,
+  {
+    files: ['astro.config.mjs'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+      },
+    },
+  },
   {
     files: ['**/*.astro'],
     rules: {
@@ -23,6 +34,5 @@ export default [
     }
   },
   {
-    ignores: ['dist', '.astro'],
-  }
+  },
 ];
