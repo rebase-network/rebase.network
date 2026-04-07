@@ -1,7 +1,14 @@
 import { asc, count, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 
 import { geekdailyEpisodeItems, geekdailyEpisodes } from '@rebase/db';
-import { getGeekDailyEpisodeSlug, type AdminGeekDailyListItem, type ContentStatus, type GeekDailyEpisodeInput, type PaginatedResult } from '@rebase/shared';
+import {
+  buildGeekDailyBodyMarkdown,
+  getGeekDailyEpisodeSlug,
+  type AdminGeekDailyListItem,
+  type ContentStatus,
+  type GeekDailyEpisodeInput,
+  type PaginatedResult,
+} from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { getDb } from './db.js';
@@ -55,6 +62,9 @@ const getEpisodeRecordBySlug = async (slug: string) => {
   return null;
 };
 
+const getEditors = (value: unknown) =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
+
 const mapEpisodeDetail = (row: any, items: any[]) => ({
   id: row.id,
   slug: getGeekDailyEpisodeSlug(row.episodeNumber),
@@ -62,6 +72,7 @@ const mapEpisodeDetail = (row: any, items: any[]) => ({
   title: row.title,
   summary: row.summary,
   bodyMarkdown: row.bodyMarkdown,
+  editors: getEditors(row.editorsJson),
   tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
   status: row.status,
   publishedAt: toIsoString(row.publishedAt) ?? new Date().toISOString(),
@@ -193,7 +204,8 @@ export const createAdminGeekDailyEpisode = async (input: GeekDailyEpisodeInput, 
       episodeNumber: input.episodeNumber,
       title: input.title,
       summary: input.summary,
-      bodyMarkdown: input.bodyMarkdown,
+      bodyMarkdown: buildGeekDailyBodyMarkdown(input),
+      editorsJson: input.editors,
       tagsJson: input.tags,
       status: input.status,
       publishedAt: new Date(input.publishedAt),
@@ -230,7 +242,8 @@ export const updateAdminGeekDailyEpisode = async (id: string, input: GeekDailyEp
       episodeNumber: input.episodeNumber,
       title: input.title,
       summary: input.summary,
-      bodyMarkdown: input.bodyMarkdown,
+      bodyMarkdown: buildGeekDailyBodyMarkdown(input),
+      editorsJson: input.editors,
       tagsJson: input.tags,
       status: input.status,
       publishedAt: new Date(input.publishedAt),
@@ -322,6 +335,7 @@ export const listPublicGeekDailyEpisodes = async (limit = -1) => {
     title: row.title,
     summary: row.summary,
     publishedAt: toIsoString(row.publishedAt) ?? new Date().toISOString(),
+    editors: getEditors(row.editorsJson),
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
     body: row.bodyMarkdown,
     items: itemsByEpisode.get(row.id) ?? [],
@@ -340,6 +354,7 @@ export const getPublicGeekDailyEpisodeBySlug = async (slug: string) => {
     title: row.title,
     summary: row.summary,
     publishedAt: toIsoString(row.publishedAt) ?? new Date().toISOString(),
+    editors: getEditors(row.editorsJson),
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
     body: row.bodyMarkdown,
     items: itemsByEpisode.get(row.id) ?? [],
@@ -362,6 +377,7 @@ export const getGeekDailySearchDocuments = async () => {
       episode.title,
       episode.summary,
       episode.body,
+      episode.editors.join(' '),
       episode.tags.join(' '),
       ...episode.items.flatMap((item: any) => [item.title, item.authorName, item.summary]),
     ]

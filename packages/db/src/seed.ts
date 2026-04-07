@@ -582,6 +582,7 @@ const seedGeekDaily = async (database: Database) => {
         title: episode.title,
         summary: episode.summary,
         bodyMarkdown: episode.bodyMarkdown,
+        editorsJson: episode.editors,
         tagsJson: episode.tags,
         status: 'published' as const,
         publishedAt: new Date(episode.publishedAt),

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+
 const props = defineProps<{
   modelValue: Array<{ title: string; authorName: string; sourceUrl: string; summary: string }>;
 }>();
@@ -15,6 +17,24 @@ const updateItem = (index: number, key: 'title' | 'authorName' | 'sourceUrl' | '
 
 const addItem = () => emit('update:modelValue', [...props.modelValue, { title: '', authorName: '', sourceUrl: '', summary: '' }]);
 const removeItem = (index: number) => emit('update:modelValue', props.modelValue.filter((_, itemIndex) => itemIndex !== index));
+
+const countNotice = computed(() => {
+  if (props.modelValue.length < 3) {
+    return {
+      tone: 'warning',
+      text: `当前仅 ${props.modelValue.length} 条推荐，建议补足到 3 条。`,
+    };
+  }
+
+  if (props.modelValue.length > 3) {
+    return {
+      tone: 'exception',
+      text: `当前为 ${props.modelValue.length} 条推荐，属于例外期数，请确认后再保存。`,
+    };
+  }
+
+  return null;
+});
 </script>
 
 <template>
@@ -22,6 +42,14 @@ const removeItem = (index: number) => emit('update:modelValue', props.modelValue
     <div class="field-row field-row-spread">
       <h3>推荐条目</h3>
       <button class="button-link" type="button" @click="addItem">新增条目</button>
+    </div>
+
+    <div
+      v-if="countNotice"
+      class="inline-status"
+      :class="countNotice.tone === 'exception' ? 'inline-status-exception' : 'inline-status-warning'"
+    >
+      {{ countNotice.text }}
     </div>
 
     <div v-if="modelValue.length === 0" class="empty-inline">至少添加一条推荐内容。</div>

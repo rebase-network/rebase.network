@@ -1073,6 +1073,26 @@ code {
   background: rgba(255, 255, 255, 0.46);
 }
 
+.inline-status {
+  padding: 0.72rem 0.82rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.inline-status-warning {
+  color: #9a6700;
+  border-color: rgba(217, 119, 6, 0.18);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.inline-status-exception {
+  color: #9f1239;
+  border-color: rgba(225, 29, 72, 0.18);
+  background: rgba(244, 63, 94, 0.11);
+}
+
 .summary-card {
   display: grid;
   gap: 0.45rem;

@@ -17,7 +17,13 @@ const episodeBreadcrumbs = episode
       { label: episode.title, current: true },
     ]
   : [];
-const episodeHeroMeta = episode ? [formatDate(episode.publishedAt), `${episode.items.length} 条推荐`, '持续归档'] : [];
+const episodeHeroMeta = episode
+  ? [
+      formatDate(episode.publishedAt),
+      `${episode.items.length} 条推荐`,
+      episode.editors.length > 0 ? `${episode.editors.length} 位编辑` : '持续归档',
+    ]
+  : [];
 const episodeHeroActions = [
   { href: '/geekdaily/rss.xml', label: '订阅 GeekDaily RSS', showIcon: true },
   { href: '/geekdaily', label: '回到 GeekDaily 列表', secondary: true },
@@ -73,6 +79,7 @@ if (!episode) {
         <article id="episode-body" class="card detail-body-card episode-detail">
           <div class="detail-body-lead lead">
             <p>{formatDate(episode.publishedAt)}</p>
+            {episode.editors.length > 0 && <p>本期编辑：{episode.editors.join('、')}</p>}
             {episode.tags.length > 0 && (
               <ul>
                 {episode.tags.map((tag) => <li>{tag}</li>)}
@@ -118,6 +125,10 @@ if (!episode) {
               <li>
                 <strong>条目数量</strong>
                 <span>{episode.items.length} 条推荐</span>
+              </li>
+              <li>
+                <strong>本期编辑</strong>
+                <span>{episode.editors.length > 0 ? episode.editors.join('、') : '待补充'}</span>
               </li>
               <li>
                 <strong>链接规范</strong>

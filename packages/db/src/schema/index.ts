@@ -330,6 +330,7 @@ export const geekdailyEpisodes = pgTable('geekdaily_episodes', {
   title: text('title').notNull(),
   summary: text('summary').notNull(),
   bodyMarkdown: text('body_markdown').notNull(),
+  editorsJson: jsonb('editors_json').$type<string[]>().notNull(),
   tagsJson: jsonb('tags_json').notNull(),
   status: contentStatusEnum('status').default('draft').notNull(),
   publishedAt: timestamp('published_at', { withTimezone: true }).notNull(),

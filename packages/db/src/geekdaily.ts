@@ -17,6 +17,7 @@ export interface ImportedGeekDailyEpisode {
   summary: string;
   bodyMarkdown: string;
   publishedAt: string;
+  editors: string[];
   tags: string[];
   items: ImportedGeekDailyItem[];
 }
@@ -155,6 +156,7 @@ export function loadGeekDailyArchive(sourceArg = 'geekdaily.csv'): ImportedGeekD
       summary: buildSummary(episode.items),
       bodyMarkdown: buildBody(episodeNumber, episode.items),
       publishedAt: parseDate(episode.publishedAt),
+      editors: [],
       tags: [],
       items: episode.items,
     }))

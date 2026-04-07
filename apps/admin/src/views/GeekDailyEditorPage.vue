@@ -2,38 +2,62 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
-import { contentStatusOptions, getGeekDailyEpisodePath, type AdminGeekDailyRecord } from '@rebase/shared';
+import {
+  contentStatusOptions,
+  extractGeekDailyBodyNote,
+  getGeekDailyEpisodePath,
+  type AdminGeekDailyListItem,
+  type AdminGeekDailyRecord,
+} from '@rebase/shared';
 
 import GeekDailyItemsField from '../components/GeekDailyItemsField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import StringListField from '../components/StringListField.vue';
-import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
+import { adminFetch, adminFetchWithMeta, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime, fromDateTimeInputValue, toDateTimeInputValue } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
+
+interface GeekDailyItemFormState {
+  title: string;
+  authorName: string;
+  sourceUrl: string;
+  summary: string;
+}
 
 interface GeekDailyFormState {
   episodeNumber: number;
   title: string;
   summary: string;
   bodyMarkdown: string;
+  editors: string[];
   tags: string[];
   status: 'draft' | 'published' | 'archived';
   publishedAt: string;
-  items: Array<{ title: string; authorName: string; sourceUrl: string; summary: string }>;
+  items: GeekDailyItemFormState[];
 }
 
 const route = useRoute();
 const router = useRouter();
+
+const createBlankItem = (): GeekDailyItemFormState => ({
+  title: '',
+  authorName: '',
+  sourceUrl: '',
+  summary: '',
+});
+
+const createDefaultItems = () => Array.from({ length: 3 }, () => createBlankItem());
 
 const createBlankForm = (): GeekDailyFormState => ({
   episodeNumber: 0,
   title: '',
   summary: '',
   bodyMarkdown: '',
+  editors: [],
   tags: [],
   status: 'draft',
   publishedAt: '',
-  items: [{ title: '', authorName: '', sourceUrl: '', summary: '' }],
+  items: createDefaultItems(),
 });
 
 const form = reactive<GeekDailyFormState>(createBlankForm());
@@ -44,6 +68,7 @@ const actioning = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const fieldIssues = ref<Record<string, string>>({});
+const suggestedEpisodeNumber = ref(1);
 
 const geekdailyId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => geekdailyId.value.length === 0);
@@ -52,9 +77,11 @@ const pageTitle = computed(() => (isNew.value ? '新增极客日报' : `编辑�
 const itemAuthorSummary = computed(() =>
   Array.from(new Set(form.items.map((item) => item.authorName.trim()).filter(Boolean))).join('、') || '未填写',
 );
+const editorSummary = computed(() => form.editors.map((item) => item.trim()).filter(Boolean).join('、') || '未填写');
 const firstItemTitle = computed(() => form.items.find((item) => item.title.trim())?.title ?? '未填写');
 const tagSummary = computed(() => form.tags.join('、') || '未填写');
-const bodyStatus = computed(() => (form.bodyMarkdown.trim() ? '已补充说明' : '未补充说明'));
+const bodyStatus = computed(() => (form.bodyMarkdown.trim() ? '保存时会拼接补充说明' : '保存时仅写入默认开头和结尾'));
+const episodeSuggestionHint = computed(() => `默认建议：第 ${suggestedEpisodeNumber.value} 期（当前最大值 + 1）`);
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -68,12 +95,26 @@ const applyRecord = (payload: AdminGeekDailyRecord) => {
     episodeNumber: payload.episodeNumber,
     title: payload.title,
     summary: payload.summary,
-    bodyMarkdown: payload.bodyMarkdown,
+    bodyMarkdown: extractGeekDailyBodyNote(payload.bodyMarkdown),
+    editors: payload.editors,
     tags: payload.tags,
     status: payload.status,
     publishedAt: toDateTimeInputValue(payload.publishedAt),
-    items: payload.items.length > 0 ? payload.items : [{ title: '', authorName: '', sourceUrl: '', summary: '' }],
+    items: payload.items.length > 0 ? payload.items : createDefaultItems(),
   });
+};
+
+const suggestNextEpisodeNumber = async () => {
+  try {
+    const response = await adminFetchWithMeta<AdminGeekDailyListItem[]>('/api/admin/v1/geekdaily?page=1&pageSize=1');
+    suggestedEpisodeNumber.value = (response.data[0]?.episodeNumber ?? 0) + 1;
+  } catch {
+    suggestedEpisodeNumber.value = 1;
+  }
+
+  if (isNew.value && form.episodeNumber <= 0) {
+    form.episodeNumber = suggestedEpisodeNumber.value;
+  }
 };
 
 const loadRecord = async () => {
@@ -83,6 +124,7 @@ const loadRecord = async () => {
     if (isNew.value) {
       record.value = null;
       Object.assign(form, createBlankForm());
+      await suggestNextEpisodeNumber();
       return;
     }
 
@@ -203,7 +245,7 @@ onMounted(() => void loadRecord());
         <section class="panel stacked-gap">
           <div class="panel-toolbar">
             <h3>内容提示</h3>
-            <div class="panel-meta">{{ form.tags.length }} 个标签</div>
+            <div class="panel-meta">{{ form.editors.length }} 位编辑</div>
           </div>
           <dl class="summary-grid summary-grid-2">
             <div class="summary-item">
@@ -211,15 +253,15 @@ onMounted(() => void loadRecord());
               <dd>{{ itemAuthorSummary }}</dd>
             </div>
             <div class="summary-item">
-              <dt>首条内容</dt>
-              <dd class="muted">{{ firstItemTitle }}</dd>
+              <dt>本期编辑</dt>
+              <dd class="muted">{{ editorSummary }}</dd>
             </div>
             <div class="summary-item">
               <dt>标签</dt>
               <dd class="muted">{{ tagSummary }}</dd>
             </div>
             <div class="summary-item">
-              <dt>正文说明</dt>
+              <dt>正文模板</dt>
               <dd class="muted">{{ bodyStatus }}</dd>
             </div>
           </dl>
@@ -244,8 +286,8 @@ onMounted(() => void loadRecord());
               <dd>{{ form.episodeNumber || '未填写' }}</dd>
             </div>
             <div class="summary-item">
-              <dt>摘要</dt>
-              <dd class="muted">{{ form.summary || '未填写' }}</dd>
+              <dt>首条内容</dt>
+              <dd class="muted">{{ firstItemTitle }}</dd>
             </div>
           </dl>
         </section>
@@ -256,6 +298,7 @@ onMounted(() => void loadRecord());
           <label class="field">
             <span>期数编号</span>
             <input v-model.number="form.episodeNumber" type="number" min="1" />
+            <small>{{ episodeSuggestionHint }}</small>
             <small v-if="fieldIssues.episodeNumber" class="field-error">{{ fieldIssues.episodeNumber }}</small>
           </label>
           <label class="field">
@@ -280,9 +323,14 @@ onMounted(() => void loadRecord());
           <textarea v-model="form.summary" rows="3" placeholder="用一句话概括本期极客日报的重点。" />
         </label>
 
+        <StringListField v-model="form.editors" label="本期编辑" add-label="新增编辑" placeholder="编辑志愿者姓名" />
         <StringListField v-model="form.tags" label="标签" add-label="新增标签" placeholder="ai" />
         <GeekDailyItemsField v-model="form.items" />
-        <MarkdownEditorField v-model="form.bodyMarkdown" label="正文说明" placeholder="这里可以补充本期总述、关键词和额外说明。" />
+
+        <div class="stacked-gap">
+          <div class="muted-row">保存时会自动生成正文开头和结尾，这里只需要填写本期补充说明。</div>
+          <MarkdownEditorField v-model="form.bodyMarkdown" label="补充说明（可选）" placeholder="这里可以补充本期总述、关键词或额外说明。" />
+        </div>
       </section>
     </div>
   </section>

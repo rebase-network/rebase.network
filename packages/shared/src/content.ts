@@ -114,6 +114,8 @@ export const geekdailyItemSchema = z.object({
   summary: requiredTrimmedString('summary is required'),
 });
 
+export const geekdailyEditorSchema = requiredTrimmedString('editor name is required');
+
 export const siteSettingsSchema = z.object({
   siteName: requiredTrimmedString('site name is required'),
   tagline: requiredTrimmedString('tagline is required'),
@@ -276,7 +278,8 @@ export const geekdailyEpisodeSchema = z.object({
   episodeNumber: z.number().int().positive(),
   title: requiredTrimmedString('title is required'),
   summary: requiredTrimmedString('summary is required'),
-  bodyMarkdown: requiredTrimmedString('body is required'),
+  bodyMarkdown: trimmedString.default(''),
+  editors: z.array(geekdailyEditorSchema).default([]),
   tags: z.array(trimmedString).default([]),
   status: z.enum(contentStatusValues).default('draft'),
   publishedAt: requiredTrimmedString('published time is required'),
@@ -291,6 +294,71 @@ export function getGeekDailyEpisodeSlug(episodeNumber: number) {
 
 export function getGeekDailyEpisodePath(episodeNumber: number) {
   return `/geekdaily/${getGeekDailyEpisodeSlug(episodeNumber)}`;
+}
+
+const geekDailyTemplateOutro =
+  'Rebase 极客日报由社区志愿者共同维护，持续整理值得关注的技术内容与行业信号。';
+
+const normalizeStringList = (items: string[]) =>
+  Array.from(
+    new Set(
+      items
+        .map((item) => item.trim())
+        .filter(Boolean),
+    ),
+  );
+
+export function buildGeekDailyBodyMarkdown(
+  input: Pick<GeekDailyEpisodeInput, 'episodeNumber' | 'editors' | 'items' | 'bodyMarkdown'>,
+) {
+  const editors = normalizeStringList(input.editors);
+  const customNote = input.bodyMarkdown.trim();
+  const sections = [
+    `极客日报#${input.episodeNumber}\n\n本期共收录 ${input.items.length} 条推荐内容。\n\n本期整理编辑：${
+      editors.length > 0 ? editors.join('、') : '待补充'
+    }。`,
+  ];
+
+  if (customNote) {
+    sections.push(`## 本期补充\n\n${customNote}`);
+  }
+
+  sections.push(`---\n\n${geekDailyTemplateOutro}`);
+
+  return sections.join('\n\n').trim();
+}
+
+export function extractGeekDailyBodyNote(bodyMarkdown: string) {
+  const normalized = bodyMarkdown.trim();
+
+  if (!normalized) {
+    return '';
+  }
+
+  if (!normalized.endsWith(geekDailyTemplateOutro)) {
+    return normalized;
+  }
+
+  const introPattern = /^极客日报#\d+\n\n本期共收录 \d+ 条推荐内容。\n\n本期整理编辑：.*?。\n\n?/s;
+  const withoutIntro = normalized.replace(introPattern, '');
+
+  if (withoutIntro === normalized) {
+    return normalized;
+  }
+
+  const withoutOutro = withoutIntro
+    .replace(new RegExp(`\\n\\n---\\n\\n${geekDailyTemplateOutro.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`), '')
+    .trim();
+
+  if (!withoutOutro) {
+    return '';
+  }
+
+  if (withoutOutro.startsWith('## 本期补充')) {
+    return withoutOutro.slice('## 本期补充'.length).trim();
+  }
+
+  return withoutOutro;
 }
 
 export const assetSchema = z.object({

@@ -142,6 +142,7 @@ export interface GeekDailyEpisode {
   title: string;
   summary: string;
   publishedAt: string;
+  editors: string[];
   tags: string[];
   body: string;
   items: GeekDailyItem[];
