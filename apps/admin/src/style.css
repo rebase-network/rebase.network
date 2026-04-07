@@ -1374,6 +1374,50 @@ code {
   align-items: center;
 }
 
+.geekdaily-meta-bar {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(220px, 1.1fr) minmax(180px, 1fr) minmax(150px, 0.82fr);
+  align-items: start;
+}
+
+.geekdaily-meta-item {
+  display: grid;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.geekdaily-meta-item-input {
+  align-content: start;
+}
+
+.geekdaily-meta-label {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.geekdaily-meta-value {
+  min-width: 0;
+}
+
+.geekdaily-meta-value-input {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.geekdaily-meta-text {
+  display: block;
+  min-width: 0;
+  font-size: 0.98rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
 .geekdaily-note-field textarea {
   min-height: 12rem;
 }
@@ -1412,6 +1456,10 @@ code {
     grid-template-columns: 1fr;
   }
 
+  .geekdaily-meta-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .geekdaily-preview-column.sticky-stack {
     position: static;
   }
@@ -1422,6 +1470,12 @@ code {
 
   .geekdaily-source-code {
     min-height: 20rem;
+  }
+}
+
+@media (max-width: 840px) {
+  .geekdaily-meta-bar {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -328,29 +328,25 @@ onBeforeUnmount(() => {
 
     <div v-else class="geekdaily-workspace">
       <section class="panel stacked-gap geekdaily-editor-column">
-        <div class="field-grid field-grid-1-compact">
-          <label class="field-inline-row">
-            <div class="field-inline-label">
-              <span>期数编号</span>
+        <div class="field-shell geekdaily-meta-bar">
+          <label class="geekdaily-meta-item geekdaily-meta-item-input">
+            <span class="geekdaily-meta-label">期数编号</span>
+            <div class="geekdaily-meta-value geekdaily-meta-value-input">
+              <input v-model.number="form.episodeNumber" class="short-input" type="number" min="1" />
+              <small class="field-inline-hint">{{ episodeSuggestionHint }}</small>
             </div>
-            <div class="field-inline-control">
-              <div class="field-inline-meta-row">
-                <input v-model.number="form.episodeNumber" class="short-input" type="number" min="1" />
-                <small class="field-inline-hint">{{ episodeSuggestionHint }}</small>
-              </div>
-              <small v-if="fieldIssues.episodeNumber" class="field-error">{{ fieldIssues.episodeNumber }}</small>
-            </div>
+            <small v-if="fieldIssues.episodeNumber" class="field-error">{{ fieldIssues.episodeNumber }}</small>
           </label>
-        </div>
 
-        <div class="field-shell compact-info-row">
-          <strong>标题</strong>
-          <span>{{ derivedTitle }}</span>
-        </div>
+          <div class="geekdaily-meta-item">
+            <span class="geekdaily-meta-label">标题</span>
+            <strong class="geekdaily-meta-text">{{ derivedTitle }}</strong>
+          </div>
 
-        <div class="field-shell compact-info-row">
-          <strong>本期编辑</strong>
-          <span>{{ currentEditorLabel }}</span>
+          <div class="geekdaily-meta-item">
+            <span class="geekdaily-meta-label">本期编辑</span>
+            <strong class="geekdaily-meta-text">{{ currentEditorLabel }}</strong>
+          </div>
         </div>
 
         <GeekDailyItemsField v-model="form.items" />
