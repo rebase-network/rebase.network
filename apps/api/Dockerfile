@@ -8,6 +8,8 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps ./apps
 COPY packages ./packages
+COPY scripts ./scripts
+COPY geekdaily.csv ./geekdaily.csv
 RUN pnpm install --frozen-lockfile
 
 FROM deps AS build
@@ -24,5 +26,7 @@ COPY --from=build /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=build /app/tsconfig.base.json ./tsconfig.base.json
 COPY --from=build /app/apps ./apps
 COPY --from=build /app/packages ./packages
+COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/geekdaily.csv ./geekdaily.csv
 EXPOSE 8788
 CMD ["sh", "-lc", "pnpm --filter @rebase/db migrate && node apps/api/dist/index.js"]
