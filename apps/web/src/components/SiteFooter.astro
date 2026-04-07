@@ -48,9 +48,8 @@ const isExternalLink = (href: string) => href.startsWith('http');
     <div class="footer-meta">
       <div class="socials">
         {site.socialLinks.map((item) => (
-          <a href={item.href} target="_blank" rel="noreferrer">
-            <span>{item.label}</span>
-            <small>{trimProtocol(item.href)}</small>
+          <a href={item.href} target="_blank" rel="noreferrer" aria-label={item.label}>
+            {trimProtocol(item.href)}
           </a>
         ))}
       </div>
@@ -111,13 +110,7 @@ const isExternalLink = (href: string) => href.startsWith('http');
     box-shadow: 0 14px 28px rgba(26, 40, 34, 0.08);
   }
 
-  .socials span,
-  .socials small {
-    display: block;
-  }
-
-  h3,
-  .socials span {
+  h3 {
     color: var(--accent-strong);
     font-size: 0.74rem;
     font-weight: 800;
@@ -186,14 +179,9 @@ const isExternalLink = (href: string) => href.startsWith('http');
     border-radius: 1rem;
     border: 1px solid rgba(15, 118, 110, 0.1);
     background: rgba(255, 255, 255, 0.72);
-  }
-
-  .socials small {
-    margin-top: 0.35rem;
     color: var(--muted);
-    font-size: 0.88rem;
-    letter-spacing: normal;
-    text-transform: none;
+    font-size: 0.9rem;
+    line-height: 1.5;
     word-break: break-word;
   }
 
