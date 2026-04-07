@@ -673,6 +673,40 @@ code {
   gap: 0.75rem;
 }
 
+.field-inline-row {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 0.8rem;
+  align-items: start;
+}
+
+.field-inline-row-compact {
+  grid-template-columns: 72px minmax(0, 1fr);
+}
+
+.field-inline-label {
+  display: grid;
+  gap: 0.18rem;
+  padding-top: 0.72rem;
+  min-width: 0;
+}
+
+.field-inline-label span {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.field-inline-label small {
+  margin: 0;
+  color: var(--muted);
+}
+
+.field-inline-control {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
 .field span {
   font-weight: 700;
   font-size: 0.9rem;
@@ -711,6 +745,34 @@ code {
   align-items: center;
   justify-content: space-between;
   gap: 0.85rem;
+}
+
+.markdown-editor-inline {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 0.8rem;
+  align-items: start;
+}
+
+.markdown-editor-label {
+  display: grid;
+  gap: 0.18rem;
+  padding-top: 0.72rem;
+}
+
+.markdown-editor-label span {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.markdown-editor-label small {
+  color: var(--muted);
+}
+
+.markdown-editor-body {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
 }
 
 .site-section-stack {

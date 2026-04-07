@@ -61,22 +61,38 @@ const countNotice = computed(() => {
           <button class="button-link button-danger" type="button" @click="removeItem(index)">删除条目</button>
         </div>
         <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>标题</span>
-            <input :value="item.title" placeholder="项目或文章标题" @input="updateItem(index, 'title', ($event.target as HTMLInputElement).value)" />
+          <label class="field-inline-row field-inline-row-compact">
+            <div class="field-inline-label">
+              <span>标题</span>
+            </div>
+            <div class="field-inline-control">
+              <input :value="item.title" placeholder="项目或文章标题" @input="updateItem(index, 'title', ($event.target as HTMLInputElement).value)" />
+            </div>
           </label>
-          <label class="field">
-            <span>推荐人</span>
-            <input :value="item.authorName" placeholder="Cedric" @input="updateItem(index, 'authorName', ($event.target as HTMLInputElement).value)" />
+          <label class="field-inline-row field-inline-row-compact">
+            <div class="field-inline-label">
+              <span>推荐人</span>
+            </div>
+            <div class="field-inline-control">
+              <input :value="item.authorName" placeholder="Cedric" @input="updateItem(index, 'authorName', ($event.target as HTMLInputElement).value)" />
+            </div>
           </label>
         </div>
-        <label class="field">
-          <span>来源链接</span>
-          <input :value="item.sourceUrl" placeholder="https://github.com/..." @input="updateItem(index, 'sourceUrl', ($event.target as HTMLInputElement).value)" />
+        <label class="field-inline-row">
+          <div class="field-inline-label">
+            <span>来源链接</span>
+          </div>
+          <div class="field-inline-control">
+            <input :value="item.sourceUrl" placeholder="https://github.com/..." @input="updateItem(index, 'sourceUrl', ($event.target as HTMLInputElement).value)" />
+          </div>
         </label>
-        <label class="field">
-          <span>推荐语</span>
-          <textarea rows="2" :value="item.summary" placeholder="填写推荐理由，说明为什么值得看。" @input="updateItem(index, 'summary', ($event.target as HTMLTextAreaElement).value)" />
+        <label class="field-inline-row">
+          <div class="field-inline-label">
+            <span>推荐语</span>
+          </div>
+          <div class="field-inline-control">
+            <textarea rows="2" :value="item.summary" placeholder="填写推荐理由，说明为什么值得看。" @input="updateItem(index, 'summary', ($event.target as HTMLTextAreaElement).value)" />
+          </div>
         </label>
       </div>
     </div>

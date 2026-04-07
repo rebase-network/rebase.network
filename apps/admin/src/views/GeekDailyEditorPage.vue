@@ -194,13 +194,15 @@ onMounted(() => void loadRecord());
 
     <section v-else class="panel stacked-gap editor-main">
       <div class="field-grid field-grid-1-compact">
-        <label class="field">
-          <div class="field-label-row">
+        <label class="field-inline-row">
+          <div class="field-inline-label">
             <span>期数编号</span>
             <small>{{ episodeSuggestionHint }}</small>
           </div>
-          <input v-model.number="form.episodeNumber" type="number" min="1" />
-          <small v-if="fieldIssues.episodeNumber" class="field-error">{{ fieldIssues.episodeNumber }}</small>
+          <div class="field-inline-control">
+            <input v-model.number="form.episodeNumber" type="number" min="1" />
+            <small v-if="fieldIssues.episodeNumber" class="field-error">{{ fieldIssues.episodeNumber }}</small>
+          </div>
         </label>
       </div>
 
@@ -212,7 +214,12 @@ onMounted(() => void loadRecord());
       <GeekDailyItemsField v-model="form.items" />
 
       <div class="muted-row">保存时会自动把推荐条目、编辑和结尾拼进正文；点击发布时会自动写入发布时间。</div>
-      <MarkdownEditorField v-model="form.bodyMarkdown" label="本期补充说明（可选）" placeholder="这里可以补充本期总述、关键词或额外说明。" />
+      <MarkdownEditorField
+        v-model="form.bodyMarkdown"
+        label="本期补充说明（可选）"
+        placeholder="这里可以补充本期总述、关键词或额外说明。"
+        :inline="true"
+      />
     </section>
   </section>
 </template>
