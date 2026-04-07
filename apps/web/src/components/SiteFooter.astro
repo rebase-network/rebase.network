@@ -6,16 +6,42 @@ interface Props {
 }
 
 const { site } = Astro.props;
+const trimProtocol = (value: string) => value.replace(/^https?:\/\//, '').replace(/\/$/, '');
+const footerAccess = [
+  { label: '主域名', value: trimProtocol(site.primaryDomain), href: site.primaryDomain },
+  { label: '社区域名', value: trimProtocol(site.secondaryDomain), href: site.secondaryDomain },
+  { label: 'RSS', value: '/rss.xml', href: '/rss.xml' },
+  { label: '媒体域名', value: trimProtocol(site.mediaDomain), href: site.mediaDomain },
+];
+const isExternalLink = (href: string) => href.startsWith('http');
 ---
 
 <footer class="site-footer">
   <div class="shell footer-frame card">
     <div class="footer-top">
-      <div>
-        <p class="eyebrow">社区页脚</p>
-        <h2>让社区内容、机会与协作线索持续流动。</h2>
+      <div class="footer-brand">
+        <img
+          class="footer-logo"
+          src="/brand/rebase-logo-wordmark.svg"
+          alt="Rebase 社区"
+          width="225"
+          height="101"
+        />
+        <div>
+          <p class="eyebrow">社区页脚</p>
+          <h2>让社区内容、机会与协作线索持续流动。</h2>
+          <p class="summary">{site.description}</p>
+        </div>
       </div>
-      <p class="summary">{site.description}</p>
+
+      <div class="footer-access">
+        {footerAccess.map((item) => (
+          <a class="access-pill" href={item.href} target={isExternalLink(item.href) ? '_blank' : undefined} rel="noreferrer">
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
+          </a>
+        ))}
+      </div>
     </div>
 
     <div class="footer-grid">
@@ -25,7 +51,7 @@ const { site } = Astro.props;
           <ul>
             {group.links.map((link) => (
               <li>
-                <a href={link.href} target={link.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer">
+                <a href={link.href} target={isExternalLink(link.href) ? '_blank' : undefined} rel="noreferrer">
                   {link.label}
                 </a>
               </li>
@@ -39,7 +65,8 @@ const { site } = Astro.props;
       <div class="socials">
         {site.socialLinks.map((item) => (
           <a href={item.href} target="_blank" rel="noreferrer">
-            {item.label}
+            <span>{item.label}</span>
+            <small>{item.handle ?? trimProtocol(item.href)}</small>
           </a>
         ))}
       </div>
@@ -55,14 +82,28 @@ const { site } = Astro.props;
 
   .footer-frame {
     padding: 2rem;
+    background:
+      radial-gradient(circle at top left, rgba(243, 196, 110, 0.18), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 252, 251, 0.9));
   }
 
   .footer-top {
     display: grid;
-    grid-template-columns: 1.6fr 1fr;
-    gap: 2rem;
+    grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.85fr);
+    gap: 1.5rem;
     padding-bottom: 1.75rem;
     border-bottom: 1px solid var(--line);
+  }
+
+  .footer-brand {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .footer-logo {
+    display: block;
+    width: clamp(8.8rem, 14vw, 11rem);
+    height: auto;
   }
 
   .eyebrow {
@@ -76,29 +117,76 @@ const { site } = Astro.props;
 
   h2 {
     margin: 0;
-    font-size: clamp(1.8rem, 3vw, 3.3rem);
+    font-size: clamp(1.8rem, 3vw, 3.1rem);
     line-height: 1.05;
     max-width: 14ch;
   }
 
   .summary {
-    margin: 0;
+    margin: 0.85rem 0 0;
+    max-width: 60ch;
     color: var(--muted);
     line-height: 1.8;
+  }
+
+  .footer-access {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    align-content: start;
+  }
+
+  .access-pill {
+    padding: 1rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(15, 118, 110, 0.12);
+    background: rgba(255, 255, 255, 0.82);
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .access-pill:hover,
+  .access-pill:focus-visible,
+  li a:hover,
+  li a:focus-visible,
+  .socials a:hover,
+  .socials a:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(15, 118, 110, 0.18);
+    box-shadow: 0 14px 28px rgba(26, 40, 34, 0.08);
+  }
+
+  .access-pill span,
+  .access-pill strong,
+  .socials span,
+  .socials small {
+    display: block;
+  }
+
+  .access-pill span,
+  h3,
+  .socials span {
+    color: var(--accent-strong);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .access-pill strong {
+    margin-top: 0.45rem;
+    font-size: 1rem;
+    line-height: 1.4;
   }
 
   .footer-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1.4rem;
+    gap: 1.25rem;
     padding: 1.75rem 0;
   }
 
   h3 {
     margin: 0 0 0.8rem;
-    font-size: 0.9rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
   }
 
   ul {
@@ -115,16 +203,19 @@ const { site } = Astro.props;
   .socials a {
     color: var(--muted);
     line-height: 1.6;
+    transition: color 180ms ease, transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
   }
 
   li a:hover,
-  .socials a:hover {
+  li a:focus-visible,
+  .socials a:hover,
+  .socials a:focus-visible {
     color: var(--accent-strong);
   }
 
   .footer-meta {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 1rem;
     padding-top: 1rem;
@@ -133,10 +224,30 @@ const { site } = Astro.props;
     font-size: 0.94rem;
   }
 
+  .footer-meta p {
+    margin: 0;
+  }
+
   .socials {
     display: flex;
     flex-wrap: wrap;
     gap: 0.8rem;
+  }
+
+  .socials a {
+    padding: 0.85rem 0.95rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(15, 118, 110, 0.1);
+    background: rgba(255, 255, 255, 0.72);
+  }
+
+  .socials small {
+    margin-top: 0.35rem;
+    color: var(--muted);
+    font-size: 0.88rem;
+    letter-spacing: normal;
+    text-transform: none;
+    word-break: break-word;
   }
 
   @media (max-width: 920px) {
@@ -148,6 +259,7 @@ const { site } = Astro.props;
       align-items: flex-start;
     }
 
+    .footer-access,
     .footer-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -159,6 +271,7 @@ const { site } = Astro.props;
       padding: 1.4rem;
     }
 
+    .footer-access,
     .footer-grid {
       grid-template-columns: 1fr;
     }
