@@ -1,32 +1,55 @@
 {
-  "name": "strapi",
+  "name": "rebase-network",
   "private": true,
   "version": "0.1.0",
-  "description": "A Strapi application",
+  "packageManager": "pnpm@10.6.5",
   "scripts": {
-    "develop": "strapi develop",
-    "start": "strapi start",
-    "build": "strapi build",
-    "strapi": "strapi"
+    "cms:generate:schema": "node scripts/directus/render-schema-sql.mjs",
+    "cms:generate:seed": "node scripts/directus/render-seed-sql.mjs",
+    "cms:generate:geekdaily": "node scripts/directus/render-geekdaily-sql.mjs geekdaily.csv",
+    "cms:generate": "pnpm cms:generate:schema && pnpm cms:generate:seed",
+    "cms:up": "node scripts/directus/compose-local.mjs up -d",
+    "cms:down": "node scripts/directus/compose-local.mjs down",
+    "cms:logs": "node scripts/directus/compose-local.mjs logs --tail=80 directus",
+    "cms:health": "node scripts/directus/check-health.mjs",
+    "cms:bootstrap": "node scripts/directus/bootstrap-local.mjs",
+    "cms:reset": "pnpm cms:down && node scripts/directus/compose-local.mjs down -v --remove-orphans && pnpm cms:bootstrap",
+    "dev": "pnpm --filter @rebase/web dev",
+    "build": "pnpm --filter @rebase/web build",
+    "preview": "pnpm --filter @rebase/web preview",
+    "typecheck": "pnpm --filter @rebase/web check",
+    "lint": "pnpm --filter @rebase/web lint",
+    "pretest:smoke": "pnpm local:bootstrap && pnpm build:api",
+    "test:smoke": "playwright test",
+    "dev:web": "pnpm --filter @rebase/web dev",
+    "dev:admin": "pnpm --filter @rebase/admin dev",
+    "dev:api": "pnpm --filter @rebase/api dev",
+    "dev:stack": "node scripts/local/dev-stack.mjs",
+    "dev:public": "node scripts/local/dev-stack.mjs --services=api,web",
+    "dev:ops": "node scripts/local/dev-stack.mjs --services=api,admin",
+    "build:admin": "pnpm --filter @rebase/admin build",
+    "build:api": "pnpm --filter @rebase/api build",
+    "build:web:prod": "SITE_URL=https://rebase.network API_BASE_URL=https://api.rebase.network pnpm --filter @rebase/web build && node scripts/deploy/prepare-web-assets.mjs",
+    "build:admin:prod": "VITE_API_BASE_URL=https://api.rebase.network VITE_PUBLIC_SITE_BASE_URL=https://rebase.network pnpm --filter @rebase/admin build",
+    "deploy:web:dry-run": "pnpm build:web:prod && pnpm exec wrangler deploy --config apps/web/dist/server/wrangler.production.json --dry-run",
+    "deploy:web": "pnpm build:web:prod && pnpm exec wrangler deploy --config apps/web/dist/server/wrangler.production.json",
+    "deploy:admin:dry-run": "pnpm build:admin:prod && pnpm exec wrangler deploy --config apps/admin/wrangler.production.jsonc --dry-run",
+    "deploy:admin": "pnpm build:admin:prod && pnpm exec wrangler deploy --config apps/admin/wrangler.production.jsonc",
+    "deploy:server:config": "POSTGRES_PASSWORD=example BETTER_AUTH_SECRET=example CLOUDFLARED_TUNNEL_TOKEN=example docker compose --env-file infra/production/server.env.example -f infra/production/docker-compose.yml config",
+    "typecheck:admin": "pnpm --filter @rebase/admin typecheck",
+    "typecheck:api": "pnpm --filter @rebase/api typecheck",
+    "typecheck:backend": "pnpm typecheck:api && pnpm typecheck:admin",
+    "db:up": "docker compose -f infra/postgres/docker-compose.yml up -d",
+    "db:down": "docker compose -f infra/postgres/docker-compose.yml down",
+    "db:logs": "docker compose -f infra/postgres/docker-compose.yml logs --tail=120 postgres",
+    "local:bootstrap": "node scripts/local/bootstrap-stack.mjs",
+    "db:generate": "pnpm --filter @rebase/db generate",
+    "db:migrate": "pnpm --filter @rebase/db migrate",
+    "db:seed": "pnpm --filter @rebase/db seed",
+    "admin:bootstrap": "pnpm --filter @rebase/api bootstrap-admin"
   },
-  "devDependencies": {},
-  "dependencies": {
-    "@strapi/plugin-i18n": "4.12.1",
-    "@strapi/plugin-users-permissions": "4.12.1",
-    "@strapi/provider-upload-cloudinary": "4.12.1",
-    "@strapi/strapi": "4.12.1",
-    "pg": "8.11.2",
-    "strapi-provider-email-resend": "^1.0.4"
-  },
-  "author": {
-    "name": "A Strapi developer"
-  },
-  "strapi": {
-    "uuid": ""
-  },
-  "engines": {
-    "node": ">=16.x.x",
-    "npm": ">=6.0.0"
-  },
-  "license": "MIT"
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "wrangler": "^4.80.0"
+  }
 }

@@ -1,0 +1,33 @@
+{
+  "name": "@rebase/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.seed.json --noEmit",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate",
+    "seed": "node --env-file=../../.env --import tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@rebase/shared": "workspace:*",
+    "drizzle-orm": "^0.41.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/pg": "^8.15.5",
+    "drizzle-kit": "^0.31.4",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

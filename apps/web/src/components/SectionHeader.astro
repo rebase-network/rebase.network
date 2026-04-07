@@ -1,0 +1,94 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  href?: string;
+  hrefLabel?: string;
+}
+
+const { eyebrow, title, description, href, hrefLabel = '查看更多' } = Astro.props;
+---
+
+<div class="section-header">
+  <div>
+    <p>{eyebrow}</p>
+    <h2>{title}</h2>
+    {description && <span>{description}</span>}
+  </div>
+  {href && (
+    <a href={href}>
+      {hrefLabel}
+      <span aria-hidden="true">↗</span>
+    </a>
+  )}
+</div>
+
+<style>
+  .section-header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.35rem;
+  }
+
+  .section-header > div {
+    max-width: 52rem;
+  }
+
+  p {
+    margin: 0 0 0.45rem;
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.5rem, 2vw, 2.4rem);
+    line-height: 1.05;
+  }
+
+  span {
+    display: block;
+    margin-top: 0.45rem;
+    color: var(--muted);
+    max-width: 58ch;
+    line-height: 1.7;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.78rem 1rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 252, 250, 0.86));
+    color: var(--accent-strong);
+    font-weight: 700;
+    box-shadow: 0 10px 20px rgba(15, 118, 110, 0.08);
+    white-space: nowrap;
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
+  }
+
+  a:hover,
+  a:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(15, 118, 110, 0.28);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(236, 249, 245, 0.92));
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.12);
+  }
+
+  @media (max-width: 760px) {
+    .section-header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>

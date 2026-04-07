@@ -1,0 +1,16 @@
+.git
+.github
+node_modules
+.pnpm-store
+.wrangler
+.astro
+.cache
+coverage
+playwright-report
+test-results
+.env
+.env.*
+apps/*/dist
+infra/directus
+refcode
+.DS_Store

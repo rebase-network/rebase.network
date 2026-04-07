@@ -1,0 +1,594 @@
+---
+import ArticleCard from '@/components/ArticleCard.astro';
+import ContributorCard from '@/components/ContributorCard.astro';
+import EventCard from '@/components/EventCard.astro';
+import GeekDailyCard from '@/components/GeekDailyCard.astro';
+import JobCard from '@/components/JobCard.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getContributors, getHomeFeed, getSiteSettings } from '@/lib/content';
+import { formatDate } from '@/lib/dates';
+
+const [site, feed, contributors] = await Promise.all([getSiteSettings(), getHomeFeed(), getContributors()]);
+const featuredContributors = contributors.slice(0, 2);
+const liveWire = feed.dynamicFeed.slice(0, 6);
+const recentGeekDaily = feed.recentGeekDaily.slice(0, 3);
+const frontPageHighlights = liveWire.slice(0, 3);
+const featuredSignals = site.homeSignals.slice(0, 2);
+
+const liveWireTypeLabel = {
+  article: '文章',
+  job: '招聘',
+  event: '活动',
+  geekdaily: 'GeekDaily',
+} as const;
+---
+
+<BaseLayout site={site} title="Rebase 社区首页" description={site.description}>
+  <section class="shell page-hero home-hero">
+    <article class="hero-panel card masthead-panel">
+      <div class="hero-topline">
+        <p class="hero-kicker">面向建设者的社区媒体</p>
+        <span class="edition-chip">Rebase Front Page</span>
+      </div>
+      <h1 class="hero-title">{site.heroTitle}</h1>
+      <p class="hero-summary">{site.heroSummary}</p>
+      <p class="brand-note">这是一个由中国开发者用热爱和业余时间共同维护的非营利、公益性开发者社区。</p>
+      <div class="button-row">
+        <a class="button-link" href={site.heroPrimaryCtaUrl}>{site.heroPrimaryCtaLabel} <span>↗</span></a>
+        <a class="button-link secondary" href={site.heroSecondaryCtaUrl}>{site.heroSecondaryCtaLabel} <span>↗</span></a>
+      </div>
+      <div class="hero-highlights">
+        {frontPageHighlights.map((item, index) => (
+          <a class="highlight-card" href={item.href}>
+            <span>0{index + 1} · {liveWireTypeLabel[item.type]}</span>
+            <strong>{item.title}</strong>
+            <p>{item.summary}</p>
+          </a>
+        ))}
+      </div>
+      <div class="hero-footnotes">
+        <article>
+          <span>双域名入口</span>
+          <strong>{site.primaryDomain.replace('https://', '')}</strong>
+          <p>默认内容主域名，第二域名保留社区入口一致性。</p>
+        </article>
+        <article>
+          <span>公开阅读</span>
+          <strong>无需登录</strong>
+          <p>读者直接访问，管理侧通过专用后台维护结构化内容。</p>
+        </article>
+      </div>
+    </article>
+
+    <aside class="signal-panel card live-desk">
+      <SectionHeader
+        eyebrow="社区实时线"
+        title="正在发生什么"
+        description="用一条实时更新的社区新闻线，把文章、活动、GeekDaily 和招聘放在同一个阅读入口里。"
+      />
+      <p class="desk-note">右侧保留更高频的更新视图，左侧则负责建立对 Rebase 的第一印象和内容主张。</p>
+      <ol class="live-wire-list">
+        {liveWire.map((item) => (
+          <li class="live-wire-item">
+            <a href={item.href}>
+              <div class="live-wire-meta">
+                <span>{liveWireTypeLabel[item.type]}</span>
+                <time>{item.publishedAt ? formatDate(item.publishedAt) : '刚刚更新'}</time>
+              </div>
+              <h3>{item.title}</h3>
+              <p>{item.summary}</p>
+            </a>
+          </li>
+        ))}
+      </ol>
+      <div class="signal-list signal-compact">
+        {featuredSignals.map((signal) => (
+          <a class="signal-item" href={signal.href}>
+            <p>{signal.eyebrow}</p>
+            <h3>{signal.title}</h3>
+            <span>{signal.summary}</span>
+          </a>
+        ))}
+      </div>
+    </aside>
+  </section>
+
+  <section class="shell meta-strip page-section">
+    {site.homeStats.map((stat) => (
+      <article class="card">
+        <strong>{stat.value}</strong>
+        <span>{stat.label}</span>
+      </article>
+    ))}
+  </section>
+
+  <section class="shell page-section current-desk">
+    <SectionHeader
+      eyebrow="首页编排"
+      title="今天进入 Rebase 最值得先看的内容"
+      description="首屏之下不是简单分栏，而是一份社区首页编辑台：主稿、日报、活动和招聘同时在线。"
+    />
+    <div class="dispatch-grid">
+      {feed.latestArticles[0] && <ArticleCard article={feed.latestArticles[0]} featured />}
+      <div class="dispatch-stack">
+        {feed.latestGeekDaily && <GeekDailyCard episode={feed.latestGeekDaily} />}
+        {feed.latestJobs[0] && <JobCard job={feed.latestJobs[0]} />}
+        {feed.latestEvents[0] && <EventCard event={feed.latestEvents[0]} />}
+      </div>
+    </div>
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="近期 GeekDaily"
+      title="近期 GeekDaily"
+      description="日报是 Rebase 最稳定的社区更新机制，也是搜索与 RSS 最常被消费的入口。"
+      href="/geekdaily"
+      hrefLabel="进入 GeekDaily"
+    />
+    <div class="grid-3">
+      {recentGeekDaily.map((episode) => (
+        <GeekDailyCard episode={episode} />
+      ))}
+    </div>
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="最新文章"
+      title="近期文章"
+      description="从产品、社区到信息架构，公开记录 Rebase 的想法与方法。"
+      href="/articles"
+      hrefLabel="浏览全部文章"
+    />
+    <div class="grid-3">
+      {feed.latestArticles.map((article) => (
+        <ArticleCard article={article} />
+      ))}
+    </div>
+  </section>
+
+  <section class="shell page-section dual-column">
+    <SectionHeader
+      eyebrow="社区招聘"
+      title="新增招聘信息"
+      description="帮助读者快速理解岗位背景、工作模式和联系方式。"
+      href="/who-is-hiring"
+      hrefLabel="进入招聘板"
+    />
+    <div class="grid-3">
+      {feed.latestJobs.map((job) => (
+        <JobCard job={job} />
+      ))}
+    </div>
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="社区活动"
+      title="社区活动"
+      description="第一版先聚焦活动展示与外部报名入口，后续再扩展更复杂的活动能力。"
+      href="/events"
+      hrefLabel="查看活动"
+    />
+    <div class="grid-3">
+      {feed.latestEvents.map((event) => (
+        <EventCard event={event} />
+      ))}
+    </div>
+  </section>
+
+  <section class="shell page-section">
+    <SectionHeader
+      eyebrow="贡献者"
+      title="让社区持续运转的人"
+      description="贡献者不是站点背后的附属名单，而是这个社区媒介的一部分；他们负责组织、筛选、写作和回应。"
+      href="/contributors"
+      hrefLabel="查看贡献者"
+    />
+    <div class="grid-2">
+      {featuredContributors.map((contributor) => (
+        <ContributorCard contributor={contributor} />
+      ))}
+    </div>
+  </section>
+
+  <section class="shell page-section">
+    <article class="card feed-callout">
+      <div>
+        <p class="hero-kicker">订阅入口</p>
+        <h2>如果你习惯用 RSS 追踪社区内容，Rebase 从第一版开始就把 feed 当成标准输出。</h2>
+      </div>
+      <div class="feed-links">
+        <a href="/rss.xml">全站 RSS</a>
+        <a href="/geekdaily/rss.xml">GeekDaily RSS</a>
+        <a href="/articles/rss.xml">文章 RSS</a>
+        <a href="/events/rss.xml">活动 RSS</a>
+        <a href="/who-is-hiring/rss.xml">招聘 RSS</a>
+      </div>
+    </article>
+  </section>
+</BaseLayout>
+
+<style>
+  .home-hero {
+    align-items: stretch;
+  }
+
+  .masthead-panel {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at top left, rgba(243, 196, 110, 0.32), transparent 34%),
+      radial-gradient(circle at 92% 18%, rgba(15, 118, 110, 0.16), transparent 22%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 251, 244, 0.92));
+    border-color: rgba(15, 118, 110, 0.14);
+    box-shadow: 0 26px 60px rgba(26, 40, 34, 0.12);
+  }
+
+  .masthead-panel::before {
+    content: 'REBASE';
+    position: absolute;
+    top: 1.2rem;
+    right: 1.45rem;
+    color: rgba(17, 94, 89, 0.08);
+    font-family: var(--display-font);
+    font-size: clamp(4.4rem, 8vw, 7rem);
+    letter-spacing: 0.08em;
+    line-height: 0.82;
+    pointer-events: none;
+  }
+
+  .masthead-panel::after {
+    content: '';
+    position: absolute;
+    inset: auto -8rem -8rem auto;
+    width: 16rem;
+    height: 16rem;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(17, 94, 89, 0.18), transparent 68%);
+    pointer-events: none;
+  }
+
+  .hero-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .edition-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.48rem 0.8rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .masthead-panel .hero-title {
+    max-width: 11ch;
+    text-wrap: balance;
+  }
+
+  .brand-note {
+    margin: 1rem 0 0;
+    max-width: 46ch;
+    color: rgba(17, 94, 89, 0.84);
+    font-size: 0.96rem;
+    line-height: 1.75;
+  }
+
+  .hero-highlights {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-top: 1.35rem;
+  }
+
+  .highlight-card {
+    position: relative;
+    display: grid;
+    gap: 0.45rem;
+    padding: 1rem;
+    border: 1px solid rgba(15, 118, 110, 0.12);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.76);
+    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.06);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+  }
+
+  .highlight-card:hover,
+  .highlight-card:focus-visible {
+    transform: translateY(-3px);
+    border-color: rgba(15, 118, 110, 0.24);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 18px 36px rgba(15, 118, 110, 0.1);
+  }
+
+  .highlight-card span,
+  .highlight-card strong,
+  .highlight-card p {
+    margin: 0;
+  }
+
+  .highlight-card span {
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .highlight-card strong {
+    font-family: var(--display-font);
+    font-size: 1.18rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .highlight-card p {
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.65;
+  }
+
+  .hero-footnotes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.5rem;
+  }
+
+  .hero-footnotes article {
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.62);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .hero-footnotes span,
+  .hero-footnotes strong,
+  .hero-footnotes p {
+    display: block;
+    margin: 0;
+  }
+
+  .hero-footnotes span {
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .hero-footnotes strong {
+    margin-top: 0.45rem;
+    font-size: 1.05rem;
+  }
+
+  .hero-footnotes p {
+    margin-top: 0.45rem;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .live-desk {
+    display: grid;
+    gap: 1rem;
+    background:
+      radial-gradient(circle at top right, rgba(245, 158, 11, 0.18), transparent 24%),
+      linear-gradient(180deg, rgba(16, 37, 34, 0.97), rgba(19, 54, 49, 0.94));
+    border-color: rgba(15, 118, 110, 0.22);
+    box-shadow: 0 26px 56px rgba(16, 37, 34, 0.24);
+  }
+
+  .live-desk :global(.section-header p),
+  .live-desk :global(.section-header h2),
+  .live-desk :global(.section-header span),
+  .live-desk :global(.section-header a) {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .live-desk :global(.section-header a) {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+  }
+
+  .live-desk :global(.section-header a:hover),
+  .live-desk :global(.section-header a:focus-visible) {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
+  }
+
+  .desk-note {
+    margin: -0.25rem 0 0;
+    color: rgba(223, 244, 238, 0.74);
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  .live-wire-list {
+    display: grid;
+    gap: 0.85rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .live-wire-item a {
+    display: block;
+    padding: 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(223, 244, 238, 0.12);
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+
+  .live-wire-item a:hover,
+  .live-wire-item a:focus-visible {
+    transform: translateY(-3px);
+    border-color: rgba(243, 196, 110, 0.34);
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.14);
+  }
+
+  .live-wire-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.8rem;
+    align-items: center;
+  }
+
+  .live-wire-meta span,
+  .live-wire-meta time {
+    color: rgba(223, 244, 238, 0.86);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .live-wire-meta time {
+    color: rgba(223, 244, 238, 0.6);
+  }
+
+  .live-wire-item h3,
+  .live-wire-item p {
+    margin: 0;
+  }
+
+  .live-wire-item h3 {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: white;
+  }
+
+  .live-wire-item p {
+    margin-top: 0.45rem;
+    color: rgba(223, 244, 238, 0.72);
+    line-height: 1.65;
+  }
+
+  .signal-compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .signal-compact .signal-item {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(223, 244, 238, 0.12);
+  }
+
+  .signal-compact .signal-item:hover,
+  .signal-compact .signal-item:focus-visible {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(243, 196, 110, 0.3);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.14);
+  }
+
+  .signal-compact .signal-item p,
+  .signal-compact .signal-item h3 {
+    color: white;
+  }
+
+  .signal-compact .signal-item span {
+    color: rgba(223, 244, 238, 0.7);
+  }
+
+  .current-desk {
+    padding-top: 1.9rem;
+  }
+
+  .dispatch-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(19rem, 0.9fr);
+    gap: 1rem;
+  }
+
+  .dispatch-stack {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .feed-callout {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 1rem;
+    padding: 1.6rem;
+    background:
+      radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 28%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 253, 251, 0.9));
+  }
+
+  .feed-callout h2 {
+    margin: 0;
+    font-size: clamp(1.7rem, 2.5vw, 2.6rem);
+    line-height: 1.08;
+    max-width: 15ch;
+  }
+
+  .feed-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .feed-links a {
+    display: block;
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid rgba(31, 41, 51, 0.08);
+    color: var(--accent-strong);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+
+  .feed-links a:hover,
+  .feed-links a:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(15, 118, 110, 0.18);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
+  }
+
+  @media (max-width: 960px) {
+    .hero-footnotes,
+    .hero-highlights,
+    .dispatch-grid,
+    .signal-compact {
+      grid-template-columns: 1fr;
+    }
+
+    .feed-callout {
+      grid-template-columns: 1fr;
+    }
+
+    .feed-links {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .hero-topline {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .highlight-card strong {
+      font-size: 1.08rem;
+    }
+  }
+</style>

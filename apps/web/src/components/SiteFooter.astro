@@ -1,0 +1,232 @@
+---
+import type { SiteSettings } from '@rebase/types';
+
+interface Props {
+  site: SiteSettings;
+}
+
+const { site } = Astro.props;
+const isExternalLink = (href: string) => href.startsWith('http');
+const socialIconMap: Record<string, string> = {
+  'B 站': '/social-icons/bilibili.svg',
+  YouTube: '/social-icons/youtube.svg',
+  Discord: '/social-icons/discord.svg',
+  Twitter: '/social-icons/x.svg',
+  Telegram: '/social-icons/telegram.svg',
+  微信公众号: '/social-icons/wechat.svg',
+  'QQ 群': '/social-icons/qq.svg',
+};
+---
+
+<footer class="site-footer">
+  <div class="shell footer-frame card">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img
+          class="footer-logo"
+          src="/brand/rebase-logo-wordmark.svg"
+          alt="Rebase 社区"
+          width="225"
+          height="101"
+        />
+        <div>
+          <h2>让社区内容、机会与协作线索持续流动。</h2>
+          <p class="summary">{site.description}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-grid">
+      {site.footerGroups.map((group) => (
+        <section>
+          <h3>{group.title}</h3>
+          <ul>
+            {group.links.map((link) => (
+              <li>
+                <a href={link.href} target={isExternalLink(link.href) ? '_blank' : undefined} rel="noreferrer">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+
+    <div class="footer-meta">
+      <div class="socials">
+        {site.socialLinks.map((item) => (
+          <a href={item.href} target="_blank" rel="noreferrer" aria-label={item.label} title={item.label}>
+            {socialIconMap[item.label] ? (
+              <img src={socialIconMap[item.label]} alt="" width="20" height="20" loading="lazy" />
+            ) : (
+              <span>{item.label}</span>
+            )}
+          </a>
+        ))}
+      </div>
+      <p>{site.copyright}</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding: 4rem 0 2rem;
+  }
+
+  .footer-frame {
+    padding: 2rem;
+    background:
+      radial-gradient(circle at top left, rgba(243, 196, 110, 0.18), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 252, 251, 0.9));
+  }
+
+  .footer-top {
+    display: block;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .footer-brand {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .footer-logo {
+    display: block;
+    width: clamp(8.8rem, 14vw, 11rem);
+    height: auto;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.8rem, 3vw, 3.1rem);
+    line-height: 1.05;
+    max-width: 14ch;
+  }
+
+  .summary {
+    margin: 0.85rem 0 0;
+    max-width: 60ch;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  h3 {
+    color: var(--accent-strong);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+    padding: 1.75rem 0;
+  }
+
+  h3 {
+    margin: 0 0 0.8rem;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li + li {
+    margin-top: 0.55rem;
+  }
+
+  li a,
+  .socials a {
+    color: var(--muted);
+    line-height: 1.6;
+    transition: color 180ms ease, transform 180ms ease, opacity 180ms ease;
+  }
+
+  li a:hover,
+  li a:focus-visible,
+  .socials a:hover,
+  .socials a:focus-visible {
+    color: var(--accent-strong);
+  }
+
+  .footer-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+
+  .footer-meta p {
+    margin: 0;
+  }
+
+  .socials {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.95rem;
+  }
+
+  .socials a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    min-height: 1.25rem;
+    opacity: 0.78;
+  }
+
+  .socials a:hover,
+  .socials a:focus-visible {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  .socials img {
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .socials span {
+    font-size: 0.88rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 920px) {
+    .footer-top,
+    .footer-grid,
+    .footer-meta {
+      grid-template-columns: 1fr;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 600px) {
+    .footer-frame {
+      padding: 1.4rem;
+    }
+
+    .footer-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

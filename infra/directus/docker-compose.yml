@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-17-alpine}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rebase_v1}
+      POSTGRES_USER: ${POSTGRES_USER:-rebase}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rebase_local_password}
+    ports:
+      - '${POSTGRES_PORT:-55432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  directus:
+    image: directus/directus:${DIRECTUS_VERSION:-11.17.1}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '${DIRECTUS_PORT:-8055}:8055'
+    environment:
+      KEY: ${DIRECTUS_KEY:-rebase-local-key}
+      SECRET: ${DIRECTUS_SECRET:-rebase-local-secret}
+      ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL:-admin@rebase.network}
+      ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD:-rebase-local-admin-password}
+      ADMIN_TOKEN: ${DIRECTUS_ADMIN_TOKEN:-rebase-local-admin-token}
+      PUBLIC_URL: ${DIRECTUS_PUBLIC_URL:-http://127.0.0.1:8055}
+      DB_CLIENT: pg
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-rebase_v1}
+      DB_USER: ${POSTGRES_USER:-rebase}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-rebase_local_password}
+      TELEMETRY: 'false'
+      CORS_ENABLED: 'true'
+      CORS_ORIGIN: 'true'
+      STORAGE_LOCATIONS: local
+      STORAGE_LOCAL_DRIVER: local
+      STORAGE_LOCAL_ROOT: ./uploads
+    volumes:
+      - directus_uploads:/directus/uploads
+      - directus_extensions:/directus/extensions
+
+volumes:
+  postgres_data:
+  directus_uploads:
+  directus_extensions:

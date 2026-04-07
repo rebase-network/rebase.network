@@ -1,0 +1,9 @@
+<svg width="1600" height="960" viewBox="0 0 1600 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="960" fill="#0F172A"/>
+  <rect x="100" y="100" width="1400" height="760" rx="46" fill="#FFF7ED"/>
+  <circle cx="510" cy="470" r="210" stroke="#F97316" stroke-width="38"/>
+  <circle cx="850" cy="470" r="210" stroke="#14B8A6" stroke-width="38"/>
+  <circle cx="1190" cy="470" r="210" stroke="#1D4ED8" stroke-width="38"/>
+  <text x="180" y="220" fill="#111827" font-size="58" font-family="Georgia, serif" font-weight="700">geekdaily editor roundtable</text>
+  <text x="180" y="780" fill="#6B7280" font-size="34" font-family="Arial, sans-serif">community discussion cover</text>
+</svg>

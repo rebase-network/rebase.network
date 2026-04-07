@@ -1,0 +1,65 @@
+---
+import '@/styles/global.css';
+import type { SiteSettings } from '@rebase/types';
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+
+interface Props {
+  site: SiteSettings;
+  title?: string;
+  description?: string;
+  socialImage?: string;
+  noindex?: boolean;
+}
+
+const {
+  site,
+  title = 'Rebase 社区',
+  description = site.description,
+  socialImage,
+  noindex = false,
+} = Astro.props;
+
+const canonicalPath = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/+$/, '');
+const canonicalUrl = new URL(canonicalPath, site.primaryDomain).toString();
+const socialImageUrl = new URL(socialImage ?? '/social-card.svg', site.primaryDomain).toString();
+const robots = noindex ? 'noindex, nofollow' : 'index, follow';
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl} />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href="/brand/rebase-logo.svg" />
+    <link rel="alternate" type="application/rss+xml" title="Rebase RSS" href="/rss.xml" />
+  </head>
+  <body>
+    <SiteHeader site={site} />
+    <main class="page-main">
+      <slot />
+    </main>
+    <SiteFooter site={site} />
+  </body>
+</html>
+
+<style>
+  .page-main {
+    padding-top: 1.25rem;
+  }
+</style>

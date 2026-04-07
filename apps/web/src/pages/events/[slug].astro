@@ -1,0 +1,162 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import DetailHero from '@/components/DetailHero.astro';
+import DetailSidebarLinksSection from '@/components/DetailSidebarLinksSection.astro';
+import MarkdownContent from '@/components/MarkdownContent.astro';
+import { getEventBySlug, getEvents, getSiteSettings } from '@/lib/content';
+import { formatEventWindow } from '@/lib/dates';
+import { getEventPath, getEventSlugFromRouteParam } from '@/lib/paths';
+
+const eventSlug = getEventSlugFromRouteParam(Astro.params.slug ?? '');
+const [site, event, events] = await Promise.all([getSiteSettings(), getEventBySlug(eventSlug), getEvents()]);
+const related = event ? events.filter((item) => item.slug !== event.slug).slice(0, 2) : [];
+const eventStatusLabel = event ? (event.status === 'upcoming' ? '即将举办' : '活动归档') : '';
+const registrationModeLabel = event ? (event.registrationUrl ? '开放报名' : '仅信息说明') : '';
+const eventContinueAnchor = related.length > 0 ? '#event-related' : '#event-actions';
+const eventBreadcrumbs = event
+  ? [
+      { href: '/', label: '首页' },
+      { href: '/events', label: '活动' },
+      { label: event.title, current: true },
+    ]
+  : [];
+const eventHeroMeta = event ? [event.city, event.venue, registrationModeLabel].filter(Boolean) : [];
+const eventHeroActions = event
+  ? [
+      ...(event.registrationUrl
+        ? [{ href: event.registrationUrl, label: '外部报名', external: true, showIcon: true }]
+        : []),
+      { href: '/events', label: '返回活动列表', secondary: true },
+    ]
+  : [];
+const eventJumpLinks = [
+  { href: '#event-body', label: '活动内容' },
+  { href: '#event-info', label: '活动信息' },
+  { href: eventContinueAnchor, label: '继续追踪' },
+];
+const eventWayfindingLinks = [
+  { href: '#event-body', label: '查看活动内容' },
+  { href: '#event-info', label: '查看活动信息' },
+  { href: eventContinueAnchor, label: '继续追踪' },
+];
+const eventActionLinks = [
+  ...(event?.registrationUrl ? [{ href: event.registrationUrl, label: '打开外部报名链接', external: true }] : []),
+  { href: '/events/rss.xml', label: '订阅活动 RSS' },
+  { href: '/events', label: '回到活动列表' },
+];
+const eventRelatedLinks = related.map((item) => ({
+  href: getEventPath(item.startAt, item.slug),
+  label: item.title,
+}));
+
+if (!event) {
+  Astro.response.status = 404;
+}
+---
+
+<BaseLayout
+  site={site}
+  title={event ? event.title : '活动未找到'}
+  description={event ? event.summary : '你访问的活动页面暂时无法找到。'}
+  socialImage={event?.coverImageUrl}
+  noindex={!event}
+>
+  {event ? (
+    <>
+      <section class="shell page-hero single">
+        <DetailHero
+          kicker="活动详情"
+          breadcrumbs={eventBreadcrumbs}
+          edition={eventStatusLabel}
+          title={event.title}
+          summary={event.summary}
+          meta={eventHeroMeta}
+          note={`${formatEventWindow(event.startAt, event.endAt)} · ${event.location}`}
+          actions={eventHeroActions}
+          jumps={eventJumpLinks}
+          heroClass="event-hero"
+        />
+      </section>
+
+      <section class="shell page-section detail-shell">
+        <article id="event-body" class="card detail-body-card event-detail">
+          <div class="detail-body-lead event-meta">
+            <p>{formatEventWindow(event.startAt, event.endAt)}</p>
+            <p>{event.location} · {event.venue}</p>
+          </div>
+          <MarkdownContent content={event.content} />
+        </article>
+
+        <aside class="card detail-sidebar">
+          <DetailSidebarLinksSection
+            title="页面导览"
+            copy="如果你是从活动分享或历史归档进入，可以先用这些锚点快速定位。"
+            links={eventWayfindingLinks}
+          />
+
+          <section id="event-info" class="detail-sidebar-section">
+            <h2>活动信息</h2>
+            <ul class="detail-fact-list">
+              <li>
+                <strong>活动状态</strong>
+                <span>{eventStatusLabel}</span>
+              </li>
+              <li>
+                <strong>时间窗口</strong>
+                <span>{formatEventWindow(event.startAt, event.endAt)}</span>
+              </li>
+              <li>
+                <strong>地点</strong>
+                <span>{event.location} · {event.venue}</span>
+              </li>
+            </ul>
+            <p class="detail-sidebar-copy">{event.registrationNote ?? '报名方式稍后公布，当前页面先保证活动信息可读、可归档、可订阅。'}</p>
+            {event.tags.length > 0 && (
+              <ul class="detail-tag-list">
+                {event.tags.map((tag) => <li>{tag}</li>)}
+              </ul>
+            )}
+          </section>
+
+          <DetailSidebarLinksSection id="event-actions" title="继续追踪" links={eventActionLinks} />
+
+          {related.length > 0 && (
+            <DetailSidebarLinksSection
+              id="event-related"
+              title="相关活动"
+              links={eventRelatedLinks}
+              listClass="related-list"
+            />
+          )}
+        </aside>
+      </section>
+    </>
+  ) : (
+    <section class="shell page-hero single">
+      <article class="hero-panel card">
+        <p class="hero-kicker">404</p>
+        <h1 class="hero-title">这个活动页面暂时没有被找到。</h1>
+        <p class="hero-summary">你可以先回到活动列表，查看当前活动和历史活动归档。</p>
+      </article>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .single {
+    grid-template-columns: 1fr;
+  }
+
+  .event-hero {
+    color: white;
+    background:
+      radial-gradient(circle at top right, rgba(245, 158, 11, 0.26), transparent 24%),
+      linear-gradient(135deg, rgba(16, 37, 34, 0.98), rgba(17, 94, 89, 0.92));
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 28px 60px rgba(16, 37, 34, 0.24);
+  }
+
+  .light {
+    color: white;
+  }
+</style>

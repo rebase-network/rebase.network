@@ -1,0 +1,167 @@
+---
+import type { SiteSettings } from '@rebase/types';
+
+interface Props {
+  site: SiteSettings;
+}
+
+const { site } = Astro.props;
+const pathname = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <div class="shell header-inner card">
+    <a class="brand" href="/" aria-label={`${site.name} 首页`}>
+      <img
+        class="brand-logo"
+        src="/brand/rebase-logo-wordmark.svg"
+        alt="Rebase 社区"
+        width="225"
+        height="101"
+      />
+      <span class="brand-copy">
+        <strong>{site.name}</strong>
+        <small>{site.tagline}</small>
+      </span>
+    </a>
+
+    <nav aria-label="主导航">
+      <ul>
+        {site.navigation.map((item) => {
+          const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+          return (
+            <li>
+              <a class={active ? 'active' : undefined} href={item.href}>
+                {item.label}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 1rem 0 0;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-width: 0;
+  }
+
+  .brand-logo {
+    display: block;
+    width: clamp(6.4rem, 10vw, 7.6rem);
+    height: auto;
+    flex: none;
+  }
+
+  .brand-copy {
+    display: grid;
+    gap: 0.16rem;
+    min-width: 0;
+  }
+
+  strong,
+  small {
+    display: block;
+  }
+
+  strong {
+    font-size: 0.98rem;
+    letter-spacing: 0.02em;
+  }
+
+  small {
+    max-width: 32ch;
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+
+  nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.65rem 0.9rem;
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.94rem;
+    font-weight: 600;
+    transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+  }
+
+  nav a:hover,
+  nav a.active {
+    background: rgba(15, 118, 110, 0.09);
+    color: var(--accent-strong);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 920px) {
+    .header-inner {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+      padding: 0.9rem 1rem;
+    }
+
+    .brand {
+      justify-content: flex-start;
+    }
+
+    .brand-logo {
+      width: 6.3rem;
+    }
+
+    small {
+      display: none;
+    }
+
+    nav {
+      overflow-x: auto;
+      padding-bottom: 0.1rem;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    nav ul {
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+      width: max-content;
+    }
+
+    nav a {
+      white-space: nowrap;
+    }
+  }
+</style>

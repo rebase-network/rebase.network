@@ -1,0 +1,172 @@
+---
+import type { Event } from '@rebase/types';
+import { formatEventWindow } from '@/lib/dates';
+import { getEventPath } from '@/lib/paths';
+
+interface Props {
+  event: Event;
+}
+
+const { event } = Astro.props;
+---
+
+<article class="event-card card">
+  {event.coverImageUrl ? (
+    <img class="cover-image" src={event.coverImageUrl} alt="" loading="lazy" />
+  ) : (
+    <div class:list={['cover-image', 'cover-fallback', event.status]}>
+      <span>{event.status === 'upcoming' ? '即将开始' : '活动归档'}</span>
+      <strong>{event.city}</strong>
+    </div>
+  )}
+  <div class="status-row">
+    <p class="status">{event.status === 'upcoming' ? '即将举行' : '往期活动'}</p>
+    {event.registrationUrl && <span class="chip">外部报名</span>}
+  </div>
+  <h3>
+    <a href={getEventPath(event.startAt, event.slug)}>{event.title}</a>
+  </h3>
+  <p class="summary">{event.summary}</p>
+  <ul class="meta-list">
+    <li>{formatEventWindow(event.startAt, event.endAt)}</li>
+    <li>{event.location} · {event.venue}</li>
+  </ul>
+  {event.tags.length > 0 && (
+    <ul class="tag-list">
+      {event.tags.map((tag) => <li>{tag}</li>)}
+    </ul>
+  )}
+</article>
+
+<style>
+  .event-card {
+    padding: 1.25rem;
+  }
+
+  .event-card:hover,
+  .event-card:focus-within {
+    transform: translateY(-4px);
+    border-color: rgba(15, 118, 110, 0.2);
+    box-shadow: var(--shadow-strong);
+  }
+
+  .cover-image {
+    width: calc(100% + 2.5rem);
+    margin: -1.25rem -1.25rem 1rem;
+    border-radius: 1rem 1rem 0 0;
+    min-height: 10rem;
+    object-fit: cover;
+    transition: transform 260ms ease;
+  }
+
+  .event-card:hover .cover-image,
+  .event-card:focus-within .cover-image {
+    transform: scale(1.03);
+  }
+
+  .cover-fallback {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    gap: 0.55rem;
+    padding: 1rem;
+    color: white;
+  }
+
+  .cover-fallback.upcoming {
+    background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%);
+  }
+
+  .cover-fallback.past {
+    background: linear-gradient(135deg, #7c2d12 0%, #1f2933 100%);
+  }
+
+  .cover-fallback span,
+  .status {
+    margin: 0 0 0.8rem;
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .cover-fallback span {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .cover-fallback strong {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .status-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.8rem;
+    align-items: center;
+  }
+
+  .status {
+    margin-bottom: 0;
+  }
+
+  .chip {
+    padding: 0.34rem 0.68rem;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.08);
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0 0 0.7rem;
+    font-size: 1.45rem;
+    line-height: 1.08;
+  }
+
+  h3 a {
+    transition: color 160ms ease;
+  }
+
+  .event-card:hover h3 a,
+  .event-card:focus-within h3 a {
+    color: var(--accent-strong);
+  }
+
+  .summary {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .meta-list {
+    margin: 0;
+    padding-left: 1rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tag-list li {
+    padding: 0.36rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(17, 94, 89, 0.08);
+    color: var(--accent-strong);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+</style>

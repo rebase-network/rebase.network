@@ -1,0 +1,32 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getSiteSettings } from '@/lib/content';
+
+const site = await getSiteSettings();
+---
+
+<BaseLayout
+  site={site}
+  title="页面未找到"
+  description="你访问的页面暂时无法找到。"
+  noindex
+>
+  <section class="shell page-hero single">
+    <article class="hero-panel card">
+      <p class="hero-kicker">404</p>
+      <h1 class="hero-title">这页内容暂时没有被找到。</h1>
+      <p class="hero-summary">
+        你可以回到首页继续浏览 Rebase 的文章、GeekDaily、招聘和活动入口。
+      </p>
+      <div class="button-row">
+        <a class="button-link" href="/">回到首页</a>
+      </div>
+    </article>
+  </section>
+</BaseLayout>
+
+<style>
+  .single {
+    grid-template-columns: 1fr;
+  }
+</style>
