@@ -135,23 +135,22 @@ code {
 }
 
 .brand {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.18rem 0.14rem 0.22rem;
+  display: grid;
+  justify-items: start;
+  gap: 0.34rem;
+  padding: 0.18rem 0.14rem 0.28rem;
 }
 
-.brand-mark {
+.brand-logo {
+  display: block;
+  width: min(100%, 5.65rem);
+  height: auto;
+}
+
+.brand-copy {
   display: grid;
-  place-items: center;
-  width: 1.88rem;
-  height: 1.88rem;
-  border-radius: 0.64rem;
-  background: linear-gradient(135deg, #0f6d64 0%, #ef9f45 100%);
-  color: white;
-  font-size: 0.84rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  gap: 0.04rem;
+  min-width: 0;
 }
 
 .brand strong,
@@ -160,14 +159,13 @@ code {
 }
 
 .brand strong {
-  font-size: 0.86rem;
+  font-size: 0.9rem;
   letter-spacing: 0.02em;
 }
 
 .brand small {
-  margin-top: 0.04rem;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.7rem;
 }
 
 .sidebar-nav {
@@ -1270,6 +1268,12 @@ code {
 
 .login-card-head {
   gap: 0.45rem;
+}
+
+.login-brand-logo {
+  display: block;
+  width: min(100%, 9rem);
+  height: auto;
 }
 
 .login-card-head h1 {

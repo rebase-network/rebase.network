@@ -57,9 +57,15 @@ onMounted(() => {
   <div v-else class="app-shell">
     <aside class="sidebar">
       <div class="sidebar-inner">
-        <RouterLink class="brand" to="/dashboard">
-          <div class="brand-mark">RB</div>
-          <div>
+        <RouterLink class="brand" to="/dashboard" aria-label="前往 Rebase 后台首页">
+          <img
+            class="brand-logo"
+            src="/brand/rebase-logo-wordmark.svg"
+            alt="Rebase 社区"
+            width="225"
+            height="101"
+          />
+          <div class="brand-copy">
             <strong>Rebase 后台</strong>
             <small>社区运营工作台</small>
           </div>

@@ -11,9 +11,15 @@ const pathname = Astro.url.pathname;
 
 <header class="site-header">
   <div class="shell header-inner card">
-    <a class="brand" href="/">
-      <span class="brand-mark">r</span>
-      <span>
+    <a class="brand" href="/" aria-label={`${site.name} 首页`}>
+      <img
+        class="brand-logo"
+        src="/brand/rebase-logo-wordmark.svg"
+        alt="Rebase 社区"
+        width="225"
+        height="101"
+      />
+      <span class="brand-copy">
         <strong>{site.name}</strong>
         <small>{site.tagline}</small>
       </span>
@@ -59,17 +65,17 @@ const pathname = Astro.url.pathname;
     min-width: 0;
   }
 
-  .brand-mark {
+  .brand-logo {
+    display: block;
+    width: clamp(6.4rem, 10vw, 7.6rem);
+    height: auto;
+    flex: none;
+  }
+
+  .brand-copy {
     display: grid;
-    width: 2.6rem;
-    height: 2.6rem;
-    place-items: center;
-    border-radius: 0.9rem;
-    background: linear-gradient(135deg, #0f766e 0%, #f59e0b 100%);
-    color: white;
-    font-size: 1.3rem;
-    font-weight: 800;
-    text-transform: lowercase;
+    gap: 0.16rem;
+    min-width: 0;
   }
 
   strong,
@@ -79,12 +85,10 @@ const pathname = Astro.url.pathname;
 
   strong {
     font-size: 0.98rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
 
   small {
-    margin-top: 0.2rem;
     max-width: 32ch;
     color: var(--muted);
     font-size: 0.82rem;
@@ -129,6 +133,10 @@ const pathname = Astro.url.pathname;
 
     .brand {
       justify-content: flex-start;
+    }
+
+    .brand-logo {
+      width: 6.3rem;
     }
 
     small {

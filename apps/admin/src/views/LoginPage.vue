@@ -61,6 +61,13 @@ const signIn = async () => {
     <section class="login-layout">
       <section class="panel login-card stacked-gap">
         <div class="login-card-head">
+          <img
+            class="login-brand-logo"
+            src="/brand/rebase-logo-wordmark.svg"
+            alt="Rebase 社区"
+            width="225"
+            height="101"
+          />
           <div class="brand-tag">工作人员后台</div>
           <h1>Rebase 社区运营后台</h1>
           <p>统一维护文章、极客日报、招聘、活动、贡献者与站点内容。</p>
