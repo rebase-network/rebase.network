@@ -87,24 +87,39 @@ The target architecture for Rebase is the custom admin and API stack described i
 reader browser
     |
     v
-cloudflare -> astro app on workers
-                 |
-                 v
-            public api
-                 |
-                 v
-             postgresql
-                 |
-                 v
-                 r2
+cloudflare edge
+    |
+    v
+public worker (`apps/web`)
+    |
+    v
+`api.rebase.network`
+    |
+    v
+cloudflare tunnel (`cloudflared`)
+    |
+    v
+api service (`apps/api`)
+    |
+    +--> postgresql
+    +--> r2
 
 staff browser
     |
     v
-   admin app
+cloudflare edge
     |
     v
-   admin api
+admin worker (`apps/admin`)
+    |
+    v
+`api.rebase.network`
+    |
+    v
+cloudflare tunnel (`cloudflared`)
+    |
+    v
+api service (`apps/api`)
     |
     +--> better auth
     +--> postgresql
@@ -115,39 +130,43 @@ staff browser
 
 ### Public Read Flow
 
-1. A reader requests a public page.
-2. The Astro app runs on Cloudflare Workers.
-3. The page fetches published content from the public API.
-4. The API reads structured content from PostgreSQL and media metadata from the assets table.
-5. Media assets are served from R2-backed URLs.
-6. Cloudflare cache is applied to improve repeat access performance.
+1. A reader requests a public page on `rebase.network` or `rebase.community`.
+2. The Astro app runs on the public Cloudflare Worker.
+3. The worker fetches published content from `api.rebase.network`.
+4. Cloudflare routes that hostname through `cloudflared` to the API service on `rebase@101.33.75.240`.
+5. The API reads structured content from PostgreSQL and media metadata from the assets table.
+6. Media assets are served from R2-backed URLs.
+7. Cloudflare cache is applied to improve repeat access performance.
 
 ### Staff Content Flow
 
-1. A staff member logs into the custom admin.
-2. The admin app calls authenticated admin API routes.
-3. The API validates the request, checks permissions, and applies business rules.
-4. Structured data is written to PostgreSQL.
-5. Uploaded media is stored in R2 and referenced by metadata records.
-6. Sensitive actions write audit logs.
-7. The public site reads the latest published content through the public API.
+1. A staff member opens `admin.rebase.network`.
+2. The admin UI is served by a dedicated Cloudflare Worker for `apps/admin`.
+3. The admin app calls authenticated routes on `api.rebase.network`.
+4. Cloudflare routes API traffic through `cloudflared` to the API service on `rebase@101.33.75.240`.
+5. The API validates the request, checks permissions, and applies business rules.
+6. Structured data is written to PostgreSQL.
+7. Uploaded media is stored in R2 and referenced by metadata records.
+8. Sensitive actions write audit logs.
+9. The public site reads the latest published content through the public API.
 
 ## Deployment Targets
 
-Recommended public deployment:
+Agreed production deployment for V1:
 
-- Astro site on Cloudflare Workers
-- public media served behind Cloudflare on top of R2
+- `apps/web` on a Cloudflare Worker bound to `rebase.network` and `rebase.community`
+- `apps/admin` on a separate Cloudflare Worker bound to `admin.rebase.network`
+- `apps/api` in Docker Compose on `rebase@101.33.75.240`
+- PostgreSQL in the same Docker Compose stack on `rebase@101.33.75.240`
+- `cloudflared` in the same Docker Compose stack to expose `api.rebase.network` through Cloudflare Tunnel
+- public media served from Cloudflare R2, later attached to `media.rebase.network`
 
-Recommended admin and database host target for V1:
+### Why Cloudflare Tunnel for the API
 
-- `rebase@101.33.75.240`
-
-Recommended runtime split on the server:
-
-- `apps/api`
-- PostgreSQL
-- admin static assets or admin app host
+- keeps the API origin off the public internet in V1
+- avoids adding Caddy or Nginx just to terminate HTTPS
+- lets Cloudflare handle the external TLS edge while the tunnel secures edge-to-origin traffic
+- keeps PostgreSQL private to the server and Docker network
 
 ## Rendering Strategy
 
@@ -179,9 +198,9 @@ Public domains:
 
 Operational domains:
 
-- recommended admin domain: `admin.rebase.network`
-- recommended media domain: `media.rebase.network`
-- optional API domain: `api.rebase.network`
+- `admin.rebase.network` for the admin worker
+- `api.rebase.network` for the tunneled API hostname
+- `media.rebase.network` for the R2 public bucket
 
 Preferred behavior:
 
@@ -190,6 +209,13 @@ Preferred behavior:
 Fallback behavior:
 
 - `rebase.community` may redirect with `301` to `rebase.network` if direct dual-domain delivery becomes impractical
+
+## Release Strategy
+
+- daily development continues on `dev`
+- deployment documentation, infrastructure changes, and release validation can land on `dev` first
+- merge `dev` into `main` only when the release candidate is ready
+- production deployments should run from `main`, not directly from `dev`
 
 ## API Boundary
 

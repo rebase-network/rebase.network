@@ -50,10 +50,10 @@ Media domain:
 - `media.rebase.network` should point to the Cloudflare R2 public bucket after the bucket is created
 - until then, use the default R2 public URL for testing and local integration
 
-Operational domain suggestions:
+Operational domains for V1:
 
-- `admin.rebase.network` for the admin workspace
-- `api.rebase.network` if a dedicated API hostname is preferred
+- `admin.rebase.network` should point to the dedicated admin Worker
+- `api.rebase.network` should route through Cloudflare Tunnel to `apps/api` on `rebase@101.33.75.240`
 
 ## Health and Operations Baseline
 
@@ -62,6 +62,8 @@ Recommended baseline:
 - `/healthz` verifies the public site runtime
 - `/health` verifies API liveness
 - `/ready` verifies API readiness and key dependencies
+- `cloudflared` stays connected and serving the `api.rebase.network` route
+- PostgreSQL remains private to the server and is not exposed on a public interface
 - external monitoring should probe the public site and API regularly
 
 Recommended production follow-up:
@@ -69,6 +71,15 @@ Recommended production follow-up:
 - monitor `/healthz` from an external GitHub Actions workflow or another uptime tool
 - monitor the API readiness endpoint
 - alert on repeated failures rather than single transient failures
+
+## Deployment Flow Baseline
+
+Before the production rollout, verify:
+
+- production deployments are wired to `main` only
+- `dev` remains the integration branch for ongoing work
+- the `dev` to `main` merge happens only after release validation is complete
+- both Workers and the server stack are using the intended production secrets
 
 ## SEO and Discovery Baseline
 

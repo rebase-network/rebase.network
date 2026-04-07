@@ -124,9 +124,18 @@ pnpm cms:generate:geekdaily
 
 ## Deployment Note
 
-The planned production host target for the Rebase admin/API and database stack is `rebase@101.33.75.240`.
+The agreed V1 production split is:
 
-The public website remains planned for Cloudflare Workers.
+- `apps/web` on Cloudflare Workers for `rebase.network` and `rebase.community`
+- `apps/admin` on a separate Cloudflare Worker for `admin.rebase.network`
+- `apps/api`, PostgreSQL, and `cloudflared` on `rebase@101.33.75.240` via Docker Compose
+- `media.rebase.network` on top of the Cloudflare R2 public bucket once the custom domain is attached
+
+Release policy:
+
+- ongoing work continues on `dev`
+- merge `dev` into `main` only when the release candidate is validated
+- production deployment should track `main`, not `dev`
 
 ## Repository Conventions
 

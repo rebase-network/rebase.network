@@ -50,24 +50,39 @@ infra/
 reader browser
     |
     v
-cloudflare -> astro app on workers
-                 |
-                 v
-            public api
-                 |
-                 v
-             postgresql
-                 |
-                 v
-                 r2
+cloudflare edge
+    |
+    v
+public worker (`apps/web`)
+    |
+    v
+`api.rebase.network`
+    |
+    v
+cloudflare tunnel (`cloudflared`)
+    |
+    v
+api service (`apps/api`)
+    |
+    +--> postgresql
+    +--> r2
 
 staff browser
     |
     v
-   admin app
+cloudflare edge
     |
     v
-   admin api
+admin worker (`apps/admin`)
+    |
+    v
+`api.rebase.network`
+    |
+    v
+cloudflare tunnel (`cloudflared`)
+    |
+    v
+api service (`apps/api`)
     |
     +--> better auth
     +--> postgresql
@@ -217,11 +232,14 @@ Recommended runtime probes:
 
 Recommended production split:
 
-- `apps/web` on Cloudflare Workers
-- `apps/admin` served from the server or an internal static host behind `admin.rebase.network`
-- `apps/api` on `rebase@101.33.75.240`
-- PostgreSQL on `rebase@101.33.75.240`
-- R2 for media
+- `apps/web` on a Cloudflare Worker for `rebase.network` and `rebase.community`
+- `apps/admin` on a separate Cloudflare Worker for `admin.rebase.network`
+- `apps/api` on `rebase@101.33.75.240` inside Docker Compose
+- PostgreSQL on `rebase@101.33.75.240` inside the same Docker Compose stack
+- `cloudflared` on `rebase@101.33.75.240` to publish `api.rebase.network` through Cloudflare Tunnel
+- R2 for media, with `media.rebase.network` attached after bucket setup
+
+This keeps the public and admin frontends at the edge while the writable backend stays on the server without exposing PostgreSQL publicly.
 
 ## Transition Note
 

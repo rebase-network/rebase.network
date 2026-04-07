@@ -24,9 +24,11 @@ The Rebase admin is now in scope for this repository.
 
 The repository should converge on a custom admin and API stack rather than a separately managed headless CMS.
 
-Planned admin/API and database deployment target:
+Planned deployment target:
 
-- `rebase@101.33.75.240`
+- `apps/web` on Cloudflare Workers
+- `apps/admin` on a separate Cloudflare Worker
+- `apps/api`, PostgreSQL, and `cloudflared` on `rebase@101.33.75.240`
 
 ## Phase 1: Foundation and Direction Reset
 
@@ -117,13 +119,14 @@ Deliverables:
 - domain configuration checklist
 - analytics and observability basics
 - simple backend health-check baseline
-- deployment runbooks for admin, API, and database
+- Cloudflare Worker deployment runbooks for web and admin
+- Docker Compose and Cloudflare Tunnel runbooks for API and database
 
 Definition of done:
 
 - core SEO is in place
 - launch-critical routes are validated
-- deployment and domain steps are documented
+- deployment and domain steps are documented for the public worker, admin worker, and tunneled API stack
 - basic service health checks are documented
 
 ## Open Decisions to Resolve Before Launch
@@ -131,7 +134,7 @@ Definition of done:
 - whether both public domains can remain directly accessible in production
 - exact Cloudflare cache policy by route
 - final analytics stack
-- whether the admin UI is served directly from the server or a separate static host
+- final secret rotation and release checklist details for Cloudflare and the server stack
 
 ## Working Rules During Implementation
 
