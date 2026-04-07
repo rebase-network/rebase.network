@@ -27,6 +27,10 @@ export interface GeekDailyWechatInput {
   items: GeekDailyWechatItemInput[];
 }
 
+// WeChat editor is most stable when the pasted QR image keeps both src and data-src.
+const qrCodeImageUrl =
+  'https://mmbiz.qpic.cn/mmbiz_png/dQFmOEibdOIKVOj71RpnXzn8Tr4FaCggj0LDicic24267jickINQpwKjNSWo92oMn7M5phnyIuV5FIcbKzicMje0ZHw/640?wx_fmt=png';
+
 const escapeHtml = (value: string) =>
   value
     .replace(/&/g, '&amp;')
@@ -61,6 +65,32 @@ const compactWechatHtml = (value: string) =>
 const isFilled = (value: string) => value.trim().length > 0;
 const hasCompleteItem = (item: GeekDailyWechatItemInput) =>
   isFilled(item.title) && isFilled(item.authorName) && isFilled(item.sourceUrl) && isFilled(item.summary);
+
+const normalizeWechatItem = (item: GeekDailyWechatItemInput) => ({
+  title: escapeHtml(normalizeVisibleText(item.title)),
+  authorName: escapeHtml(normalizeVisibleText(item.authorName)),
+  sourceUrl: escapeHtml(normalizeUrlText(item.sourceUrl)),
+  summary: escapeHtml(normalizeVisibleText(item.summary)),
+});
+
+const buildTemplatePayload = (items: GeekDailyWechatItemInput[]): GeekDailyWechatTemplatePayload => {
+  const [first, second, third] = items.map(normalizeWechatItem);
+
+  return {
+    title1: first.title,
+    url1: first.sourceUrl,
+    author1: first.authorName,
+    introduce1: first.summary,
+    title2: second.title,
+    url2: second.sourceUrl,
+    author2: second.authorName,
+    introduce2: second.summary,
+    title3: third.title,
+    url3: third.sourceUrl,
+    author3: third.authorName,
+    introduce3: third.summary,
+  };
+};
 
 function renderWechatTemplate(content: string, dx: GeekDailyWechatTemplatePayload) {
   return `
@@ -196,7 +226,7 @@ function renderWechatTemplate(content: string, dx: GeekDailyWechatTemplatePayloa
       <p style="max-width: 100%;min-height: 1em;text-align: center;box-sizing: border-box !important;overflow-wrap: break-word !important;"><span style="max-width: 100%;font-size: 15px;box-sizing: border-box !important;overflow-wrap: break-word !important;"><strong style="max-width: 100%;box-sizing: border-box !important;overflow-wrap: break-word !important;">网站:</strong><strong style="max-width: 100%;box-sizing: border-box !important;overflow-wrap: break-word !important;">https://rebase.network</strong></span></p>
       <p style="max-width: 100%;min-height: 1em;text-align: center;box-sizing: border-box !important;overflow-wrap: break-word !important;"><span style="max-width: 100%;font-size: 15px;box-sizing: border-box !important;overflow-wrap: break-word !important;"><strong style="max-width: 100%;box-sizing: border-box !important;overflow-wrap: break-word !important;">公众号:</strong><strong style="max-width: 100%;box-sizing: border-box !important;overflow-wrap: break-word !important;">rebase_network</strong></span></p>
       <p style="max-width: 100%;min-height: 1em;box-sizing: border-box !important;overflow-wrap: break-word !important;"><br style="max-width: 100%;box-sizing: border-box !important;overflow-wrap: break-word !important;"></p>
-      <p style="max-width: 100%;min-height: 1em;color: rgb(53, 53, 53);font-size: 14px;text-align: center;letter-spacing: 0.544px;box-sizing: border-box !important;overflow-wrap: break-word !important;"><img class="rich_pages wxw-img" data-ratio="1" data-s="300,640" data-type="png" data-w="372" data-imgqrcoded="1" data-src="https://mmbiz.qpic.cn/mmbiz_png/dQFmOEibdOIKVOj71RpnXzn8Tr4FaCggj0LDicic24267jickINQpwKjNSWo92oMn7M5phnyIuV5FIcbKzicMje0ZHw/640?wx_fmt=png" style="" src="https://mmbiz.qpic.cn/mmbiz_png/dQFmOEibdOIKVOj71RpnXzn8Tr4FaCggj0LDicic24267jickINQpwKjNSWo92oMn7M5phnyIuV5FIcbKzicMje0ZHw/640?wx_fmt=png" crossorigin="anonymous" alt="Rebase Community QR"></p>
+      <p style="max-width: 100%;min-height: 1em;color: rgb(53, 53, 53);font-size: 14px;text-align: center;letter-spacing: 0.544px;box-sizing: border-box !important;overflow-wrap: break-word !important;"><img class="rich_pages wxw-img" data-ratio="1" data-s="300,640" data-type="png" data-w="372" data-imgqrcoded="1" data-src="${qrCodeImageUrl}" style="" src="${qrCodeImageUrl}" crossorigin="anonymous" alt="Rebase Community QR"></p>
     </div>
   `;
 }
@@ -228,22 +258,7 @@ export function buildGeekDailyWechatHtml(input: GeekDailyWechatInput) {
     return '';
   }
 
-  const [first, second, third] = input.items;
-
   return compactWechatHtml(
-    renderWechatTemplate(buildWechatIntroHtml(input), {
-      title1: escapeHtml(normalizeVisibleText(first.title)),
-      url1: escapeHtml(normalizeUrlText(first.sourceUrl)),
-      author1: escapeHtml(normalizeVisibleText(first.authorName)),
-      introduce1: escapeHtml(normalizeVisibleText(first.summary)),
-      title2: escapeHtml(normalizeVisibleText(second.title)),
-      url2: escapeHtml(normalizeUrlText(second.sourceUrl)),
-      author2: escapeHtml(normalizeVisibleText(second.authorName)),
-      introduce2: escapeHtml(normalizeVisibleText(second.summary)),
-      title3: escapeHtml(normalizeVisibleText(third.title)),
-      url3: escapeHtml(normalizeUrlText(third.sourceUrl)),
-      author3: escapeHtml(normalizeVisibleText(third.authorName)),
-      introduce3: escapeHtml(normalizeVisibleText(third.summary)),
-    }),
+    renderWechatTemplate(buildWechatIntroHtml(input), buildTemplatePayload(input.items)),
   );
 }
