@@ -111,7 +111,7 @@ export const geekdailyItemSchema = z.object({
   title: requiredTrimmedString('title is required'),
   authorName: requiredTrimmedString('author name is required'),
   sourceUrl: requiredTrimmedString('source url is required'),
-  summary: requiredTrimmedString('summary is required'),
+  summary: requiredTrimmedString('recommendation note is required'),
 });
 
 export const geekdailyEditorSchema = requiredTrimmedString('editor name is required');
@@ -277,7 +277,7 @@ export type ContributorInput = z.infer<typeof contributorSchema>;
 export const geekdailyEpisodeSchema = z.object({
   episodeNumber: z.number().int().positive(),
   title: requiredTrimmedString('title is required'),
-  summary: requiredTrimmedString('summary is required'),
+  summary: trimmedString.default(''),
   bodyMarkdown: trimmedString.default(''),
   editors: z.array(geekdailyEditorSchema).default([]),
   tags: z.array(trimmedString).default([]),
@@ -309,6 +309,16 @@ const normalizeStringList = (items: string[]) =>
         .filter(Boolean),
     ),
   );
+
+export function buildGeekDailySummary(input: Pick<GeekDailyEpisodeInput, 'items'>) {
+  const previewTitles = input.items
+    .map((item) => item.title.trim())
+    .filter(Boolean)
+    .slice(0, 3)
+    .join('、');
+  const suffix = input.items.length > 3 ? ' 等内容。' : '。';
+  return `本期收录 ${input.items.length} 条社区推荐，涉及 ${previewTitles}${suffix}`;
+}
 
 export function buildGeekDailyBodyMarkdown(
   input: Pick<GeekDailyEpisodeInput, 'episodeNumber' | 'editors' | 'items' | 'bodyMarkdown'>,

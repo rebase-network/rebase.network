@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { getGeekDailyEpisodeSlug } from '@rebase/shared';
+import { buildGeekDailySummary, getGeekDailyEpisodeSlug } from '@rebase/shared';
 
 export interface ImportedGeekDailyItem {
   title: string;
@@ -87,18 +87,12 @@ function parseDate(value: string) {
   return new Date(Date.UTC(year, month - 1, day, 8, 0, 0)).toISOString();
 }
 
-function buildSummary(items: ImportedGeekDailyItem[]) {
-  const previewTitles = items.slice(0, 3).map((item) => item.title).join('、');
-  const suffix = items.length > 3 ? ' 等内容。' : '。';
-  return `本期收录 ${items.length} 条社区推荐，涉及 ${previewTitles}${suffix}`;
-}
-
 function buildBody(episodeNumber: number, items: ImportedGeekDailyItem[]) {
   const contributors = [...new Set(items.map((item) => item.authorName).filter(Boolean))];
   const intro = `极客日报#${episodeNumber} 收录了 ${items.length} 条来自社区的推荐${contributors.length > 0 ? `，推荐人包括 ${contributors.join('、')}` : ''}。`;
   const lines = items.map((item, index) => {
     const sourceLine = item.sourceUrl ? `\n来源：${item.sourceUrl}` : '';
-    return `${index + 1}. ${item.title}\n推荐人：${item.authorName || 'unknown'}${sourceLine}\n摘要：${item.summary}`;
+    return `${index + 1}. ${item.title}\n推荐人：${item.authorName || 'unknown'}${sourceLine}\n推荐语：${item.summary}`;
   });
 
   return [intro, ...lines].join('\n\n');
@@ -153,7 +147,7 @@ export function loadGeekDailyArchive(sourceArg = 'geekdaily.csv'): ImportedGeekD
       episodeNumber,
       slug: getGeekDailyEpisodeSlug(episodeNumber),
       title: `极客日报#${episodeNumber}`,
-      summary: buildSummary(episode.items),
+      summary: buildGeekDailySummary({ items: episode.items }),
       bodyMarkdown: buildBody(episodeNumber, episode.items),
       publishedAt: parseDate(episode.publishedAt),
       editors: [],

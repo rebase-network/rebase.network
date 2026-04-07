@@ -75,8 +75,8 @@ const countNotice = computed(() => {
           <input :value="item.sourceUrl" placeholder="https://github.com/..." @input="updateItem(index, 'sourceUrl', ($event.target as HTMLInputElement).value)" />
         </label>
         <label class="field">
-          <span>摘要</span>
-          <textarea rows="2" :value="item.summary" placeholder="补充推荐理由和内容摘要。" @input="updateItem(index, 'summary', ($event.target as HTMLTextAreaElement).value)" />
+          <span>推荐语</span>
+          <textarea rows="2" :value="item.summary" placeholder="填写推荐理由，说明为什么值得看。" @input="updateItem(index, 'summary', ($event.target as HTMLTextAreaElement).value)" />
         </label>
       </div>
     </div>

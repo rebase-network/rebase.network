@@ -23,7 +23,6 @@ interface GeekDailyItemFormState {
 interface GeekDailyFormState {
   episodeNumber: number;
   title: string;
-  summary: string;
   bodyMarkdown: string;
   status: 'draft' | 'published' | 'archived';
   items: GeekDailyItemFormState[];
@@ -44,7 +43,6 @@ const createDefaultItems = () => Array.from({ length: 3 }, () => createBlankItem
 const createBlankForm = (): GeekDailyFormState => ({
   episodeNumber: 0,
   title: '',
-  summary: '',
   bodyMarkdown: '',
   status: 'draft',
   items: createDefaultItems(),
@@ -78,7 +76,6 @@ const applyRecord = (payload: AdminGeekDailyRecord) => {
   Object.assign(form, {
     episodeNumber: payload.episodeNumber,
     title: payload.title,
-    summary: payload.summary,
     bodyMarkdown: extractGeekDailyBodyNote(payload.bodyMarkdown),
     status: payload.status,
     items: payload.items.length > 0 ? payload.items : createDefaultItems(),
@@ -211,11 +208,6 @@ onMounted(() => void loadRecord());
         <strong>标题</strong>
         <span>{{ derivedTitle }}</span>
       </div>
-
-      <label class="field">
-        <span>摘要</span>
-        <textarea v-model="form.summary" rows="3" placeholder="用一句话概括本期极客日报的重点。" />
-      </label>
 
       <GeekDailyItemsField v-model="form.items" />
 
