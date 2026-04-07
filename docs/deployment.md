@@ -70,6 +70,13 @@ Recommended build watch paths for `rebase-web`:
 - include: `apps/web/*, packages/*, scripts/deploy/*, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.base.json`
 - exclude: `docs/*, infra/*, refcode/*, apps/admin/*, apps/api/*`
 
+Required environment variables for `rebase-web` build settings:
+
+- `SESSION_KV_NAMESPACE_ID`: the existing KV namespace id for `rebase-web-session`
+- `SESSION_KV_NAMESPACE_PREVIEW_ID`: optional; use the same value as `SESSION_KV_NAMESPACE_ID` unless you want a dedicated preview namespace
+
+This avoids Wrangler trying to auto-provision a duplicate `SESSION` KV namespace during deploy.
+
 ### `rebase-admin` Worker Build Settings
 
 Use these settings in Workers > `rebase-admin` > Settings > Build:
