@@ -1418,8 +1418,39 @@ code {
   word-break: break-word;
 }
 
+.geekdaily-item-card {
+  gap: 0.48rem;
+  padding: 0.64rem 0.68rem;
+}
+
+.geekdaily-item-card .field-grid {
+  gap: 0.56rem;
+}
+
+.geekdaily-item-card .field-inline-row {
+  gap: 0.62rem;
+}
+
+.geekdaily-item-card .field-inline-label {
+  padding-top: 0.58rem;
+}
+
+.geekdaily-item-card .field-inline-label span {
+  font-size: 0.84rem;
+}
+
+.geekdaily-item-card-header h3 {
+  font-size: 0.92rem;
+}
+
 .geekdaily-note-field textarea {
-  min-height: 12rem;
+  min-height: 8.5rem;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.geekdaily-note-field {
+  padding-top: 0.38rem;
+  border-top: 1px dashed rgba(25, 49, 45, 0.18);
 }
 
 .geekdaily-preview-shell {

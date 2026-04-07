@@ -357,11 +357,11 @@ onBeforeUnmount(() => {
             <small>可选，支持 Markdown，仅用于站内正文，不进入微信稿。</small>
           </div>
           <div class="field-inline-control">
-            <textarea v-model="form.bodyMarkdown" rows="12" placeholder="补充本期导语、额外说明或备注。" />
+            <textarea v-model="form.bodyMarkdown" rows="8" placeholder="补充本期导语、额外说明或备注。" />
           </div>
         </label>
 
-        <div class="muted-row">保存时会同步生成站内正文；右侧可直接复制微信公众号使用的 HTML 模板。</div>
+        <div class="muted-row">保存后会同步生成站内正文；右侧可直接复制微信公众号内容。</div>
       </section>
 
       <aside class="panel stacked-gap geekdaily-preview-column sticky-stack">

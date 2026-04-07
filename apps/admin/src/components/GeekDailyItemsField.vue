@@ -41,7 +41,7 @@ const countNotice = computed(() => {
   <section class="stacked-gap">
     <div class="field-row field-row-spread">
       <h3>推荐条目</h3>
-      <button class="button-link" type="button" @click="addItem">新增条目</button>
+      <button class="button-link button-compact" type="button" @click="addItem">新增条目</button>
     </div>
 
     <div
@@ -55,10 +55,10 @@ const countNotice = computed(() => {
     <div v-if="modelValue.length === 0" class="empty-inline">至少添加一条推荐内容。</div>
 
     <div v-else class="stacked-gap">
-      <div v-for="(item, index) in modelValue" :key="`geekdaily-item-${index}`" class="card-shell stacked-gap">
-        <div class="field-row field-row-spread">
+      <div v-for="(item, index) in modelValue" :key="`geekdaily-item-${index}`" class="card-shell stacked-gap geekdaily-item-card">
+        <div class="field-row field-row-spread geekdaily-item-card-header">
           <h3>条目 {{ index + 1 }}</h3>
-          <button class="button-link button-danger" type="button" @click="removeItem(index)">删除条目</button>
+          <button class="button-link button-compact button-danger" type="button" @click="removeItem(index)">删除条目</button>
         </div>
         <div class="field-grid field-grid-2">
           <label class="field-inline-row field-inline-row-compact">
@@ -78,7 +78,7 @@ const countNotice = computed(() => {
             </div>
           </label>
         </div>
-        <label class="field-inline-row">
+        <label class="field-inline-row field-inline-row-compact">
           <div class="field-inline-label">
             <span>来源链接</span>
           </div>
@@ -86,12 +86,12 @@ const countNotice = computed(() => {
             <input :value="item.sourceUrl" placeholder="https://github.com/..." @input="updateItem(index, 'sourceUrl', ($event.target as HTMLInputElement).value)" />
           </div>
         </label>
-        <label class="field-inline-row">
+        <label class="field-inline-row field-inline-row-compact">
           <div class="field-inline-label">
             <span>推荐语</span>
           </div>
           <div class="field-inline-control">
-            <textarea rows="2" :value="item.summary" placeholder="填写推荐理由，说明为什么值得看。" @input="updateItem(index, 'summary', ($event.target as HTMLTextAreaElement).value)" />
+            <textarea rows="3" :value="item.summary" placeholder="填写推荐理由，说明为什么值得看。" @input="updateItem(index, 'summary', ($event.target as HTMLTextAreaElement).value)" />
           </div>
         </label>
       </div>
