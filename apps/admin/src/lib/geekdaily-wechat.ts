@@ -182,14 +182,14 @@ function renderWechatTemplate(content: string, dx: GeekDailyWechatTemplatePayloa
 
 const buildWechatIntroHtml = (input: GeekDailyWechatInput) => {
   const noteHtml = input.bodyMarkdown.trim() ? renderMarkdownToHtml(input.bodyMarkdown.trim()) : '';
-  const episodeLabel = input.episodeNumber > 0 ? `极客日报#${input.episodeNumber}` : '极客日报';
-  const editorLabel = input.editorName.trim() || '当前编辑';
+
+  if (!noteHtml) {
+    return '';
+  }
 
   return `
     <section style="margin: 0 8px 18px; color: rgb(61, 70, 77); font-size: 15px; line-height: 1.8;">
-      <p style="margin: 0 0 10px;"><strong>${escapeHtml(episodeLabel)}</strong></p>
-      <p style="margin: 0;"><span>本期整理编辑：</span><strong>${escapeHtml(editorLabel)}</strong></p>
-      ${noteHtml ? `<div style="margin-top: 12px;">${noteHtml}</div>` : ''}
+      <div>${noteHtml}</div>
     </section>
   `.trim();
 };
