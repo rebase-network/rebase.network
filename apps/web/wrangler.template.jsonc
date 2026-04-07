@@ -1,7 +1,7 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "rebase-web",
-  "compatibility_date": "2026-04-08",
+  "compatibility_date": "2026-04-07",
   "routes": [
     {
       "pattern": "rebase.network",
