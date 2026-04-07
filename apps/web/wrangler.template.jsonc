@@ -1,0 +1,22 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "rebase-web",
+  "compatibility_date": "2026-04-08",
+  "routes": [
+    {
+      "pattern": "rebase.network",
+      "custom_domain": true
+    },
+    {
+      "pattern": "rebase.community",
+      "custom_domain": true
+    }
+  ],
+  "vars": {
+    "SITE_URL": "https://rebase.network",
+    "API_BASE_URL": "https://api.rebase.network"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
