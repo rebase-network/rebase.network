@@ -7,6 +7,15 @@ interface Props {
 
 const { site } = Astro.props;
 const isExternalLink = (href: string) => href.startsWith('http');
+const socialIconMap: Record<string, string> = {
+  'B 站': '/social-icons/bilibili.svg',
+  YouTube: '/social-icons/youtube.svg',
+  Discord: '/social-icons/discord.svg',
+  Twitter: '/social-icons/x.svg',
+  Telegram: '/social-icons/telegram.svg',
+  微信公众号: '/social-icons/wechat.svg',
+  'QQ 群': '/social-icons/qq.svg',
+};
 ---
 
 <footer class="site-footer">
@@ -47,7 +56,13 @@ const isExternalLink = (href: string) => href.startsWith('http');
     <div class="footer-meta">
       <div class="socials">
         {site.socialLinks.map((item) => (
-          <a href={item.href} target="_blank" rel="noreferrer">{item.label}</a>
+          <a href={item.href} target="_blank" rel="noreferrer" aria-label={item.label} title={item.label}>
+            {socialIconMap[item.label] ? (
+              <img src={socialIconMap[item.label]} alt="" width="20" height="20" loading="lazy" />
+            ) : (
+              <span>{item.label}</span>
+            )}
+          </a>
         ))}
       </div>
       <p>{site.copyright}</p>
@@ -131,7 +146,7 @@ const isExternalLink = (href: string) => href.startsWith('http');
   .socials a {
     color: var(--muted);
     line-height: 1.6;
-    transition: color 180ms ease, transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    transition: color 180ms ease, transform 180ms ease, opacity 180ms ease;
   }
 
   li a:hover,
@@ -159,11 +174,35 @@ const isExternalLink = (href: string) => href.startsWith('http');
   .socials {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.8rem;
+    align-items: center;
+    gap: 0.95rem;
   }
 
   .socials a {
-    word-break: break-word;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    min-height: 1.25rem;
+    opacity: 0.78;
+  }
+
+  .socials a:hover,
+  .socials a:focus-visible {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  .socials img {
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .socials span {
+    font-size: 0.88rem;
+    line-height: 1;
+    white-space: nowrap;
   }
 
   @media (max-width: 920px) {
