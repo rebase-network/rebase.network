@@ -10,6 +10,34 @@ const outputConfigPath = path.resolve(projectRoot, 'apps/web/dist/server/wrangle
 
 const readJson = async (filePath) => JSON.parse(await readFile(filePath, 'utf8'));
 
+const trimEnv = (value) => {
+  if (!value) {
+    return '';
+  }
+
+  return value.trim();
+};
+
+const sessionKvNamespaceId = trimEnv(process.env.SESSION_KV_NAMESPACE_ID);
+const sessionKvPreviewId = trimEnv(process.env.SESSION_KV_NAMESPACE_PREVIEW_ID) || sessionKvNamespaceId;
+
+const mergeKvNamespaces = (generatedNamespaces = []) => {
+  const passthrough = generatedNamespaces.filter((binding) => binding.binding !== 'SESSION');
+
+  if (!sessionKvNamespaceId) {
+    return generatedNamespaces;
+  }
+
+  return [
+    ...passthrough,
+    {
+      binding: 'SESSION',
+      id: sessionKvNamespaceId,
+      preview_id: sessionKvPreviewId,
+    },
+  ];
+};
+
 const mergeConfig = (generatedConfig, templateConfig) => ({
   ...generatedConfig,
   ...templateConfig,
@@ -17,6 +45,7 @@ const mergeConfig = (generatedConfig, templateConfig) => ({
     ...(generatedConfig.vars ?? {}),
     ...(templateConfig.vars ?? {}),
   },
+  kv_namespaces: mergeKvNamespaces(generatedConfig.kv_namespaces),
   observability: {
     ...(generatedConfig.observability ?? {}),
     ...(templateConfig.observability ?? {}),
