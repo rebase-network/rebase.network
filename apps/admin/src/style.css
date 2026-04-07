@@ -136,14 +136,36 @@ code {
 
 .brand {
   display: grid;
-  justify-items: center;
-  padding: 0.18rem 0.14rem 0.24rem;
+  justify-items: start;
+  gap: 0.34rem;
+  padding: 0.18rem 0.14rem 0.28rem;
 }
 
 .brand-logo {
   display: block;
   width: min(100%, 5.65rem);
   height: auto;
+}
+
+.brand-copy {
+  display: grid;
+  gap: 0.04rem;
+  min-width: 0;
+}
+
+.brand strong,
+.brand small {
+  display: block;
+}
+
+.brand strong {
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+}
+
+.brand small {
+  color: var(--muted);
+  font-size: 0.7rem;
 }
 
 .sidebar-nav {
