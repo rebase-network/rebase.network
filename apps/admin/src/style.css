@@ -1173,6 +1173,12 @@ code {
   background: rgba(244, 63, 94, 0.11);
 }
 
+.inline-status-success {
+  color: #166534;
+  border-color: rgba(34, 197, 94, 0.18);
+  background: rgba(34, 197, 94, 0.11);
+}
+
 .summary-card {
   display: grid;
   gap: 0.45rem;
@@ -1332,6 +1338,91 @@ code {
   padding-left: 1rem;
   border-left: 3px solid rgba(15, 109, 100, 0.24);
   color: var(--muted);
+}
+
+.field-inline-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.short-input {
+  max-width: 8.5rem;
+}
+
+.field-inline-hint {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.geekdaily-workspace {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
+  align-items: start;
+}
+
+.geekdaily-editor-column,
+.geekdaily-preview-column,
+.geekdaily-preview-shell,
+.geekdaily-source-shell {
+  min-width: 0;
+}
+
+.geekdaily-preview-tabs {
+  align-items: center;
+}
+
+.geekdaily-note-field textarea {
+  min-height: 12rem;
+}
+
+.geekdaily-preview-shell {
+  min-height: 24rem;
+  max-height: calc(100vh - 13.2rem);
+  overflow: auto;
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.geekdaily-preview-frame {
+  min-width: 0;
+  color: #14231f;
+}
+
+.geekdaily-preview-frame img {
+  max-width: 100%;
+  height: auto;
+}
+
+.geekdaily-source-code {
+  min-height: calc(100vh - 13.2rem);
+  padding: 0.92rem;
+  font-family: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+@media (max-width: 1320px) {
+  .geekdaily-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .geekdaily-preview-column.sticky-stack {
+    position: static;
+  }
+
+  .geekdaily-preview-shell {
+    max-height: none;
+  }
+
+  .geekdaily-source-code {
+    min-height: 20rem;
+  }
 }
 
 .login-shell {
