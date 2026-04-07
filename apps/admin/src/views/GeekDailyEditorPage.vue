@@ -81,6 +81,58 @@ const wechatIssueTone = computed(() => (form.items.length > 3 ? 'exception' : 'w
 const wechatHtml = computed(() => buildGeekDailyWechatHtml(wechatInput.value));
 const canCopyWechatHtml = computed(() => !wechatGenerationIssue.value && wechatHtml.value.length > 0);
 
+const extractPlainTextFromHtml = (html: string) => {
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  return container.textContent?.trim() ?? '';
+};
+
+const copyRichHtmlFallback = (html: string, plainText: string) =>
+  new Promise<void>((resolve, reject) => {
+    const container = document.createElement('div');
+    const selection = window.getSelection();
+
+    container.innerHTML = html;
+    container.setAttribute('contenteditable', 'true');
+    container.style.position = 'fixed';
+    container.style.left = '-9999px';
+    container.style.top = '0';
+    container.style.opacity = '0';
+    document.body.appendChild(container);
+
+    const listener = (event: ClipboardEvent) => {
+      event.preventDefault();
+      event.clipboardData?.setData('text/html', html);
+      event.clipboardData?.setData('text/plain', plainText);
+    };
+
+    document.addEventListener('copy', listener);
+
+    try {
+      const range = document.createRange();
+      range.selectNodeContents(container);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+
+      const copied = document.execCommand('copy');
+      selection?.removeAllRanges();
+      document.removeEventListener('copy', listener);
+      document.body.removeChild(container);
+
+      if (!copied) {
+        reject(new Error('当前浏览器不支持复制富文本内容。'));
+        return;
+      }
+
+      resolve();
+    } catch (error) {
+      selection?.removeAllRanges();
+      document.removeEventListener('copy', listener);
+      document.body.removeChild(container);
+      reject(error);
+    }
+  });
+
 const resetFeedback = () => {
   errorMessage.value = '';
   successMessage.value = '';
@@ -162,28 +214,27 @@ const copyWechatHtml = async () => {
   const nextValue = wechatHtml.value.trim();
 
   if (!nextValue) {
-    errorMessage.value = '当前没有可复制的 HTML 内容。';
+    errorMessage.value = '当前没有可复制的微信内容。';
     return;
   }
 
   try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(nextValue);
+    const plainText = extractPlainTextFromHtml(nextValue);
+
+    if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': new Blob([nextValue], { type: 'text/html' }),
+          'text/plain': new Blob([plainText], { type: 'text/plain' }),
+        }),
+      ]);
     } else {
-      const textarea = document.createElement('textarea');
-      textarea.value = nextValue;
-      textarea.setAttribute('readonly', 'true');
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
+      await copyRichHtmlFallback(nextValue, plainText);
     }
 
-    setCopyFeedback('已复制 HTML。');
+    setCopyFeedback('已复制微信内容。');
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '无法复制 HTML。';
+    errorMessage.value = error instanceof Error ? error.message : '无法复制微信内容。';
   }
 };
 
@@ -315,10 +366,10 @@ onBeforeUnmount(() => {
         <div class="field-row field-row-spread">
           <div class="stacked-gap-tight">
             <strong>微信公众号稿件</strong>
-            <small class="panel-meta">编辑完成后可直接复制 HTML，粘贴到微信公众号后台。</small>
+            <small class="panel-meta">编辑完成后可直接复制富文本内容，粘贴到微信公众号后台。</small>
           </div>
           <button class="button-link button-primary" type="button" :disabled="!canCopyWechatHtml" @click="copyWechatHtml">
-            {{ copyFeedback ? '已复制' : '复制 HTML' }}
+            {{ copyFeedback ? '已复制' : '复制微信内容' }}
           </button>
         </div>
 
@@ -331,7 +382,7 @@ onBeforeUnmount(() => {
               HTML 源码
             </button>
           </div>
-          <small class="preview-label">{{ activeWechatTab === 'preview' ? '实时预览' : '可直接复制源码' }}</small>
+          <small class="preview-label">{{ activeWechatTab === 'preview' ? '实时预览' : '源码查看' }}</small>
         </div>
 
         <div
