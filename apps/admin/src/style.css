@@ -666,6 +666,13 @@ code {
   gap: 0.35rem;
 }
 
+.field-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .field span {
   font-weight: 700;
   font-size: 0.9rem;

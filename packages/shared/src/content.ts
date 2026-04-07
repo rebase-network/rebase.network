@@ -282,7 +282,7 @@ export const geekdailyEpisodeSchema = z.object({
   editors: z.array(geekdailyEditorSchema).default([]),
   tags: z.array(trimmedString).default([]),
   status: z.enum(contentStatusValues).default('draft'),
-  publishedAt: requiredTrimmedString('published time is required'),
+  publishedAt: trimmedString.default(''),
   items: z.array(geekdailyItemSchema).min(1, 'at least one item is required'),
 });
 

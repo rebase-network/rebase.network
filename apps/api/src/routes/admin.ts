@@ -36,6 +36,7 @@ export const adminRoutes = new Hono<{ Variables: AppVariables }>();
 const getAuditActor = (c: any) => ({
   actorUserId: c.get('user')?.id ?? null,
   actorStaffAccountId: c.get('staffAccount')?.id ?? null,
+  actorDisplayName: c.get('staffAccount')?.displayName ?? c.get('user')?.name ?? c.get('user')?.email ?? null,
   requestId: c.get('requestId') ?? null,
   requestIp: c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ?? null,
   userAgent: c.req.header('user-agent') ?? null,

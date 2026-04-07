@@ -5,17 +5,13 @@ import { RouterLink, useRoute, useRouter } from 'vue-router';
 import {
   contentStatusOptions,
   extractGeekDailyBodyNote,
-  getGeekDailyEpisodePath,
   type AdminGeekDailyListItem,
   type AdminGeekDailyRecord,
 } from '@rebase/shared';
 
 import GeekDailyItemsField from '../components/GeekDailyItemsField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
-import StringListField from '../components/StringListField.vue';
 import { adminFetch, adminFetchWithMeta, adminRequest, getValidationIssues } from '../lib/api';
-import { formatContentStatus, formatDateTime, fromDateTimeInputValue, toDateTimeInputValue } from '../lib/format';
-import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface GeekDailyItemFormState {
   title: string;
@@ -29,10 +25,7 @@ interface GeekDailyFormState {
   title: string;
   summary: string;
   bodyMarkdown: string;
-  editors: string[];
-  tags: string[];
   status: 'draft' | 'published' | 'archived';
-  publishedAt: string;
   items: GeekDailyItemFormState[];
 }
 
@@ -53,10 +46,7 @@ const createBlankForm = (): GeekDailyFormState => ({
   title: '',
   summary: '',
   bodyMarkdown: '',
-  editors: [],
-  tags: [],
   status: 'draft',
-  publishedAt: '',
   items: createDefaultItems(),
 });
 
@@ -72,16 +62,8 @@ const suggestedEpisodeNumber = ref(1);
 
 const geekdailyId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => geekdailyId.value.length === 0);
-const publicUrl = computed(() => (form.episodeNumber > 0 ? getPublicSiteUrl(getGeekDailyEpisodePath(form.episodeNumber)) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新增极客日报' : `编辑极客日报：#${record.value?.episodeNumber ?? ''}`));
-const itemAuthorSummary = computed(() =>
-  Array.from(new Set(form.items.map((item) => item.authorName.trim()).filter(Boolean))).join('、') || '未填写',
-);
-const editorSummary = computed(() => form.editors.map((item) => item.trim()).filter(Boolean).join('、') || '未填写');
-const firstItemTitle = computed(() => form.items.find((item) => item.title.trim())?.title ?? '未填写');
-const tagSummary = computed(() => form.tags.join('、') || '未填写');
-const bodyStatus = computed(() => (form.bodyMarkdown.trim() ? '保存时会拼接补充说明' : '保存时仅写入默认开头和结尾'));
-const episodeSuggestionHint = computed(() => `默认建议：第 ${suggestedEpisodeNumber.value} 期（当前最大值 + 1）`);
+const episodeSuggestionHint = computed(() => `建议值：第 ${suggestedEpisodeNumber.value} 期`);
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -96,10 +78,7 @@ const applyRecord = (payload: AdminGeekDailyRecord) => {
     title: payload.title,
     summary: payload.summary,
     bodyMarkdown: extractGeekDailyBodyNote(payload.bodyMarkdown),
-    editors: payload.editors,
-    tags: payload.tags,
     status: payload.status,
-    publishedAt: toDateTimeInputValue(payload.publishedAt),
     items: payload.items.length > 0 ? payload.items : createDefaultItems(),
   });
 };
@@ -152,7 +131,8 @@ const save = async () => {
         method: isNew.value ? 'POST' : 'PATCH',
         body: {
           ...form,
-          publishedAt: fromDateTimeInputValue(form.publishedAt),
+          editors: [],
+          tags: [],
         },
       },
     );
@@ -215,123 +195,38 @@ onMounted(() => void loadRecord());
     <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
     <div v-if="loading" class="panel"><p>正在准备极客日报编辑器…</p></div>
 
-    <div v-else class="stacked-gap">
-      <div class="editor-overview-grid">
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>期数摘要</h3>
-            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
+    <section v-else class="panel stacked-gap editor-main">
+      <div class="field-grid field-grid-2">
+        <label class="field">
+          <div class="field-label-row">
+            <span>期数编号</span>
+            <small>{{ episodeSuggestionHint }}</small>
           </div>
-          <dl class="summary-grid summary-grid-2">
-            <div class="summary-item">
-              <dt>公开地址</dt>
-              <dd>{{ publicUrl }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>发布时间</dt>
-              <dd class="muted">{{ form.publishedAt || '未设置' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>条目数</dt>
-              <dd>{{ form.items.length }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>更新时间</dt>
-              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '新建后生成' }}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>内容提示</h3>
-            <div class="panel-meta">{{ form.editors.length }} 位编辑</div>
-          </div>
-          <dl class="summary-grid summary-grid-2">
-            <div class="summary-item">
-              <dt>推荐人</dt>
-              <dd>{{ itemAuthorSummary }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>本期编辑</dt>
-              <dd class="muted">{{ editorSummary }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>标签</dt>
-              <dd class="muted">{{ tagSummary }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>正文模板</dt>
-              <dd class="muted">{{ bodyStatus }}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>期刊结构</h3>
-            <div class="panel-meta">第 {{ form.episodeNumber || '—' }} 期</div>
-          </div>
-          <dl class="summary-grid summary-grid-2">
-            <div class="summary-item">
-              <dt>标题</dt>
-              <dd>{{ form.title || '未填写' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>状态</dt>
-              <dd class="muted">{{ formatContentStatus(form.status) }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>期数编号</dt>
-              <dd>{{ form.episodeNumber || '未填写' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>首条内容</dt>
-              <dd class="muted">{{ firstItemTitle }}</dd>
-            </div>
-          </dl>
-        </section>
+          <input v-model.number="form.episodeNumber" type="number" min="1" />
+          <small v-if="fieldIssues.episodeNumber" class="field-error">{{ fieldIssues.episodeNumber }}</small>
+        </label>
+        <label class="field">
+          <span>状态</span>
+          <select v-model="form.status">
+            <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+          </select>
+        </label>
       </div>
 
-      <section class="panel stacked-gap editor-main">
-        <div class="field-grid field-grid-3">
-          <label class="field">
-            <span>期数编号</span>
-            <input v-model.number="form.episodeNumber" type="number" min="1" />
-            <small>{{ episodeSuggestionHint }}</small>
-            <small v-if="fieldIssues.episodeNumber" class="field-error">{{ fieldIssues.episodeNumber }}</small>
-          </label>
-          <label class="field">
-            <span>状态</span>
-            <select v-model="form.status">
-              <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>发布时间</span>
-            <input v-model="form.publishedAt" type="datetime-local" />
-          </label>
-        </div>
+      <label class="field">
+        <span>标题</span>
+        <input v-model="form.title" type="text" placeholder="极客日报#1915" />
+      </label>
 
-        <label class="field">
-          <span>标题</span>
-          <input v-model="form.title" type="text" placeholder="极客日报#1915" />
-        </label>
+      <label class="field">
+        <span>摘要</span>
+        <textarea v-model="form.summary" rows="3" placeholder="用一句话概括本期极客日报的重点。" />
+      </label>
 
-        <label class="field">
-          <span>摘要</span>
-          <textarea v-model="form.summary" rows="3" placeholder="用一句话概括本期极客日报的重点。" />
-        </label>
+      <GeekDailyItemsField v-model="form.items" />
 
-        <StringListField v-model="form.editors" label="本期编辑" add-label="新增编辑" placeholder="编辑志愿者姓名" />
-        <StringListField v-model="form.tags" label="标签" add-label="新增标签" placeholder="ai" />
-        <GeekDailyItemsField v-model="form.items" />
-
-        <div class="stacked-gap">
-          <div class="muted-row">保存时会自动生成正文开头和结尾，这里只需要填写本期补充说明。</div>
-          <MarkdownEditorField v-model="form.bodyMarkdown" label="补充说明（可选）" placeholder="这里可以补充本期总述、关键词或额外说明。" />
-        </div>
-      </section>
-    </div>
+      <div class="muted-row">保存时会自动记录当前工作人员；点击发布时会自动写入发布时间。</div>
+      <MarkdownEditorField v-model="form.bodyMarkdown" label="补充说明（可选）" placeholder="这里可以补充本期总述、关键词或额外说明。" />
+    </section>
   </section>
 </template>

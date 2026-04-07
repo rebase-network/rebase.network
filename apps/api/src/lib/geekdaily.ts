@@ -3,6 +3,7 @@ import { asc, count, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { geekdailyEpisodeItems, geekdailyEpisodes } from '@rebase/db';
 import {
   buildGeekDailyBodyMarkdown,
+  extractGeekDailyBodyNote,
   getGeekDailyEpisodeSlug,
   type AdminGeekDailyListItem,
   type ContentStatus,
@@ -64,6 +65,20 @@ const getEpisodeRecordBySlug = async (slug: string) => {
 
 const getEditors = (value: unknown) =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
+
+const resolveEpisodeEditors = (actor: AuditActor, fallback: unknown = []) => {
+  const actorName = actor.actorDisplayName?.trim();
+  if (actorName) {
+    return [actorName];
+  }
+
+  return getEditors(fallback);
+};
+
+const coerceDate = (value: Date | string | null | undefined) => {
+  const date = value instanceof Date ? value : value ? new Date(value) : new Date();
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+};
 
 const mapEpisodeDetail = (row: any, items: any[]) => ({
   id: row.id,
@@ -196,6 +211,7 @@ export const getAdminGeekDailyEpisode = async (id: string) => {
 export const createAdminGeekDailyEpisode = async (input: GeekDailyEpisodeInput, actor: AuditActor) => {
   const db = getDb();
   await ensureEpisodeNumberAvailable(input.episodeNumber);
+  const editors = resolveEpisodeEditors(actor, input.editors);
 
   const [created] = await db
     .insert(geekdailyEpisodes)
@@ -204,11 +220,11 @@ export const createAdminGeekDailyEpisode = async (input: GeekDailyEpisodeInput, 
       episodeNumber: input.episodeNumber,
       title: input.title,
       summary: input.summary,
-      bodyMarkdown: buildGeekDailyBodyMarkdown(input),
-      editorsJson: input.editors,
+      bodyMarkdown: buildGeekDailyBodyMarkdown({ ...input, editors }),
+      editorsJson: editors,
       tagsJson: input.tags,
       status: input.status,
-      publishedAt: new Date(input.publishedAt),
+      publishedAt: new Date(),
       updatedByStaffId: actor.actorStaffAccountId ?? null,
     })
     .returning();
@@ -234,6 +250,9 @@ export const updateAdminGeekDailyEpisode = async (id: string, input: GeekDailyEp
   }
 
   await ensureEpisodeNumberAvailable(input.episodeNumber, id);
+  const editors = resolveEpisodeEditors(actor, current.editors);
+  const publishedAt =
+    current.status !== 'published' && input.status === 'published' ? new Date() : coerceDate(current.publishedAt);
 
   await db
     .update(geekdailyEpisodes)
@@ -242,11 +261,11 @@ export const updateAdminGeekDailyEpisode = async (id: string, input: GeekDailyEp
       episodeNumber: input.episodeNumber,
       title: input.title,
       summary: input.summary,
-      bodyMarkdown: buildGeekDailyBodyMarkdown(input),
-      editorsJson: input.editors,
+      bodyMarkdown: buildGeekDailyBodyMarkdown({ ...input, editors }),
+      editorsJson: editors,
       tagsJson: input.tags,
       status: input.status,
-      publishedAt: new Date(input.publishedAt),
+      publishedAt,
       updatedByStaffId: actor.actorStaffAccountId ?? null,
       updatedAt: new Date(),
     })
@@ -271,11 +290,20 @@ export const publishAdminGeekDailyEpisode = async (id: string, actor: AuditActor
   if (!current) {
     throw notFound('GeekDaily episode not found');
   }
+  const editors = resolveEpisodeEditors(actor, current.editors);
 
   await db
     .update(geekdailyEpisodes)
     .set({
       status: 'published',
+      publishedAt: new Date(),
+      editorsJson: editors,
+      bodyMarkdown: buildGeekDailyBodyMarkdown({
+        episodeNumber: current.episodeNumber,
+        editors,
+        items: current.items,
+        bodyMarkdown: extractGeekDailyBodyNote(current.bodyMarkdown),
+      }),
       updatedByStaffId: actor.actorStaffAccountId ?? null,
       updatedAt: new Date(),
     })

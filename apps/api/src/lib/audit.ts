@@ -11,6 +11,7 @@ import { toIsoString } from './utils.js';
 export interface AuditActor {
   actorUserId: string | null;
   actorStaffAccountId: string | null;
+  actorDisplayName?: string | null;
   requestId?: string | null;
   requestIp?: string | null;
   userAgent?: string | null;
