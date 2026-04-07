@@ -335,9 +335,9 @@ const seedSingletons = async (
     heroSecondaryCtaUrl: siteSettingsSeed.hero_secondary_cta_url,
     homeSignalsJson: siteSettingsSeed.home_signals,
     homeStatsJson: [
-      { value: `${totalEpisodes}+`, label: 'GeekDaily episodes mapped for migration' },
-      { value: `${totalItems}+`, label: 'Historic GeekDaily items in the archive' },
-      { value: '5', label: 'Public RSS feeds in the first release' },
+      { value: `${totalEpisodes}+`, label: '极客日报期数' },
+      { value: `${totalItems}+`, label: '极客日报推荐条目' },
+      { value: '7', label: '长期协作栏目' },
     ],
   });
 
@@ -345,7 +345,7 @@ const seedSingletons = async (
     title: aboutPageSeed.title,
     summary: aboutPageSeed.summary,
     sectionsJson: aboutPageSeed.sections,
-    seoTitle: 'About Rebase',
+    seoTitle: '关于 Rebase Community',
     seoDescription: aboutPageSeed.summary,
   });
 };

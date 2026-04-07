@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 const primaryRoutes = [
-  { path: '/', heading: /把社区的日常内容，组织成一个值得反复访问的公共入口/ },
-  { path: '/about', heading: /Rebase 是一个围绕 builder、community operator 和研究者展开的社区媒体网络/ },
+  { path: '/', heading: /Rebase Community 是由中国开发者们在业余时间用热爱建立的开发者社区/ },
+  { path: '/about', heading: /Rebase Community 是由中国开发者们在业余时间用热爱建立的开发者社区/ },
   { path: '/who-is-hiring', heading: /让招聘信息不仅被发出来，还能被读懂、被订阅、被稳定地回看/ },
   { path: '/geekdaily', heading: /GeekDaily 是 Rebase 的持续现场，它应该被阅读、搜索和订阅/ },
   { path: '/articles', heading: /把社区里的想法、复盘和方法写成可以沉淀下来的文章/ },

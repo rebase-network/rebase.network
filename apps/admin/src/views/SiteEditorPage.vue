@@ -360,7 +360,7 @@ onMounted(() => void loadSite());
               <div class="site-section-head">
                 <div class="stacked-gap-tight">
                   <h4>内容分段</h4>
-                  <p class="site-section-note">按主题拆开介绍，更方便后续扩展。</p>
+                  <p class="site-section-note">按主题拆开介绍，支持 Markdown 链接、列表与地址展示。</p>
                 </div>
               </div>
 

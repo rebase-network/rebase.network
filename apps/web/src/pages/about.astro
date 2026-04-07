@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getAboutContent, getSiteSettings } from '@/lib/content';
 
 const [site, about] = await Promise.all([getSiteSettings(), getAboutContent()]);
@@ -7,19 +8,19 @@ const { intro, sections } = about;
 
 const aboutSignals = [
   {
-    value: '05',
-    label: '公共栏目',
-    detail: '文章、GeekDaily、活动、招聘、贡献者被放在同一个公共入口里。',
+    value: '07',
+    label: '社区栏目',
+    detail: 'Web3Camp、GeekDaily、Who-Is-Hiring、Event Pool 等长期协作栏目持续运转。',
   },
   {
-    value: '05',
-    label: '默认 RSS',
-    detail: '首页和四类内容都有稳定 feed，分发层不是额外补丁。',
+    value: '06',
+    label: '公开渠道',
+    detail: 'B 站、YouTube、Discord、Twitter、Telegram 与公众号共同承接社区对外交流。',
   },
   {
     value: '02',
-    label: '入口域名',
-    detail: '双域名入口让迁移、传播和长期维护都更稳一点。',
+    label: '捐赠网络',
+    detail: 'Ethereum 和 Polygon 多签地址已经开放，用于支持社区长期运转。',
   },
 ];
 
@@ -67,8 +68,8 @@ const publicSurfaces = [
       <h1 class="hero-title">{intro.title}</h1>
       <p class="hero-summary">{intro.summary}</p>
       <p class="brand-note">
-        Rebase 不想只做一个静态官网，而是想把 builder、community operator 和研究者每天真正产生的内容，
-        组织成一张长期可阅读的社区 front page。
+        Rebase Community 不只是一个站点，而是一个由中国开发者在业余时间共同维护的公共入口；
+        社区里的内容、协作和机会都应该被更长期地保存与看见。
       </p>
       <div class="about-signal-grid">
         {aboutSignals.map((signal) => (
@@ -90,7 +91,7 @@ const publicSurfaces = [
           <p>{section.title}</p>
         </div>
         <h2>{section.title}</h2>
-        <p>{section.body}</p>
+        <MarkdownContent content={section.body} />
       </article>
     ))}
   </section>
@@ -244,6 +245,15 @@ const publicSurfaces = [
     background:
       radial-gradient(circle at top right, rgba(243, 196, 110, 0.22), transparent 22%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 250, 242, 0.9));
+  }
+
+  .about-card :global(.markdown) {
+    font-size: 0.98rem;
+  }
+
+  .about-card :global(.markdown p:last-child),
+  .about-card :global(.markdown ul:last-child) {
+    margin-bottom: 0;
   }
 
   .card-topline {

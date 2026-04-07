@@ -98,7 +98,7 @@ watch(
           </label>
           <label class="field">
             <span>正文</span>
-            <textarea rows="3" :value="item.body" placeholder="描述这一部分的内容。" @input="updateItem(index, 'body', ($event.target as HTMLTextAreaElement).value)" />
+            <textarea rows="5" :value="item.body" placeholder="支持 Markdown，例如链接、列表和地址。" @input="updateItem(index, 'body', ($event.target as HTMLTextAreaElement).value)" />
           </label>
           <div class="inline-actions">
             <button class="button-link button-danger button-compact" type="button" @click="removeItem(index)">删除分段</button>

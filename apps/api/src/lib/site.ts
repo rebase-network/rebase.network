@@ -8,9 +8,9 @@ import { getDb } from './db.js';
 
 const defaultSiteSettings: SiteSettingsInput = {
   siteName: 'Rebase',
-  tagline: 'A community media network for builders, researchers, and curious operators.',
+  tagline: '由中国开发者业余时间共同建立的非营利开发者社区',
   description:
-    'Rebase is a community platform for GeekDaily, community writing, events, hiring signals, and contributor stories.',
+    'Rebase Community 是由中国开发者们在业余时间用热爱建立的非营利、公益性开发者社区，持续组织 GeekDaily、Who-Is-Hiring、活动、文章与协作项目。',
   primaryDomain: 'https://rebase.network',
   secondaryDomain: 'https://rebase.community',
   mediaDomain: 'https://media.rebase.network',
@@ -20,23 +20,27 @@ const defaultSiteSettings: SiteSettingsInput = {
 };
 
 const defaultHomePage: HomePageInput = {
-  heroTitle: '把社区的日常内容，组织成一个值得反复访问的公共入口。',
+  heroTitle: 'Rebase Community 是由中国开发者们在业余时间用热爱建立的开发者社区。',
   heroSummary:
-    'Rebase 新站把 GeekDaily、文章、招聘、活动和贡献者信息组织到同一个公共界面里。我们希望读者一进入首页，就能看见社区最近的节奏、机会与信号。',
+    '我们是非营利、公益性的开发者社区，持续组织 GeekDaily、Who-Is-Hiring、活动、文章与协作项目，让社区交流、机会与长期记录都有稳定入口。',
   heroPrimaryCtaLabel: '进入 GeekDaily',
   heroPrimaryCtaUrl: '/geekdaily',
   heroSecondaryCtaLabel: '查看招聘板',
   heroSecondaryCtaUrl: '/who-is-hiring',
   homeSignals: [],
-  homeStats: [],
+  homeStats: [
+    { value: '1809+', label: '极客日报期数' },
+    { value: '5458+', label: '极客日报推荐条目' },
+    { value: '7', label: '长期协作栏目' },
+  ],
 };
 
 const defaultAboutPage: AboutPageInput = {
-  title: 'About Rebase',
-  summary: 'Rebase is a community media network for builders and operators.',
+  title: 'Rebase Community 是由中国开发者们在业余时间用热爱建立的开发者社区。',
+  summary: 'Rebase Community 是非营利、公益性的开发者社区，专注于技术交流。',
   sections: [],
-  seoTitle: 'About Rebase',
-  seoDescription: 'Learn about the Rebase community.',
+  seoTitle: '关于 Rebase Community',
+  seoDescription: '了解 Rebase Community 的社区定位、栏目结构、联系入口与捐赠方式。',
 };
 
 const getFirstRow = async (table: any) => {
