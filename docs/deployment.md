@@ -39,6 +39,66 @@ Cloudflare resources:
 - remotely managed Cloudflare Tunnel for `api.rebase.network`
 - R2 bucket for media assets
 
+## Cloudflare Git Builds
+
+Cloudflare Workers Builds supports direct GitHub integration, production branch selection, non-production branch builds, monorepo root directories, custom build and deploy commands, and build watch paths.
+
+For Rebase, the recommended Git strategy is:
+
+- connect both Workers to the same GitHub repository
+- set the production branch to `main` for both Workers
+- enable non-production branch builds for both Workers
+- keep ongoing work on `dev` and let Cloudflare create preview builds for `dev` pushes
+- merge `dev` into `main` only when the release candidate is ready
+
+This means we do not need to merge `dev` into `main` just to enable Git-based auto builds. We only merge when we want the current release candidate to become production.
+
+### `rebase-web` Worker Build Settings
+
+Use these settings in Workers > `rebase-web` > Settings > Build:
+
+- Git repository: this repository
+- production branch: `main`
+- non-production branch builds: enabled
+- root directory: `/`
+- build command: `pnpm build:web:prod`
+- deploy command: `pnpm exec wrangler deploy --config apps/web/dist/server/wrangler.production.json`
+- non-production branch deploy command: `pnpm exec wrangler versions upload --config apps/web/dist/server/wrangler.production.json`
+
+Recommended build watch paths for `rebase-web`:
+
+- include: `apps/web/*, packages/*, scripts/deploy/*, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.base.json`
+- exclude: `docs/*, infra/*, refcode/*, apps/admin/*, apps/api/*`
+
+### `rebase-admin` Worker Build Settings
+
+Use these settings in Workers > `rebase-admin` > Settings > Build:
+
+- Git repository: this repository
+- production branch: `main`
+- non-production branch builds: enabled
+- root directory: `/`
+- build command: `pnpm build:admin:prod`
+- deploy command: `pnpm exec wrangler deploy --config apps/admin/wrangler.production.jsonc`
+- non-production branch deploy command: `pnpm exec wrangler versions upload --config apps/admin/wrangler.production.jsonc`
+
+Recommended build watch paths for `rebase-admin`:
+
+- include: `apps/admin/*, packages/shared/*, scripts/deploy/*, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.base.json`
+- exclude: `docs/*, infra/*, refcode/*, apps/web/*`
+
+### Root Directory Choice
+
+Although Cloudflare supports setting the root directory to a project subdirectory in monorepos, Rebase should keep the root directory at `/` for both Workers because:
+
+- the build scripts live in the workspace root `package.json`
+- `pnpm-lock.yaml` and `pnpm-workspace.yaml` are at the repository root
+- the public Worker build needs to merge Astro's generated config with the root-level deployment script
+
+### Important Cloudflare Limitation
+
+Workers Builds does not honor custom build configuration declared inside Wrangler config files. Build, deploy, preview deploy, branch control, and watch paths should therefore be configured in the Cloudflare Dashboard for each Worker.
+
 ## Worker Deployment Files
 
 Public website:
