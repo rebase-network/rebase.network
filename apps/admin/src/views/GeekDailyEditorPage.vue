@@ -352,7 +352,7 @@ onBeforeUnmount(() => {
         <label class="field-inline-row geekdaily-note-field">
           <div class="field-inline-label">
             <span>补充说明</span>
-            <small>可选，支持 Markdown，会进入微信稿开头区域。</small>
+            <small>可选，支持 Markdown，仅用于站内正文，不进入微信稿。</small>
           </div>
           <div class="field-inline-control">
             <textarea v-model="form.bodyMarkdown" rows="12" placeholder="补充本期导语、额外说明或备注。" />

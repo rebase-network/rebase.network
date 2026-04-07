@@ -1,5 +1,3 @@
-import { renderMarkdownToHtml } from '@rebase/shared';
-
 interface GeekDailyWechatItemInput {
   title: string;
   authorName: string;
@@ -180,19 +178,7 @@ function renderWechatTemplate(content: string, dx: GeekDailyWechatTemplatePayloa
   `;
 }
 
-const buildWechatIntroHtml = (input: GeekDailyWechatInput) => {
-  const noteHtml = input.bodyMarkdown.trim() ? renderMarkdownToHtml(input.bodyMarkdown.trim()) : '';
-
-  if (!noteHtml) {
-    return '';
-  }
-
-  return `
-    <section style="margin: 0 8px 18px; color: rgb(61, 70, 77); font-size: 15px; line-height: 1.8;">
-      <div>${noteHtml}</div>
-    </section>
-  `.trim();
-};
+const buildWechatIntroHtml = (_input: GeekDailyWechatInput) => '';
 
 export const getGeekDailyWechatGenerationIssue = (input: GeekDailyWechatInput) => {
   if (input.episodeNumber <= 0) {
