@@ -974,7 +974,22 @@ code {
 .pagination-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.4rem;
+}
+
+.pagination-jump {
+  display: flex;
+  align-items: center;
+  gap: 0.36rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.pagination-jump input {
+  width: 4.4rem;
+  padding: 0.34rem 0.56rem;
+  text-align: center;
 }
 
 .status-pill {
