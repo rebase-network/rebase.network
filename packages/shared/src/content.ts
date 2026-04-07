@@ -296,7 +296,9 @@ export function getGeekDailyEpisodePath(episodeNumber: number) {
   return `/geekdaily/${getGeekDailyEpisodeSlug(episodeNumber)}`;
 }
 
-const geekDailyTemplateOutro =
+const geekDailyTemplateItemsHeading = '## 本期推荐';
+const geekDailyTemplateNoteHeading = '## 本期补充';
+export const geekDailyTemplateOutro =
   'Rebase 极客日报由社区志愿者共同维护，持续整理值得关注的技术内容与行业信号。';
 
 const normalizeStringList = (items: string[]) =>
@@ -313,14 +315,19 @@ export function buildGeekDailyBodyMarkdown(
 ) {
   const editors = normalizeStringList(input.editors);
   const customNote = input.bodyMarkdown.trim();
+  const itemBlocks = input.items.map(
+    (item, index) =>
+      `### ${index + 1}. ${item.title}\n\n- 推荐人：${item.authorName}\n- 链接：${item.sourceUrl}\n- 推荐语：${item.summary}`,
+  );
   const sections = [
     `极客日报#${input.episodeNumber}\n\n本期共收录 ${input.items.length} 条推荐内容。\n\n本期整理编辑：${
       editors.length > 0 ? editors.join('、') : '待补充'
     }。`,
+    `${geekDailyTemplateItemsHeading}\n\n${itemBlocks.join('\n\n')}`,
   ];
 
   if (customNote) {
-    sections.push(`## 本期补充\n\n${customNote}`);
+    sections.push(`${geekDailyTemplateNoteHeading}\n\n${customNote}`);
   }
 
   sections.push(`---\n\n${geekDailyTemplateOutro}`);
@@ -339,26 +346,21 @@ export function extractGeekDailyBodyNote(bodyMarkdown: string) {
     return normalized;
   }
 
-  const introPattern = /^极客日报#\d+\n\n本期共收录 \d+ 条推荐内容。\n\n本期整理编辑：.*?。\n\n?/s;
-  const withoutIntro = normalized.replace(introPattern, '');
+  const outroMarker = `\n\n---\n\n${geekDailyTemplateOutro}`;
+  const noteMarker = `\n\n${geekDailyTemplateNoteHeading}\n\n`;
+  const noteStart = normalized.indexOf(noteMarker);
+  const outroStart = normalized.lastIndexOf(outroMarker);
 
-  if (withoutIntro === normalized) {
-    return normalized;
-  }
-
-  const withoutOutro = withoutIntro
-    .replace(new RegExp(`\\n\\n---\\n\\n${geekDailyTemplateOutro.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`), '')
-    .trim();
-
-  if (!withoutOutro) {
+  if (noteStart === -1 || outroStart === -1 || outroStart <= noteStart) {
     return '';
   }
 
-  if (withoutOutro.startsWith('## 本期补充')) {
-    return withoutOutro.slice('## 本期补充'.length).trim();
+  const note = normalized.slice(noteStart + noteMarker.length, outroStart).trim();
+  if (!note) {
+    return '';
   }
 
-  return withoutOutro;
+  return note;
 }
 
 export const assetSchema = z.object({

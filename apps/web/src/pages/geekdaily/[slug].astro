@@ -7,9 +7,32 @@ import { getGeekDailyEpisodeBySlug, getGeekDailyEpisodes, getSiteSettings } from
 import { formatDate } from '@/lib/dates';
 import { getGeekDailyPath } from '@/lib/paths';
 
+const geekDailyTemplateOutro =
+  'Rebase 极客日报由社区志愿者共同维护，持续整理值得关注的技术内容与行业信号。';
+
+const extractGeekDailyBodyNote = (bodyMarkdown: string) => {
+  const normalized = bodyMarkdown.trim();
+
+  if (!normalized || !normalized.endsWith(geekDailyTemplateOutro)) {
+    return normalized;
+  }
+
+  const outroMarker = `\n\n---\n\n${geekDailyTemplateOutro}`;
+  const noteMarker = '\n\n## 本期补充\n\n';
+  const noteStart = normalized.indexOf(noteMarker);
+  const outroStart = normalized.lastIndexOf(outroMarker);
+
+  if (noteStart === -1 || outroStart === -1 || outroStart <= noteStart) {
+    return '';
+  }
+
+  return normalized.slice(noteStart + noteMarker.length, outroStart).trim();
+};
+
 const slug = Astro.params.slug ?? '';
 const [site, episode, episodes] = await Promise.all([getSiteSettings(), getGeekDailyEpisodeBySlug(slug), getGeekDailyEpisodes()]);
 const related = episode ? episodes.filter((item) => item.slug !== episode.slug).slice(0, 2) : [];
+const episodeNote = episode ? extractGeekDailyBodyNote(episode.body) : '';
 const episodeBreadcrumbs = episode
   ? [
       { href: '/', label: '首页' },
@@ -86,7 +109,11 @@ if (!episode) {
               </ul>
             )}
           </div>
-          <MarkdownContent content={episode.body} />
+          {episodeNote ? (
+            <MarkdownContent content={episodeNote} />
+          ) : (
+            <p class="episode-note-empty">本期内容由结构化推荐条目自动整理，无需额外补充说明。</p>
+          )}
           <section id="episode-items" class="item-section">
             <h2>本期推荐</h2>
             <div class="item-list">
@@ -105,6 +132,9 @@ if (!episode) {
                 </article>
               ))}
             </div>
+          </section>
+          <section class="episode-outro">
+            <p>{geekDailyTemplateOutro}</p>
           </section>
         </article>
 
@@ -220,6 +250,20 @@ if (!episode) {
   .item-section h2 {
     margin: 0;
     font-size: 1.45rem;
+  }
+
+  .episode-note-empty,
+  .episode-outro {
+    margin-top: 1.35rem;
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    background: rgba(15, 118, 110, 0.06);
+    color: rgba(17, 24, 39, 0.82);
+  }
+
+  .episode-outro p,
+  .episode-note-empty {
+    margin: 0;
   }
 
   .item-card {

@@ -219,8 +219,8 @@ onMounted(() => void loadRecord());
 
       <GeekDailyItemsField v-model="form.items" />
 
-      <div class="muted-row">保存时会自动记录当前工作人员；点击发布时会自动写入发布时间。</div>
-      <MarkdownEditorField v-model="form.bodyMarkdown" label="补充说明（可选）" placeholder="这里可以补充本期总述、关键词或额外说明。" />
+      <div class="muted-row">保存时会自动把推荐条目、编辑和结尾拼进正文；点击发布时会自动写入发布时间。</div>
+      <MarkdownEditorField v-model="form.bodyMarkdown" label="本期补充说明（可选）" placeholder="这里可以补充本期总述、关键词或额外说明。" />
     </section>
   </section>
 </template>
