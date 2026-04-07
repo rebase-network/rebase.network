@@ -7,12 +7,6 @@ interface Props {
 
 const { site } = Astro.props;
 const trimProtocol = (value: string) => value.replace(/^https?:\/\//, '').replace(/\/$/, '');
-const footerAccess = [
-  { label: '主域名', value: trimProtocol(site.primaryDomain), href: site.primaryDomain },
-  { label: '社区域名', value: trimProtocol(site.secondaryDomain), href: site.secondaryDomain },
-  { label: 'RSS', value: '/rss.xml', href: '/rss.xml' },
-  { label: '媒体域名', value: trimProtocol(site.mediaDomain), href: site.mediaDomain },
-];
 const isExternalLink = (href: string) => href.startsWith('http');
 ---
 
@@ -28,19 +22,9 @@ const isExternalLink = (href: string) => href.startsWith('http');
           height="101"
         />
         <div>
-          <p class="eyebrow">社区页脚</p>
           <h2>让社区内容、机会与协作线索持续流动。</h2>
           <p class="summary">{site.description}</p>
         </div>
-      </div>
-
-      <div class="footer-access">
-        {footerAccess.map((item) => (
-          <a class="access-pill" href={item.href} target={isExternalLink(item.href) ? '_blank' : undefined} rel="noreferrer">
-            <span>{item.label}</span>
-            <strong>{item.value}</strong>
-          </a>
-        ))}
       </div>
     </div>
 
@@ -66,7 +50,7 @@ const isExternalLink = (href: string) => href.startsWith('http');
         {site.socialLinks.map((item) => (
           <a href={item.href} target="_blank" rel="noreferrer">
             <span>{item.label}</span>
-            <small>{item.handle ?? trimProtocol(item.href)}</small>
+            <small>{trimProtocol(item.href)}</small>
           </a>
         ))}
       </div>
@@ -88,9 +72,7 @@ const isExternalLink = (href: string) => href.startsWith('http');
   }
 
   .footer-top {
-    display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.85fr);
-    gap: 1.5rem;
+    display: block;
     padding-bottom: 1.75rem;
     border-bottom: 1px solid var(--line);
   }
@@ -104,15 +86,6 @@ const isExternalLink = (href: string) => href.startsWith('http');
     display: block;
     width: clamp(8.8rem, 14vw, 11rem);
     height: auto;
-  }
-
-  .eyebrow {
-    margin: 0 0 0.7rem;
-    color: var(--accent-strong);
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
   }
 
   h2 {
@@ -129,23 +102,6 @@ const isExternalLink = (href: string) => href.startsWith('http');
     line-height: 1.8;
   }
 
-  .footer-access {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.85rem;
-    align-content: start;
-  }
-
-  .access-pill {
-    padding: 1rem;
-    border-radius: 1rem;
-    border: 1px solid rgba(15, 118, 110, 0.12);
-    background: rgba(255, 255, 255, 0.82);
-    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-  }
-
-  .access-pill:hover,
-  .access-pill:focus-visible,
   li a:hover,
   li a:focus-visible,
   .socials a:hover,
@@ -155,14 +111,11 @@ const isExternalLink = (href: string) => href.startsWith('http');
     box-shadow: 0 14px 28px rgba(26, 40, 34, 0.08);
   }
 
-  .access-pill span,
-  .access-pill strong,
   .socials span,
   .socials small {
     display: block;
   }
 
-  .access-pill span,
   h3,
   .socials span {
     color: var(--accent-strong);
@@ -170,12 +123,6 @@ const isExternalLink = (href: string) => href.startsWith('http');
     font-weight: 800;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-  }
-
-  .access-pill strong {
-    margin-top: 0.45rem;
-    font-size: 1rem;
-    line-height: 1.4;
   }
 
   .footer-grid {
@@ -259,7 +206,6 @@ const isExternalLink = (href: string) => href.startsWith('http');
       align-items: flex-start;
     }
 
-    .footer-access,
     .footer-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -271,7 +217,6 @@ const isExternalLink = (href: string) => href.startsWith('http');
       padding: 1.4rem;
     }
 
-    .footer-access,
     .footer-grid {
       grid-template-columns: 1fr;
     }

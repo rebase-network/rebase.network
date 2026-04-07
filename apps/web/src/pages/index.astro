@@ -15,17 +15,6 @@ const liveWire = feed.dynamicFeed.slice(0, 6);
 const recentGeekDaily = feed.recentGeekDaily.slice(0, 3);
 const frontPageHighlights = liveWire.slice(0, 3);
 const featuredSignals = site.homeSignals.slice(0, 2);
-const trimProtocol = (value: string) => value.replace(/^https?:\/\//, '').replace(/\/$/, '');
-const isExternalLink = (href: string) => href.startsWith('http');
-const communityProjects = site.footerGroups.find((group) => group.slug === 'community-projects')?.links.slice(0, 6) ?? [];
-const resourceLinks = site.footerGroups.find((group) => group.slug === 'resources')?.links.slice(0, 3) ?? [];
-const featuredChannels = site.socialLinks.slice(0, 5);
-const accessPoints = [
-  { label: '主域名', value: trimProtocol(site.primaryDomain), href: site.primaryDomain },
-  { label: '社区域名', value: trimProtocol(site.secondaryDomain), href: site.secondaryDomain },
-  { label: 'RSS', value: '/rss.xml', href: '/rss.xml' },
-  { label: '媒体域名', value: trimProtocol(site.mediaDomain), href: site.mediaDomain },
-];
 
 const liveWireTypeLabel = {
   article: '文章',
@@ -202,65 +191,6 @@ const liveWireTypeLabel = {
       {featuredContributors.map((contributor) => (
         <ContributorCard contributor={contributor} />
       ))}
-    </div>
-  </section>
-
-  <section class="shell page-section home-network">
-    <article class="card network-editorial">
-      <p class="hero-kicker">社区网络</p>
-      <h2>Rebase 不只发布内容，也把栏目、渠道和公开资源组织成一个可持续进入的社区网络。</h2>
-      <p class="network-note">
-        网站、RSS、媒体资源和公开渠道彼此联动，帮助读者在不同时间点重新找到同一社区，也让栏目与协作机会有稳定入口。
-      </p>
-      <div class="network-access-grid">
-        {accessPoints.map((item) => (
-          <a class="network-access-item" href={item.href} target={isExternalLink(item.href) ? '_blank' : undefined} rel="noreferrer">
-            <span>{item.label}</span>
-            <strong>{item.value}</strong>
-          </a>
-        ))}
-      </div>
-    </article>
-
-    <div class="network-stack">
-      <article class="card network-roster">
-        <div class="network-roster-head">
-          <span>长期栏目</span>
-          <a href="/about">查看关于页</a>
-        </div>
-        <div class="network-link-grid">
-          {communityProjects.map((item, index) => (
-            <a class="network-link-card" href={item.href} target={isExternalLink(item.href) ? '_blank' : undefined} rel="noreferrer">
-              <span>{String(index + 1).padStart(2, '0')}</span>
-              <strong>{item.label}</strong>
-              <small>{trimProtocol(item.href)}</small>
-            </a>
-          ))}
-        </div>
-      </article>
-
-      <article class="card network-roster roster-mixed">
-        <div class="network-roster-head">
-          <span>公开渠道与资源</span>
-          <a href="/about">进入社区入口</a>
-        </div>
-        <div class="network-chip-group">
-          {featuredChannels.map((item) => (
-            <a class="network-chip" href={item.href} target="_blank" rel="noreferrer">
-              <span>{item.label}</span>
-              <strong>{item.handle ?? trimProtocol(item.href)}</strong>
-            </a>
-          ))}
-        </div>
-        <div class="network-resource-list">
-          {resourceLinks.map((item) => (
-            <a href={item.href} target={isExternalLink(item.href) ? '_blank' : undefined} rel="noreferrer">
-              <span>{item.label}</span>
-              <strong>{trimProtocol(item.href)}</strong>
-            </a>
-          ))}
-        </div>
-      </article>
     </div>
   </section>
 
@@ -590,168 +520,11 @@ const liveWireTypeLabel = {
     gap: 1rem;
   }
 
-  .home-network {
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.95fr);
-    gap: 1rem;
-  }
-
-  .network-editorial,
-  .network-roster,
-  .feed-callout {
-    padding: 1.6rem;
-  }
-
-  .network-editorial {
-    background:
-      radial-gradient(circle at top left, rgba(243, 196, 110, 0.2), transparent 28%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 253, 251, 0.9));
-  }
-
-  .network-editorial h2,
-  .feed-callout h2 {
-    margin: 0;
-    font-size: clamp(1.7rem, 2.5vw, 2.6rem);
-    line-height: 1.08;
-    max-width: 15ch;
-  }
-
-  .network-note {
-    margin: 0.9rem 0 0;
-    max-width: 54ch;
-    color: var(--muted);
-    line-height: 1.8;
-  }
-
-  .network-access-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.8rem;
-    margin-top: 1.2rem;
-  }
-
-  .network-access-item,
-  .network-link-card,
-  .network-chip,
-  .network-resource-list a,
-  .feed-links a {
-    display: block;
-    padding: 1rem 1.1rem;
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.72);
-    border: 1px solid rgba(31, 41, 51, 0.08);
-    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
-  }
-
-  .network-access-item:hover,
-  .network-access-item:focus-visible,
-  .network-link-card:hover,
-  .network-link-card:focus-visible,
-  .network-chip:hover,
-  .network-chip:focus-visible,
-  .network-resource-list a:hover,
-  .network-resource-list a:focus-visible,
-  .feed-links a:hover,
-  .feed-links a:focus-visible {
-    transform: translateY(-2px);
-    border-color: rgba(15, 118, 110, 0.18);
-    background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
-  }
-
-  .network-access-item span,
-  .network-access-item strong,
-  .network-link-card span,
-  .network-link-card strong,
-  .network-link-card small,
-  .network-chip span,
-  .network-chip strong,
-  .network-resource-list span,
-  .network-resource-list strong,
-  .feed-links a {
-    display: block;
-  }
-
-  .network-access-item span,
-  .network-link-card span,
-  .network-chip span,
-  .network-resource-list span,
-  .feed-links a {
-    color: var(--accent-strong);
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .network-access-item strong,
-  .network-link-card strong,
-  .network-chip strong,
-  .network-resource-list strong {
-    margin-top: 0.45rem;
-    line-height: 1.45;
-  }
-
-  .network-link-card small,
-  .network-chip strong,
-  .network-resource-list strong {
-    color: var(--muted);
-    word-break: break-word;
-  }
-
-  .network-stack {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .network-roster {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 252, 250, 0.88));
-  }
-
-  .network-roster-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-  }
-
-  .network-roster-head span {
-    color: var(--accent-strong);
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .network-roster-head a {
-    color: var(--muted);
-    font-size: 0.92rem;
-    font-weight: 700;
-  }
-
-  .network-link-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.8rem;
-  }
-
-  .network-chip-group,
-  .network-resource-list {
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .network-chip-group {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .feed-callout {
     display: grid;
     grid-template-columns: 1.3fr 1fr;
     gap: 1rem;
+    padding: 1.6rem;
     background:
       radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 28%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 253, 251, 0.9));
@@ -771,28 +544,39 @@ const liveWireTypeLabel = {
   }
 
   .feed-links a {
+    display: block;
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid rgba(31, 41, 51, 0.08);
     color: var(--accent-strong);
     font-weight: 800;
     text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+
+  .feed-links a:hover,
+  .feed-links a:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(15, 118, 110, 0.18);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
   }
 
   @media (max-width: 960px) {
     .hero-footnotes,
     .hero-highlights,
     .dispatch-grid,
-    .signal-compact,
-    .network-link-grid,
-    .network-chip-group {
+    .signal-compact {
       grid-template-columns: 1fr;
     }
 
-    .home-network,
     .feed-callout {
       grid-template-columns: 1fr;
     }
 
-    .feed-links,
-    .network-access-grid {
+    .feed-links {
       grid-template-columns: 1fr;
     }
   }
