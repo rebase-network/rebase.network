@@ -196,7 +196,11 @@ const loadRecord = async () => {
       return;
     }
 
-    applyRecord(await adminFetch<AdminGeekDailyRecord>(`/api/admin/v1/geekdaily/${geekdailyId.value}`));
+    const [payload] = await Promise.all([
+      adminFetch<AdminGeekDailyRecord>(`/api/admin/v1/geekdaily/${geekdailyId.value}`),
+      suggestNextEpisodeNumber(),
+    ]);
+    applyRecord(payload);
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '无法加载极客日报详情。';
   } finally {
