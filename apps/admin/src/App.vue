@@ -66,7 +66,6 @@ onMounted(() => {
             height="101"
           />
           <div class="brand-copy">
-            <strong>Rebase 后台</strong>
             <small>社区运营工作台</small>
           </div>
         </RouterLink>

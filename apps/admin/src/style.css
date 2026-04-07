@@ -149,18 +149,11 @@ code {
 
 .brand-copy {
   display: grid;
-  gap: 0.04rem;
   min-width: 0;
 }
 
-.brand strong,
 .brand small {
   display: block;
-}
-
-.brand strong {
-  font-size: 0.9rem;
-  letter-spacing: 0.02em;
 }
 
 .brand small {
