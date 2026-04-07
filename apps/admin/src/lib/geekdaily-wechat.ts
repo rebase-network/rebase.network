@@ -35,6 +35,29 @@ const escapeHtml = (value: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
+const normalizeVisibleText = (value: string) =>
+  value
+    .replace(/\u00a0/g, ' ')
+    .replace(/\u3000/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const normalizeUrlText = (value: string) =>
+  value
+    .replace(/\u00a0/g, '')
+    .replace(/\u3000/g, '')
+    .replace(/\s+/g, '')
+    .trim();
+
+const compactWechatHtml = (value: string) =>
+  value
+    .replace(/\r?\n+/g, ' ')
+    .replace(/>\s+</g, '><')
+    .replace(/>\s+([^<])/g, '>$1')
+    .replace(/([^>])\s+</g, '$1<')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
 const isFilled = (value: string) => value.trim().length > 0;
 const hasCompleteItem = (item: GeekDailyWechatItemInput) =>
   isFilled(item.title) && isFilled(item.authorName) && isFilled(item.sourceUrl) && isFilled(item.summary);
@@ -207,18 +230,20 @@ export function buildGeekDailyWechatHtml(input: GeekDailyWechatInput) {
 
   const [first, second, third] = input.items;
 
-  return renderWechatTemplate(buildWechatIntroHtml(input), {
-    title1: escapeHtml(first.title.trim()),
-    url1: escapeHtml(first.sourceUrl.trim()),
-    author1: escapeHtml(first.authorName.trim()),
-    introduce1: escapeHtml(first.summary.trim()),
-    title2: escapeHtml(second.title.trim()),
-    url2: escapeHtml(second.sourceUrl.trim()),
-    author2: escapeHtml(second.authorName.trim()),
-    introduce2: escapeHtml(second.summary.trim()),
-    title3: escapeHtml(third.title.trim()),
-    url3: escapeHtml(third.sourceUrl.trim()),
-    author3: escapeHtml(third.authorName.trim()),
-    introduce3: escapeHtml(third.summary.trim()),
-  }).trim();
+  return compactWechatHtml(
+    renderWechatTemplate(buildWechatIntroHtml(input), {
+      title1: escapeHtml(normalizeVisibleText(first.title)),
+      url1: escapeHtml(normalizeUrlText(first.sourceUrl)),
+      author1: escapeHtml(normalizeVisibleText(first.authorName)),
+      introduce1: escapeHtml(normalizeVisibleText(first.summary)),
+      title2: escapeHtml(normalizeVisibleText(second.title)),
+      url2: escapeHtml(normalizeUrlText(second.sourceUrl)),
+      author2: escapeHtml(normalizeVisibleText(second.authorName)),
+      introduce2: escapeHtml(normalizeVisibleText(second.summary)),
+      title3: escapeHtml(normalizeVisibleText(third.title)),
+      url3: escapeHtml(normalizeUrlText(third.sourceUrl)),
+      author3: escapeHtml(normalizeVisibleText(third.authorName)),
+      introduce3: escapeHtml(normalizeVisibleText(third.summary)),
+    }),
+  );
 }
