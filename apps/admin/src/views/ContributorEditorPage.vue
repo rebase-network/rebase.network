@@ -10,6 +10,7 @@ import {
   type ContributorInput,
 } from '@rebase/shared';
 
+import AssetPickerField from '../components/AssetPickerField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime, slugify } from '../lib/format';
@@ -42,14 +43,13 @@ const form = reactive<ContributorFormState>(createBlankForm());
 const contributorId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => contributorId.value.length === 0);
 const pageTitle = computed(() => (isNew.value ? '新增贡献者' : `编辑贡献者：${detail.value?.contributor.name ?? ''}`));
-const selectedAvatarAsset = computed(() => assets.value.find((asset) => asset.id === form.avatarAssetId) ?? null);
 const roleSummary = computed(() => availableRoles.value.filter((role) => form.roleIds.includes(role.id)).map((role) => role.name).join('、') || '未分配');
 const contactSummary = computed(() => [form.twitterUrl, form.wechat, form.telegram].filter(Boolean).join(' / ') || '未填写');
 const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/contributors#${form.slug}`) : '待生成'));
 const socialChannelCount = computed(() => [form.twitterUrl, form.wechat, form.telegram].filter(Boolean).length);
 
 const detail = ref<AdminContributorDetailPayload | null>(null);
-const assets = ref<AdminAssetRecord[]>([]);
+const selectedAvatarAsset = ref<AdminAssetRecord | null>(null);
 const availableRoles = ref<AdminContributorRoleRecord[]>([]);
 const loading = ref(true);
 const saving = ref(false);
@@ -88,8 +88,6 @@ const loadRecord = async () => {
   resetFeedback();
   loading.value = true;
   try {
-    assets.value = await adminFetch<AdminAssetRecord[]>('/api/admin/v1/assets?page=1&pageSize=200');
-
     if (isNew.value) {
       availableRoles.value = await adminFetch<AdminContributorRoleRecord[]>('/api/admin/v1/contributors/roles');
       detail.value = null;
@@ -141,6 +139,10 @@ const toggleRole = (roleId: string) => {
     set.add(roleId);
   }
   form.roleIds = [...set];
+};
+
+const updateSelectedAvatarAsset = (asset: AdminAssetRecord | null) => {
+  selectedAvatarAsset.value = asset;
 };
 
 const onNameInput = () => {
@@ -264,13 +266,13 @@ onMounted(() => void loadRecord());
         <MarkdownEditorField v-model="form.bio" label="详细介绍" placeholder="使用 Markdown 编写贡献者介绍。" :rows="8" />
 
         <div class="field-grid field-grid-3">
-          <label class="field">
-            <span>头像资源</span>
-            <select v-model="form.avatarAssetId">
-              <option value="">不使用上传资源</option>
-              <option v-for="asset in assets" :key="asset.id" :value="asset.id">{{ asset.originalFilename }}</option>
-            </select>
-          </label>
+          <AssetPickerField
+            v-model="form.avatarAssetId"
+            label="头像资源"
+            empty-label="当前未绑定上传头像，将依赖头像种子生成默认形象。"
+            :show-selected-card="false"
+            @resolve="updateSelectedAvatarAsset"
+          />
           <label class="field">
             <span>头像种子</span>
             <input v-model="form.avatarSeed" type="text" placeholder="rebase-community" />

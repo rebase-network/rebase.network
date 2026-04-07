@@ -5,9 +5,9 @@ import { RouterLink, useRoute, useRouter } from 'vue-router';
 import {
   contentStatusOptions,
   type AdminArticleRecord,
-  type AdminAssetRecord,
 } from '@rebase/shared';
 
+import AssetPickerField from '../components/AssetPickerField.vue';
 import AuthorsField from '../components/AuthorsField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
@@ -51,7 +51,6 @@ const createBlankForm = (): ArticleFormState => ({
 
 const form = reactive<ArticleFormState>(createBlankForm());
 const article = ref<AdminArticleRecord | null>(null);
-const assets = ref<AdminAssetRecord[]>([]);
 const loading = ref(true);
 const saving = ref(false);
 const actioning = ref(false);
@@ -95,8 +94,6 @@ const loadArticle = async () => {
   resetFeedback();
   loading.value = true;
   try {
-    assets.value = await adminFetch<AdminAssetRecord[]>('/api/admin/v1/assets?page=1&pageSize=200');
-
     if (isNew.value) {
       article.value = null;
       slugTouched.value = false;
@@ -244,13 +241,7 @@ onMounted(() => void loadArticle());
               <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
             </select>
           </label>
-          <label class="field">
-            <span>封面资源</span>
-            <select v-model="form.coverAssetId">
-              <option value="">不使用封面资源</option>
-              <option v-for="asset in assets" :key="asset.id" :value="asset.id">{{ asset.originalFilename }}</option>
-            </select>
-          </label>
+          <AssetPickerField v-model="form.coverAssetId" label="封面资源" empty-label="当前未选择封面资源。" />
         </div>
       </section>
     </div>
