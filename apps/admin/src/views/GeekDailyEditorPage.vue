@@ -66,7 +66,9 @@ let copyFeedbackTimer: number | null = null;
 const geekdailyId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => geekdailyId.value.length === 0);
 const pageTitle = computed(() => (isNew.value ? '新增极客日报' : `编辑极客日报：#${record.value?.episodeNumber ?? ''}`));
-const episodeSuggestionHint = computed(() => `建议值：第 ${suggestedEpisodeNumber.value} 期`);
+const episodeSuggestionHint = computed(() =>
+  isNew.value ? `新建建议：第 ${suggestedEpisodeNumber.value} 期` : `下一建议：第 ${suggestedEpisodeNumber.value} 期`,
+);
 const derivedTitle = computed(() => (form.episodeNumber > 0 ? `极客日报#${form.episodeNumber}` : '极客日报#'));
 const statusLabel = computed(() => formatContentStatus(form.status));
 const currentEditorLabel = computed(() => currentEditorName.value || '当前编辑');
