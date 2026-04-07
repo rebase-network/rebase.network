@@ -687,6 +687,10 @@ code {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.field-grid-1-compact {
+  grid-template-columns: minmax(0, 420px);
+}
+
 .field-grid-3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -700,6 +704,13 @@ code {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.62);
+}
+
+.compact-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
 }
 
 .site-section-stack {

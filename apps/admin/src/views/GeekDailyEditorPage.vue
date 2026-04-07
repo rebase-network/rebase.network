@@ -3,7 +3,6 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import {
-  contentStatusOptions,
   extractGeekDailyBodyNote,
   type AdminGeekDailyListItem,
   type AdminGeekDailyRecord,
@@ -12,6 +11,7 @@ import {
 import GeekDailyItemsField from '../components/GeekDailyItemsField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminFetchWithMeta, adminRequest, getValidationIssues } from '../lib/api';
+import { formatContentStatus } from '../lib/format';
 
 interface GeekDailyItemFormState {
   title: string;
@@ -64,6 +64,8 @@ const geekdailyId = computed(() => (typeof route.params.id === 'string' ? route.
 const isNew = computed(() => geekdailyId.value.length === 0);
 const pageTitle = computed(() => (isNew.value ? '新增极客日报' : `编辑极客日报：#${record.value?.episodeNumber ?? ''}`));
 const episodeSuggestionHint = computed(() => `建议值：第 ${suggestedEpisodeNumber.value} 期`);
+const derivedTitle = computed(() => (form.episodeNumber > 0 ? `极客日报#${form.episodeNumber}` : '极客日报#'));
+const statusLabel = computed(() => formatContentStatus(form.status));
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -131,8 +133,6 @@ const save = async () => {
         method: isNew.value ? 'POST' : 'PATCH',
         body: {
           ...form,
-          editors: [],
-          tags: [],
         },
       },
     );
@@ -179,7 +179,7 @@ onMounted(() => void loadRecord());
     <header class="page-header page-header-row">
       <div>
         <h2>{{ pageTitle }}</h2>
-        <p>期数内容与条目</p>
+        <p>期数内容与条目 · {{ statusLabel }}</p>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link" to="/geekdaily">返回列表</RouterLink>
@@ -196,7 +196,7 @@ onMounted(() => void loadRecord());
     <div v-if="loading" class="panel"><p>正在准备极客日报编辑器…</p></div>
 
     <section v-else class="panel stacked-gap editor-main">
-      <div class="field-grid field-grid-2">
+      <div class="field-grid field-grid-1-compact">
         <label class="field">
           <div class="field-label-row">
             <span>期数编号</span>
@@ -205,18 +205,12 @@ onMounted(() => void loadRecord());
           <input v-model.number="form.episodeNumber" type="number" min="1" />
           <small v-if="fieldIssues.episodeNumber" class="field-error">{{ fieldIssues.episodeNumber }}</small>
         </label>
-        <label class="field">
-          <span>状态</span>
-          <select v-model="form.status">
-            <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-          </select>
-        </label>
       </div>
 
-      <label class="field">
-        <span>标题</span>
-        <input v-model="form.title" type="text" placeholder="极客日报#1915" />
-      </label>
+      <div class="field-shell compact-info-row">
+        <strong>标题</strong>
+        <span>{{ derivedTitle }}</span>
+      </div>
 
       <label class="field">
         <span>摘要</span>

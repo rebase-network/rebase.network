@@ -223,7 +223,7 @@ export const createAdminGeekDailyEpisode = async (input: GeekDailyEpisodeInput, 
       bodyMarkdown: buildGeekDailyBodyMarkdown({ ...input, editors }),
       editorsJson: editors,
       tagsJson: input.tags,
-      status: input.status,
+      status: 'draft',
       publishedAt: new Date(),
       updatedByStaffId: actor.actorStaffAccountId ?? null,
     })
@@ -251,8 +251,6 @@ export const updateAdminGeekDailyEpisode = async (id: string, input: GeekDailyEp
 
   await ensureEpisodeNumberAvailable(input.episodeNumber, id);
   const editors = resolveEpisodeEditors(actor, current.editors);
-  const publishedAt =
-    current.status !== 'published' && input.status === 'published' ? new Date() : coerceDate(current.publishedAt);
 
   await db
     .update(geekdailyEpisodes)
@@ -264,8 +262,8 @@ export const updateAdminGeekDailyEpisode = async (id: string, input: GeekDailyEp
       bodyMarkdown: buildGeekDailyBodyMarkdown({ ...input, editors }),
       editorsJson: editors,
       tagsJson: input.tags,
-      status: input.status,
-      publishedAt,
+      status: current.status,
+      publishedAt: coerceDate(current.publishedAt),
       updatedByStaffId: actor.actorStaffAccountId ?? null,
       updatedAt: new Date(),
     })
