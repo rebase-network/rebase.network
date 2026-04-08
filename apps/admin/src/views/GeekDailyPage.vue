@@ -175,6 +175,7 @@ onMounted(() => {
                 <div class="table-cell-stack">
                   <strong>{{ row.title }}</strong>
                   <div class="muted-row">第 {{ row.episodeNumber }} 期</div>
+                  <div v-if="row.editors.length > 0" class="muted-row">编辑：{{ row.editors.join('、') }}</div>
                 </div>
               </td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>

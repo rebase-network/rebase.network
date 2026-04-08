@@ -287,6 +287,7 @@ export const listAdminGeekDailyEpisodes = async (
       slug: getGeekDailyEpisodeSlug(row.episodeNumber),
       episodeNumber: row.episodeNumber,
       title: row.title,
+      editors: getEditors(row.editorsJson),
       status: row.status,
       publishedAt: toIsoString(row.publishedAt) ?? new Date().toISOString(),
       itemCount: itemCounts.get(row.id) ?? 0,

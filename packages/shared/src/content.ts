@@ -526,6 +526,7 @@ export interface AdminGeekDailyListItem {
   slug: string;
   episodeNumber: number;
   title: string;
+  editors: string[];
   status: ContentStatus;
   publishedAt: string;
   itemCount: number;
