@@ -6,12 +6,14 @@ const expectStyledEpisodeCard = async (page: Page) => {
     return {
       display: computed.display,
       position: computed.position,
+      padding: computed.padding,
       backgroundImage: computed.backgroundImage,
     };
   });
 
   expect(styles.display).toBe('grid');
   expect(styles.position).toBe('relative');
+  expect(styles.padding).toBe('19.2px');
   expect(styles.backgroundImage).toContain('linear-gradient');
 };
 
