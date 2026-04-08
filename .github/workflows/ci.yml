@@ -37,6 +37,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Prepare local env
+        run: cp .env.example .env
+
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 
