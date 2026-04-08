@@ -16,6 +16,26 @@ This keeps the frontends at the edge while the writable backend stays on the ser
 - continue day-to-day work on `dev`
 - merge `dev` into `main` only after release validation passes
 - production deployments should run from `main`
+- `apps/web` and `apps/admin` production must be deployed by Cloudflare Workers Builds from `main`
+- local `wrangler deploy` to the production Workers is not part of the normal release flow
+
+## Production Release Policy
+
+For Rebase, production frontend releases now follow a single source of truth:
+
+1. finish work on `dev`
+2. validate locally and with preview builds
+3. merge the release candidate into `main`
+4. let Cloudflare Workers Builds publish production from `main`
+
+This avoids a mismatch where production is newer than GitHub.
+
+Practical guardrails in this repo:
+
+- `pnpm deploy:web` is intentionally blocked for production
+- `pnpm deploy:admin` is intentionally blocked for production
+- local verification should use `pnpm deploy:web:dry-run` and `pnpm deploy:admin:dry-run`
+- if an emergency manual production deploy ever happens outside this policy, the matching code must be pushed and merged back immediately before the next release
 
 ## Prerequisites
 
@@ -183,15 +203,15 @@ Public website:
 
 ```bash
 pnpm deploy:web:dry-run
-pnpm deploy:web
 ```
 
 Admin workspace:
 
 ```bash
 pnpm deploy:admin:dry-run
-pnpm deploy:admin
 ```
+
+`pnpm deploy:web` and `pnpm deploy:admin` are intentionally blocked so local work cannot overwrite the production Workers directly.
 
 These commands build with production URLs:
 
