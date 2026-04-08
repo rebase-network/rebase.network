@@ -14,7 +14,8 @@ const contributorMap = new Map(
   contributorGroups.flatMap((group) => group.contributors.map((contributor) => [contributor.slug, contributor] as const)),
 );
 const contributors = [...contributorMap.values()];
-const contributorPreview = contributors.slice(0, 12);
+const contributorPreviewLimit = 12;
+const contributorPreview = contributors.slice(0, contributorPreviewLimit);
 const liveWire = feed.dynamicFeed.slice(0, 6);
 const recentGeekDaily = feed.recentGeekDaily.slice(0, 3);
 const frontPageHighlights = liveWire.slice(0, 3);
