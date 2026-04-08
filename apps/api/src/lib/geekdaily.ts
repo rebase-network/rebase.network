@@ -436,20 +436,13 @@ export const getGeekDailySearchDocuments = async () => {
     episodeNumber: episode.episodeNumber,
     title: episode.title,
     summary: episode.summary,
-    body: episode.body,
     tags: episode.tags,
     publishedAt: episode.publishedAt,
     year: String(new Date(episode.publishedAt).getUTCFullYear()),
-    itemTitles: episode.items.map((item: any) => item.title),
-    searchableText: [
-      episode.title,
-      episode.summary,
-      episode.body,
-      episode.editors.join(' '),
-      episode.tags.join(' '),
-      ...episode.items.flatMap((item: any) => [item.title, item.authorName, item.summary]),
-    ]
-      .join(' ')
-      .toLowerCase(),
+    items: episode.items.map((item: any) => ({
+      title: item.title,
+      authorName: item.authorName,
+      summary: item.summary,
+    })),
   }));
 };

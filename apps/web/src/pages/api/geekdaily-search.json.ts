@@ -6,7 +6,7 @@ export async function GET() {
   return new Response(JSON.stringify(documents), {
     headers: {
       'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'public, max-age=300',
+      'cache-control': 'public, max-age=300, stale-while-revalidate=3600',
     },
   });
 }

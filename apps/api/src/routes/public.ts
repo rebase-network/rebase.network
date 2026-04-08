@@ -14,6 +14,7 @@ import { getPublicJobBySlug, listPublicJobs } from '../lib/jobs.js';
 import { getPublicAboutPage, getPublicSiteConfig } from '../lib/site.js';
 
 export const publicRoutes = new Hono();
+const publicCacheControl = 'public, max-age=300, stale-while-revalidate=3600';
 
 const getPositiveLimit = (value: string | undefined, fallback: number) => {
   const parsed = Number.parseInt(value ?? '', 10);
@@ -139,16 +140,25 @@ publicRoutes.get('/contributors', async (c) => c.json(ok(await listPublicContrib
 
 publicRoutes.get('/geekdaily', async (c) => {
   const limit = getPositiveLimit(c.req.query('limit'), 0);
+  c.header('Cache-Control', publicCacheControl);
   return c.json(ok(await listPublicGeekDailyEpisodes(limit)));
 });
 
-publicRoutes.get('/geekdaily/overview', async (c) => c.json(ok(await getPublicGeekDailyOverview())));
-publicRoutes.get('/geekdaily/search', async (c) => c.json(ok(await getGeekDailySearchDocuments())));
+publicRoutes.get('/geekdaily/overview', async (c) => {
+  c.header('Cache-Control', publicCacheControl);
+  return c.json(ok(await getPublicGeekDailyOverview()));
+});
+
+publicRoutes.get('/geekdaily/search', async (c) => {
+  c.header('Cache-Control', publicCacheControl);
+  return c.json(ok(await getGeekDailySearchDocuments()));
+});
 
 publicRoutes.get('/geekdaily/:slug', async (c) => {
   const record = await getPublicGeekDailyEpisodeBySlug(c.req.param('slug'));
   if (!record) {
     return c.json({ error: { code: 'NOT_FOUND', message: 'geekdaily episode not found' } }, 404);
   }
+  c.header('Cache-Control', publicCacheControl);
   return c.json(ok(record));
 });

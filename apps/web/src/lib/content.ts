@@ -54,12 +54,14 @@ interface GeekDailySearchDocument {
   episodeNumber: number;
   title: string;
   summary: string;
-  body: string;
   tags: string[];
   publishedAt: string;
   year: string;
-  itemTitles: string[];
-  searchableText: string;
+  items: Array<{
+    title: string;
+    authorName: string;
+    summary: string;
+  }>;
 }
 
 interface GeekDailyArchiveOverviewPayload {

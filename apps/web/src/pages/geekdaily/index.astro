@@ -114,18 +114,24 @@ const featuredTags = overview.featuredTags;
   </section>
 
   <script>
+    type SearchDocumentItem = {
+      title: string;
+      authorName: string;
+      summary: string;
+    };
+
     type SearchDocument = {
       slug: string;
       episodeNumber: number;
       title: string;
       summary: string;
-      body: string;
       tags: string[];
       publishedAt: string;
       year: string;
-      itemTitles: string[];
+      items: SearchDocumentItem[];
       searchableText: string;
     };
+    type SearchDocumentPayload = Omit<SearchDocument, 'searchableText'>;
 
     const pageSize = 18;
     const input = document.querySelector<HTMLInputElement>('#geekdaily-search');
@@ -250,7 +256,24 @@ const featuredTags = overview.featuredTags;
               if (!response.ok) {
                 throw new Error(`search index request failed: ${response.status}`);
               }
-              return response.json() as Promise<SearchDocument[]>;
+              return response.json() as Promise<SearchDocumentPayload[]>;
+            })
+            .then((documents) => {
+              return documents.map((document) => {
+                const searchableText = [
+                  document.title,
+                  document.summary,
+                  document.tags.join(' '),
+                  ...document.items.flatMap((item) => [item.title, item.authorName, item.summary]),
+                ]
+                  .join(' ')
+                  .toLowerCase();
+
+                return {
+                  ...document,
+                  searchableText,
+                };
+              });
             })
             .catch((error) => {
               documentsPromise = undefined;
@@ -314,9 +337,9 @@ const featuredTags = overview.featuredTags;
         } else {
           list.innerHTML = visibleItems
             .map((item) => {
-              const itemPreview = item.itemTitles
+              const itemPreview = item.items
                 .slice(0, 3)
-                .map((title) => `<li>${escapeHtml(title)}</li>`)
+                .map((entry) => `<li>${escapeHtml(entry.title)}</li>`)
                 .join('');
 
               return `
@@ -324,7 +347,6 @@ const featuredTags = overview.featuredTags;
                   <p class="meta">${escapeHtml(item.title)} · ${escapeHtml(formatPublishedAt(item.publishedAt))}</p>
                   <h2><a href="/geekdaily/geekdaily-${item.episodeNumber}">${escapeHtml(item.title)}</a></h2>
                   <p class="summary">${escapeHtml(item.summary)}</p>
-                  <p class="body">${escapeHtml(item.body)}</p>
                   <ul>${itemPreview}</ul>
                 </article>
               `;
