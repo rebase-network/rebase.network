@@ -1551,19 +1551,12 @@ code {
   line-height: 1.08;
 }
 
-.login-card-head p,
-.login-credential-note p {
+.login-card-head p {
   color: var(--muted);
 }
 
 .login-card-head p {
   max-width: 26ch;
-}
-
-.login-credential-note {
-  padding: 0.8rem 0.9rem;
-  border-radius: 14px;
-  background: rgba(15, 109, 100, 0.08);
 }
 
 .page-header h2 {
@@ -1573,13 +1566,6 @@ code {
 .panel h3,
 .field-row h3 {
   font-size: 1rem;
-}
-
-.login-credential-note p {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
-  align-items: center;
 }
 
 .login-submit {

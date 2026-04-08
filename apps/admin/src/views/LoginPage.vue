@@ -6,8 +6,8 @@ import { authClient } from '../lib/auth-client';
 
 const router = useRouter();
 const form = reactive({
-  email: 'admin@rebase.local',
-  password: 'RebaseAdmin123456!',
+  email: '',
+  password: '',
 });
 const loading = ref(false);
 const errorMessage = ref('');
@@ -72,16 +72,6 @@ const signIn = async () => {
           <h1>Rebase 社区运营后台</h1>
           <p>统一维护文章、极客日报、招聘、活动、贡献者与站点内容。</p>
         </div>
-
-        <div class="login-credential-note">
-          <span class="preview-label">本地默认账号</span>
-          <p>
-            <code>admin@rebase.local</code>
-            <span>/</span>
-            <code>RebaseAdmin123456!</code>
-          </p>
-        </div>
-
         <form class="login-form" @submit.prevent="signIn">
           <label class="field">
             <span>邮箱</span>
