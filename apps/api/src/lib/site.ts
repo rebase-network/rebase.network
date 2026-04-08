@@ -264,6 +264,7 @@ export const getPublicSiteConfig = async () => {
       { label: '首页', href: '/' },
       { label: '极客日报', href: '/geekdaily' },
       { label: 'Who-Is-Hiring', href: '/who-is-hiring' },
+      { label: '文章', href: '/articles' },
       { label: '活动', href: '/events' },
       { label: '贡献者们', href: '/contributors' },
       { label: '关于Rebase', href: '/about' },
