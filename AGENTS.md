@@ -22,6 +22,14 @@ Examples:
 - Avoid mixing unrelated changes in the same commit.
 - Keep each commit scoped to a single clear goal so it is easy to review or revert.
 
+## Branch and release flow
+
+- Keep day-to-day work on `dev`.
+- After a coherent batch is committed locally, push it to `origin/dev`.
+- Open a pull request from `dev` to `main` for review and release tracking.
+- Merge the pull request into `main` only after the release candidate is ready.
+- Do not push release changes directly to `origin/main`.
+
 ## Documentation Map
 
 - Start with `README.md` for the current project baseline and document index.
