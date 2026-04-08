@@ -172,12 +172,12 @@ const liveWireTypeLabel = {
       <div class="contributors-copy">
         <div class="contributors-intro">
           <p>
-            Rebase 由志愿者、GeekDaily 智囊团、编辑与其他社区成员共同维护。首页先展示这张不断扩展的协作网络，再进入完整的贡献者档案。
+            Rebase 由志愿者、编辑与长期协作者共同维护。首页先给出一张不断扩展的社区群像，再进入完整的贡献者档案。
           </p>
         </div>
 
         <p class="contributors-note">
-          这些公开档案覆盖社区内容整理、活动组织、推荐与编辑协作。更多贡献者的故事与联系方式，放在独立页面里持续补全。
+          这些公开档案覆盖内容整理、活动组织、推荐与编辑协作。更多参与者的故事与联系方式，会在独立页面里持续补全。
         </p>
       </div>
 
@@ -496,20 +496,35 @@ const liveWireTypeLabel = {
   }
 
   .contributors-overview {
+    position: relative;
+    overflow: hidden;
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 0.95fr);
     gap: 1.2rem;
     align-items: center;
-    padding: 1.2rem;
+    padding: 1.25rem;
     background:
-      radial-gradient(circle at top left, rgba(243, 196, 110, 0.18), transparent 24%),
-      radial-gradient(circle at 88% 18%, rgba(15, 118, 110, 0.16), transparent 22%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 251, 0.92));
+      radial-gradient(circle at top left, rgba(243, 196, 110, 0.22), transparent 26%),
+      radial-gradient(circle at 82% 18%, rgba(15, 118, 110, 0.18), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(247, 252, 250, 0.93));
+  }
+
+  .contributors-overview::after {
+    content: '';
+    position: absolute;
+    inset: auto -3rem -5rem auto;
+    width: 12rem;
+    height: 12rem;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(15, 118, 110, 0.12), transparent 70%);
+    pointer-events: none;
   }
 
   .contributors-copy {
+    position: relative;
+    z-index: 1;
     display: grid;
-    gap: 0.9rem;
+    gap: 0.75rem;
   }
 
   .contributors-intro p,
@@ -522,22 +537,27 @@ const liveWireTypeLabel = {
     max-width: 58ch;
   }
 
-  .contributors-intro p,
-  .contributors-note {
-    line-height: 1.72;
+  .contributors-intro p {
+    color: var(--text);
+    font-size: 1.02rem;
+    line-height: 1.78;
   }
 
   .contributors-note {
     max-width: 56ch;
-    line-height: 1.72;
+    font-size: 0.95rem;
+    line-height: 1.7;
   }
 
   .contributors-cloud {
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 4.2rem));
-    gap: 0.65rem;
+    gap: 0.7rem;
     align-content: start;
     justify-content: end;
+    padding: 0.35rem 0 0.35rem 1rem;
   }
 
   .avatar-token,
@@ -554,11 +574,19 @@ const liveWireTypeLabel = {
     border: 1px solid rgba(15, 118, 110, 0.12);
     background: rgba(255, 255, 255, 0.88);
     box-shadow: 0 16px 36px rgba(26, 40, 34, 0.1);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
   }
 
   .avatar-token img {
     display: block;
     object-fit: cover;
+  }
+
+  .avatar-token:hover,
+  .avatar-token:focus-visible {
+    transform: translateY(-2px) scale(1.02);
+    border-color: rgba(15, 118, 110, 0.22);
+    box-shadow: 0 18px 38px rgba(26, 40, 34, 0.14);
   }
 
   .avatar-fallback {
@@ -567,6 +595,22 @@ const liveWireTypeLabel = {
     color: white;
     font-size: 1.25rem;
     font-weight: 800;
+  }
+
+  .avatar-token:nth-child(4n + 1) {
+    transform: translateY(-0.3rem) rotate(-3deg);
+  }
+
+  .avatar-token:nth-child(4n + 2) {
+    transform: translateY(0.28rem) rotate(2deg);
+  }
+
+  .avatar-token:nth-child(4n + 3) {
+    transform: translateY(-0.15rem) rotate(3deg);
+  }
+
+  .avatar-token:nth-child(4n) {
+    transform: translateY(0.34rem) rotate(-2deg);
   }
 
   @media (max-width: 960px) {
@@ -602,6 +646,11 @@ const liveWireTypeLabel = {
     .contributors-cloud {
       grid-template-columns: repeat(3, minmax(0, 4.2rem));
       justify-content: start;
+      padding-left: 0;
+    }
+
+    .avatar-token:nth-child(n) {
+      transform: none;
     }
   }
 </style>
