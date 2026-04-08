@@ -139,6 +139,8 @@ Use `infra/production/server.env.example` as the committed template.
 ### Git and release policy
 
 - day-to-day work continues on `dev`
+- validated work should be pushed to `origin/dev`
+- releases should move from `dev` to `main` through a pull request
 - production Workers Builds track `main`
 - API server deployment should use release-ready code, not unreviewed local changes
 

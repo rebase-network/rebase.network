@@ -16,6 +16,8 @@ For the current production inventory and ownership map, also see `docs/productio
 ## Release Branch Rule
 
 - continue day-to-day work on `dev`
+- push validated work to `origin/dev`
+- create a pull request from `dev` to `main`
 - merge `dev` into `main` only after release validation passes
 - production deployments should run from `main`
 - `apps/web` and `apps/admin` production must be deployed by Cloudflare Workers Builds from `main`
@@ -27,8 +29,10 @@ For Rebase, production frontend releases now follow a single source of truth:
 
 1. finish work on `dev`
 2. validate locally and with preview builds
-3. merge the release candidate into `main`
-4. let Cloudflare Workers Builds publish production from `main`
+3. push the validated branch to `origin/dev`
+4. create a pull request from `dev` to `main`
+5. merge the release candidate into `main`
+6. let Cloudflare Workers Builds publish production from `main`
 
 This avoids a mismatch where production is newer than GitHub.
 
@@ -71,6 +75,8 @@ For Rebase, the recommended Git strategy is:
 - set the production branch to `main` for both Workers
 - enable non-production branch builds for both Workers
 - keep ongoing work on `dev` and let Cloudflare create preview builds for `dev` pushes
+- push release candidates to `origin/dev` before opening the production PR
+- use a pull request from `dev` to `main` as the only normal path into production
 - merge `dev` into `main` only when the release candidate is ready
 
 This means we do not need to merge `dev` into `main` just to enable Git-based auto builds. We only merge when we want the current release candidate to become production.
