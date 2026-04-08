@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import DetailHero from '@/components/DetailHero.astro';
 import DetailSidebarLinksSection from '@/components/DetailSidebarLinksSection.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getGeekDailyEpisodeBySlug, getGeekDailyEpisodes, getSiteSettings } from '@/lib/content';
@@ -33,29 +32,6 @@ const slug = Astro.params.slug ?? '';
 const [site, episode, episodes] = await Promise.all([getSiteSettings(), getGeekDailyEpisodeBySlug(slug), getGeekDailyEpisodes()]);
 const related = episode ? episodes.filter((item) => item.slug !== episode.slug).slice(0, 2) : [];
 const episodeNote = episode ? extractGeekDailyBodyNote(episode.body) : '';
-const episodeBreadcrumbs = episode
-  ? [
-      { href: '/', label: '首页' },
-      { href: '/geekdaily', label: 'GeekDaily' },
-      { label: episode.title, current: true },
-    ]
-  : [];
-const episodeHeroMeta = episode
-  ? [
-      formatDate(episode.publishedAt),
-      `${episode.items.length} 条推荐`,
-      episode.editors.length > 0 ? `${episode.editors.length} 位编辑` : '持续归档',
-    ]
-  : [];
-const episodeHeroActions = [
-  { href: '/geekdaily/rss.xml', label: '订阅 GeekDaily RSS', showIcon: true },
-  { href: '/geekdaily', label: '回到 GeekDaily 列表', secondary: true },
-];
-const episodeJumpLinks = [
-  { href: '#episode-body', label: '进入正文' },
-  { href: '#episode-items', label: '推荐条目' },
-  { href: '#episode-info', label: '期数信息' },
-];
 const episodeWayfindingLinks = [
   { href: '#episode-body', label: '进入正文' },
   { href: '#episode-items', label: '查看推荐条目' },
@@ -83,32 +59,22 @@ if (!episode) {
 >
   {episode ? (
     <>
-      <section class="shell page-hero single">
-        <DetailHero
-          kicker="GeekDaily 详情"
-          breadcrumbs={episodeBreadcrumbs}
-          edition={`No. ${episode.episodeNumber}`}
-          title={episode.title}
-          summary={episode.summary}
-          meta={episodeHeroMeta}
-          note="这期内容既保留正文，也把逐条推荐保留下来，方便搜索、订阅和回看。"
-          actions={episodeHeroActions}
-          jumps={episodeJumpLinks}
-          heroClass="episode-hero"
-        />
-      </section>
-
       <section class="shell page-section detail-shell">
         <article id="episode-body" class="card detail-body-card episode-detail">
-          <div class="detail-body-lead lead">
-            <p>{formatDate(episode.publishedAt)}</p>
-            {episode.editors.length > 0 && <p>本期编辑：{episode.editors.join('、')}</p>}
-            {episode.tags.length > 0 && (
-              <ul>
-                {episode.tags.map((tag) => <li>{tag}</li>)}
-              </ul>
-            )}
-          </div>
+          <header class="episode-head">
+            <p class="episode-eyebrow">极客日报 #{episode.episodeNumber}</p>
+            <h1>{episode.title}</h1>
+            <p class="episode-summary">{episode.summary}</p>
+            <div class="detail-body-lead lead">
+              <p>{formatDate(episode.publishedAt)}</p>
+              {episode.editors.length > 0 && <p>本期编辑：{episode.editors.join('、')}</p>}
+              {episode.tags.length > 0 && (
+                <ul>
+                  {episode.tags.map((tag) => <li>{tag}</li>)}
+                </ul>
+              )}
+            </div>
+          </header>
           {episodeNote ? (
             <MarkdownContent content={episodeNote} />
           ) : (
@@ -202,21 +168,35 @@ if (!episode) {
 </BaseLayout>
 
 <style>
-  .single {
-    grid-template-columns: 1fr;
+  .episode-head {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.35rem;
+    border-bottom: 1px solid rgba(31, 41, 51, 0.08);
   }
 
-  .episode-hero {
-    color: white;
-    background:
-      radial-gradient(circle at top right, rgba(245, 158, 11, 0.24), transparent 24%),
-      linear-gradient(135deg, rgba(67, 32, 14, 0.98), rgba(15, 118, 110, 0.92));
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 28px 60px rgba(39, 26, 18, 0.24);
+  .episode-eyebrow {
+    margin: 0;
+    color: var(--accent-strong);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
-  .light {
-    color: white;
+  .episode-head h1 {
+    margin: 0;
+    font-size: clamp(2rem, 3.4vw, 3rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+  }
+
+  .episode-summary {
+    margin: 0;
+    max-width: 62ch;
+    color: var(--muted);
+    line-height: 1.8;
   }
 
   .lead ul {
