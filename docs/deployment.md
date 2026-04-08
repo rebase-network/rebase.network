@@ -237,6 +237,8 @@ For common remote API and service operations, prefer the repo-managed helper:
 ./ops/manage.sh ps
 ./ops/manage.sh logs api 200
 ./ops/manage.sh ready
+./ops/manage.sh db query "select count(*) from geekdaily_episodes;"
+./ops/manage.sh db backup
 ```
 
 Bring up the production stack on the server:

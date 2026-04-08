@@ -75,16 +75,44 @@ remote_exec() {
   ssh "${SSH_OPTS[@]}" "$REMOTE_HOST" "$1"
 }
 
+remote_exec_tty() {
+  ssh "${SSH_OPTS[@]}" -t "$REMOTE_HOST" "$1"
+}
+
 remote_repo_exec() {
   local command="$1"
 
   remote_exec "set -euo pipefail; cd $(quote "$REMOTE_DIR"); $command"
 }
 
+remote_repo_exec_tty() {
+  local command="$1"
+
+  remote_exec_tty "set -euo pipefail; cd $(quote "$REMOTE_DIR"); $command"
+}
+
 compose_exec() {
   local command="$1"
 
   remote_repo_exec "docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") $command"
+}
+
+compose_exec_tty() {
+  local command="$1"
+
+  remote_repo_exec_tty "docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") $command"
+}
+
+compose_exec_postgres_shell() {
+  local interactive="${1:-false}"
+  local script="$2"
+
+  if [[ "$interactive" == true ]]; then
+    compose_exec_tty "exec postgres sh -lc $(quote "$script")"
+    return
+  fi
+
+  compose_exec "exec -T postgres sh -lc $(quote "$script")"
 }
 
 ensure_remote_dir() {
@@ -139,6 +167,7 @@ Usage:
   ./ops/manage.sh health
   ./ops/manage.sh ready
   ./ops/manage.sh exec <service> -- <command...>
+  ./ops/manage.sh db <shell|query|logs|restart|backup|migrate>
   ./ops/manage.sh bootstrap-admin
   ./ops/manage.sh seed
   ./ops/manage.sh ssh
@@ -155,6 +184,8 @@ Examples:
   ./ops/manage.sh deploy api
   ./ops/manage.sh deploy stack --no-sync
   ./ops/manage.sh logs api 200
+  ./ops/manage.sh db query "select count(*) from geekdaily_episodes;"
+  ./ops/manage.sh db backup
   ./ops/manage.sh exec api -- pnpm --filter @rebase/api bootstrap-admin
 EOF
 }
@@ -260,6 +291,65 @@ case "$command" in
     [[ $# -gt 0 ]] || die "exec requires a command"
     assert_remote_layout
     compose_exec "exec -T $service $(shell_join "$@")"
+    ;;
+
+  db)
+    subcommand="${1:-help}"
+    if [[ $# -gt 0 ]]; then
+      shift
+    fi
+    assert_remote_layout
+
+    case "$subcommand" in
+      help)
+        cat <<EOF
+Database commands:
+  ./ops/manage.sh db shell
+  ./ops/manage.sh db query "<sql>"
+  ./ops/manage.sh db logs [tail]
+  ./ops/manage.sh db restart
+  ./ops/manage.sh db backup [remote-path]
+  ./ops/manage.sh db migrate
+EOF
+        ;;
+
+      shell | psql)
+        compose_exec_postgres_shell true 'export PGPASSWORD="$POSTGRES_PASSWORD"; exec psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+        ;;
+
+      query)
+        sql="${1:-}"
+        [[ -n "$sql" ]] || die "db query requires an SQL string"
+        compose_exec_postgres_shell false "export PGPASSWORD=\"\$POSTGRES_PASSWORD\"; exec psql -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\" -v ON_ERROR_STOP=1 -P pager=off -c $(quote "$sql")"
+        ;;
+
+      logs)
+        tail_lines="${1:-$DEFAULT_LOG_TAIL}"
+        [[ "$tail_lines" =~ ^[0-9]+$ ]] || die "tail must be a positive integer"
+        compose_exec "logs --tail $tail_lines postgres"
+        ;;
+
+      restart)
+        compose_exec "restart postgres"
+        ;;
+
+      backup | dump)
+        backup_path="${1:-backups/rebase-$(date +%Y%m%d-%H%M%S).sql.gz}"
+        backup_target="$backup_path"
+        resolved_target="$backup_path"
+        [[ "$backup_path" = /* ]] || resolved_target="${REMOTE_DIR}/${backup_path}"
+        remote_repo_exec "mkdir -p $(quote "$(dirname "$backup_target")") && docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote 'export PGPASSWORD="$POSTGRES_PASSWORD"; exec pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"') | gzip -c > $(quote "$backup_target") && ls -lh $(quote "$backup_target")"
+        log "database backup written to ${resolved_target}"
+        ;;
+
+      migrate)
+        compose_exec "exec -T api pnpm --filter @rebase/db migrate"
+        ;;
+
+      *)
+        die "unknown db subcommand: $subcommand"
+        ;;
+    esac
     ;;
 
   bootstrap-admin)
