@@ -16,6 +16,26 @@ This keeps the frontends at the edge while the writable backend stays on the ser
 - continue day-to-day work on `dev`
 - merge `dev` into `main` only after release validation passes
 - production deployments should run from `main`
+- `apps/web` and `apps/admin` production must be deployed by Cloudflare Workers Builds from `main`
+- local `wrangler deploy` to the production Workers is not part of the normal release flow
+
+## Production Release Policy
+
+For Rebase, production frontend releases now follow a single source of truth:
+
+1. finish work on `dev`
+2. validate locally and with preview builds
+3. merge the release candidate into `main`
+4. let Cloudflare Workers Builds publish production from `main`
+
+This avoids a mismatch where production is newer than GitHub.
+
+Practical guardrails in this repo:
+
+- `pnpm deploy:web` is intentionally blocked for production
+- `pnpm deploy:admin` is intentionally blocked for production
+- local verification should use `pnpm deploy:web:dry-run` and `pnpm deploy:admin:dry-run`
+- if an emergency manual production deploy ever happens outside this policy, the matching code must be pushed and merged back immediately before the next release
 
 ## Prerequisites
 
@@ -142,7 +162,7 @@ Then fill in:
 
 - PostgreSQL password
 - Better Auth secret
-- R2 credentials and public base URL
+- R2 credentials and public base URL, or a Wrangler profile mount for CLI-backed uploads
 - `CLOUDFLARED_TUNNEL_TOKEN`
 - initial admin email and password
 
@@ -183,15 +203,15 @@ Public website:
 
 ```bash
 pnpm deploy:web:dry-run
-pnpm deploy:web
 ```
 
 Admin workspace:
 
 ```bash
 pnpm deploy:admin:dry-run
-pnpm deploy:admin
 ```
+
+`pnpm deploy:web` and `pnpm deploy:admin` are intentionally blocked so local work cannot overwrite the production Workers directly.
 
 These commands build with production URLs:
 
@@ -241,6 +261,28 @@ docker compose --env-file infra/production/server.env -f infra/production/docker
 Warning:
 
 - `pnpm --filter @rebase/db seed` resets baseline content tables and should not be rerun on a live production database without intent
+
+## Production R2 Options
+
+Rebase currently supports two production paths for media uploads:
+
+1. preferred long-term: set `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`
+2. fallback used for the first rollout: mount a logged-in Wrangler profile and set `R2_DEV_USE_WRANGLER=true`
+
+The fallback path is useful when the bucket already exists but dedicated S3 credentials have not been issued yet. In that mode:
+
+- keep `R2_ACCOUNT_ID`, `R2_BUCKET`, and `R2_PUBLIC_BASE_URL` set
+- leave `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` empty
+- copy the local Wrangler profile to the server, for example:
+
+```bash
+mkdir -p /home/rebase/.config/.wrangler/config
+scp ~/Library/Preferences/.wrangler/config/default.toml rebase@101.33.75.240:/home/rebase/.config/.wrangler/config/default.toml
+```
+
+- keep `WRANGLER_CONFIG_DIR=/home/rebase/.config/.wrangler`
+
+Wrangler can then refresh the OAuth session as needed while the API shells out for uploads.
 
 ## Verification Checklist
 

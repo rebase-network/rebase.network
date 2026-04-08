@@ -43,9 +43,14 @@ services:
       R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:-}
       R2_BUCKET: ${R2_BUCKET:-rebase-media}
       R2_PUBLIC_BASE_URL: ${R2_PUBLIC_BASE_URL:-}
-      R2_DEV_USE_WRANGLER: "false"
+      R2_DEV_USE_WRANGLER: ${R2_DEV_USE_WRANGLER:-true}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
     ports:
       - "127.0.0.1:${API_HOST_PORT:-8788}:8788"
+    volumes:
+      # Mount the Wrangler profile so production can use the CLI-backed R2 mode
+      # until dedicated S3 credentials are provisioned for the bucket.
+      - ${WRANGLER_CONFIG_DIR:-/home/rebase/.config/.wrangler}:/root/.config/.wrangler
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8788/ready >/dev/null || exit 1"]
       interval: 15s
