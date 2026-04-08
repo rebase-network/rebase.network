@@ -15,10 +15,6 @@ const contributorMap = new Map(
 );
 const contributors = [...contributorMap.values()];
 const contributorPreview = contributors.slice(0, 12);
-const contributorStats = [
-  { value: String(contributors.length).padStart(2, '0'), label: '公开贡献者' },
-  { value: String(contributorGroups.length).padStart(2, '0'), label: '角色分组' },
-];
 const liveWire = feed.dynamicFeed.slice(0, 6);
 const recentGeekDaily = feed.recentGeekDaily.slice(0, 3);
 const frontPageHighlights = liveWire.slice(0, 3);
@@ -168,19 +164,15 @@ const liveWireTypeLabel = {
     <SectionHeader
       eyebrow="社区共建者"
       title="由更多真实的人，一起把社区持续往前推"
-      description="Rebase 由志愿者、GeekDaily 智囊团、编辑与其他社区成员共同维护。首页先展示这张不断扩展的协作网络，再进入完整的贡献者档案。"
       href="/contributors"
       hrefLabel="查看全部贡献者"
     />
     <article class="card contributors-overview">
       <div class="contributors-copy">
-        <div class="contributors-stats" role="list">
-          {contributorStats.map((stat) => (
-            <article role="listitem">
-              <strong>{stat.value}</strong>
-              <span>{stat.label}</span>
-            </article>
-          ))}
+        <div class="contributors-intro">
+          <p>
+            Rebase 由志愿者、GeekDaily 智囊团、编辑与其他社区成员共同维护。首页先展示这张不断扩展的协作网络，再进入完整的贡献者档案。
+          </p>
         </div>
 
         <div class="contributors-role-list">
@@ -525,80 +517,66 @@ const liveWireTypeLabel = {
 
   .contributors-copy {
     display: grid;
-    gap: 1rem;
+    gap: 0.9rem;
   }
 
-  .contributors-stats {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.85rem;
-  }
-
-  .contributors-stats article {
-    display: grid;
-    gap: 0.22rem;
-    padding: 1rem 1.05rem;
-    border: 1px solid rgba(15, 118, 110, 0.1);
-    border-radius: 1.2rem;
-    background: rgba(255, 255, 255, 0.84);
-  }
-
-  .contributors-stats strong {
-    font-size: clamp(1.6rem, 2vw, 2rem);
-    line-height: 1;
-  }
-
-  .contributors-stats span,
+  .contributors-intro p,
   .contributors-note,
   .role-pill span {
+    margin: 0;
     color: var(--muted);
+  }
+
+  .contributors-intro {
+    max-width: 58ch;
+  }
+
+  .contributors-intro p,
+  .contributors-note {
+    line-height: 1.72;
   }
 
   .contributors-role-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.7rem;
+    gap: 0.6rem;
   }
 
   .role-pill {
     display: grid;
     gap: 0.18rem;
-    min-width: 9.5rem;
-    padding: 0.9rem 1rem;
-    border: 1px solid rgba(15, 118, 110, 0.1);
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.82);
+    min-width: 8.6rem;
+    padding: 0.76rem 0.9rem;
+    border: 1px solid rgba(15, 118, 110, 0.08);
+    border-radius: 0.95rem;
+    background: rgba(255, 255, 255, 0.76);
   }
 
   .role-pill strong {
-    font-size: 0.98rem;
+    font-size: 0.92rem;
     line-height: 1.35;
-  }
-
-  .role-pill span,
-  .contributors-note {
-    line-height: 1.65;
   }
 
   .contributors-note {
     margin: 0;
     max-width: 56ch;
+    line-height: 1.72;
   }
 
   .contributors-cloud {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.8rem;
+    grid-template-columns: repeat(4, minmax(0, 4.2rem));
+    gap: 0.65rem;
     align-content: start;
-    justify-items: center;
+    justify-content: end;
   }
 
   .avatar-token,
   .avatar-fallback,
   .avatar-token img {
-    width: 4.6rem;
-    height: 4.6rem;
-    border-radius: 1.4rem;
+    width: 4.2rem;
+    height: 4.2rem;
+    border-radius: 1.25rem;
   }
 
   .avatar-token {
@@ -618,7 +596,7 @@ const liveWireTypeLabel = {
     display: grid;
     place-items: center;
     color: white;
-    font-size: 1.4rem;
+    font-size: 1.25rem;
     font-weight: 800;
   }
 
@@ -648,13 +626,13 @@ const liveWireTypeLabel = {
       font-size: 1.08rem;
     }
 
-    .contributors-stats,
     .feed-links {
       grid-template-columns: 1fr;
     }
 
     .contributors-cloud {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 4.2rem));
+      justify-content: start;
     }
   }
 </style>
