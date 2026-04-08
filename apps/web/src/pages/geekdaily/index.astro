@@ -29,24 +29,6 @@ const featuredTags = overview.featuredTags;
     </article>
   </section>
 
-  <section class="shell page-section archive-stats">
-    <article class="card stat-card">
-      <span>归档总数</span>
-      <strong>{overview.totalEpisodes} 期</strong>
-      <p>按期数归档，避免把每一期拆散成难以理解的零碎列表。</p>
-    </article>
-    <article class="card stat-card">
-      <span>时间跨度</span>
-      <strong>{years.at(-1)} - {years[0]}</strong>
-      <p>为历史日报保留稳定链接、可搜索入口和 RSS 输出。</p>
-    </article>
-    <article class="card stat-card">
-      <span>链接规则</span>
-      <strong>/geekdaily/geekdaily-1915</strong>
-      <p>统一使用 <code>geekdaily-&#123;episode-number&#125;</code> 规则，让期数含义和栏目来源一眼可辨。</p>
-    </article>
-  </section>
-
   <section class="shell page-section controls-grid">
     <div class="card search-panel">
       <label for="geekdaily-search">搜索 GeekDaily</label>
@@ -481,13 +463,6 @@ const featuredTags = overview.featuredTags;
     line-height: 1.72;
   }
 
-  .archive-stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  .stat-card,
   .search-panel,
   .quick-filter-panel,
   .episode-card,
@@ -495,12 +470,6 @@ const featuredTags = overview.featuredTags;
     padding: 1.2rem;
   }
 
-  .stat-card {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 251, 249, 0.88));
-  }
-
-  .stat-card span,
   .panel-title,
   .search-panel label,
   .results-head p,
@@ -513,21 +482,12 @@ const featuredTags = overview.featuredTags;
     text-transform: uppercase;
   }
 
-  .stat-card span,
   .panel-title,
   .search-panel label,
   .results-head a {
     color: var(--accent-strong);
   }
 
-  .stat-card strong {
-    display: block;
-    margin-top: 0.55rem;
-    font-size: 1.65rem;
-    line-height: 1.1;
-  }
-
-  .stat-card p,
   .search-panel p,
   .results-head span,
   .summary,
@@ -724,7 +684,6 @@ const featuredTags = overview.featuredTags;
   }
 
   @media (max-width: 960px) {
-    .archive-stats,
     .controls-grid {
       grid-template-columns: 1fr;
     }
