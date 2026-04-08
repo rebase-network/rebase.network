@@ -55,7 +55,6 @@ const liveWireTypeLabel = {
         title="正在发生什么"
         description="用一条实时更新的社区新闻线，把文章、活动、GeekDaily 和招聘放在同一个阅读入口里。"
       />
-      <p class="desk-note">右侧保留更高频的更新视图，左侧则负责建立对 Rebase 的第一印象和内容主张。</p>
       <ol class="live-wire-list">
         {liveWire.map((item) => (
           <li class="live-wire-item">
@@ -356,13 +355,6 @@ const liveWireTypeLabel = {
     border-color: rgba(255, 255, 255, 0.28);
     background: rgba(255, 255, 255, 0.12);
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
-  }
-
-  .desk-note {
-    margin: -0.25rem 0 0;
-    color: rgba(223, 244, 238, 0.74);
-    font-size: 0.95rem;
-    line-height: 1.7;
   }
 
   .live-wire-list {
