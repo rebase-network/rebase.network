@@ -1,4 +1,3 @@
-import rss from '@astrojs/rss';
 import {
   getEvents,
   getLatestArticles,
@@ -7,6 +6,7 @@ import {
   getSiteSettings,
 } from '@/lib/content';
 import { getArticlePath, getEventPath, getGeekDailyPath, getJobPath } from '@/lib/paths';
+import { rssResponse, withBaseUrl } from '@/lib/rss';
 
 export async function GET() {
   const [site, episodes, articles, events, jobs] = await Promise.all([
@@ -22,35 +22,34 @@ export async function GET() {
       title: episode.title,
       description: episode.body,
       pubDate: new Date(episode.publishedAt),
-      link: getGeekDailyPath(episode.episodeNumber),
+      link: withBaseUrl(site.primaryDomain, getGeekDailyPath(episode.episodeNumber)),
     })),
     ...articles.map((article) => ({
       title: article.title,
-      description: article.summary,
+      description: `<p>${article.summary}</p>`,
       pubDate: new Date(article.publishedAt),
-      link: getArticlePath(article.slug),
+      link: withBaseUrl(site.primaryDomain, getArticlePath(article.slug)),
     })),
     ...events.map((event) => ({
       title: event.title,
-      description: event.summary,
+      description: `<p>${event.summary}</p>`,
       pubDate: new Date(event.startAt),
-      link: getEventPath(event.startAt, event.slug),
+      link: withBaseUrl(site.primaryDomain, getEventPath(event.startAt, event.slug)),
     })),
     ...jobs.map((job) => ({
       title: `${job.roleTitle} · ${job.companyName}`,
-      description: job.summary,
+      description: `<p>${job.summary}</p>`,
       pubDate: new Date(job.publishedAt),
-      link: getJobPath(job.slug),
+      link: withBaseUrl(site.primaryDomain, getJobPath(job.slug)),
     })),
   ]
     .sort((a, b) => +b.pubDate - +a.pubDate)
     .slice(0, 3);
 
-  return rss({
+  return rssResponse({
     title: 'Rebase feed',
+    link: withBaseUrl(site.primaryDomain, '/rss.xml'),
     description: 'The latest community signals from Rebase.',
-    site: site.primaryDomain,
     items,
-    customData: '<language>zh-cn</language>',
   });
 }

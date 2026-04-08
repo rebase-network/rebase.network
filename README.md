@@ -53,8 +53,9 @@ The target architecture is no longer a headless CMS workflow.
 - `docs/implementation-plan.md`: development phases and milestone plan
 - `docs/acceptance-criteria.md`: module-level acceptance criteria for product, content, and operations
 - `docs/quality-assurance.md`: browser checks, automated checks, sample content, and release validation flow
-- `docs/local-development.md`: current local prototype notes and migration-era development guidance
+- `docs/local-development.md`: current local setup, service commands, and archive import notes
 - `docs/deployment.md`: Worker, Docker Compose, Tunnel, and rollout commands for production
+- `docs/production-config.md`: production inventory, hostnames, Workers, server paths, and config ownership
 - `docs/launch-checklist.md`: launch-critical routes, domain preparation, health checks, and observability baseline
 
 ## Local Development
@@ -64,7 +65,6 @@ Current reality in this repository:
 - the public Astro site is implemented and runnable today
 - the custom admin workspace and Hono API are the primary local stack
 - PostgreSQL, Drizzle seed data, and the bootstrapped operator account are all runnable from this repo
-- legacy Directus files remain only as migration-era reference material
 
 Install dependencies:
 
@@ -110,13 +110,6 @@ Default local operator account after `pnpm local:bootstrap`:
 - email: `admin@rebase.local`
 - password: `RebaseAdmin123456!`
 
-Legacy transition commands are still available if you need to inspect the old prototype artifacts:
-
-- `pnpm cms:logs`: inspect Directus prototype logs
-- `pnpm cms:down`: stop the local prototype containers
-- `pnpm cms:health`: verify the temporary prototype health path
-- `pnpm cms:reset`: recreate the local prototype database and baseline
-
 If you receive a refreshed `geekdaily.csv`, regenerate the committed archive SQL with:
 
 ```bash
@@ -137,6 +130,8 @@ Release policy:
 - ongoing work continues on `dev`
 - merge `dev` into `main` only when the release candidate is validated
 - production deployment should track `main`, not `dev`
+
+Remote API and service operations can be run through `ops/manage.sh`.
 
 ## Repository Conventions
 

@@ -11,6 +11,8 @@ Deploy the first Rebase release with the agreed split:
 
 This keeps the frontends at the edge while the writable backend stays on the server.
 
+For the current production inventory and ownership map, also see `docs/production-config.md`.
+
 ## Release Branch Rule
 
 - continue day-to-day work on `dev`
@@ -227,6 +229,18 @@ Validate the compose file locally:
 
 ```bash
 pnpm deploy:server:config
+```
+
+For common remote API and service operations, prefer the repo-managed helper:
+
+```bash
+./ops/manage.sh check
+./ops/manage.sh deploy api
+./ops/manage.sh ps
+./ops/manage.sh logs api 200
+./ops/manage.sh ready
+./ops/manage.sh db query "select count(*) from geekdaily_episodes;"
+./ops/manage.sh db backup
 ```
 
 Bring up the production stack on the server:

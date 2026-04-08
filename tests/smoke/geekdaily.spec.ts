@@ -37,6 +37,10 @@ test('GeekDaily search supports episode lookup and empty state', async ({ page }
 
 test('GeekDaily cards keep styles after pagination and filtering', async ({ page }) => {
   await page.goto('/geekdaily');
+  await expect(page.locator('.edition-chip')).toHaveText('Issue Archive');
+  await expect(
+    page.locator('.geekdaily-archive-hero').evaluate((element) => window.getComputedStyle(element, '::before').content),
+  ).resolves.toContain('GEEKDAILY');
   await expect(page.locator('.episode-card').first()).toBeVisible();
   await expectStyledEpisodeCard(page);
 

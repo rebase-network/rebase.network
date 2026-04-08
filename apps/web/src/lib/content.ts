@@ -55,21 +55,6 @@ interface PublicGeekDailyEpisodePayload extends Omit<GeekDailyEpisode, 'items'> 
   items: PublicGeekDailyItemPayload[];
 }
 
-interface GeekDailySearchDocument {
-  slug: string;
-  episodeNumber: number;
-  title: string;
-  summary: string;
-  tags: string[];
-  publishedAt: string;
-  year: string;
-  items: Array<{
-    title: string;
-    authorName: string;
-    summary: string;
-  }>;
-}
-
 interface GeekDailyArchiveOverviewPayload {
   totalEpisodes: number;
   years: number[];
@@ -230,10 +215,6 @@ export async function getGeekDailyArchiveOverview() {
   return fetchPublicApi<GeekDailyArchiveOverviewPayload>('/api/public/v1/geekdaily/overview');
 }
 
-export async function getGeekDailySearchDocuments() {
-  return fetchPublicApi<GeekDailySearchDocument[]>('/api/public/v1/geekdaily/search');
-}
-
 export async function getLatestArticles(count = 3) {
   return fetchPublicApi<Article[]>(`/api/public/v1/articles?limit=${count}`);
 }
@@ -243,7 +224,10 @@ export async function getLatestJobs(count = 3) {
 }
 
 export async function getLatestGeekDaily(count = 3) {
-  const episodes = await fetchPublicApi<PublicGeekDailyEpisodePayload[]>(`/api/public/v1/geekdaily?limit=${count}`);
+  const previews = await fetchPublicApi<PublicGeekDailyPreviewPayload[]>(`/api/public/v1/geekdaily?limit=${count}`);
+  const episodes = await Promise.all(
+    previews.map((episode) => fetchPublicApi<PublicGeekDailyEpisodePayload>(`/api/public/v1/geekdaily/${episode.slug}`)),
+  );
   return episodes.map(mapGeekDailyEpisode);
 }
 

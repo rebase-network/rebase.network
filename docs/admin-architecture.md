@@ -241,14 +241,6 @@ Recommended production split:
 
 This keeps the public and admin frontends at the edge while the writable backend stays on the server without exposing PostgreSQL publicly.
 
-## Transition Note
-
-The repository currently contains a Directus-based prototype used to unblock public frontend work.
-
-That prototype is now transitional only.
-
-The target architecture for Rebase is the custom admin and API stack described in this document.
-
 ## Non-Goals for the First Admin Release
 
 - complex multi-step approval engines

@@ -23,7 +23,10 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 >
   <section class="shell page-hero single">
     <article class="hero-panel card geekdaily-archive-hero">
-      <p class="hero-kicker">极客日报</p>
+      <div class="hero-topline">
+        <p class="hero-kicker">极客日报</p>
+        <span class="edition-chip">Issue Archive</span>
+      </div>
       <h1 class="hero-title">Rebase 极客日报</h1>
       <p class="hero-summary">
         由社区志愿者持续整理发布，每期收录值得关注的技术内容、推荐人和推荐语，方便你按期回看、检索与订阅。
@@ -100,6 +103,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
             <a href={getGeekDailyPath(episode.episodeNumber)}>{episode.title}</a>
           </h2>
           <p class="summary">{episode.summary}</p>
+          {episode.editors.length > 0 && <p class="editor-line">编辑：{episode.editors.join('、')}</p>}
           <ul>
             {episode.items.slice(0, 3).map((item) => <li>{item.title}</li>)}
           </ul>
@@ -115,6 +119,36 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
   </section>
 
   <script>
+    type ArchiveEpisodeItem = {
+      title: string;
+      authorName: string;
+      summary: string;
+      sourceUrl: string;
+    };
+
+    type ArchiveEpisode = {
+      slug: string;
+      episodeNumber: number;
+      title: string;
+      summary: string;
+      publishedAt: string;
+      editors: string[];
+      tags: string[];
+      items: ArchiveEpisodeItem[];
+    };
+
+    type ArchivePayload = {
+      data: ArchiveEpisode[];
+      meta: {
+        page: number;
+        pageSize: number;
+        totalItems: number;
+        totalPages: number;
+        hasPrevPage: boolean;
+        hasNextPage: boolean;
+      };
+    };
+
     type SearchDocumentItem = {
       title: string;
       authorName: string;
@@ -126,6 +160,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       episodeNumber: number;
       title: string;
       summary: string;
+      editors: string[];
       tags: string[];
       publishedAt: string;
       year: string;
@@ -133,6 +168,9 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       searchableText: string;
     };
     type SearchDocumentPayload = Omit<SearchDocument, 'searchableText'>;
+    type SearchDocumentEnvelope = {
+      data: SearchDocumentPayload[];
+    };
 
     const pageSize = 18;
     const input = document.querySelector<HTMLInputElement>('#geekdaily-search');
@@ -166,6 +204,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
     if (input && list && count && stateLabel && prevButton && nextButton && pagerLabel && resetButton) {
       const defaultMarkup = list.innerHTML;
       let documentsPromise: Promise<SearchDocument[]> | undefined;
+      const archivePageCache = new Map<string, Promise<ArchivePayload>>();
+      let renderToken = 0;
 
       const state = {
         query: '',
@@ -192,6 +232,44 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 
       const setBusyState = (busy: boolean) => {
         list.setAttribute('aria-busy', busy ? 'true' : 'false');
+      };
+
+      const buildActiveFilters = () =>
+        [state.query && `搜索“${state.query}”`, state.tag && `标签 ${state.tag}`, state.year && `年份 ${state.year}`].filter(Boolean);
+
+      const renderEpisodeCards = (
+        items: Array<{ episodeNumber: number; title: string; publishedAt: string; summary: string; editors: string[]; items: { title: string }[] }>,
+      ) => {
+        if (items.length === 0) {
+          list.innerHTML = `
+            <article class="card empty-state">
+              <h2>没有找到匹配的 GeekDaily</h2>
+              <p>你可以尝试换一个关键词，或者先清空年份筛选再继续搜索。</p>
+            </article>
+          `;
+          return;
+        }
+
+        list.innerHTML = items
+          .map((item) => {
+            const itemPreview = item.items
+              .slice(0, 3)
+              .map((entry) => `<li>${escapeHtml(entry.title)}</li>`)
+              .join('');
+            const editorLine =
+              item.editors.length > 0 ? `<p class="editor-line">编辑：${escapeHtml(item.editors.join('、'))}</p>` : '';
+
+            return `
+              <article class="card episode-card">
+                <p class="meta">${escapeHtml(item.title)} · ${escapeHtml(formatPublishedAt(item.publishedAt))}</p>
+                <h2><a href="/geekdaily/geekdaily-${item.episodeNumber}">${escapeHtml(item.title)}</a></h2>
+                <p class="summary">${escapeHtml(item.summary)}</p>
+                ${editorLine}
+                <ul>${itemPreview}</ul>
+              </article>
+            `;
+          })
+          .join('');
       };
 
       const updateUrl = () => {
@@ -237,6 +315,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       };
 
       const restoreDefault = () => {
+        renderToken += 1;
         list.innerHTML = defaultMarkup;
         count.textContent = `共 ${totalEpisodes} 期`;
         stateLabel.textContent = `默认展示最近 ${pageSize} 期。`;
@@ -248,6 +327,52 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         updateUrl();
       };
 
+      const buildArchiveEndpoint = () => {
+        const params = new URLSearchParams();
+        params.set('page', String(state.page));
+        params.set('pageSize', String(pageSize));
+
+        if (state.tag) {
+          params.set('tag', state.tag);
+        }
+
+        if (state.year) {
+          params.set('year', state.year);
+        }
+
+        return `/api/geekdaily-archive.json?${params.toString()}`;
+      };
+
+      const loadArchivePage = async () => {
+        const endpoint = buildArchiveEndpoint();
+        const cached = archivePageCache.get(endpoint);
+        if (cached) {
+          return cached;
+        }
+
+        stateLabel.textContent = '正在加载归档列表...';
+        setBusyState(true);
+
+        const promise = fetch(endpoint)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`archive request failed: ${response.status}`);
+            }
+
+            return response.json() as Promise<ArchivePayload>;
+          })
+          .catch((error) => {
+            archivePageCache.delete(endpoint);
+            throw error;
+          })
+          .finally(() => {
+            setBusyState(false);
+          });
+
+        archivePageCache.set(endpoint, promise);
+        return promise;
+      };
+
       const loadDocuments = async () => {
         if (!documentsPromise) {
           stateLabel.textContent = '正在加载历史检索数据...';
@@ -257,9 +382,14 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
               if (!response.ok) {
                 throw new Error(`search index request failed: ${response.status}`);
               }
-              return response.json() as Promise<SearchDocumentPayload[]>;
+              return response.json() as Promise<SearchDocumentPayload[] | SearchDocumentEnvelope>;
             })
-            .then((documents) => {
+            .then((payload) => {
+              const documents = Array.isArray(payload) ? payload : payload.data;
+              if (!Array.isArray(documents)) {
+                throw new Error('search index response is invalid');
+              }
+
               return documents.map((document) => {
                 const searchableText = [
                   document.title,
@@ -286,6 +416,25 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         }
 
         return documentsPromise;
+      };
+
+      const renderArchive = (payload: ArchivePayload) => {
+        const activeFilters = buildActiveFilters();
+
+        renderEpisodeCards(payload.data);
+        count.textContent = activeFilters.length > 0 ? `找到 ${payload.meta.totalItems} 期` : `共 ${totalEpisodes} 期`;
+        stateLabel.textContent =
+          activeFilters.length > 0
+            ? `当前条件：${activeFilters.join(' · ')}`
+            : state.page > 1
+              ? '按发布时间倒序浏览归档。'
+              : `默认展示最近 ${pageSize} 期。`;
+        pagerLabel.textContent = `第 ${payload.meta.page} / ${Math.max(payload.meta.totalPages, 1)} 页`;
+        prevButton.disabled = !payload.meta.hasPrevPage;
+        nextButton.disabled = !payload.meta.hasNextPage;
+
+        syncControls();
+        updateUrl();
       };
 
       const getFilteredDocuments = (documents: SearchDocument[]) => {
@@ -315,45 +464,16 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         return baseResults.filter((document) => tokens.every((token) => document.searchableText.includes(token)));
       };
 
-      const render = (documents: SearchDocument[]) => {
+      const renderSearch = (documents: SearchDocument[]) => {
         const filtered = getFilteredDocuments(documents);
         const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
         state.page = Math.min(Math.max(state.page, 1), totalPages);
 
         const pageStart = (state.page - 1) * pageSize;
         const visibleItems = filtered.slice(pageStart, pageStart + pageSize);
-        const activeFilters = [
-          state.query && `搜索“${state.query}”`,
-          state.tag && `标签 ${state.tag}`,
-          state.year && `年份 ${state.year}`,
-        ].filter(Boolean);
+        const activeFilters = buildActiveFilters();
 
-        if (visibleItems.length === 0) {
-          list.innerHTML = `
-            <article class="card empty-state">
-              <h2>没有找到匹配的 GeekDaily</h2>
-              <p>你可以尝试换一个关键词，或者先清空年份筛选再继续搜索。</p>
-            </article>
-          `;
-        } else {
-          list.innerHTML = visibleItems
-            .map((item) => {
-              const itemPreview = item.items
-                .slice(0, 3)
-                .map((entry) => `<li>${escapeHtml(entry.title)}</li>`)
-                .join('');
-
-              return `
-                <article class="card episode-card">
-                  <p class="meta">${escapeHtml(item.title)} · ${escapeHtml(formatPublishedAt(item.publishedAt))}</p>
-                  <h2><a href="/geekdaily/geekdaily-${item.episodeNumber}">${escapeHtml(item.title)}</a></h2>
-                  <p class="summary">${escapeHtml(item.summary)}</p>
-                  <ul>${itemPreview}</ul>
-                </article>
-              `;
-            })
-            .join('');
-        }
+        renderEpisodeCards(visibleItems);
 
         count.textContent = activeFilters.length > 0 ? `找到 ${filtered.length} 期` : `共 ${documents.length} 期`;
         stateLabel.textContent = activeFilters.length > 0 ? `当前条件：${activeFilters.join(' · ')}` : `默认展示最近 ${pageSize} 期。`;
@@ -366,10 +486,49 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       };
 
       const loadAndRender = async () => {
+        const currentToken = ++renderToken;
+
+        if (!state.query) {
+          try {
+            const payload = await loadArchivePage();
+            if (currentToken !== renderToken) {
+              return;
+            }
+            renderArchive(payload);
+          } catch (error) {
+            if (currentToken !== renderToken) {
+              return;
+            }
+            console.error(error);
+            list.innerHTML = `
+              <article class="card empty-state">
+                <h2>暂时无法加载 GeekDaily 归档</h2>
+                <p>你可以稍后刷新重试，或者先回到第一页继续浏览默认归档列表。</p>
+              </article>
+            `;
+            count.textContent = '归档暂不可用';
+            stateLabel.textContent = '归档数据加载失败。';
+            pagerLabel.textContent = '第 1 页';
+            prevButton.disabled = true;
+            nextButton.disabled = true;
+            setBusyState(false);
+            syncControls();
+            updateUrl();
+          }
+
+          return;
+        }
+
         try {
           const documents = await loadDocuments();
-          render(documents);
+          if (currentToken !== renderToken) {
+            return;
+          }
+          renderSearch(documents);
         } catch (error) {
+          if (currentToken !== renderToken) {
+            return;
+          }
           console.error(error);
           list.innerHTML = `
             <article class="card empty-state">
@@ -391,7 +550,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       input.addEventListener('input', async () => {
         state.query = input.value.trim();
         state.page = 1;
-        if (!state.query && !state.tag && !state.year && !documentsPromise) {
+        if (!state.query && !state.tag && !state.year && state.page === 1) {
           restoreDefault();
           return;
         }
@@ -412,7 +571,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         button.addEventListener('click', async () => {
           state.tag = state.tag === button.dataset.tag ? '' : button.dataset.tag ?? '';
           state.page = 1;
-          if (!state.query && !state.tag && !state.year && !documentsPromise) {
+          if (!state.query && !state.tag && !state.year && state.page === 1) {
             restoreDefault();
             return;
           }
@@ -424,7 +583,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         button.addEventListener('click', async () => {
           state.year = state.year === button.dataset.year ? '' : button.dataset.year ?? '';
           state.page = 1;
-          if (!state.query && !state.tag && !state.year && !documentsPromise) {
+          if (!state.query && !state.tag && !state.year && state.page === 1) {
             restoreDefault();
             return;
           }
@@ -437,11 +596,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         state.tag = '';
         state.year = '';
         state.page = 1;
-        if (!documentsPromise) {
-          restoreDefault();
-          return;
-        }
-        void loadAndRender();
+        restoreDefault();
       });
 
       hydrateFromUrl();
@@ -461,11 +616,55 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
   }
 
   .geekdaily-archive-hero {
+    position: relative;
+    overflow: hidden;
     display: grid;
     gap: 0.45rem;
     padding: 1.15rem 1.3rem;
     background:
+      radial-gradient(circle at top left, rgba(125, 211, 252, 0.18), transparent 30%),
+      radial-gradient(circle at 92% 18%, rgba(15, 118, 110, 0.14), transparent 22%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 251, 249, 0.9));
+  }
+
+  .geekdaily-archive-hero::before {
+    content: 'GEEKDAILY';
+    position: absolute;
+    top: 0.85rem;
+    right: 1.15rem;
+    color: rgba(17, 94, 89, 0.08);
+    font-family: var(--display-font);
+    font-size: clamp(3.4rem, 7vw, 5.8rem);
+    letter-spacing: 0.08em;
+    line-height: 0.82;
+    pointer-events: none;
+  }
+
+  .geekdaily-archive-hero > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .edition-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.76rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
   .geekdaily-archive-hero .hero-kicker {
@@ -668,10 +867,17 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 
   .episode-list :global(.meta),
   .episode-list :global(.summary),
+  .episode-list :global(.editor-line),
   .episode-list :global(.body),
   .episode-list :global(.episode-card ul),
   .episode-list :global(.empty-state p) {
     margin: 0;
+  }
+
+  .episode-list :global(.editor-line) {
+    color: var(--accent-strong);
+    font-size: 0.92rem;
+    line-height: 1.7;
   }
 
   .episode-list :global(.body) {
@@ -718,6 +924,10 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
   @media (max-width: 720px) {
     .single {
       padding-top: 0.8rem;
+    }
+
+    .hero-topline {
+      align-items: flex-start;
     }
 
     .geekdaily-archive-hero {
