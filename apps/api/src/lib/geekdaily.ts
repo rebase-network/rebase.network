@@ -26,6 +26,43 @@ const mapEpisodeItem = (row: typeof geekdailyEpisodeItems.$inferSelect) => ({
   summary: row.summary,
 });
 
+const mapSearchEpisodeItem = (row: Pick<typeof geekdailyEpisodeItems.$inferSelect, 'title' | 'authorName' | 'summary'>) => ({
+  title: row.title,
+  authorName: row.authorName,
+  summary: row.summary,
+});
+
+const PUBLIC_GEEKDAILY_CACHE_TTL_MS = 5 * 60 * 1000;
+
+const publicGeekDailyCache = new Map<string, { expiresAt: number; value: Promise<unknown> }>();
+
+const withPublicGeekDailyCache = async <T>(key: string, loader: () => Promise<T>) => {
+  const now = Date.now();
+  const cached = publicGeekDailyCache.get(key);
+  if (cached && cached.expiresAt > now) {
+    return cached.value as Promise<T>;
+  }
+
+  const promise = loader().catch((error) => {
+    const current = publicGeekDailyCache.get(key);
+    if (current?.value === promise) {
+      publicGeekDailyCache.delete(key);
+    }
+    throw error;
+  });
+
+  publicGeekDailyCache.set(key, {
+    expiresAt: now + PUBLIC_GEEKDAILY_CACHE_TTL_MS,
+    value: promise,
+  });
+
+  return promise;
+};
+
+export const invalidatePublicGeekDailyCache = () => {
+  publicGeekDailyCache.clear();
+};
+
 const loadItemsByEpisodeIds = async (episodeIds?: string[]) => {
   const db = getDb();
   if (episodeIds && episodeIds.length === 0) {
@@ -41,6 +78,33 @@ const loadItemsByEpisodeIds = async (episodeIds?: string[]) => {
   for (const row of rows) {
     const current = result.get(row.episodeId) ?? [];
     current.push(mapEpisodeItem(row));
+    result.set(row.episodeId, current);
+  }
+
+  return result;
+};
+
+const loadSearchItemsByEpisodeIds = async (episodeIds: string[]) => {
+  const db = getDb();
+  if (episodeIds.length === 0) {
+    return new Map<string, ReturnType<typeof mapSearchEpisodeItem>[]>();
+  }
+
+  const rows = await db
+    .select({
+      episodeId: geekdailyEpisodeItems.episodeId,
+      title: geekdailyEpisodeItems.title,
+      authorName: geekdailyEpisodeItems.authorName,
+      summary: geekdailyEpisodeItems.summary,
+    })
+    .from(geekdailyEpisodeItems)
+    .where(inArray(geekdailyEpisodeItems.episodeId, episodeIds))
+    .orderBy(asc(geekdailyEpisodeItems.sortOrder));
+  const result = new Map<string, ReturnType<typeof mapSearchEpisodeItem>[]>();
+
+  for (const row of rows) {
+    const current = result.get(row.episodeId) ?? [];
+    current.push(mapSearchEpisodeItem(row));
     result.set(row.episodeId, current);
   }
 
@@ -76,6 +140,9 @@ const getEpisodeRecordBySlug = async (slug: string) => {
 const getEditors = (value: unknown) =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
 
+const getTags = (value: unknown) =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
+
 const resolveEpisodeEditors = (actor: AuditActor, fallback: unknown = []) => {
   const actorName = actor.actorDisplayName?.trim();
   if (actorName) {
@@ -104,6 +171,22 @@ const mapEpisodeDetail = (row: any, items: any[]) => ({
   items,
   createdAt: toIsoString(row.createdAt) ?? new Date().toISOString(),
   updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
+});
+
+const mapPublicEpisodePreview = (row: any, items: any[]) => ({
+  slug: getGeekDailyEpisodeSlug(row.episodeNumber),
+  episodeNumber: row.episodeNumber,
+  title: row.title,
+  summary: row.summary,
+  publishedAt: toIsoString(row.publishedAt) ?? new Date().toISOString(),
+  editors: getEditors(row.editorsJson),
+  tags: getTags(row.tagsJson),
+  items,
+});
+
+const mapPublicEpisode = (row: any, items: any[]) => ({
+  ...mapPublicEpisodePreview(row, items),
+  body: row.bodyMarkdown,
 });
 
 const ensureEpisodeNumberAvailable = async (episodeNumber: number, currentId?: string) => {
@@ -240,6 +323,7 @@ export const createAdminGeekDailyEpisode = async (input: GeekDailyEpisodeInput, 
     .returning();
 
   await replaceItems(created.id, input.items);
+  invalidatePublicGeekDailyCache();
 
   await createAuditEntry({
     ...actor,
@@ -280,6 +364,7 @@ export const updateAdminGeekDailyEpisode = async (id: string, input: GeekDailyEp
     .where(eq(geekdailyEpisodes.id, id));
 
   await replaceItems(id, input.items);
+  invalidatePublicGeekDailyCache();
 
   await createAuditEntry({
     ...actor,
@@ -316,6 +401,7 @@ export const publishAdminGeekDailyEpisode = async (id: string, actor: AuditActor
       updatedAt: new Date(),
     })
     .where(eq(geekdailyEpisodes.id, id));
+  invalidatePublicGeekDailyCache();
 
   await createAuditEntry({
     ...actor,
@@ -343,6 +429,7 @@ export const archiveAdminGeekDailyEpisode = async (id: string, actor: AuditActor
       updatedAt: new Date(),
     })
     .where(eq(geekdailyEpisodes.id, id));
+  invalidatePublicGeekDailyCache();
 
   await createAuditEntry({
     ...actor,
@@ -356,93 +443,126 @@ export const archiveAdminGeekDailyEpisode = async (id: string, actor: AuditActor
 };
 
 export const listPublicGeekDailyEpisodes = async (limit = -1) => {
-  const db = getDb();
-  const query = db
-    .select()
-    .from(geekdailyEpisodes)
-    .where(eq(geekdailyEpisodes.status, 'published'))
-    .orderBy(desc(geekdailyEpisodes.episodeNumber));
-  const rows = limit > 0 ? await query.limit(limit) : await query;
-  const itemsByEpisode = await loadItemsByEpisodeIds(rows.map((row) => row.id));
+  return withPublicGeekDailyCache(`episodes:${limit}`, async () => {
+    const db = getDb();
+    const query = db
+      .select({
+        id: geekdailyEpisodes.id,
+        episodeNumber: geekdailyEpisodes.episodeNumber,
+        title: geekdailyEpisodes.title,
+        summary: geekdailyEpisodes.summary,
+        bodyMarkdown: geekdailyEpisodes.bodyMarkdown,
+        editorsJson: geekdailyEpisodes.editorsJson,
+        tagsJson: geekdailyEpisodes.tagsJson,
+        publishedAt: geekdailyEpisodes.publishedAt,
+      })
+      .from(geekdailyEpisodes)
+      .where(eq(geekdailyEpisodes.status, 'published'))
+      .orderBy(desc(geekdailyEpisodes.episodeNumber));
+    const rows = limit > 0 ? await query.limit(limit) : await query;
+    const itemsByEpisode = await loadItemsByEpisodeIds(rows.map((row) => row.id));
 
-  return rows.map((row) => ({
-    slug: getGeekDailyEpisodeSlug(row.episodeNumber),
-    episodeNumber: row.episodeNumber,
-    title: row.title,
-    summary: row.summary,
-    publishedAt: toIsoString(row.publishedAt) ?? new Date().toISOString(),
-    editors: getEditors(row.editorsJson),
-    tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
-    body: row.bodyMarkdown,
-    items: itemsByEpisode.get(row.id) ?? [],
-  }));
+    return rows.map((row) => mapPublicEpisode(row, itemsByEpisode.get(row.id) ?? []));
+  });
+};
+
+export const listPublicGeekDailyEpisodePreviews = async (limit = -1) => {
+  return withPublicGeekDailyCache(`previews:${limit}`, async () => {
+    const db = getDb();
+    const query = db
+      .select({
+        id: geekdailyEpisodes.id,
+        episodeNumber: geekdailyEpisodes.episodeNumber,
+        title: geekdailyEpisodes.title,
+        summary: geekdailyEpisodes.summary,
+        editorsJson: geekdailyEpisodes.editorsJson,
+        tagsJson: geekdailyEpisodes.tagsJson,
+        publishedAt: geekdailyEpisodes.publishedAt,
+      })
+      .from(geekdailyEpisodes)
+      .where(eq(geekdailyEpisodes.status, 'published'))
+      .orderBy(desc(geekdailyEpisodes.episodeNumber));
+    const rows = limit > 0 ? await query.limit(limit) : await query;
+    const itemsByEpisode = await loadItemsByEpisodeIds(rows.map((row) => row.id));
+
+    return rows.map((row) => mapPublicEpisodePreview(row, itemsByEpisode.get(row.id) ?? []));
+  });
 };
 
 export const getPublicGeekDailyEpisodeBySlug = async (slug: string) => {
-  const row = await getEpisodeRecordBySlug(slug);
-  if (!row || row.status !== 'published') {
-    return null;
-  }
-  const itemsByEpisode = await loadItemsByEpisodeIds([row.id]);
+  return withPublicGeekDailyCache(`episode:${slug}`, async () => {
+    const row = await getEpisodeRecordBySlug(slug);
+    if (!row || row.status !== 'published') {
+      return null;
+    }
+    const itemsByEpisode = await loadItemsByEpisodeIds([row.id]);
 
-  return {
-    slug: getGeekDailyEpisodeSlug(row.episodeNumber),
-    episodeNumber: row.episodeNumber,
-    title: row.title,
-    summary: row.summary,
-    publishedAt: toIsoString(row.publishedAt) ?? new Date().toISOString(),
-    editors: getEditors(row.editorsJson),
-    tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
-    body: row.bodyMarkdown,
-    items: itemsByEpisode.get(row.id) ?? [],
-  };
+    return mapPublicEpisode(row, itemsByEpisode.get(row.id) ?? []);
+  });
 };
 
 export const getPublicGeekDailyOverview = async () => {
-  const db = getDb();
-  const [countRow, rows] = await Promise.all([
-    db.select({ value: count() }).from(geekdailyEpisodes).where(eq(geekdailyEpisodes.status, 'published')),
-    db
-      .select({
-        publishedAt: geekdailyEpisodes.publishedAt,
-        tagsJson: geekdailyEpisodes.tagsJson,
-      })
-      .from(geekdailyEpisodes)
-      .where(eq(geekdailyEpisodes.status, 'published')),
-  ]);
+  return withPublicGeekDailyCache('overview', async () => {
+    const db = getDb();
+    const [countRow, yearRows, tagRows] = await Promise.all([
+      db.select({ value: count() }).from(geekdailyEpisodes).where(eq(geekdailyEpisodes.status, 'published')),
+      db
+        .select({
+          year: sql<number>`extract(year from ${geekdailyEpisodes.publishedAt})::int`,
+        })
+        .from(geekdailyEpisodes)
+        .where(eq(geekdailyEpisodes.status, 'published'))
+        .groupBy(sql`1`)
+        .orderBy(desc(sql`1`)),
+      db
+        .select({
+          tagsJson: geekdailyEpisodes.tagsJson,
+        })
+        .from(geekdailyEpisodes)
+        .where(eq(geekdailyEpisodes.status, 'published')),
+    ]);
 
-  const years = [...new Set(rows.map((row) => row.publishedAt?.getUTCFullYear()).filter(Number.isFinite))].sort((left, right) => right - left);
-  const featuredTags = [
-    ...new Set(
-      rows.flatMap((row) =>
-        Array.isArray(row.tagsJson)
-          ? row.tagsJson.filter((tag): tag is string => typeof tag === 'string' && tag.trim().length > 0)
-          : [],
-      ),
-    ),
-  ].slice(0, 8);
+    const years = yearRows.map((row) => row.year).filter(Number.isFinite);
+    const featuredTags = [...new Set(tagRows.flatMap((row) => getTags(row.tagsJson)))].slice(0, 8);
 
-  return {
-    totalEpisodes: countRow[0]?.value ?? 0,
-    years,
-    featuredTags,
-  };
+    return {
+      totalEpisodes: countRow[0]?.value ?? 0,
+      years,
+      featuredTags,
+    };
+  });
 };
 
 export const getGeekDailySearchDocuments = async () => {
-  const episodes = await listPublicGeekDailyEpisodes();
-  return episodes.map((episode) => ({
-    slug: episode.slug,
-    episodeNumber: episode.episodeNumber,
-    title: episode.title,
-    summary: episode.summary,
-    tags: episode.tags,
-    publishedAt: episode.publishedAt,
-    year: String(new Date(episode.publishedAt).getUTCFullYear()),
-    items: episode.items.map((item: any) => ({
-      title: item.title,
-      authorName: item.authorName,
-      summary: item.summary,
-    })),
-  }));
+  return withPublicGeekDailyCache('search-documents', async () => {
+    const db = getDb();
+    const rows = await db
+      .select({
+        id: geekdailyEpisodes.id,
+        episodeNumber: geekdailyEpisodes.episodeNumber,
+        title: geekdailyEpisodes.title,
+        summary: geekdailyEpisodes.summary,
+        tagsJson: geekdailyEpisodes.tagsJson,
+        publishedAt: geekdailyEpisodes.publishedAt,
+      })
+      .from(geekdailyEpisodes)
+      .where(eq(geekdailyEpisodes.status, 'published'))
+      .orderBy(desc(geekdailyEpisodes.episodeNumber));
+    const itemsByEpisode = await loadSearchItemsByEpisodeIds(rows.map((row) => row.id));
+
+    return rows.map((row) => {
+      const publishedAt = toIsoString(row.publishedAt) ?? new Date().toISOString();
+
+      return {
+        slug: getGeekDailyEpisodeSlug(row.episodeNumber),
+        episodeNumber: row.episodeNumber,
+        title: row.title,
+        summary: row.summary,
+        tags: getTags(row.tagsJson),
+        publishedAt,
+        year: String(new Date(publishedAt).getUTCFullYear()),
+        items: itemsByEpisode.get(row.id) ?? [],
+      };
+    });
+  });
 };

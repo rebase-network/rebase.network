@@ -12,6 +12,8 @@ const [site, overview, episodes] = await Promise.all([
 ]);
 const years = overview.years;
 const featuredTags = overview.featuredTags;
+
+Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
 ---
 
 <BaseLayout
@@ -98,7 +100,6 @@ const featuredTags = overview.featuredTags;
             <a href={getGeekDailyPath(episode.episodeNumber)}>{episode.title}</a>
           </h2>
           <p class="summary">{episode.summary}</p>
-          <p class="body">{episode.body}</p>
           <ul>
             {episode.items.slice(0, 3).map((item) => <li>{item.title}</li>)}
           </ul>
@@ -513,7 +514,6 @@ const featuredTags = overview.featuredTags;
   .search-panel p,
   .results-head span,
   .episode-list :global(.summary),
-  .episode-list :global(.body),
   .episode-list :global(.empty-state p) {
     color: var(--muted);
     line-height: 1.75;

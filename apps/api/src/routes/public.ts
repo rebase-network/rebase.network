@@ -8,6 +8,7 @@ import {
   getGeekDailySearchDocuments,
   getPublicGeekDailyEpisodeBySlug,
   getPublicGeekDailyOverview,
+  listPublicGeekDailyEpisodePreviews,
   listPublicGeekDailyEpisodes,
 } from '../lib/geekdaily.js';
 import { getPublicJobBySlug, listPublicJobs } from '../lib/jobs.js';
@@ -141,7 +142,7 @@ publicRoutes.get('/contributors', async (c) => c.json(ok(await listPublicContrib
 publicRoutes.get('/geekdaily', async (c) => {
   const limit = getPositiveLimit(c.req.query('limit'), 0);
   c.header('Cache-Control', publicCacheControl);
-  return c.json(ok(await listPublicGeekDailyEpisodes(limit)));
+  return c.json(ok(await listPublicGeekDailyEpisodePreviews(limit)));
 });
 
 publicRoutes.get('/geekdaily/overview', async (c) => {

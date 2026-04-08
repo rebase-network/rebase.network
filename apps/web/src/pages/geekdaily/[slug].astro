@@ -2,7 +2,7 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import DetailSidebarLinksSection from '@/components/DetailSidebarLinksSection.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
-import { getGeekDailyEpisodeBySlug, getLatestGeekDaily, getSiteSettings } from '@/lib/content';
+import { getGeekDailyEpisodeBySlug, getGeekDailyEpisodes, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 import { getGeekDailyPath } from '@/lib/paths';
 
@@ -33,7 +33,7 @@ const extractGeekDailyBodyNote = (bodyMarkdown: string) => {
 };
 
 const slug = Astro.params.slug ?? '';
-const [site, episode, episodes] = await Promise.all([getSiteSettings(), getGeekDailyEpisodeBySlug(slug), getLatestGeekDaily(3)]);
+const [site, episode, episodes] = await Promise.all([getSiteSettings(), getGeekDailyEpisodeBySlug(slug), getGeekDailyEpisodes(3)]);
 const related = episode ? episodes.filter((item) => item.slug !== episode.slug).slice(0, 2) : [];
 const episodeNote = episode ? extractGeekDailyBodyNote(episode.body) : '';
 const episodeActionLinks = [
@@ -48,6 +48,8 @@ const episodeRelatedLinks = related.map((item) => ({
 if (!episode) {
   Astro.response.status = 404;
 }
+
+Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
 ---
 
 <BaseLayout
