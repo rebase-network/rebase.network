@@ -1,6 +1,6 @@
-import rss from '@astrojs/rss';
 import { getEvents, getSiteSettings } from '@/lib/content';
 import { getEventPath } from '@/lib/paths';
+import { rssResponse, withBaseUrl } from '@/lib/rss';
 
 export async function GET() {
   const [site, events] = await Promise.all([getSiteSettings(), getEvents()]);
@@ -9,16 +9,15 @@ export async function GET() {
     .slice(0, 3)
     .map((event) => ({
       title: event.title,
-      description: event.summary,
+      description: `<p>${event.summary}</p>`,
       pubDate: new Date(event.startAt),
-      link: getEventPath(event.startAt, event.slug),
+      link: withBaseUrl(site.primaryDomain, getEventPath(event.startAt, event.slug)),
     }));
 
-  return rss({
+  return rssResponse({
     title: 'Rebase events',
+    link: withBaseUrl(site.primaryDomain, '/events/rss.xml'),
     description: 'Latest event updates from Rebase.',
-    site: site.primaryDomain,
     items,
-    customData: '<language>zh-cn</language>',
   });
 }

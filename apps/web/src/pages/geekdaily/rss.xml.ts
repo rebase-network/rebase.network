@@ -1,6 +1,6 @@
-import rss from '@astrojs/rss';
 import { getLatestGeekDaily, getSiteSettings } from '@/lib/content';
 import { getGeekDailyPath } from '@/lib/paths';
+import { rssResponse, withBaseUrl } from '@/lib/rss';
 
 export async function GET() {
   const [site, episodes] = await Promise.all([getSiteSettings(), getLatestGeekDaily(3)]);
@@ -8,14 +8,13 @@ export async function GET() {
     title: episode.title,
     description: episode.body,
     pubDate: new Date(episode.publishedAt),
-    link: getGeekDailyPath(episode.episodeNumber),
+    link: withBaseUrl(site.primaryDomain, getGeekDailyPath(episode.episodeNumber)),
   }));
 
-  return rss({
+  return rssResponse({
     title: 'GeekDaily feed',
+    link: withBaseUrl(site.primaryDomain, '/geekdaily/rss.xml'),
     description: 'Latest GeekDaily episodes from Rebase.',
-    site: site.primaryDomain,
     items,
-    customData: '<language>zh-cn</language>',
   });
 }

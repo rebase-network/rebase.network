@@ -12,12 +12,22 @@ for (const path of feeds) {
   test(`${path} returns xml`, async ({ request }) => {
     const response = await request.get(path);
     expect(response.ok()).toBeTruthy();
+    expect(response.headers()['content-type']).toContain('application/rss+xml');
+    expect(response.headers()['content-type']).toContain('charset=utf-8');
     const body = await response.text();
     expect(body).toContain('<?xml');
     expect(body).toContain('<rss');
     expect(body).toContain('<item>');
   });
 }
+
+test('rss feeds keep chinese content readable', async ({ request }) => {
+  const response = await request.get('/geekdaily/rss.xml');
+  const body = await response.text();
+
+  expect(body).toContain('<title>极客日报#1915</title>');
+  expect(body).toContain('本期整理编辑');
+});
 
 test('feed links use the agreed public route conventions', async ({ request }) => {
   const geekdailyFeed = await request.get('/geekdaily/rss.xml');

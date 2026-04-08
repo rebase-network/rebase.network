@@ -224,7 +224,10 @@ export async function getLatestJobs(count = 3) {
 }
 
 export async function getLatestGeekDaily(count = 3) {
-  const episodes = await fetchPublicApi<PublicGeekDailyEpisodePayload[]>(`/api/public/v1/geekdaily?limit=${count}`);
+  const previews = await fetchPublicApi<PublicGeekDailyPreviewPayload[]>(`/api/public/v1/geekdaily?limit=${count}`);
+  const episodes = await Promise.all(
+    previews.map((episode) => fetchPublicApi<PublicGeekDailyEpisodePayload>(`/api/public/v1/geekdaily/${episode.slug}`)),
+  );
   return episodes.map(mapGeekDailyEpisode);
 }
 
