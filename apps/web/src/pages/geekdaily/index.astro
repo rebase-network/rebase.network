@@ -20,11 +20,11 @@ const featuredTags = overview.featuredTags;
   description="浏览、筛选并检索 Rebase 社区的 GeekDaily 历史归档。"
 >
   <section class="shell page-hero single">
-    <article class="hero-panel card">
-      <p class="hero-kicker">GeekDaily 归档</p>
-      <h1 class="hero-title">GeekDaily 是 Rebase 的持续现场，它应该被阅读、搜索和订阅。</h1>
+    <article class="hero-panel card geekdaily-archive-hero">
+      <p class="hero-kicker">极客日报</p>
+      <h1 class="hero-title">Rebase 极客日报</h1>
       <p class="hero-summary">
-        第一版先用前端搜索做实用检索，并把 1800+ 期历史内容组织成一个更适合浏览的期数归档。
+        由社区志愿者持续整理发布，每期收录值得关注的技术内容、推荐人和推荐语，方便你按期回看、检索与订阅。
       </p>
     </article>
   </section>
@@ -452,6 +452,33 @@ const featuredTags = overview.featuredTags;
 <style>
   .single {
     grid-template-columns: 1fr;
+    padding: 1rem 0 0.4rem;
+  }
+
+  .geekdaily-archive-hero {
+    display: grid;
+    gap: 0.45rem;
+    padding: 1.15rem 1.3rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 251, 249, 0.9));
+  }
+
+  .geekdaily-archive-hero .hero-kicker {
+    margin-bottom: 0;
+  }
+
+  .geekdaily-archive-hero .hero-title {
+    max-width: none;
+    font-size: clamp(2rem, 4vw, 2.85rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+
+  .geekdaily-archive-hero .hero-summary {
+    margin-top: 0;
+    max-width: 64ch;
+    font-size: 0.98rem;
+    line-height: 1.72;
   }
 
   .archive-stats {
@@ -704,6 +731,16 @@ const featuredTags = overview.featuredTags;
 
     .episode-card ul {
       columns: 1;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .single {
+      padding-top: 0.8rem;
+    }
+
+    .geekdaily-archive-hero {
+      padding: 1rem 1.05rem;
     }
   }
 </style>
