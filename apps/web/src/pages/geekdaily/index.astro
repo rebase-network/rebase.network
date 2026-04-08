@@ -115,6 +115,36 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
   </section>
 
   <script>
+    type ArchiveEpisodeItem = {
+      title: string;
+      authorName: string;
+      summary: string;
+      sourceUrl: string;
+    };
+
+    type ArchiveEpisode = {
+      slug: string;
+      episodeNumber: number;
+      title: string;
+      summary: string;
+      publishedAt: string;
+      editors: string[];
+      tags: string[];
+      items: ArchiveEpisodeItem[];
+    };
+
+    type ArchivePayload = {
+      data: ArchiveEpisode[];
+      meta: {
+        page: number;
+        pageSize: number;
+        totalItems: number;
+        totalPages: number;
+        hasPrevPage: boolean;
+        hasNextPage: boolean;
+      };
+    };
+
     type SearchDocumentItem = {
       title: string;
       authorName: string;
@@ -133,6 +163,9 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       searchableText: string;
     };
     type SearchDocumentPayload = Omit<SearchDocument, 'searchableText'>;
+    type SearchDocumentEnvelope = {
+      data: SearchDocumentPayload[];
+    };
 
     const pageSize = 18;
     const input = document.querySelector<HTMLInputElement>('#geekdaily-search');
@@ -166,6 +199,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
     if (input && list && count && stateLabel && prevButton && nextButton && pagerLabel && resetButton) {
       const defaultMarkup = list.innerHTML;
       let documentsPromise: Promise<SearchDocument[]> | undefined;
+      const archivePageCache = new Map<string, Promise<ArchivePayload>>();
+      let renderToken = 0;
 
       const state = {
         query: '',
@@ -192,6 +227,39 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 
       const setBusyState = (busy: boolean) => {
         list.setAttribute('aria-busy', busy ? 'true' : 'false');
+      };
+
+      const buildActiveFilters = () =>
+        [state.query && `搜索“${state.query}”`, state.tag && `标签 ${state.tag}`, state.year && `年份 ${state.year}`].filter(Boolean);
+
+      const renderEpisodeCards = (items: Array<{ episodeNumber: number; title: string; publishedAt: string; summary: string; items: { title: string }[] }>) => {
+        if (items.length === 0) {
+          list.innerHTML = `
+            <article class="card empty-state">
+              <h2>没有找到匹配的 GeekDaily</h2>
+              <p>你可以尝试换一个关键词，或者先清空年份筛选再继续搜索。</p>
+            </article>
+          `;
+          return;
+        }
+
+        list.innerHTML = items
+          .map((item) => {
+            const itemPreview = item.items
+              .slice(0, 3)
+              .map((entry) => `<li>${escapeHtml(entry.title)}</li>`)
+              .join('');
+
+            return `
+              <article class="card episode-card">
+                <p class="meta">${escapeHtml(item.title)} · ${escapeHtml(formatPublishedAt(item.publishedAt))}</p>
+                <h2><a href="/geekdaily/geekdaily-${item.episodeNumber}">${escapeHtml(item.title)}</a></h2>
+                <p class="summary">${escapeHtml(item.summary)}</p>
+                <ul>${itemPreview}</ul>
+              </article>
+            `;
+          })
+          .join('');
       };
 
       const updateUrl = () => {
@@ -237,6 +305,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       };
 
       const restoreDefault = () => {
+        renderToken += 1;
         list.innerHTML = defaultMarkup;
         count.textContent = `共 ${totalEpisodes} 期`;
         stateLabel.textContent = `默认展示最近 ${pageSize} 期。`;
@@ -248,6 +317,52 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         updateUrl();
       };
 
+      const buildArchiveEndpoint = () => {
+        const params = new URLSearchParams();
+        params.set('page', String(state.page));
+        params.set('pageSize', String(pageSize));
+
+        if (state.tag) {
+          params.set('tag', state.tag);
+        }
+
+        if (state.year) {
+          params.set('year', state.year);
+        }
+
+        return `/api/geekdaily-archive.json?${params.toString()}`;
+      };
+
+      const loadArchivePage = async () => {
+        const endpoint = buildArchiveEndpoint();
+        const cached = archivePageCache.get(endpoint);
+        if (cached) {
+          return cached;
+        }
+
+        stateLabel.textContent = '正在加载归档列表...';
+        setBusyState(true);
+
+        const promise = fetch(endpoint)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`archive request failed: ${response.status}`);
+            }
+
+            return response.json() as Promise<ArchivePayload>;
+          })
+          .catch((error) => {
+            archivePageCache.delete(endpoint);
+            throw error;
+          })
+          .finally(() => {
+            setBusyState(false);
+          });
+
+        archivePageCache.set(endpoint, promise);
+        return promise;
+      };
+
       const loadDocuments = async () => {
         if (!documentsPromise) {
           stateLabel.textContent = '正在加载历史检索数据...';
@@ -257,9 +372,14 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
               if (!response.ok) {
                 throw new Error(`search index request failed: ${response.status}`);
               }
-              return response.json() as Promise<SearchDocumentPayload[]>;
+              return response.json() as Promise<SearchDocumentPayload[] | SearchDocumentEnvelope>;
             })
-            .then((documents) => {
+            .then((payload) => {
+              const documents = Array.isArray(payload) ? payload : payload.data;
+              if (!Array.isArray(documents)) {
+                throw new Error('search index response is invalid');
+              }
+
               return documents.map((document) => {
                 const searchableText = [
                   document.title,
@@ -286,6 +406,25 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         }
 
         return documentsPromise;
+      };
+
+      const renderArchive = (payload: ArchivePayload) => {
+        const activeFilters = buildActiveFilters();
+
+        renderEpisodeCards(payload.data);
+        count.textContent = activeFilters.length > 0 ? `找到 ${payload.meta.totalItems} 期` : `共 ${totalEpisodes} 期`;
+        stateLabel.textContent =
+          activeFilters.length > 0
+            ? `当前条件：${activeFilters.join(' · ')}`
+            : state.page > 1
+              ? '按发布时间倒序浏览归档。'
+              : `默认展示最近 ${pageSize} 期。`;
+        pagerLabel.textContent = `第 ${payload.meta.page} / ${Math.max(payload.meta.totalPages, 1)} 页`;
+        prevButton.disabled = !payload.meta.hasPrevPage;
+        nextButton.disabled = !payload.meta.hasNextPage;
+
+        syncControls();
+        updateUrl();
       };
 
       const getFilteredDocuments = (documents: SearchDocument[]) => {
@@ -315,45 +454,16 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         return baseResults.filter((document) => tokens.every((token) => document.searchableText.includes(token)));
       };
 
-      const render = (documents: SearchDocument[]) => {
+      const renderSearch = (documents: SearchDocument[]) => {
         const filtered = getFilteredDocuments(documents);
         const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
         state.page = Math.min(Math.max(state.page, 1), totalPages);
 
         const pageStart = (state.page - 1) * pageSize;
         const visibleItems = filtered.slice(pageStart, pageStart + pageSize);
-        const activeFilters = [
-          state.query && `搜索“${state.query}”`,
-          state.tag && `标签 ${state.tag}`,
-          state.year && `年份 ${state.year}`,
-        ].filter(Boolean);
+        const activeFilters = buildActiveFilters();
 
-        if (visibleItems.length === 0) {
-          list.innerHTML = `
-            <article class="card empty-state">
-              <h2>没有找到匹配的 GeekDaily</h2>
-              <p>你可以尝试换一个关键词，或者先清空年份筛选再继续搜索。</p>
-            </article>
-          `;
-        } else {
-          list.innerHTML = visibleItems
-            .map((item) => {
-              const itemPreview = item.items
-                .slice(0, 3)
-                .map((entry) => `<li>${escapeHtml(entry.title)}</li>`)
-                .join('');
-
-              return `
-                <article class="card episode-card">
-                  <p class="meta">${escapeHtml(item.title)} · ${escapeHtml(formatPublishedAt(item.publishedAt))}</p>
-                  <h2><a href="/geekdaily/geekdaily-${item.episodeNumber}">${escapeHtml(item.title)}</a></h2>
-                  <p class="summary">${escapeHtml(item.summary)}</p>
-                  <ul>${itemPreview}</ul>
-                </article>
-              `;
-            })
-            .join('');
-        }
+        renderEpisodeCards(visibleItems);
 
         count.textContent = activeFilters.length > 0 ? `找到 ${filtered.length} 期` : `共 ${documents.length} 期`;
         stateLabel.textContent = activeFilters.length > 0 ? `当前条件：${activeFilters.join(' · ')}` : `默认展示最近 ${pageSize} 期。`;
@@ -366,10 +476,49 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       };
 
       const loadAndRender = async () => {
+        const currentToken = ++renderToken;
+
+        if (!state.query) {
+          try {
+            const payload = await loadArchivePage();
+            if (currentToken !== renderToken) {
+              return;
+            }
+            renderArchive(payload);
+          } catch (error) {
+            if (currentToken !== renderToken) {
+              return;
+            }
+            console.error(error);
+            list.innerHTML = `
+              <article class="card empty-state">
+                <h2>暂时无法加载 GeekDaily 归档</h2>
+                <p>你可以稍后刷新重试，或者先回到第一页继续浏览默认归档列表。</p>
+              </article>
+            `;
+            count.textContent = '归档暂不可用';
+            stateLabel.textContent = '归档数据加载失败。';
+            pagerLabel.textContent = '第 1 页';
+            prevButton.disabled = true;
+            nextButton.disabled = true;
+            setBusyState(false);
+            syncControls();
+            updateUrl();
+          }
+
+          return;
+        }
+
         try {
           const documents = await loadDocuments();
-          render(documents);
+          if (currentToken !== renderToken) {
+            return;
+          }
+          renderSearch(documents);
         } catch (error) {
+          if (currentToken !== renderToken) {
+            return;
+          }
           console.error(error);
           list.innerHTML = `
             <article class="card empty-state">
@@ -391,7 +540,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       input.addEventListener('input', async () => {
         state.query = input.value.trim();
         state.page = 1;
-        if (!state.query && !state.tag && !state.year && !documentsPromise) {
+        if (!state.query && !state.tag && !state.year && state.page === 1) {
           restoreDefault();
           return;
         }
@@ -412,7 +561,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         button.addEventListener('click', async () => {
           state.tag = state.tag === button.dataset.tag ? '' : button.dataset.tag ?? '';
           state.page = 1;
-          if (!state.query && !state.tag && !state.year && !documentsPromise) {
+          if (!state.query && !state.tag && !state.year && state.page === 1) {
             restoreDefault();
             return;
           }
@@ -424,7 +573,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         button.addEventListener('click', async () => {
           state.year = state.year === button.dataset.year ? '' : button.dataset.year ?? '';
           state.page = 1;
-          if (!state.query && !state.tag && !state.year && !documentsPromise) {
+          if (!state.query && !state.tag && !state.year && state.page === 1) {
             restoreDefault();
             return;
           }
@@ -437,11 +586,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         state.tag = '';
         state.year = '';
         state.page = 1;
-        if (!documentsPromise) {
-          restoreDefault();
-          return;
-        }
-        void loadAndRender();
+        restoreDefault();
       });
 
       hydrateFromUrl();

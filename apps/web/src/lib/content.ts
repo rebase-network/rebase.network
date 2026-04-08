@@ -55,21 +55,6 @@ interface PublicGeekDailyEpisodePayload extends Omit<GeekDailyEpisode, 'items'> 
   items: PublicGeekDailyItemPayload[];
 }
 
-interface GeekDailySearchDocument {
-  slug: string;
-  episodeNumber: number;
-  title: string;
-  summary: string;
-  tags: string[];
-  publishedAt: string;
-  year: string;
-  items: Array<{
-    title: string;
-    authorName: string;
-    summary: string;
-  }>;
-}
-
 interface GeekDailyArchiveOverviewPayload {
   totalEpisodes: number;
   years: number[];
@@ -228,10 +213,6 @@ export async function getGeekDailyEpisodeBySlug(slug: string) {
 
 export async function getGeekDailyArchiveOverview() {
   return fetchPublicApi<GeekDailyArchiveOverviewPayload>('/api/public/v1/geekdaily/overview');
-}
-
-export async function getGeekDailySearchDocuments() {
-  return fetchPublicApi<GeekDailySearchDocument[]>('/api/public/v1/geekdaily/search');
 }
 
 export async function getLatestArticles(count = 3) {

@@ -222,6 +222,11 @@ interface ListAdminGeekDailyEpisodesInput extends PaginationInput {
   status?: ContentStatus;
 }
 
+interface ListPublicGeekDailyArchiveInput extends PaginationInput {
+  year?: number;
+  tag?: string;
+}
+
 const countItemsByEpisodeIds = async (episodeIds: string[]) => {
   const db = getDb();
   if (episodeIds.length === 0) {
@@ -487,6 +492,58 @@ export const listPublicGeekDailyEpisodePreviews = async (limit = -1) => {
 
     return rows.map((row) => mapPublicEpisodePreview(row, itemsByEpisode.get(row.id) ?? []));
   });
+};
+
+export const listPublicGeekDailyArchivePage = async (input: ListPublicGeekDailyArchiveInput = {}) => {
+  const normalizedYear = Number.isFinite(input.year) && (input.year ?? 0) > 0 ? Math.floor(input.year as number) : undefined;
+  const normalizedTag = input.tag?.trim() ?? '';
+  const requestedPageSize = Number.isFinite(input.pageSize) && (input.pageSize ?? 0) > 0 ? Math.floor(input.pageSize as number) : 18;
+
+  return withPublicGeekDailyCache(
+    `archive:${input.page ?? 1}:${requestedPageSize}:${normalizedYear ?? 'all'}:${normalizedTag || 'all'}`,
+    async () => {
+      const db = getDb();
+      const where = combineFilters([
+        eq(geekdailyEpisodes.status, 'published'),
+        normalizedYear ? sql`extract(year from ${geekdailyEpisodes.publishedAt})::int = ${normalizedYear}` : undefined,
+        normalizedTag ? sql`${geekdailyEpisodes.tagsJson} @> ${JSON.stringify([normalizedTag])}::jsonb` : undefined,
+      ]);
+
+      const countRow = await db.select({ value: count() }).from(geekdailyEpisodes).where(where);
+      const totalItems = countRow[0]?.value ?? 0;
+      const pagination = resolvePagination(
+        {
+          page: input.page,
+          pageSize: requestedPageSize,
+        },
+        totalItems,
+      );
+      const rows =
+        totalItems === 0
+          ? []
+          : await db
+              .select({
+                id: geekdailyEpisodes.id,
+                episodeNumber: geekdailyEpisodes.episodeNumber,
+                title: geekdailyEpisodes.title,
+                summary: geekdailyEpisodes.summary,
+                editorsJson: geekdailyEpisodes.editorsJson,
+                tagsJson: geekdailyEpisodes.tagsJson,
+                publishedAt: geekdailyEpisodes.publishedAt,
+              })
+              .from(geekdailyEpisodes)
+              .where(where)
+              .orderBy(desc(geekdailyEpisodes.episodeNumber))
+              .limit(pagination.pageSize)
+              .offset(pagination.offset);
+      const itemsByEpisode = await loadItemsByEpisodeIds(rows.map((row) => row.id));
+
+      return {
+        items: rows.map((row) => mapPublicEpisodePreview(row, itemsByEpisode.get(row.id) ?? [])),
+        meta: buildPaginatedMeta(pagination),
+      };
+    },
+  );
 };
 
 export const getPublicGeekDailyEpisodeBySlug = async (slug: string) => {

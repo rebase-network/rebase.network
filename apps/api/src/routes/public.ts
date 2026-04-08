@@ -8,6 +8,7 @@ import {
   getGeekDailySearchDocuments,
   getPublicGeekDailyEpisodeBySlug,
   getPublicGeekDailyOverview,
+  listPublicGeekDailyArchivePage,
   listPublicGeekDailyEpisodePreviews,
   listPublicGeekDailyEpisodes,
 } from '../lib/geekdaily.js';
@@ -148,6 +149,23 @@ publicRoutes.get('/geekdaily', async (c) => {
 publicRoutes.get('/geekdaily/overview', async (c) => {
   c.header('Cache-Control', publicCacheControl);
   return c.json(ok(await getPublicGeekDailyOverview()));
+});
+
+publicRoutes.get('/geekdaily/archive', async (c) => {
+  const rawYear = c.req.query('year');
+  const year = rawYear && /^\d{4}$/.test(rawYear) ? Number.parseInt(rawYear, 10) : undefined;
+  const tag = c.req.query('tag')?.trim() ?? '';
+  const page = getPositiveLimit(c.req.query('page'), 1);
+  const pageSize = getPositiveLimit(c.req.query('pageSize'), 18);
+  const result = await listPublicGeekDailyArchivePage({
+    page,
+    pageSize,
+    year,
+    tag,
+  });
+
+  c.header('Cache-Control', publicCacheControl);
+  return c.json(ok(result.items, result.meta));
 });
 
 publicRoutes.get('/geekdaily/search', async (c) => {

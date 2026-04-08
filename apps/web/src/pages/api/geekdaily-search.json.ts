@@ -1,12 +1,5 @@
-import { getGeekDailySearchDocuments } from '@/lib/content';
+import { proxyPublicApi } from '@/lib/api';
 
 export async function GET() {
-  const documents = await getGeekDailySearchDocuments();
-
-  return new Response(JSON.stringify(documents), {
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'public, max-age=300, stale-while-revalidate=3600',
-    },
-  });
+  return proxyPublicApi('/api/public/v1/geekdaily/search');
 }

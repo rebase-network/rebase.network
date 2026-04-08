@@ -21,8 +21,12 @@ export function getApiBaseUrl() {
   return API_BASE_URL;
 }
 
+export function getPublicApiUrl(pathname: string) {
+  return new URL(pathname, `${API_BASE_URL}/`);
+}
+
 export async function fetchPublicApi<T>(pathname: string): Promise<T> {
-  const url = new URL(pathname, `${API_BASE_URL}/`);
+  const url = getPublicApiUrl(pathname);
   const response = await fetch(url, {
     headers: {
       Accept: 'application/json',
@@ -42,6 +46,23 @@ export async function fetchPublicApi<T>(pathname: string): Promise<T> {
   }
 
   return payload.data;
+}
+
+export async function proxyPublicApi(pathname: string) {
+  const response = await fetch(getPublicApiUrl(pathname), {
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+
+  const headers = new Headers();
+  headers.set('content-type', response.headers.get('content-type') ?? 'application/json; charset=utf-8');
+  headers.set('cache-control', response.headers.get('cache-control') ?? 'public, max-age=300, stale-while-revalidate=3600');
+
+  return new Response(response.body, {
+    status: response.status,
+    headers,
+  });
 }
 
 export async function fetchApiReady() {
