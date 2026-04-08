@@ -75,6 +75,15 @@ const liveWireTypeLabel = {
     </aside>
   </section>
 
+  <section class="shell meta-strip page-section">
+    {site.homeStats.map((stat) => (
+      <article class="card">
+        <strong>{stat.value}</strong>
+        <span>{stat.label}</span>
+      </article>
+    ))}
+  </section>
+
   <section class="shell page-section current-desk">
     <SectionHeader
       eyebrow="首页编排"
@@ -170,7 +179,6 @@ const liveWireTypeLabel = {
           {contributorGroups.map((group) => (
             <article class="role-pill">
               <strong>{group.role.name}</strong>
-              <span>{group.contributors.length} 位成员</span>
             </article>
           ))}
         </div>
@@ -512,8 +520,7 @@ const liveWireTypeLabel = {
   }
 
   .contributors-intro p,
-  .contributors-note,
-  .role-pill span {
+  .contributors-note {
     margin: 0;
     color: var(--muted);
   }
@@ -534,10 +541,8 @@ const liveWireTypeLabel = {
   }
 
   .role-pill {
-    display: grid;
-    gap: 0.18rem;
-    min-width: 8.6rem;
-    padding: 0.76rem 0.9rem;
+    min-width: 7.8rem;
+    padding: 0.7rem 0.9rem;
     border: 1px solid rgba(15, 118, 110, 0.08);
     border-radius: 0.95rem;
     background: rgba(255, 255, 255, 0.76);
@@ -549,7 +554,6 @@ const liveWireTypeLabel = {
   }
 
   .contributors-note {
-    margin: 0;
     max-width: 56ch;
     line-height: 1.72;
   }
