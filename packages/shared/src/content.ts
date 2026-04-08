@@ -353,7 +353,7 @@ export function extractGeekDailyBodyNote(bodyMarkdown: string) {
   }
 
   if (!normalized.endsWith(geekDailyTemplateOutro)) {
-    return normalized;
+    return '';
   }
 
   const outroMarker = `\n\n---\n\n${geekDailyTemplateOutro}`;

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { buildGeekDailySummary, getGeekDailyEpisodeSlug } from '@rebase/shared';
+import { buildGeekDailyBodyMarkdown, buildGeekDailySummary, getGeekDailyEpisodeSlug } from '@rebase/shared';
 
 export interface ImportedGeekDailyItem {
   title: string;
@@ -87,17 +87,6 @@ function parseDate(value: string) {
   return new Date(Date.UTC(year, month - 1, day, 8, 0, 0)).toISOString();
 }
 
-function buildBody(episodeNumber: number, items: ImportedGeekDailyItem[]) {
-  const contributors = [...new Set(items.map((item) => item.authorName).filter(Boolean))];
-  const intro = `极客日报#${episodeNumber} 收录了 ${items.length} 条来自社区的推荐${contributors.length > 0 ? `，推荐人包括 ${contributors.join('、')}` : ''}。`;
-  const lines = items.map((item, index) => {
-    const sourceLine = item.sourceUrl ? `\n来源：${item.sourceUrl}` : '';
-    return `${index + 1}. ${item.title}\n推荐人：${item.authorName || 'unknown'}${sourceLine}\n推荐语：${item.summary}`;
-  });
-
-  return [intro, ...lines].join('\n\n');
-}
-
 export function loadGeekDailyArchive(sourceArg = 'geekdaily.csv'): ImportedGeekDailyEpisode[] {
   const sourcePath = resolve(sourceArg);
   const raw = readFileSync(sourcePath, 'utf8');
@@ -148,7 +137,12 @@ export function loadGeekDailyArchive(sourceArg = 'geekdaily.csv'): ImportedGeekD
       slug: getGeekDailyEpisodeSlug(episodeNumber),
       title: `极客日报#${episodeNumber}`,
       summary: buildGeekDailySummary({ items: episode.items }),
-      bodyMarkdown: buildBody(episodeNumber, episode.items),
+      bodyMarkdown: buildGeekDailyBodyMarkdown({
+        episodeNumber,
+        editors: [],
+        items: episode.items,
+        bodyMarkdown: '',
+      }),
       publishedAt: parseDate(episode.publishedAt),
       editors: [],
       tags: [],

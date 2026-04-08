@@ -20,30 +20,12 @@ const featuredTags = overview.featuredTags;
   description="浏览、筛选并检索 Rebase 社区的 GeekDaily 历史归档。"
 >
   <section class="shell page-hero single">
-    <article class="hero-panel card">
-      <p class="hero-kicker">GeekDaily 归档</p>
-      <h1 class="hero-title">GeekDaily 是 Rebase 的持续现场，它应该被阅读、搜索和订阅。</h1>
+    <article class="hero-panel card geekdaily-archive-hero">
+      <p class="hero-kicker">极客日报</p>
+      <h1 class="hero-title">Rebase 极客日报</h1>
       <p class="hero-summary">
-        第一版先用前端搜索做实用检索，并把 1800+ 期历史内容组织成一个更适合浏览的期数归档。
+        由社区志愿者持续整理发布，每期收录值得关注的技术内容、推荐人和推荐语，方便你按期回看、检索与订阅。
       </p>
-    </article>
-  </section>
-
-  <section class="shell page-section archive-stats">
-    <article class="card stat-card">
-      <span>归档总数</span>
-      <strong>{overview.totalEpisodes} 期</strong>
-      <p>按期数归档，避免把每一期拆散成难以理解的零碎列表。</p>
-    </article>
-    <article class="card stat-card">
-      <span>时间跨度</span>
-      <strong>{years.at(-1)} - {years[0]}</strong>
-      <p>为历史日报保留稳定链接、可搜索入口和 RSS 输出。</p>
-    </article>
-    <article class="card stat-card">
-      <span>链接规则</span>
-      <strong>/geekdaily/geekdaily-1915</strong>
-      <p>统一使用 <code>geekdaily-&#123;episode-number&#125;</code> 规则，让期数含义和栏目来源一眼可辨。</p>
     </article>
   </section>
 
@@ -452,28 +434,42 @@ const featuredTags = overview.featuredTags;
 <style>
   .single {
     grid-template-columns: 1fr;
+    padding: 1rem 0 0.4rem;
   }
 
-  .archive-stats {
+  .geekdaily-archive-hero {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
+    gap: 0.45rem;
+    padding: 1.15rem 1.3rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 251, 249, 0.9));
   }
 
-  .stat-card,
+  .geekdaily-archive-hero .hero-kicker {
+    margin-bottom: 0;
+  }
+
+  .geekdaily-archive-hero .hero-title {
+    max-width: none;
+    font-size: clamp(2rem, 4vw, 2.85rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+
+  .geekdaily-archive-hero .hero-summary {
+    margin-top: 0;
+    max-width: 64ch;
+    font-size: 0.98rem;
+    line-height: 1.72;
+  }
+
   .search-panel,
   .quick-filter-panel,
-  .episode-card,
+  .episode-list :global(.episode-card),
   .pager {
     padding: 1.2rem;
   }
 
-  .stat-card {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 251, 249, 0.88));
-  }
-
-  .stat-card span,
   .panel-title,
   .search-panel label,
   .results-head p,
@@ -486,26 +482,17 @@ const featuredTags = overview.featuredTags;
     text-transform: uppercase;
   }
 
-  .stat-card span,
   .panel-title,
   .search-panel label,
   .results-head a {
     color: var(--accent-strong);
   }
 
-  .stat-card strong {
-    display: block;
-    margin-top: 0.55rem;
-    font-size: 1.65rem;
-    line-height: 1.1;
-  }
-
-  .stat-card p,
   .search-panel p,
   .results-head span,
-  .summary,
-  .body,
-  .empty-state p {
+  .episode-list :global(.summary),
+  .episode-list :global(.body),
+  .episode-list :global(.empty-state p) {
     color: var(--muted);
     line-height: 1.75;
   }
@@ -616,7 +603,7 @@ const featuredTags = overview.featuredTags;
     gap: 1rem;
   }
 
-  .episode-card {
+  .episode-list :global(.episode-card) {
     position: relative;
     overflow: hidden;
     display: grid;
@@ -625,7 +612,7 @@ const featuredTags = overview.featuredTags;
       linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(253, 250, 244, 0.9));
   }
 
-  .episode-card::before {
+  .episode-list :global(.episode-card)::before {
     content: '';
     position: absolute;
     inset: 0 auto 0 0;
@@ -634,38 +621,38 @@ const featuredTags = overview.featuredTags;
     opacity: 0.86;
   }
 
-  .episode-card:hover,
-  .episode-card:focus-within {
+  .episode-list :global(.episode-card:hover),
+  .episode-list :global(.episode-card:focus-within) {
     transform: translateY(-4px);
     border-color: rgba(15, 118, 110, 0.18);
     box-shadow: var(--shadow-strong);
   }
 
-  .episode-card h2,
-  .empty-state h2 {
+  .episode-list :global(.episode-card h2),
+  .episode-list :global(.empty-state h2) {
     margin: 0.35rem 0 0.65rem;
     font-size: clamp(1.45rem, 2vw, 1.9rem);
     line-height: 1.08;
   }
 
-  .episode-card h2 a {
+  .episode-list :global(.episode-card h2 a) {
     transition: color 160ms ease;
   }
 
-  .episode-card:hover h2 a,
-  .episode-card:focus-within h2 a {
+  .episode-list :global(.episode-card:hover h2 a),
+  .episode-list :global(.episode-card:focus-within h2 a) {
     color: var(--accent-strong);
   }
 
-  .meta,
-  .summary,
-  .body,
-  .episode-card ul,
-  .empty-state p {
+  .episode-list :global(.meta),
+  .episode-list :global(.summary),
+  .episode-list :global(.body),
+  .episode-list :global(.episode-card ul),
+  .episode-list :global(.empty-state p) {
     margin: 0;
   }
 
-  .body {
+  .episode-list :global(.body) {
     margin-top: 0.75rem;
     white-space: pre-line;
     display: -webkit-box;
@@ -674,7 +661,7 @@ const featuredTags = overview.featuredTags;
     -webkit-line-clamp: 4;
   }
 
-  .episode-card ul {
+  .episode-list :global(.episode-card ul) {
     padding-left: 1rem;
     margin-top: 0.95rem;
     color: var(--muted);
@@ -683,7 +670,7 @@ const featuredTags = overview.featuredTags;
     column-gap: 1.6rem;
   }
 
-  .empty-state {
+  .episode-list :global(.empty-state) {
     padding: 1.4rem;
   }
 
@@ -697,13 +684,22 @@ const featuredTags = overview.featuredTags;
   }
 
   @media (max-width: 960px) {
-    .archive-stats,
     .controls-grid {
       grid-template-columns: 1fr;
     }
 
-    .episode-card ul {
+    .episode-list :global(.episode-card ul) {
       columns: 1;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .single {
+      padding-top: 0.8rem;
+    }
+
+    .geekdaily-archive-hero {
+      padding: 1rem 1.05rem;
     }
   }
 </style>
