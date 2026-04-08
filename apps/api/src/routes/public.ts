@@ -4,7 +4,12 @@ import { ok } from '../lib/http.js';
 import { getPublicArticleBySlug, listPublicArticles } from '../lib/articles.js';
 import { listPublicContributorGroups } from '../lib/contributors.js';
 import { getPublicEventBySlug, listPublicEvents } from '../lib/events.js';
-import { getGeekDailySearchDocuments, getPublicGeekDailyEpisodeBySlug, listPublicGeekDailyEpisodes } from '../lib/geekdaily.js';
+import {
+  getGeekDailySearchDocuments,
+  getPublicGeekDailyEpisodeBySlug,
+  getPublicGeekDailyOverview,
+  listPublicGeekDailyEpisodes,
+} from '../lib/geekdaily.js';
 import { getPublicJobBySlug, listPublicJobs } from '../lib/jobs.js';
 import { getPublicAboutPage, getPublicSiteConfig } from '../lib/site.js';
 
@@ -134,10 +139,10 @@ publicRoutes.get('/contributors', async (c) => c.json(ok(await listPublicContrib
 
 publicRoutes.get('/geekdaily', async (c) => {
   const limit = getPositiveLimit(c.req.query('limit'), 0);
-  const rows = await listPublicGeekDailyEpisodes();
-  return c.json(ok(limit > 0 ? rows.slice(0, limit) : rows));
+  return c.json(ok(await listPublicGeekDailyEpisodes(limit)));
 });
 
+publicRoutes.get('/geekdaily/overview', async (c) => c.json(ok(await getPublicGeekDailyOverview())));
 publicRoutes.get('/geekdaily/search', async (c) => c.json(ok(await getGeekDailySearchDocuments())));
 
 publicRoutes.get('/geekdaily/:slug', async (c) => {

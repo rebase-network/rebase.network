@@ -19,19 +19,28 @@ import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './p
 import { combineFilters, toContainsPattern } from './query-filters.js';
 import { toIsoString } from './utils.js';
 
-const loadItemsByEpisodeId = async () => {
+const mapEpisodeItem = (row: typeof geekdailyEpisodeItems.$inferSelect) => ({
+  title: row.title,
+  authorName: row.authorName,
+  sourceUrl: row.sourceUrl,
+  summary: row.summary,
+});
+
+const loadItemsByEpisodeIds = async (episodeIds?: string[]) => {
   const db = getDb();
-  const rows = await db.select().from(geekdailyEpisodeItems).orderBy(asc(geekdailyEpisodeItems.sortOrder));
+  if (episodeIds && episodeIds.length === 0) {
+    return new Map<string, ReturnType<typeof mapEpisodeItem>[]>();
+  }
+
+  const query = db.select().from(geekdailyEpisodeItems);
+  const rows = episodeIds
+    ? await query.where(inArray(geekdailyEpisodeItems.episodeId, episodeIds)).orderBy(asc(geekdailyEpisodeItems.sortOrder))
+    : await query.orderBy(asc(geekdailyEpisodeItems.sortOrder));
   const result = new Map<string, any[]>();
 
   for (const row of rows) {
     const current = result.get(row.episodeId) ?? [];
-    current.push({
-      title: row.title,
-      authorName: row.authorName,
-      sourceUrl: row.sourceUrl,
-      summary: row.summary,
-    });
+    current.push(mapEpisodeItem(row));
     result.set(row.episodeId, current);
   }
 
@@ -203,7 +212,7 @@ export const getAdminGeekDailyEpisode = async (id: string) => {
   const db = getDb();
   const [rows, itemsByEpisode] = await Promise.all([
     db.select().from(geekdailyEpisodes).where(eq(geekdailyEpisodes.id, id)).limit(1),
-    loadItemsByEpisodeId(),
+    loadItemsByEpisodeIds([id]),
   ]);
   const row = rows[0] ?? null;
   return row ? mapEpisodeDetail(row, itemsByEpisode.get(row.id) ?? []) : null;
@@ -354,7 +363,7 @@ export const listPublicGeekDailyEpisodes = async (limit = -1) => {
     .where(eq(geekdailyEpisodes.status, 'published'))
     .orderBy(desc(geekdailyEpisodes.episodeNumber));
   const rows = limit > 0 ? await query.limit(limit) : await query;
-  const itemsByEpisode = await loadItemsByEpisodeId();
+  const itemsByEpisode = await loadItemsByEpisodeIds(rows.map((row) => row.id));
 
   return rows.map((row) => ({
     slug: getGeekDailyEpisodeSlug(row.episodeNumber),
@@ -370,10 +379,11 @@ export const listPublicGeekDailyEpisodes = async (limit = -1) => {
 };
 
 export const getPublicGeekDailyEpisodeBySlug = async (slug: string) => {
-  const [row, itemsByEpisode] = await Promise.all([getEpisodeRecordBySlug(slug), loadItemsByEpisodeId()]);
+  const row = await getEpisodeRecordBySlug(slug);
   if (!row || row.status !== 'published') {
     return null;
   }
+  const itemsByEpisode = await loadItemsByEpisodeIds([row.id]);
 
   return {
     slug: getGeekDailyEpisodeSlug(row.episodeNumber),
@@ -385,6 +395,37 @@ export const getPublicGeekDailyEpisodeBySlug = async (slug: string) => {
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
     body: row.bodyMarkdown,
     items: itemsByEpisode.get(row.id) ?? [],
+  };
+};
+
+export const getPublicGeekDailyOverview = async () => {
+  const db = getDb();
+  const [countRow, rows] = await Promise.all([
+    db.select({ value: count() }).from(geekdailyEpisodes).where(eq(geekdailyEpisodes.status, 'published')),
+    db
+      .select({
+        publishedAt: geekdailyEpisodes.publishedAt,
+        tagsJson: geekdailyEpisodes.tagsJson,
+      })
+      .from(geekdailyEpisodes)
+      .where(eq(geekdailyEpisodes.status, 'published')),
+  ]);
+
+  const years = [...new Set(rows.map((row) => row.publishedAt?.getUTCFullYear()).filter(Number.isFinite))].sort((left, right) => right - left);
+  const featuredTags = [
+    ...new Set(
+      rows.flatMap((row) =>
+        Array.isArray(row.tagsJson)
+          ? row.tagsJson.filter((tag): tag is string => typeof tag === 'string' && tag.trim().length > 0)
+          : [],
+      ),
+    ),
+  ].slice(0, 8);
+
+  return {
+    totalEpisodes: countRow[0]?.value ?? 0,
+    years,
+    featuredTags,
   };
 };
 

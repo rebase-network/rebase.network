@@ -62,6 +62,12 @@ interface GeekDailySearchDocument {
   searchableText: string;
 }
 
+interface GeekDailyArchiveOverviewPayload {
+  totalEpisodes: number;
+  years: number[];
+  featuredTags: string[];
+}
+
 interface HomeFeedPayload {
   latestGeekDaily: PublicGeekDailyEpisodePayload | null;
   recentArticles: Article[];
@@ -203,15 +209,7 @@ export async function getGeekDailyEpisodeBySlug(slug: string) {
 }
 
 export async function getGeekDailyArchiveOverview() {
-  const documents = await getGeekDailySearchDocuments();
-  const years = [...new Set(documents.map((record) => Number(record.year)).filter(Number.isFinite))];
-  const featuredTags = [...new Set(documents.flatMap((record) => record.tags))].slice(0, 8);
-
-  return {
-    totalEpisodes: documents.length,
-    years,
-    featuredTags,
-  };
+  return fetchPublicApi<GeekDailyArchiveOverviewPayload>('/api/public/v1/geekdaily/overview');
 }
 
 export async function getGeekDailySearchDocuments() {
