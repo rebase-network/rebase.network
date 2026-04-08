@@ -23,7 +23,10 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 >
   <section class="shell page-hero single">
     <article class="hero-panel card geekdaily-archive-hero">
-      <p class="hero-kicker">极客日报</p>
+      <div class="hero-topline">
+        <p class="hero-kicker">极客日报</p>
+        <span class="edition-chip">Issue Archive</span>
+      </div>
       <h1 class="hero-title">Rebase 极客日报</h1>
       <p class="hero-summary">
         由社区志愿者持续整理发布，每期收录值得关注的技术内容、推荐人和推荐语，方便你按期回看、检索与订阅。
@@ -606,11 +609,55 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
   }
 
   .geekdaily-archive-hero {
+    position: relative;
+    overflow: hidden;
     display: grid;
     gap: 0.45rem;
     padding: 1.15rem 1.3rem;
     background:
+      radial-gradient(circle at top left, rgba(125, 211, 252, 0.18), transparent 30%),
+      radial-gradient(circle at 92% 18%, rgba(15, 118, 110, 0.14), transparent 22%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 251, 249, 0.9));
+  }
+
+  .geekdaily-archive-hero::before {
+    content: 'GEEKDAILY';
+    position: absolute;
+    top: 0.85rem;
+    right: 1.15rem;
+    color: rgba(17, 94, 89, 0.08);
+    font-family: var(--display-font);
+    font-size: clamp(3.4rem, 7vw, 5.8rem);
+    letter-spacing: 0.08em;
+    line-height: 0.82;
+    pointer-events: none;
+  }
+
+  .geekdaily-archive-hero > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .edition-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.76rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
   .geekdaily-archive-hero .hero-kicker {
@@ -863,6 +910,10 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
   @media (max-width: 720px) {
     .single {
       padding-top: 0.8rem;
+    }
+
+    .hero-topline {
+      align-items: flex-start;
     }
 
     .geekdaily-archive-hero {
