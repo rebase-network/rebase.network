@@ -103,6 +103,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
             <a href={getGeekDailyPath(episode.episodeNumber)}>{episode.title}</a>
           </h2>
           <p class="summary">{episode.summary}</p>
+          {episode.editors.length > 0 && <p class="editor-line">编辑：{episode.editors.join('、')}</p>}
           <ul>
             {episode.items.slice(0, 3).map((item) => <li>{item.title}</li>)}
           </ul>
@@ -159,6 +160,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       episodeNumber: number;
       title: string;
       summary: string;
+      editors: string[];
       tags: string[];
       publishedAt: string;
       year: string;
@@ -235,7 +237,9 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       const buildActiveFilters = () =>
         [state.query && `搜索“${state.query}”`, state.tag && `标签 ${state.tag}`, state.year && `年份 ${state.year}`].filter(Boolean);
 
-      const renderEpisodeCards = (items: Array<{ episodeNumber: number; title: string; publishedAt: string; summary: string; items: { title: string }[] }>) => {
+      const renderEpisodeCards = (
+        items: Array<{ episodeNumber: number; title: string; publishedAt: string; summary: string; editors: string[]; items: { title: string }[] }>,
+      ) => {
         if (items.length === 0) {
           list.innerHTML = `
             <article class="card empty-state">
@@ -252,12 +256,15 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
               .slice(0, 3)
               .map((entry) => `<li>${escapeHtml(entry.title)}</li>`)
               .join('');
+            const editorLine =
+              item.editors.length > 0 ? `<p class="editor-line">编辑：${escapeHtml(item.editors.join('、'))}</p>` : '';
 
             return `
               <article class="card episode-card">
                 <p class="meta">${escapeHtml(item.title)} · ${escapeHtml(formatPublishedAt(item.publishedAt))}</p>
                 <h2><a href="/geekdaily/geekdaily-${item.episodeNumber}">${escapeHtml(item.title)}</a></h2>
                 <p class="summary">${escapeHtml(item.summary)}</p>
+                ${editorLine}
                 <ul>${itemPreview}</ul>
               </article>
             `;
@@ -860,10 +867,17 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 
   .episode-list :global(.meta),
   .episode-list :global(.summary),
+  .episode-list :global(.editor-line),
   .episode-list :global(.body),
   .episode-list :global(.episode-card ul),
   .episode-list :global(.empty-state p) {
     margin: 0;
+  }
+
+  .episode-list :global(.editor-line) {
+    color: var(--accent-strong);
+    font-size: 0.92rem;
+    line-height: 1.7;
   }
 
   .episode-list :global(.body) {

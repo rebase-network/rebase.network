@@ -599,6 +599,7 @@ export const getGeekDailySearchDocuments = async () => {
         episodeNumber: geekdailyEpisodes.episodeNumber,
         title: geekdailyEpisodes.title,
         summary: geekdailyEpisodes.summary,
+        editorsJson: geekdailyEpisodes.editorsJson,
         tagsJson: geekdailyEpisodes.tagsJson,
         publishedAt: geekdailyEpisodes.publishedAt,
       })
@@ -615,6 +616,7 @@ export const getGeekDailySearchDocuments = async () => {
         episodeNumber: row.episodeNumber,
         title: row.title,
         summary: row.summary,
+        editors: getEditors(row.editorsJson),
         tags: getTags(row.tagsJson),
         publishedAt,
         year: String(new Date(publishedAt).getUTCFullYear()),
