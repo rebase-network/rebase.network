@@ -47,18 +47,6 @@ const liveWireTypeLabel = {
           </a>
         ))}
       </div>
-      <div class="hero-footnotes">
-        <article>
-          <span>双域名入口</span>
-          <strong>{site.primaryDomain.replace('https://', '')}</strong>
-          <p>默认内容主域名，第二域名保留社区入口一致性。</p>
-        </article>
-        <article>
-          <span>公开阅读</span>
-          <strong>无需登录</strong>
-          <p>读者直接访问，管理侧通过专用后台维护结构化内容。</p>
-        </article>
-      </div>
     </article>
 
     <aside class="signal-panel card live-desk">
@@ -340,46 +328,6 @@ const liveWireTypeLabel = {
     line-height: 1.65;
   }
 
-  .hero-footnotes {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.9rem;
-    margin-top: 1.5rem;
-  }
-
-  .hero-footnotes article {
-    padding: 1rem;
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.62);
-    border: 1px solid rgba(31, 41, 51, 0.08);
-  }
-
-  .hero-footnotes span,
-  .hero-footnotes strong,
-  .hero-footnotes p {
-    display: block;
-    margin: 0;
-  }
-
-  .hero-footnotes span {
-    color: var(--accent-strong);
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .hero-footnotes strong {
-    margin-top: 0.45rem;
-    font-size: 1.05rem;
-  }
-
-  .hero-footnotes p {
-    margin-top: 0.45rem;
-    color: var(--muted);
-    line-height: 1.65;
-  }
-
   .live-desk {
     display: grid;
     gap: 1rem;
@@ -565,7 +513,6 @@ const liveWireTypeLabel = {
   }
 
   @media (max-width: 960px) {
-    .hero-footnotes,
     .hero-highlights,
     .dispatch-grid,
     .signal-compact {
