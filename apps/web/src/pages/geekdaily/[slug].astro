@@ -74,11 +74,7 @@ if (!episode) {
               )}
             </div>
           </header>
-          {episodeNote ? (
-            <MarkdownContent content={episodeNote} />
-          ) : (
-            <p class="episode-note-empty">本期内容由结构化推荐条目自动整理，无需额外补充说明。</p>
-          )}
+          {episodeNote && <MarkdownContent content={episodeNote} />}
           <section id="episode-items" class="item-section">
             <h2>本期推荐</h2>
             <div class="item-list">
@@ -225,7 +221,6 @@ if (!episode) {
     font-size: 1.45rem;
   }
 
-  .episode-note-empty,
   .episode-outro {
     margin-top: 1.35rem;
     padding: 1rem 1.1rem;
@@ -234,8 +229,7 @@ if (!episode) {
     color: rgba(17, 24, 39, 0.82);
   }
 
-  .episode-outro p,
-  .episode-note-empty {
+  .episode-outro p {
     margin: 0;
   }
 
