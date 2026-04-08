@@ -55,6 +55,7 @@ The target architecture is no longer a headless CMS workflow.
 - `docs/quality-assurance.md`: browser checks, automated checks, sample content, and release validation flow
 - `docs/local-development.md`: current local prototype notes and migration-era development guidance
 - `docs/deployment.md`: Worker, Docker Compose, Tunnel, and rollout commands for production
+- `docs/production-config.md`: production inventory, hostnames, Workers, server paths, and config ownership
 - `docs/launch-checklist.md`: launch-critical routes, domain preparation, health checks, and observability baseline
 
 ## Local Development

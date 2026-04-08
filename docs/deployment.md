@@ -11,6 +11,8 @@ Deploy the first Rebase release with the agreed split:
 
 This keeps the frontends at the edge while the writable backend stays on the server.
 
+For the current production inventory and ownership map, also see `docs/production-config.md`.
+
 ## Release Branch Rule
 
 - continue day-to-day work on `dev`
