@@ -33,7 +33,7 @@ const extractGeekDailyBodyNote = (bodyMarkdown: string) => {
 };
 
 const slug = Astro.params.slug ?? '';
-const [site, episode, episodes] = await Promise.all([getSiteSettings(), getGeekDailyEpisodeBySlug(slug), getGeekDailyEpisodes()]);
+const [site, episode, episodes] = await Promise.all([getSiteSettings(), getGeekDailyEpisodeBySlug(slug), getGeekDailyEpisodes(3)]);
 const related = episode ? episodes.filter((item) => item.slug !== episode.slug).slice(0, 2) : [];
 const episodeNote = episode ? extractGeekDailyBodyNote(episode.body) : '';
 const episodeActionLinks = [
@@ -48,6 +48,8 @@ const episodeRelatedLinks = related.map((item) => ({
 if (!episode) {
   Astro.response.status = 404;
 }
+
+Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
 ---
 
 <BaseLayout

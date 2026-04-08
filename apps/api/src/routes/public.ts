@@ -4,11 +4,18 @@ import { ok } from '../lib/http.js';
 import { getPublicArticleBySlug, listPublicArticles } from '../lib/articles.js';
 import { listPublicContributorGroups } from '../lib/contributors.js';
 import { getPublicEventBySlug, listPublicEvents } from '../lib/events.js';
-import { getGeekDailySearchDocuments, getPublicGeekDailyEpisodeBySlug, listPublicGeekDailyEpisodes } from '../lib/geekdaily.js';
+import {
+  getGeekDailySearchDocuments,
+  getPublicGeekDailyEpisodeBySlug,
+  getPublicGeekDailyOverview,
+  listPublicGeekDailyEpisodePreviews,
+  listPublicGeekDailyEpisodes,
+} from '../lib/geekdaily.js';
 import { getPublicJobBySlug, listPublicJobs } from '../lib/jobs.js';
 import { getPublicAboutPage, getPublicSiteConfig } from '../lib/site.js';
 
 export const publicRoutes = new Hono();
+const publicCacheControl = 'public, max-age=300, stale-while-revalidate=3600';
 
 const getPositiveLimit = (value: string | undefined, fallback: number) => {
   const parsed = Number.parseInt(value ?? '', 10);
@@ -134,16 +141,25 @@ publicRoutes.get('/contributors', async (c) => c.json(ok(await listPublicContrib
 
 publicRoutes.get('/geekdaily', async (c) => {
   const limit = getPositiveLimit(c.req.query('limit'), 0);
-  const rows = await listPublicGeekDailyEpisodes();
-  return c.json(ok(limit > 0 ? rows.slice(0, limit) : rows));
+  c.header('Cache-Control', publicCacheControl);
+  return c.json(ok(await listPublicGeekDailyEpisodePreviews(limit)));
 });
 
-publicRoutes.get('/geekdaily/search', async (c) => c.json(ok(await getGeekDailySearchDocuments())));
+publicRoutes.get('/geekdaily/overview', async (c) => {
+  c.header('Cache-Control', publicCacheControl);
+  return c.json(ok(await getPublicGeekDailyOverview()));
+});
+
+publicRoutes.get('/geekdaily/search', async (c) => {
+  c.header('Cache-Control', publicCacheControl);
+  return c.json(ok(await getGeekDailySearchDocuments()));
+});
 
 publicRoutes.get('/geekdaily/:slug', async (c) => {
   const record = await getPublicGeekDailyEpisodeBySlug(c.req.param('slug'));
   if (!record) {
     return c.json({ error: { code: 'NOT_FOUND', message: 'geekdaily episode not found' } }, 404);
   }
+  c.header('Cache-Control', publicCacheControl);
   return c.json(ok(record));
 });

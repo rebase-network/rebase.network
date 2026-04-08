@@ -45,6 +45,12 @@ interface PublicGeekDailyItemPayload {
   summary: string;
 }
 
+type GeekDailyEpisodePreview = Omit<GeekDailyEpisode, 'body'>;
+
+interface PublicGeekDailyPreviewPayload extends Omit<GeekDailyEpisodePreview, 'items'> {
+  items: PublicGeekDailyItemPayload[];
+}
+
 interface PublicGeekDailyEpisodePayload extends Omit<GeekDailyEpisode, 'items'> {
   items: PublicGeekDailyItemPayload[];
 }
@@ -54,12 +60,20 @@ interface GeekDailySearchDocument {
   episodeNumber: number;
   title: string;
   summary: string;
-  body: string;
   tags: string[];
   publishedAt: string;
   year: string;
-  itemTitles: string[];
-  searchableText: string;
+  items: Array<{
+    title: string;
+    authorName: string;
+    summary: string;
+  }>;
+}
+
+interface GeekDailyArchiveOverviewPayload {
+  totalEpisodes: number;
+  years: number[];
+  featuredTags: string[];
 }
 
 interface HomeFeedPayload {
@@ -113,6 +127,16 @@ const mapSiteSettings = (payload: PublicSiteConfigPayload): SiteSettings => ({
 });
 
 const mapGeekDailyEpisode = (episode: PublicGeekDailyEpisodePayload): GeekDailyEpisode => ({
+  ...episode,
+  items: episode.items.map((item) => ({
+    title: item.title,
+    author: item.authorName,
+    sourceUrl: item.sourceUrl,
+    summary: item.summary,
+  })),
+});
+
+const mapGeekDailyEpisodePreview = (episode: PublicGeekDailyPreviewPayload): GeekDailyEpisodePreview => ({
   ...episode,
   items: episode.items.map((item) => ({
     title: item.title,
@@ -188,10 +212,10 @@ export async function getContributorsByRole() {
   return fetchPublicApi<ContributorGroupPayload[]>('/api/public/v1/contributors');
 }
 
-export async function getGeekDailyEpisodes(limit = -1): Promise<GeekDailyEpisode[]> {
+export async function getGeekDailyEpisodes(limit = -1): Promise<GeekDailyEpisodePreview[]> {
   const suffix = limit > 0 ? `?limit=${limit}` : '';
-  const episodes = await fetchPublicApi<PublicGeekDailyEpisodePayload[]>(`/api/public/v1/geekdaily${suffix}`);
-  return episodes.map(mapGeekDailyEpisode);
+  const episodes = await fetchPublicApi<PublicGeekDailyPreviewPayload[]>(`/api/public/v1/geekdaily${suffix}`);
+  return episodes.map(mapGeekDailyEpisodePreview);
 }
 
 export async function getGeekDailyEpisodeBySlug(slug: string) {
@@ -203,15 +227,7 @@ export async function getGeekDailyEpisodeBySlug(slug: string) {
 }
 
 export async function getGeekDailyArchiveOverview() {
-  const documents = await getGeekDailySearchDocuments();
-  const years = [...new Set(documents.map((record) => Number(record.year)).filter(Number.isFinite))];
-  const featuredTags = [...new Set(documents.flatMap((record) => record.tags))].slice(0, 8);
-
-  return {
-    totalEpisodes: documents.length,
-    years,
-    featuredTags,
-  };
+  return fetchPublicApi<GeekDailyArchiveOverviewPayload>('/api/public/v1/geekdaily/overview');
 }
 
 export async function getGeekDailySearchDocuments() {
