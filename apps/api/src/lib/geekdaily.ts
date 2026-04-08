@@ -152,6 +152,15 @@ const resolveEpisodeEditors = (actor: AuditActor, fallback: unknown = []) => {
   return getEditors(fallback);
 };
 
+const resolveStoredEpisodeEditors = (currentEditors: unknown, actor: AuditActor, fallback: unknown = []) => {
+  const persistedEditors = getEditors(currentEditors);
+  if (persistedEditors.length > 0) {
+    return persistedEditors;
+  }
+
+  return resolveEpisodeEditors(actor, fallback);
+};
+
 const coerceDate = (value: Date | string | null | undefined) => {
   const date = value instanceof Date ? value : value ? new Date(value) : new Date();
   return Number.isNaN(date.getTime()) ? new Date() : date;
@@ -350,7 +359,7 @@ export const updateAdminGeekDailyEpisode = async (id: string, input: GeekDailyEp
   }
 
   await ensureEpisodeNumberAvailable(input.episodeNumber, id);
-  const editors = resolveEpisodeEditors(actor, current.editors);
+  const editors = resolveStoredEpisodeEditors(current.editors, actor, input.editors);
 
   await db
     .update(geekdailyEpisodes)
@@ -389,7 +398,7 @@ export const publishAdminGeekDailyEpisode = async (id: string, actor: AuditActor
   if (!current) {
     throw notFound('GeekDaily episode not found');
   }
-  const editors = resolveEpisodeEditors(actor, current.editors);
+  const editors = resolveStoredEpisodeEditors(current.editors, actor);
 
   await db
     .update(geekdailyEpisodes)

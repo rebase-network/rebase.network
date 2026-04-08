@@ -58,7 +58,7 @@ const errorMessage = ref('');
 const successMessage = ref('');
 const fieldIssues = ref<Record<string, string>>({});
 const suggestedEpisodeNumber = ref(1);
-const currentEditorName = ref('');
+const currentStaffName = ref('');
 const activeWechatTab = ref<'preview' | 'source'>('preview');
 const copyFeedback = ref('');
 let copyFeedbackTimer: number | null = null;
@@ -71,10 +71,16 @@ const episodeSuggestionHint = computed(() =>
 );
 const derivedTitle = computed(() => (form.episodeNumber > 0 ? `极客日报#${form.episodeNumber}` : '极客日报#'));
 const statusLabel = computed(() => formatContentStatus(form.status));
-const currentEditorLabel = computed(() => currentEditorName.value || '当前编辑');
+const episodeEditorLabel = computed(() => {
+  if (record.value) {
+    return record.value.editors.length > 0 ? record.value.editors.join('、') : '待补充';
+  }
+
+  return currentStaffName.value || '待补充';
+});
 const wechatInput = computed(() => ({
   episodeNumber: form.episodeNumber,
-  editorName: currentEditorLabel.value,
+  editorName: episodeEditorLabel.value,
   bodyMarkdown: form.bodyMarkdown,
   items: form.items,
 }));
@@ -168,9 +174,9 @@ const applyRecord = (payload: AdminGeekDailyRecord) => {
 const loadCurrentEditor = async () => {
   try {
     const me = await adminFetch<AdminMePayload>('/api/admin/v1/me');
-    currentEditorName.value = me.staffAccount?.displayName ?? me.user?.name ?? '';
+    currentStaffName.value = me.staffAccount?.displayName ?? me.user?.name ?? '';
   } catch {
-    currentEditorName.value = '';
+    currentStaffName.value = '';
   }
 };
 
@@ -345,7 +351,7 @@ onBeforeUnmount(() => {
 
           <div class="geekdaily-meta-item">
             <span class="geekdaily-meta-label">本期编辑</span>
-            <strong class="geekdaily-meta-text">{{ currentEditorLabel }}</strong>
+            <strong class="geekdaily-meta-text">{{ episodeEditorLabel }}</strong>
           </div>
         </div>
 
