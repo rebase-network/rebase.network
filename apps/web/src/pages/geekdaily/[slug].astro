@@ -32,11 +32,6 @@ const slug = Astro.params.slug ?? '';
 const [site, episode, episodes] = await Promise.all([getSiteSettings(), getGeekDailyEpisodeBySlug(slug), getGeekDailyEpisodes()]);
 const related = episode ? episodes.filter((item) => item.slug !== episode.slug).slice(0, 2) : [];
 const episodeNote = episode ? extractGeekDailyBodyNote(episode.body) : '';
-const episodeWayfindingLinks = [
-  { href: '#episode-body', label: '进入正文' },
-  { href: '#episode-items', label: '查看推荐条目' },
-  { href: '#episode-info', label: '查看期数信息' },
-];
 const episodeActionLinks = [
   { href: '/geekdaily/rss.xml', label: '订阅 GeekDaily RSS' },
   { href: '/geekdaily', label: '回到 GeekDaily 列表' },
@@ -105,12 +100,6 @@ if (!episode) {
         </article>
 
         <aside class="card detail-sidebar">
-          <DetailSidebarLinksSection
-            title="页面导览"
-            copy="如果你是从搜索或分享链接重新进入，这几个锚点能帮你更快找到正文、条目和订阅入口。"
-            links={episodeWayfindingLinks}
-          />
-
           <section id="episode-info" class="detail-sidebar-section">
             <h2>期数信息</h2>
             <ul class="detail-fact-list">
