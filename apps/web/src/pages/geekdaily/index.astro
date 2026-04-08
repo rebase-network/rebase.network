@@ -490,9 +490,9 @@ const featuredTags = overview.featuredTags;
 
   .search-panel p,
   .results-head span,
-  .summary,
-  .body,
-  .empty-state p {
+  .episode-list :global(.summary),
+  .episode-list :global(.body),
+  .episode-list :global(.empty-state p) {
     color: var(--muted);
     line-height: 1.75;
   }
@@ -603,7 +603,7 @@ const featuredTags = overview.featuredTags;
     gap: 1rem;
   }
 
-  .episode-card {
+  .episode-list :global(.episode-card) {
     position: relative;
     overflow: hidden;
     display: grid;
@@ -612,7 +612,7 @@ const featuredTags = overview.featuredTags;
       linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(253, 250, 244, 0.9));
   }
 
-  .episode-card::before {
+  .episode-list :global(.episode-card)::before {
     content: '';
     position: absolute;
     inset: 0 auto 0 0;
@@ -621,38 +621,38 @@ const featuredTags = overview.featuredTags;
     opacity: 0.86;
   }
 
-  .episode-card:hover,
-  .episode-card:focus-within {
+  .episode-list :global(.episode-card:hover),
+  .episode-list :global(.episode-card:focus-within) {
     transform: translateY(-4px);
     border-color: rgba(15, 118, 110, 0.18);
     box-shadow: var(--shadow-strong);
   }
 
-  .episode-card h2,
-  .empty-state h2 {
+  .episode-list :global(.episode-card h2),
+  .episode-list :global(.empty-state h2) {
     margin: 0.35rem 0 0.65rem;
     font-size: clamp(1.45rem, 2vw, 1.9rem);
     line-height: 1.08;
   }
 
-  .episode-card h2 a {
+  .episode-list :global(.episode-card h2 a) {
     transition: color 160ms ease;
   }
 
-  .episode-card:hover h2 a,
-  .episode-card:focus-within h2 a {
+  .episode-list :global(.episode-card:hover h2 a),
+  .episode-list :global(.episode-card:focus-within h2 a) {
     color: var(--accent-strong);
   }
 
-  .meta,
-  .summary,
-  .body,
-  .episode-card ul,
-  .empty-state p {
+  .episode-list :global(.meta),
+  .episode-list :global(.summary),
+  .episode-list :global(.body),
+  .episode-list :global(.episode-card ul),
+  .episode-list :global(.empty-state p) {
     margin: 0;
   }
 
-  .body {
+  .episode-list :global(.body) {
     margin-top: 0.75rem;
     white-space: pre-line;
     display: -webkit-box;
@@ -661,7 +661,7 @@ const featuredTags = overview.featuredTags;
     -webkit-line-clamp: 4;
   }
 
-  .episode-card ul {
+  .episode-list :global(.episode-card ul) {
     padding-left: 1rem;
     margin-top: 0.95rem;
     color: var(--muted);
@@ -670,7 +670,7 @@ const featuredTags = overview.featuredTags;
     column-gap: 1.6rem;
   }
 
-  .empty-state {
+  .episode-list :global(.empty-state) {
     padding: 1.4rem;
   }
 
@@ -688,7 +688,7 @@ const featuredTags = overview.featuredTags;
       grid-template-columns: 1fr;
     }
 
-    .episode-card ul {
+    .episode-list :global(.episode-card ul) {
       columns: 1;
     }
   }
