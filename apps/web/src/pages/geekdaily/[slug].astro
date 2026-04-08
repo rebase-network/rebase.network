@@ -12,8 +12,12 @@ const geekDailyTemplateOutro =
 const extractGeekDailyBodyNote = (bodyMarkdown: string) => {
   const normalized = bodyMarkdown.trim();
 
-  if (!normalized || !normalized.endsWith(geekDailyTemplateOutro)) {
-    return normalized;
+  if (!normalized) {
+    return '';
+  }
+
+  if (!normalized.endsWith(geekDailyTemplateOutro)) {
+    return '';
   }
 
   const outroMarker = `\n\n---\n\n${geekDailyTemplateOutro}`;
