@@ -138,6 +138,8 @@ Release policy:
 - merge `dev` into `main` only when the release candidate is validated
 - production deployment should track `main`, not `dev`
 
+Remote API and service operations can be run through `ops/manage.sh`.
+
 ## Repository Conventions
 
 Agent workflow conventions are documented in `AGENTS.md`.

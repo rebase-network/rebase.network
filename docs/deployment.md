@@ -229,6 +229,16 @@ Validate the compose file locally:
 pnpm deploy:server:config
 ```
 
+For common remote API and service operations, prefer the repo-managed helper:
+
+```bash
+./ops/manage.sh check
+./ops/manage.sh deploy api
+./ops/manage.sh ps
+./ops/manage.sh logs api 200
+./ops/manage.sh ready
+```
+
 Bring up the production stack on the server:
 
 ```bash
