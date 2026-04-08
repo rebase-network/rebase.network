@@ -36,4 +36,4 @@ Examples:
 - Use `docs/deployment.md` for rollout steps, build settings, and remote operations.
 - Use `docs/production-config.md` for the current production inventory, domains, Workers, server paths, and config ownership.
 - Use `docs/launch-checklist.md` for launch routes, health checks, domain preparation, and observability notes.
-- Use `docs/local-development.md` for transition-era local setup notes and current prototype commands.
+- Use `docs/local-development.md` for current local setup, service commands, and archive import notes.

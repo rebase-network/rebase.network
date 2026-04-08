@@ -13,8 +13,6 @@ The active local stack is:
 - shared validation and contracts in `packages/shared`
 - Drizzle schema, migrations, and seed data in `packages/db`
 
-Legacy Directus files still exist in the repository, but only as migration-era reference material.
-
 The public site now runs in Astro server mode, so published content changes should appear on the next request instead of waiting for a full static rebuild.
 
 For local `astro dev`, the repo intentionally skips the Cloudflare adapter and uses Astro's normal dev server to avoid Miniflare-specific startup issues. Production builds still use the Cloudflare adapter.
@@ -89,7 +87,7 @@ Run individual services:
 - `pnpm typecheck:admin`: typecheck the admin workspace
 - `pnpm test:smoke`: run Playwright smoke checks
 
-## GeekDaily Migration Input
+## GeekDaily Archive Import Input
 
 The committed GeekDaily archive still depends on `geekdaily.csv`.
 
@@ -103,17 +101,4 @@ The generated file remains:
 
 - `infra/directus/sql/003_geekdaily_archive.sql`
 
-It is kept because it documents the imported historical archive, even though the runtime stack is no longer Directus-based.
-
-## Legacy Reference Commands
-
-Use these only if you intentionally need to inspect the old prototype artifacts:
-
-- `pnpm cms:up`
-- `pnpm cms:down`
-- `pnpm cms:logs`
-- `pnpm cms:health`
-- `pnpm cms:bootstrap`
-- `pnpm cms:reset`
-- `pnpm cms:generate:schema`
-- `pnpm cms:generate:seed`
+The path still lives under `infra/directus/` because the historical archive generator has not been renamed yet, but the active runtime stack is the custom Rebase admin + API system.

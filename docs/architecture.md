@@ -14,14 +14,6 @@ It separates:
 
 This keeps the public experience lightweight while giving staff a purpose-built internal tool instead of a generic headless CMS.
 
-## Current Transition State
-
-A temporary Directus-based prototype still exists in the repository.
-
-That prototype was used to unblock the public frontend quickly.
-
-It is no longer the target architecture.
-
 The target architecture for Rebase is the custom admin and API stack described in this document.
 
 ## Technology Stack

@@ -36,13 +36,13 @@ Deliverables:
 
 - freeze the custom-admin architecture and data model
 - update docs and implementation assumptions
-- preserve the current public frontend baseline while planning the transition away from Directus
+- preserve the current public frontend baseline while aligning it with the new custom stack
 
 Definition of done:
 
 - the custom admin direction is documented clearly
 - the repo has an agreed target structure
-- the transition plan away from the prototype is explicit
+- the implementation direction is explicit
 
 ## Phase 2: Backend and Shared Foundations
 
@@ -98,7 +98,7 @@ Definition of done:
 
 Deliverables:
 
-- replace Directus-based frontend fetching with Rebase public API fetching
+- move the public site onto Rebase public API fetching
 - preserve existing public routes and RSS behavior
 - keep R2-backed media handling aligned with the new API
 - remove obsolete data access assumptions from the public site
@@ -106,7 +106,7 @@ Deliverables:
 Definition of done:
 
 - pages render published content through Rebase-owned public APIs
-- the public site no longer depends on the temporary Directus prototype
+- the public site no longer depends on legacy delivery assumptions
 
 ## Phase 6: Hardening and Launch Preparation
 
@@ -142,4 +142,3 @@ Definition of done:
 - avoid adding registration, user systems, or custom member features beyond staff auth
 - prefer stable and maintainable choices over clever complexity
 - commit after each coherent batch of completed work
-- treat the existing Directus prototype as temporary migration scaffolding, not the end state
