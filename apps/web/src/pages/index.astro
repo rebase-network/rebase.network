@@ -175,14 +175,6 @@ const liveWireTypeLabel = {
           </p>
         </div>
 
-        <div class="contributors-role-list">
-          {contributorGroups.map((group) => (
-            <article class="role-pill">
-              <strong>{group.role.name}</strong>
-            </article>
-          ))}
-        </div>
-
         <p class="contributors-note">
           这些公开档案覆盖社区内容整理、活动组织、推荐与编辑协作。更多贡献者的故事与联系方式，放在独立页面里持续补全。
         </p>
@@ -532,25 +524,6 @@ const liveWireTypeLabel = {
   .contributors-intro p,
   .contributors-note {
     line-height: 1.72;
-  }
-
-  .contributors-role-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-  }
-
-  .role-pill {
-    min-width: 7.8rem;
-    padding: 0.7rem 0.9rem;
-    border: 1px solid rgba(15, 118, 110, 0.08);
-    border-radius: 0.95rem;
-    background: rgba(255, 255, 255, 0.76);
-  }
-
-  .role-pill strong {
-    font-size: 0.92rem;
-    line-height: 1.35;
   }
 
   .contributors-note {
