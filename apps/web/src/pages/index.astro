@@ -1,16 +1,24 @@
 ---
 import ArticleCard from '@/components/ArticleCard.astro';
-import ContributorCard from '@/components/ContributorCard.astro';
 import EventCard from '@/components/EventCard.astro';
 import GeekDailyCard from '@/components/GeekDailyCard.astro';
 import JobCard from '@/components/JobCard.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getContributors, getHomeFeed, getSiteSettings } from '@/lib/content';
+import { createAvatarData } from '@/lib/avatar';
+import { getContributorsByRole, getHomeFeed, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 
-const [site, feed, contributors] = await Promise.all([getSiteSettings(), getHomeFeed(), getContributors()]);
-const featuredContributors = contributors.slice(0, 2);
+const [site, feed, contributorGroups] = await Promise.all([getSiteSettings(), getHomeFeed(), getContributorsByRole()]);
+const contributorMap = new Map(
+  contributorGroups.flatMap((group) => group.contributors.map((contributor) => [contributor.slug, contributor] as const)),
+);
+const contributors = [...contributorMap.values()];
+const contributorPreview = contributors.slice(0, 12);
+const contributorStats = [
+  { value: String(contributors.length).padStart(2, '0'), label: '公开贡献者' },
+  { value: String(contributorGroups.length).padStart(2, '0'), label: '角色分组' },
+];
 const liveWire = feed.dynamicFeed.slice(0, 6);
 const recentGeekDaily = feed.recentGeekDaily.slice(0, 3);
 const frontPageHighlights = liveWire.slice(0, 3);
@@ -158,17 +166,51 @@ const liveWireTypeLabel = {
 
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="贡献者"
-      title="让社区持续运转的人"
-      description="贡献者不是站点背后的附属名单，而是这个社区媒介的一部分；他们负责组织、筛选、写作和回应。"
+      eyebrow="社区共建者"
+      title="由更多真实的人，一起把社区持续往前推"
+      description="Rebase 由志愿者、GeekDaily 智囊团、编辑与其他社区成员共同维护。首页先展示这张不断扩展的协作网络，再进入完整的贡献者档案。"
       href="/contributors"
-      hrefLabel="查看贡献者"
+      hrefLabel="查看全部贡献者"
     />
-    <div class="grid-2">
-      {featuredContributors.map((contributor) => (
-        <ContributorCard contributor={contributor} />
-      ))}
-    </div>
+    <article class="card contributors-overview">
+      <div class="contributors-copy">
+        <div class="contributors-stats" role="list">
+          {contributorStats.map((stat) => (
+            <article role="listitem">
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
+            </article>
+          ))}
+        </div>
+
+        <div class="contributors-role-list">
+          {contributorGroups.map((group) => (
+            <article class="role-pill">
+              <strong>{group.role.name}</strong>
+              <span>{group.contributors.length} 位成员</span>
+            </article>
+          ))}
+        </div>
+
+        <p class="contributors-note">
+          这些公开档案覆盖社区内容整理、活动组织、推荐与编辑协作。更多贡献者的故事与联系方式，放在独立页面里持续补全。
+        </p>
+      </div>
+
+      <div class="contributors-cloud" aria-hidden="true">
+        {contributorPreview.map((contributor) => (
+          <div class="avatar-token" title={contributor.name}>
+            {contributor.avatarUrl ? (
+              <img src={contributor.avatarUrl} alt="" loading="lazy" />
+            ) : (
+              <div class="avatar-fallback" style={`background:${createAvatarData(contributor.avatarSeed)}`}>
+                <span>{contributor.name.slice(0, 1)}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </article>
   </section>
 
   <section class="shell page-section">
@@ -469,9 +511,121 @@ const liveWireTypeLabel = {
     box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
   }
 
+  .contributors-overview {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 0.95fr);
+    gap: 1.2rem;
+    align-items: center;
+    padding: 1.2rem;
+    background:
+      radial-gradient(circle at top left, rgba(243, 196, 110, 0.18), transparent 24%),
+      radial-gradient(circle at 88% 18%, rgba(15, 118, 110, 0.16), transparent 22%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 251, 0.92));
+  }
+
+  .contributors-copy {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .contributors-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .contributors-stats article {
+    display: grid;
+    gap: 0.22rem;
+    padding: 1rem 1.05rem;
+    border: 1px solid rgba(15, 118, 110, 0.1);
+    border-radius: 1.2rem;
+    background: rgba(255, 255, 255, 0.84);
+  }
+
+  .contributors-stats strong {
+    font-size: clamp(1.6rem, 2vw, 2rem);
+    line-height: 1;
+  }
+
+  .contributors-stats span,
+  .contributors-note,
+  .role-pill span {
+    color: var(--muted);
+  }
+
+  .contributors-role-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+
+  .role-pill {
+    display: grid;
+    gap: 0.18rem;
+    min-width: 9.5rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba(15, 118, 110, 0.1);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.82);
+  }
+
+  .role-pill strong {
+    font-size: 0.98rem;
+    line-height: 1.35;
+  }
+
+  .role-pill span,
+  .contributors-note {
+    line-height: 1.65;
+  }
+
+  .contributors-note {
+    margin: 0;
+    max-width: 56ch;
+  }
+
+  .contributors-cloud {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+    align-content: start;
+    justify-items: center;
+  }
+
+  .avatar-token,
+  .avatar-fallback,
+  .avatar-token img {
+    width: 4.6rem;
+    height: 4.6rem;
+    border-radius: 1.4rem;
+  }
+
+  .avatar-token {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(15, 118, 110, 0.12);
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 16px 36px rgba(26, 40, 34, 0.1);
+  }
+
+  .avatar-token img {
+    display: block;
+    object-fit: cover;
+  }
+
+  .avatar-fallback {
+    display: grid;
+    place-items: center;
+    color: white;
+    font-size: 1.4rem;
+    font-weight: 800;
+  }
+
   @media (max-width: 960px) {
     .hero-highlights,
-    .dispatch-grid {
+    .dispatch-grid,
+    .contributors-overview {
       grid-template-columns: 1fr;
     }
 
@@ -492,6 +646,15 @@ const liveWireTypeLabel = {
 
     .highlight-card strong {
       font-size: 1.08rem;
+    }
+
+    .contributors-stats,
+    .feed-links {
+      grid-template-columns: 1fr;
+    }
+
+    .contributors-cloud {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 </style>
