@@ -166,14 +166,16 @@ const liveWireTypeLabel = {
     />
     <article class="card contributors-overview">
       <div class="contributors-copy">
+        <p class="contributors-kicker">社区照片墙</p>
         <div class="contributors-intro">
+          <h3>先看见真实的人，再进入完整的贡献者档案。</h3>
           <p>
-            Rebase 由志愿者、编辑与长期协作者共同维护。首页先给出一张不断扩展的社区群像，再进入完整的贡献者档案。
+            Rebase 由志愿者、编辑与长期协作者共同维护。这里先展示一组持续变化的公开面孔，让社区的气质先被看见。
           </p>
         </div>
 
         <p class="contributors-note">
-          这些公开档案覆盖内容整理、活动组织、推荐与编辑协作。更多参与者的故事与联系方式，会在独立页面里持续补全。
+          内容整理、活动组织、推荐协作与长期共建，都会慢慢沉淀成可被看见的记录。
         </p>
       </div>
 
@@ -520,29 +522,58 @@ const liveWireTypeLabel = {
     position: relative;
     z-index: 1;
     display: grid;
-    gap: 0.75rem;
+    gap: 0.9rem;
+    max-width: 30rem;
   }
 
+  .contributors-kicker,
+  .contributors-intro h3,
   .contributors-intro p,
   .contributors-note {
     margin: 0;
-    color: var(--muted);
+  }
+
+  .contributors-kicker {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.36rem 0.72rem;
+    border: 1px solid rgba(15, 118, 110, 0.16);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.8);
+    color: rgba(15, 118, 110, 0.88);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
   }
 
   .contributors-intro {
-    max-width: 58ch;
+    display: grid;
+    gap: 0.72rem;
+  }
+
+  .contributors-intro h3 {
+    max-width: 12ch;
+    color: var(--text);
+    font-size: clamp(1.45rem, 1.8vw + 1rem, 2rem);
+    line-height: 1.16;
+    letter-spacing: -0.03em;
   }
 
   .contributors-intro p {
-    color: var(--text);
-    font-size: 1.02rem;
-    line-height: 1.78;
+    max-width: 52ch;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.76;
   }
 
   .contributors-note {
-    max-width: 56ch;
-    font-size: 0.95rem;
-    line-height: 1.7;
+    max-width: 46ch;
+    padding-top: 0.88rem;
+    border-top: 1px solid rgba(15, 118, 110, 0.1);
+    color: rgba(62, 86, 76, 0.88);
+    font-size: 0.92rem;
+    line-height: 1.72;
   }
 
   .contributors-cloud {
@@ -556,7 +587,7 @@ const liveWireTypeLabel = {
     justify-content: end;
     width: min(100%, 33rem);
     margin-left: auto;
-    padding: 1.15rem 0.75rem 0.95rem 0.9rem;
+    padding: 1.85rem 0.75rem 1.28rem 0.9rem;
   }
 
   .contributors-cloud::before {
@@ -590,7 +621,11 @@ const liveWireTypeLabel = {
   }
 
   .avatar-token {
+    --avatar-rotation: 0deg;
+    --avatar-hover-shift: 0rem;
+    --avatar-scale: 1;
     position: relative;
+    top: 0.72rem;
     justify-self: center;
     width: 5.05rem;
     padding: 0.3rem 0.3rem 0.78rem;
@@ -598,6 +633,10 @@ const liveWireTypeLabel = {
     border-radius: 0.7rem;
     background: rgba(255, 255, 255, 0.96);
     box-shadow: 0 18px 36px rgba(26, 40, 34, 0.12);
+    transform:
+      translateY(var(--avatar-hover-shift))
+      rotate(var(--avatar-rotation))
+      scale(var(--avatar-scale));
     transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
   }
 
@@ -626,7 +665,8 @@ const liveWireTypeLabel = {
 
   .avatar-token:hover,
   .avatar-token:focus-visible {
-    transform: translateY(-0.18rem) scale(1.02);
+    --avatar-hover-shift: -0.18rem;
+    --avatar-scale: 1.02;
     border-color: rgba(15, 118, 110, 0.22);
     box-shadow: 0 18px 38px rgba(26, 40, 34, 0.14);
   }
@@ -640,25 +680,25 @@ const liveWireTypeLabel = {
   }
 
   .avatar-token:nth-child(5n + 1) {
-    transform: rotate(-5deg);
+    --avatar-rotation: -5deg;
     justify-self: start;
   }
 
   .avatar-token:nth-child(5n + 2) {
-    transform: rotate(4deg);
+    --avatar-rotation: 4deg;
   }
 
   .avatar-token:nth-child(5n + 3) {
-    transform: rotate(6deg);
+    --avatar-rotation: 6deg;
     margin-top: 0.15rem;
   }
 
   .avatar-token:nth-child(5n + 4) {
-    transform: rotate(-4deg);
+    --avatar-rotation: -4deg;
   }
 
   .avatar-token:nth-child(5n) {
-    transform: rotate(3deg);
+    --avatar-rotation: 3deg;
     justify-self: end;
     margin-top: 0.25rem;
   }
@@ -713,7 +753,7 @@ const liveWireTypeLabel = {
       width: 100%;
       justify-content: start;
       margin-left: 0;
-      padding: 1rem 0 0.85rem;
+      padding: 1.45rem 0 1.1rem;
     }
 
     .contributors-cloud::before {
@@ -725,8 +765,11 @@ const liveWireTypeLabel = {
     }
 
     .avatar-token:nth-child(n) {
+      --avatar-rotation: 0deg;
+      --avatar-hover-shift: 0rem;
+      --avatar-scale: 1;
+      top: 0;
       width: 5rem;
-      transform: none;
       margin-top: 0;
       justify-self: start;
     }
