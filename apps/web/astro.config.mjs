@@ -5,7 +5,11 @@ const site = process.env.SITE_URL ?? 'https://rebase.network';
 const useCloudflareAdapter = process.env.ASTRO_LOCAL_DEV !== 'true';
 
 export default defineConfig({
-  adapter: useCloudflareAdapter ? cloudflare() : undefined,
+  adapter: useCloudflareAdapter
+    ? cloudflare({
+        configPath: './wrangler.template.jsonc',
+      })
+    : undefined,
   site,
   output: 'server',
   server: {
