@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rebase Cloudflare Release"
+  short_description: "Deploy and debug Rebase Cloudflare Workers"
+  default_prompt: "Use $rebase-cloudflare-release to release or debug the Rebase Cloudflare Workers stack."
