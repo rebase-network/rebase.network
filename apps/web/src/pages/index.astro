@@ -553,49 +553,46 @@ const liveWireTypeLabel = {
     position: relative;
     isolation: isolate;
     z-index: 1;
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 5.25rem));
-    gap: 1rem 1.15rem;
-    align-content: start;
-    justify-content: end;
-    padding: 0.35rem 0.45rem 0.65rem 2rem;
+    min-height: 19rem;
+    width: min(100%, 35rem);
+    margin-left: auto;
   }
 
   .contributors-cloud::before {
     content: '';
     position: absolute;
-    inset: 0.55rem 0 0.15rem 1rem;
+    inset: 0.35rem 0.25rem 0.2rem;
     z-index: -2;
-    border: 1px dashed rgba(15, 118, 110, 0.14);
-    border-radius: 1.5rem;
+    border: 1px solid rgba(15, 118, 110, 0.1);
+    border-radius: 1.35rem;
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(247, 252, 250, 0.46)),
-      radial-gradient(circle at 1px 1px, rgba(15, 118, 110, 0.08) 1.1px, transparent 0);
-    background-size: auto, 16px 16px;
-    box-shadow: 0 18px 40px rgba(26, 40, 34, 0.08);
-    transform: rotate(-4deg);
+      linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(247, 252, 250, 0.56)),
+      radial-gradient(circle at 1px 1px, rgba(15, 118, 110, 0.06) 1px, transparent 0);
+    background-size: auto, 18px 18px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68), 0 18px 40px rgba(26, 40, 34, 0.08);
   }
 
   .contributors-cloud::after {
     content: '';
     position: absolute;
-    top: 0.1rem;
-    right: 2.4rem;
-    width: 4.6rem;
-    height: 1.1rem;
+    top: 1rem;
+    left: 50%;
+    width: 5.2rem;
+    height: 1.15rem;
     z-index: -1;
     border-radius: 0.45rem;
     background:
       linear-gradient(180deg, rgba(243, 196, 110, 0.6), rgba(243, 196, 110, 0.24));
     box-shadow: 0 8px 16px rgba(243, 196, 110, 0.14);
     opacity: 0.72;
-    transform: rotate(8deg);
+    transform: translateX(-50%) rotate(-2deg);
   }
 
   .avatar-token {
     --photo-transform: translate(0, 0) rotate(0deg);
     position: relative;
     overflow: hidden;
+    position: absolute;
     width: 5.25rem;
     padding: 0.3rem 0.3rem 0.78rem;
     border: 1px solid rgba(15, 118, 110, 0.1);
@@ -645,33 +642,87 @@ const liveWireTypeLabel = {
   }
 
   .avatar-token:nth-child(5n + 1) {
-    --photo-transform: translate(-0.18rem, -0.22rem) rotate(-6deg);
+    --photo-transform: rotate(-6deg);
   }
 
   .avatar-token:nth-child(5n + 2) {
-    --photo-transform: translate(0.22rem, 0.18rem) rotate(4deg);
+    --photo-transform: rotate(4deg);
   }
 
   .avatar-token:nth-child(5n + 3) {
-    --photo-transform: translate(-0.08rem, -0.08rem) rotate(6deg);
+    --photo-transform: rotate(6deg);
   }
 
   .avatar-token:nth-child(5n + 4) {
-    --photo-transform: translate(0.18rem, 0.3rem) rotate(-5deg);
+    --photo-transform: rotate(-5deg);
   }
 
   .avatar-token:nth-child(5n) {
-    --photo-transform: translate(-0.16rem, 0.08rem) rotate(3deg);
+    --photo-transform: rotate(3deg);
   }
 
-  .avatar-token:nth-child(6),
+  .avatar-token:nth-child(1) {
+    top: 1.2rem;
+    left: 1.2rem;
+  }
+
+  .avatar-token:nth-child(2) {
+    top: 1rem;
+    left: 7.2rem;
+  }
+
+  .avatar-token:nth-child(3) {
+    top: 0.95rem;
+    left: 13.3rem;
+  }
+
+  .avatar-token:nth-child(4) {
+    top: 1.1rem;
+    left: 19.4rem;
+  }
+
+  .avatar-token:nth-child(5) {
+    top: 1.35rem;
+    left: 25.5rem;
+  }
+
+  .avatar-token:nth-child(6) {
+    top: 7rem;
+    left: 2rem;
+    --photo-transform: rotate(-8deg) scale(0.98);
+  }
+
+  .avatar-token:nth-child(7) {
+    top: 6.95rem;
+    left: 8.6rem;
+  }
+
+  .avatar-token:nth-child(8) {
+    top: 6.65rem;
+    left: 15rem;
+    --photo-transform: rotate(8deg) scale(1.02);
+  }
+
+  .avatar-token:nth-child(9) {
+    top: 7.15rem;
+    left: 21.15rem;
+  }
+
+  .avatar-token:nth-child(10) {
+    top: 7rem;
+    left: 27.25rem;
+  }
+
   .avatar-token:nth-child(11) {
-    --photo-transform: translate(0.4rem, -0.12rem) rotate(-8deg) scale(0.98);
+    top: 12.65rem;
+    left: 6.1rem;
+    --photo-transform: rotate(-7deg) scale(0.98);
   }
 
-  .avatar-token:nth-child(8),
   .avatar-token:nth-child(12) {
-    --photo-transform: translate(-0.34rem, 0.22rem) rotate(8deg) scale(1.02);
+    top: 12.45rem;
+    left: 16.25rem;
+    --photo-transform: rotate(7deg) scale(1.02);
   }
 
   @media (max-width: 960px) {
@@ -705,20 +756,29 @@ const liveWireTypeLabel = {
     }
 
     .contributors-cloud {
+      display: grid;
       grid-template-columns: repeat(3, minmax(0, 5rem));
+      gap: 0.85rem;
+      min-height: auto;
+      width: 100%;
       justify-content: start;
-      padding-left: 0;
+      margin-left: 0;
+      padding-top: 0.95rem;
     }
 
     .contributors-cloud::before {
-      inset: 0.45rem 0.2rem 0 0;
+      inset: 0.3rem 0 0;
     }
 
     .contributors-cloud::after {
-      right: 0.8rem;
+      top: 0.65rem;
     }
 
     .avatar-token:nth-child(n) {
+      position: relative;
+      top: auto;
+      left: auto;
+      width: 5rem;
       transform: none;
     }
   }
