@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rebase API Rollout"
+  short_description: "Deploy and operate the Rebase API stack"
+  default_prompt: "Use $rebase-api-rollout to deploy, verify, or debug the Rebase API server stack."

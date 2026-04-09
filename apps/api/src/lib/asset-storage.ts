@@ -1,8 +1,9 @@
 import { execFile } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { extname, join } from 'node:path';
+import { dirname, extname, join } from 'node:path';
 import { promisify } from 'node:util';
 
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
@@ -148,19 +149,94 @@ const getS3Client = () => {
   return s3Client;
 };
 
+const findWorkspaceBinary = (binaryName: string) => {
+  let currentDir = process.cwd();
+
+  while (true) {
+    const candidate = join(currentDir, 'node_modules', '.bin', binaryName);
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+
+    const parentDir = dirname(currentDir);
+    if (parentDir === currentDir) {
+      break;
+    }
+
+    currentDir = parentDir;
+  }
+
+  return binaryName;
+};
+
+const getWranglerExecutable = () => {
+  const configured = process.env.WRANGLER_BIN?.trim();
+  if (configured) {
+    return configured;
+  }
+
+  return findWorkspaceBinary('wrangler');
+};
+
+const toTrimmedOutput = (value: unknown) => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+  if (!normalized) {
+    return undefined;
+  }
+
+  return normalized.slice(0, 400);
+};
+
+const runWrangler = async (args: string[]) => {
+  const env = getEnv();
+  const executable = getWranglerExecutable();
+
+  try {
+    return await execFileAsync(executable, args, {
+      env: {
+        ...process.env,
+        CLOUDFLARE_ACCOUNT_ID: env.r2AccountId,
+      },
+    });
+  } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') {
+      throw serviceUnavailable('Wrangler CLI is not available for R2 uploads', {
+        hint: 'set WRANGLER_BIN or expose node_modules/.bin on PATH',
+        executable,
+      });
+    }
+
+    const details: Record<string, unknown> = {
+      hint: 'check the mounted Wrangler profile, CLI login state, and bucket permissions',
+      executable,
+      reason: error instanceof Error ? error.message : String(error),
+    };
+    const stderr = typeof error === 'object' && error !== null && 'stderr' in error ? toTrimmedOutput(error.stderr) : undefined;
+    const stdout = typeof error === 'object' && error !== null && 'stdout' in error ? toTrimmedOutput(error.stdout) : undefined;
+    if (stderr) {
+      details.stderr = stderr;
+    }
+    if (stdout) {
+      details.stdout = stdout;
+    }
+
+    throw serviceUnavailable('Wrangler CLI failed while accessing R2', {
+      ...details,
+    });
+  }
+};
+
 const getWranglerPublicBaseUrl = async (bucket: string) => {
   const cached = wranglerDevUrlCache.get(bucket);
   if (cached) {
     return cached;
   }
 
-  const env = getEnv();
-  const result = await execFileAsync('wrangler', ['r2', 'bucket', 'dev-url', 'get', bucket], {
-    env: {
-      ...process.env,
-      CLOUDFLARE_ACCOUNT_ID: env.r2AccountId,
-    },
-  });
+  const result = await runWrangler(['r2', 'bucket', 'dev-url', 'get', bucket]);
 
   const output = `${result.stdout}\n${result.stderr}`;
   const match = output.match(/https:\/\/[^\s]+/);
@@ -212,16 +288,7 @@ const uploadWithWrangler = async (objectKey: string, body: Buffer, mimeType: str
 
   try {
     await writeFile(tempFile, body);
-    await execFileAsync(
-      'wrangler',
-      ['r2', 'object', 'put', `${env.r2Bucket}/${objectKey}`, '--remote', '--file', tempFile, '--content-type', mimeType],
-      {
-        env: {
-          ...process.env,
-          CLOUDFLARE_ACCOUNT_ID: env.r2AccountId,
-        },
-      },
-    );
+    await runWrangler(['r2', 'object', 'put', `${env.r2Bucket}/${objectKey}`, '--remote', '--file', tempFile, '--content-type', mimeType]);
   } finally {
     await rm(tempDir, { recursive: true, force: true });
   }
