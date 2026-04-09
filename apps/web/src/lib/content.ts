@@ -38,6 +38,13 @@ interface ContributorGroupPayload {
   contributors: Contributor[];
 }
 
+interface HomeContributorPreviewPayload {
+  slug: string;
+  name: string;
+  avatarUrl?: string;
+  avatarSeed: string;
+}
+
 interface PublicGeekDailyItemPayload {
   title: string;
   authorName: string;
@@ -67,6 +74,7 @@ interface HomeFeedPayload {
   recentJobs: Job[];
   upcomingEvents: Event[];
   recentGeekDaily: PublicGeekDailyEpisodePayload[];
+  featuredContributors: HomeContributorPreviewPayload[];
   dynamicFeed: Array<{
     type: 'article' | 'job' | 'event' | 'geekdaily';
     title: string;
@@ -245,6 +253,7 @@ export async function getHomeFeed() {
     latestEvents: payload.upcomingEvents,
     latestGeekDaily: payload.latestGeekDaily ? mapGeekDailyEpisode(payload.latestGeekDaily) : undefined,
     recentGeekDaily: payload.recentGeekDaily.map(mapGeekDailyEpisode),
+    featuredContributors: payload.featuredContributors,
     dynamicFeed: payload.dynamicFeed.map((item) => {
       if (item.type !== 'event' || !item.publishedAt || !item.href.startsWith('/events/')) {
         return item;

@@ -6,16 +6,12 @@ import JobCard from '@/components/JobCard.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { createAvatarData } from '@/lib/avatar';
-import { getContributorsByRole, getHomeFeed, getSiteSettings } from '@/lib/content';
+import { getHomeFeed, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 
-const [site, feed, contributorGroups] = await Promise.all([getSiteSettings(), getHomeFeed(), getContributorsByRole()]);
-const contributorMap = new Map(
-  contributorGroups.flatMap((group) => group.contributors.map((contributor) => [contributor.slug, contributor] as const)),
-);
-const contributors = [...contributorMap.values()];
+const [site, feed] = await Promise.all([getSiteSettings(), getHomeFeed()]);
 const contributorPreviewLimit = 10;
-const contributorPreview = contributors.slice(0, contributorPreviewLimit);
+const contributorPreview = feed.featuredContributors.slice(0, contributorPreviewLimit);
 const liveWire = feed.dynamicFeed.slice(0, 6);
 const recentGeekDaily = feed.recentGeekDaily.slice(0, 3);
 const frontPageHighlights = liveWire.slice(0, 3);

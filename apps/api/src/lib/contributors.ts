@@ -1,4 +1,4 @@
-import { asc, count, desc, eq, inArray } from 'drizzle-orm';
+import { asc, count, desc, eq, inArray, sql } from 'drizzle-orm';
 
 import { contributorRoleBindings, contributorRoles, contributors } from '@rebase/db';
 import type {
@@ -339,5 +339,32 @@ export const listPublicContributorGroups = async () => {
       description: role.description,
     },
     contributors: contributorsByRole.get(role.id) ?? [],
+  }));
+};
+
+export const listRandomPublicContributors = async (limit = 10) => {
+  const db = getDb();
+  const contributorRows =
+    limit > 0
+      ? await db
+          .select({
+            slug: contributors.slug,
+            name: contributors.name,
+            avatarAssetId: contributors.avatarAssetId,
+            avatarSeed: contributors.avatarSeed,
+          })
+          .from(contributors)
+          .where(eq(contributors.status, 'published'))
+          .orderBy(sql`random()`)
+          .limit(limit)
+      : [];
+
+  const avatarUrls = await listPublicAssetUrlsById(contributorRows.map((contributor) => contributor.avatarAssetId));
+
+  return contributorRows.map((contributor) => ({
+    slug: contributor.slug,
+    name: contributor.name,
+    avatarUrl: contributor.avatarAssetId ? avatarUrls.get(contributor.avatarAssetId) : undefined,
+    avatarSeed: contributor.avatarSeed,
   }));
 };
