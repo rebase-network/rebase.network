@@ -14,7 +14,7 @@ const contributorMap = new Map(
   contributorGroups.flatMap((group) => group.contributors.map((contributor) => [contributor.slug, contributor] as const)),
 );
 const contributors = [...contributorMap.values()];
-const contributorPreviewLimit = 12;
+const contributorPreviewLimit = 14;
 const contributorPreview = contributors.slice(0, contributorPreviewLimit);
 const liveWire = feed.dynamicFeed.slice(0, 6);
 const recentGeekDaily = feed.recentGeekDaily.slice(0, 3);
@@ -553,7 +553,7 @@ const liveWireTypeLabel = {
     position: relative;
     isolation: isolate;
     z-index: 1;
-    min-height: 19rem;
+    min-height: 19.5rem;
     width: min(100%, 35rem);
     margin-left: auto;
   }
@@ -728,6 +728,19 @@ const liveWireTypeLabel = {
     top: 12.45rem;
     left: 16.25rem;
     --photo-transform: rotate(7deg) scale(1.02);
+  }
+
+  .avatar-token:nth-child(13) {
+    --photo-width: 5.45rem;
+    top: 12.35rem;
+    left: 23.2rem;
+    --photo-transform: rotate(-4deg);
+  }
+
+  .avatar-token:nth-child(14) {
+    top: 12.7rem;
+    left: 29.05rem;
+    --photo-transform: rotate(5deg) scale(0.98);
   }
 
   @media (max-width: 960px) {
