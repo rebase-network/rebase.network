@@ -590,10 +590,11 @@ const liveWireTypeLabel = {
 
   .avatar-token {
     --photo-transform: translate(0, 0) rotate(0deg);
+    --photo-width: 5.25rem;
     position: relative;
     overflow: hidden;
     position: absolute;
-    width: 5.25rem;
+    width: var(--photo-width);
     padding: 0.3rem 0.3rem 0.78rem;
     border: 1px solid rgba(15, 118, 110, 0.1);
     border-radius: 0.7rem;
@@ -608,7 +609,7 @@ const liveWireTypeLabel = {
     position: absolute;
     top: 0.18rem;
     left: 50%;
-    width: 2.2rem;
+    width: 42%;
     height: 0.5rem;
     border-radius: 0.3rem;
     background: linear-gradient(180deg, rgba(243, 196, 110, 0.55), rgba(243, 196, 110, 0.2));
@@ -662,28 +663,30 @@ const liveWireTypeLabel = {
   }
 
   .avatar-token:nth-child(1) {
-    top: 1.2rem;
-    left: 1.2rem;
+    --photo-width: 6rem;
+    top: 0.95rem;
+    left: 0.85rem;
+    box-shadow: 0 20px 42px rgba(26, 40, 34, 0.14);
   }
 
   .avatar-token:nth-child(2) {
     top: 1rem;
-    left: 7.2rem;
+    left: 7.85rem;
   }
 
   .avatar-token:nth-child(3) {
     top: 0.95rem;
-    left: 13.3rem;
+    left: 14.05rem;
   }
 
   .avatar-token:nth-child(4) {
     top: 1.1rem;
-    left: 19.4rem;
+    left: 20.2rem;
   }
 
   .avatar-token:nth-child(5) {
     top: 1.35rem;
-    left: 25.5rem;
+    left: 26.25rem;
   }
 
   .avatar-token:nth-child(6) {
@@ -698,19 +701,21 @@ const liveWireTypeLabel = {
   }
 
   .avatar-token:nth-child(8) {
-    top: 6.65rem;
-    left: 15rem;
-    --photo-transform: rotate(8deg) scale(1.02);
+    --photo-width: 5.8rem;
+    top: 6.35rem;
+    left: 14.55rem;
+    --photo-transform: rotate(8deg) scale(1.01);
+    box-shadow: 0 20px 42px rgba(26, 40, 34, 0.14);
   }
 
   .avatar-token:nth-child(9) {
     top: 7.15rem;
-    left: 21.15rem;
+    left: 21.65rem;
   }
 
   .avatar-token:nth-child(10) {
     top: 7rem;
-    left: 27.25rem;
+    left: 27.85rem;
   }
 
   .avatar-token:nth-child(11) {
@@ -778,6 +783,7 @@ const liveWireTypeLabel = {
       position: relative;
       top: auto;
       left: auto;
+      --photo-width: 5rem;
       width: 5rem;
       transform: none;
     }
