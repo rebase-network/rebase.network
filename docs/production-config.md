@@ -141,6 +141,7 @@ Use `infra/production/server.env.example` as the committed template.
 - day-to-day work continues on `dev`
 - validated work should be pushed to `origin/dev`
 - releases should move from `dev` to `main` through a pull request
+- if the current operator cannot merge the pull request, they must stop at the PR step and wait for a maintainer
 - production Workers Builds track `main`
 - API server deployment should use release-ready code, not unreviewed local changes
 

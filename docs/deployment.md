@@ -19,6 +19,7 @@ For the current production inventory and ownership map, also see `docs/productio
 - push validated work to `origin/dev`
 - create a pull request from `dev` to `main`
 - merge `dev` into `main` only after release validation passes
+- if the current operator cannot merge the pull request, stop and hand the PR to a maintainer instead of merging locally
 - production deployments should run from `main`
 - `apps/web` and `apps/admin` production must be deployed by Cloudflare Workers Builds from `main`
 - local `wrangler deploy` to the production Workers is not part of the normal release flow
@@ -31,7 +32,7 @@ For Rebase, production frontend releases now follow a single source of truth:
 2. validate locally and with preview builds
 3. push the validated branch to `origin/dev`
 4. create a pull request from `dev` to `main`
-5. merge the release candidate into `main`
+5. merge the release candidate into `main` through the GitHub pull request
 6. let Cloudflare Workers Builds publish production from `main`
 
 This avoids a mismatch where production is newer than GitHub.

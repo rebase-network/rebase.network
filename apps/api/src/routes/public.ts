@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 
 import { ok } from '../lib/http.js';
 import { getPublicArticleBySlug, listPublicArticles } from '../lib/articles.js';
-import { listPublicContributorGroups } from '../lib/contributors.js';
+import { listPublicContributorGroups, listRandomPublicContributors } from '../lib/contributors.js';
 import { getPublicEventBySlug, listPublicEvents } from '../lib/events.js';
 import {
   getGeekDailySearchDocuments,
@@ -34,13 +34,14 @@ publicRoutes.get('/site-config', async (c) => c.json(ok(await getPublicSiteConfi
 publicRoutes.get('/about', async (c) => c.json(ok(await getPublicAboutPage())));
 
 publicRoutes.get('/home', async (c) => {
-  const [site, about, articles, jobs, events, geekdaily] = await Promise.all([
+  const [site, about, articles, jobs, events, geekdaily, featuredContributors] = await Promise.all([
     getPublicSiteConfig(),
     getPublicAboutPage(),
     listPublicArticles(),
     listPublicJobs(),
     listPublicEvents(),
     listPublicGeekDailyEpisodes(3),
+    listRandomPublicContributors(10),
   ]);
 
   const recentArticles = sortByPublishedAtDesc(articles).slice(0, 3);
@@ -90,6 +91,7 @@ publicRoutes.get('/home', async (c) => {
       recentJobs,
       upcomingEvents,
       recentGeekDaily: geekdaily,
+      featuredContributors,
       dynamicFeed,
     }),
   );

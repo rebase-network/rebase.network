@@ -28,6 +28,8 @@ Examples:
 - After a coherent batch is committed locally, push it to `origin/dev`.
 - Open a pull request from `dev` to `main` for review and release tracking.
 - Merge the pull request into `main` only after the release candidate is ready.
+- If pull request merge permission is unavailable, stop at the PR step and hand the PR back to a maintainer.
+- Do not merge `dev` into `main` locally as a substitute for the GitHub pull request flow.
 - Do not push release changes directly to `origin/main`.
 
 ## Documentation Map
