@@ -551,6 +551,7 @@ const liveWireTypeLabel = {
 
   .contributors-cloud {
     position: relative;
+    isolation: isolate;
     z-index: 1;
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 4.45rem));
@@ -558,6 +559,37 @@ const liveWireTypeLabel = {
     align-content: start;
     justify-content: end;
     padding: 0.25rem 0.2rem 0.45rem 1.6rem;
+  }
+
+  .contributors-cloud::before {
+    content: '';
+    position: absolute;
+    inset: 0.55rem 0 0.15rem 1rem;
+    z-index: -2;
+    border: 1px dashed rgba(15, 118, 110, 0.14);
+    border-radius: 1.5rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(247, 252, 250, 0.46)),
+      radial-gradient(circle at 1px 1px, rgba(15, 118, 110, 0.08) 1.1px, transparent 0);
+    background-size: auto, 16px 16px;
+    box-shadow: 0 18px 40px rgba(26, 40, 34, 0.08);
+    transform: rotate(-4deg);
+  }
+
+  .contributors-cloud::after {
+    content: '';
+    position: absolute;
+    top: 0.1rem;
+    right: 2.4rem;
+    width: 4.6rem;
+    height: 1.1rem;
+    z-index: -1;
+    border-radius: 0.45rem;
+    background:
+      linear-gradient(180deg, rgba(243, 196, 110, 0.6), rgba(243, 196, 110, 0.24));
+    box-shadow: 0 8px 16px rgba(243, 196, 110, 0.14);
+    opacity: 0.72;
+    transform: rotate(8deg);
   }
 
   .avatar-token,
@@ -661,6 +693,14 @@ const liveWireTypeLabel = {
       grid-template-columns: repeat(3, minmax(0, 4.2rem));
       justify-content: start;
       padding-left: 0;
+    }
+
+    .contributors-cloud::before {
+      inset: 0.45rem 0.2rem 0 0;
+    }
+
+    .contributors-cloud::after {
+      right: 0.8rem;
     }
 
     .avatar-token:nth-child(n) {
