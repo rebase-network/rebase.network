@@ -8,7 +8,7 @@
     "build": "astro build",
     "preview": "astro preview --host",
     "lint": "eslint .",
-    "check": "astro check"
+    "check": "ASTRO_LOCAL_DEV=true astro check"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.1.7",
