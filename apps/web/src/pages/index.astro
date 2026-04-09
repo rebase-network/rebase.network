@@ -607,17 +607,22 @@ const liveWireTypeLabel = {
   .contributors-cloud::after {
     content: '';
     position: absolute;
-    top: 1rem;
+    top: 0.95rem;
     left: 50%;
-    width: 5.2rem;
-    height: 1.15rem;
+    width: 5.45rem;
+    height: 1.2rem;
     z-index: -1;
-    border-radius: 0.45rem;
+    border: 1px solid rgba(243, 196, 110, 0.18);
+    border-radius: 0.32rem;
     background:
-      linear-gradient(180deg, rgba(243, 196, 110, 0.6), rgba(243, 196, 110, 0.24));
-    box-shadow: 0 8px 16px rgba(243, 196, 110, 0.14);
-    opacity: 0.72;
-    transform: translateX(-50%) rotate(-2deg);
+      linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08) 38%, transparent 100%),
+      linear-gradient(90deg, rgba(243, 196, 110, 0.24), rgba(252, 231, 171, 0.5) 18%, rgba(246, 210, 120, 0.48) 52%, rgba(243, 196, 110, 0.2));
+    box-shadow:
+      0 9px 18px rgba(243, 196, 110, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.38);
+    clip-path: polygon(4% 0, 96% 0, 100% 18%, 97% 100%, 3% 100%, 0 18%);
+    opacity: 0.84;
+    transform: translateX(-50%) rotate(-2.5deg);
   }
 
   .avatar-token {
