@@ -250,10 +250,9 @@ onBeforeUnmount(() => {
 
 .geekdaily-toolbar-row {
   display: grid;
-  grid-template-columns: minmax(260px, 360px) minmax(360px, 520px);
+  grid-template-columns: minmax(260px, 320px) minmax(560px, 1fr);
   gap: 0.72rem;
   align-items: end;
-  justify-content: space-between;
 }
 
 .geekdaily-toolbar-summary {
@@ -280,7 +279,7 @@ onBeforeUnmount(() => {
 
 .geekdaily-search-field {
   min-width: 0;
-  justify-self: end;
+  justify-self: stretch;
 }
 
 .geekdaily-toolbar-field input {
