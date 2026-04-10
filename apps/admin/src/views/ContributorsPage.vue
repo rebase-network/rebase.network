@@ -41,27 +41,18 @@ const contributorStats = computed(() => [
   {
     label: '贡献者总数',
     value: pagination.value?.totalAllItems ?? pagination.value?.totalItems ?? contributors.value.length,
-    detail: '全部成员记录',
   },
   {
     label: '筛选结果',
     value: pagination.value?.totalItems ?? contributors.value.length,
-    detail: '当前列表',
   },
   {
     label: '当前页',
-    value: contributors.value.length,
-    detail: `第 ${pagination.value?.page ?? 1} 页`,
+    value: `${contributors.value.length} / 第 ${pagination.value?.page ?? 1} 页`,
   },
   {
     label: '本页活跃',
     value: contributors.value.filter((item) => item.activityStatus === 'active').length,
-    detail: '当前页数据',
-  },
-  {
-    label: '角色分组',
-    value: roles.value.length,
-    detail: `${roles.value.filter((item) => item.status === 'published').length} 个已启用`,
   },
 ]);
 const publishedRoleCount = computed(() => roles.value.filter((item) => item.status === 'published').length);
@@ -217,73 +208,40 @@ onMounted(() => void loadData());
     <div v-if="loading" class="panel"><p>正在加载贡献者数据…</p></div>
 
     <template v-else>
-      <div class="panel-grid panel-grid-2">
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <div>
-              <h3>贡献者概览</h3>
-              <div class="panel-meta">查看成员库存与发布状态</div>
-            </div>
-            <div class="panel-meta">{{ pagination?.totalItems ?? contributors.length }} 人</div>
-          </div>
-
-          <div class="compact-stat-grid compact-stat-grid-4">
-            <article v-for="item in contributorStats" :key="item.label" class="compact-stat-card">
-              <span class="compact-stat-label">{{ item.label }}</span>
-              <strong>{{ item.value }}</strong>
-              <small>{{ item.detail }}</small>
-            </article>
-          </div>
-        </section>
-
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <div>
-              <h3>角色概览</h3>
-              <div class="panel-meta">贡献者角色作为次级维护界面</div>
-            </div>
-            <div class="panel-meta">{{ roles.length }} 个角色</div>
-          </div>
-
-          <dl class="summary-grid summary-grid-2">
-            <div class="summary-item">
-              <dt>已启用角色</dt>
-              <dd>{{ publishedRoleCount }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>维护状态</dt>
-              <dd class="muted">{{ showRoleManager ? '编辑中' : '待展开' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>当前角色</dt>
-              <dd class="muted">{{ activeRoleLabel }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>角色维护</dt>
-              <dd class="muted">点击顶部“管理角色”进入次级界面</dd>
-            </div>
-          </dl>
-        </section>
-      </div>
-
-      <section class="panel filter-panel">
+      <section class="panel compact-overview-shell">
         <div class="panel-toolbar">
           <div>
-            <h3>筛选</h3>
-            <div class="panel-meta">按贡献活跃状态查看公开成员</div>
+            <h3>列表概览</h3>
+            <div class="panel-meta">把贡献者概览、角色概览和筛选收敛到同一块区域。</div>
           </div>
           <div class="panel-meta">{{ pagination?.totalItems ?? contributors.length }} 人</div>
         </div>
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>活跃状态</span>
-            <select v-model="filters.activityStatus">
-              <option value="all">全部成员</option>
-              <option v-for="option in contributorActivityStatusOptions" :key="option.value" :value="option.value">
-                {{ formatContributorActivityStatus(option.value) }}
-              </option>
-            </select>
-          </label>
+
+        <div class="compact-overview-row">
+          <div class="compact-stat-strip">
+            <article v-for="item in contributorStats" :key="item.label" class="compact-stat-pill">
+              <span>{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+            </article>
+          </div>
+
+          <div class="compact-overview-actions">
+            <div class="compact-role-summary">
+              <span>角色</span>
+              <strong>{{ publishedRoleCount }} / {{ roles.length }} 已启用</strong>
+              <small>{{ showRoleManager ? `当前：${activeRoleLabel}` : '角色管理未展开' }}</small>
+            </div>
+
+            <label class="compact-filter">
+              <span>活跃状态</span>
+              <select v-model="filters.activityStatus">
+                <option value="all">全部成员</option>
+                <option v-for="option in contributorActivityStatusOptions" :key="option.value" :value="option.value">
+                  {{ formatContributorActivityStatus(option.value) }}
+                </option>
+              </select>
+            </label>
+          </div>
         </div>
       </section>
 
@@ -414,8 +372,108 @@ onMounted(() => void loadData());
 </template>
 
 <style scoped>
+.compact-overview-shell {
+  gap: 0.72rem;
+}
+
+.compact-overview-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.72rem;
+}
+
+.compact-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  flex: 1 1 520px;
+}
+
+.compact-stat-pill,
+.compact-role-summary,
+.compact-filter {
+  display: grid;
+  gap: 0.12rem;
+  padding: 0.58rem 0.72rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.compact-stat-pill span,
+.compact-role-summary span,
+.compact-filter span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.compact-stat-pill strong,
+.compact-role-summary strong {
+  font-size: 0.96rem;
+  line-height: 1.2;
+}
+
+.compact-role-summary small {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.compact-overview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.compact-role-summary {
+  min-width: 180px;
+}
+
+.compact-filter {
+  min-width: 168px;
+}
+
+.compact-filter select {
+  min-width: 0;
+  padding-top: 0.36rem;
+  padding-bottom: 0.36rem;
+}
+
 .status-pill-muted {
   background: rgba(148, 163, 184, 0.14);
   color: rgba(71, 85, 105, 0.92);
+}
+
+@media (max-width: 1200px) {
+  .compact-stat-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex-basis: 100%;
+  }
+
+  .compact-overview-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 760px) {
+  .compact-stat-strip,
+  .compact-overview-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-overview-actions {
+    display: grid;
+  }
+
+  .compact-role-summary,
+  .compact-filter {
+    width: 100%;
+  }
 }
 </style>
