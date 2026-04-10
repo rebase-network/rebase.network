@@ -157,7 +157,6 @@ onBeforeUnmount(() => {
       <section class="panel list-toolbar-panel">
         <div class="list-toolbar-row">
           <div class="list-toolbar-summary">
-            <span class="list-toolbar-label">内容概览</span>
             <div class="panel-meta">共 {{ totalArticles }} 篇 / 当前 {{ filteredArticles }} 篇 / 第 {{ pagination?.page ?? 1 }} 页</div>
           </div>
 
