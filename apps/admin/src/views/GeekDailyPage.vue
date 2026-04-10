@@ -156,7 +156,7 @@ onBeforeUnmount(() => {
         <div class="geekdaily-toolbar-row">
           <div class="geekdaily-toolbar-summary">
             <h3>筛选与定位</h3>
-            <div class="panel-meta">共 {{ totalEpisodes }} 期，当前结果 {{ filteredEpisodes }} 期，第 {{ pagination?.page ?? 1 }} 页</div>
+            <div class="panel-meta">共 {{ totalEpisodes }} 期 / 当前 {{ filteredEpisodes }} 期 / 第 {{ pagination?.page ?? 1 }} 页</div>
           </div>
 
           <label class="field geekdaily-toolbar-field geekdaily-search-field">
@@ -250,12 +250,13 @@ onBeforeUnmount(() => {
 
 .geekdaily-toolbar-row {
   display: grid;
-  grid-template-columns: minmax(260px, 320px) minmax(560px, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.72rem;
   align-items: end;
 }
 
 .geekdaily-toolbar-summary {
+  grid-column: 1;
   display: grid;
   gap: 0.16rem;
   align-self: stretch;
@@ -278,6 +279,7 @@ onBeforeUnmount(() => {
 }
 
 .geekdaily-search-field {
+  grid-column: 4;
   min-width: 0;
   justify-self: stretch;
 }
