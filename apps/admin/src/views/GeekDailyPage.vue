@@ -268,15 +268,12 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.52rem 0.68rem;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.58);
+  min-height: 2.5rem;
 }
 
 .geekdaily-toolbar-label {
   flex: none;
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 
@@ -287,10 +284,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.6rem;
   min-width: 0;
-  padding: 0.52rem 0.68rem;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.58);
+  min-height: 2.5rem;
 }
 
 .geekdaily-toolbar-search input {
