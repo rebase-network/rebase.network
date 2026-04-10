@@ -231,16 +231,6 @@ onMounted(() => void loadData());
               <strong>{{ publishedRoleCount }} / {{ roles.length }} 已启用</strong>
               <small>{{ showRoleManager ? `当前：${activeRoleLabel}` : '角色管理未展开' }}</small>
             </div>
-
-            <label class="compact-filter">
-              <span>活跃状态</span>
-              <select v-model="filters.activityStatus">
-                <option value="all">全部成员</option>
-                <option v-for="option in contributorActivityStatusOptions" :key="option.value" :value="option.value">
-                  {{ formatContributorActivityStatus(option.value) }}
-                </option>
-              </select>
-            </label>
           </div>
         </div>
       </section>
@@ -263,7 +253,17 @@ onMounted(() => void loadData());
                 <th>贡献者</th>
                 <th>角色</th>
                 <th>状态</th>
-                <th>活跃状态</th>
+                <th class="activity-filter-column">
+                  <div class="table-filter-head">
+                    <span>活跃状态</span>
+                    <select v-model="filters.activityStatus" aria-label="按活跃状态筛选贡献者">
+                      <option value="all">全部</option>
+                      <option v-for="option in contributorActivityStatusOptions" :key="option.value" :value="option.value">
+                        {{ formatContributorActivityStatus(option.value) }}
+                      </option>
+                    </select>
+                  </div>
+                </th>
                 <th>更新时间</th>
                 <th></th>
               </tr>
@@ -434,14 +434,24 @@ onMounted(() => void loadData());
   min-width: 180px;
 }
 
-.compact-filter {
-  min-width: 168px;
+.table-filter-head {
+  display: grid;
+  gap: 0.2rem;
 }
 
-.compact-filter select {
+.table-filter-head span {
+  display: block;
+}
+
+.table-filter-head select {
   min-width: 0;
-  padding-top: 0.36rem;
-  padding-bottom: 0.36rem;
+  padding: 0.28rem 0.42rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.activity-filter-column {
+  min-width: 132px;
 }
 
 .status-pill-muted {
@@ -471,8 +481,7 @@ onMounted(() => void loadData());
     display: grid;
   }
 
-  .compact-role-summary,
-  .compact-filter {
+  .compact-role-summary {
     width: 100%;
   }
 }
