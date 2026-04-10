@@ -4,6 +4,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import {
   contentStatusOptions,
+  contributorActivityStatusOptions,
   type AdminAssetRecord,
   type AdminContributorDetailPayload,
   type AdminContributorRoleRecord,
@@ -13,7 +14,7 @@ import {
 import AssetPickerField from '../components/AssetPickerField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
-import { formatContentStatus, formatDateTime, slugify } from '../lib/format';
+import { formatContentStatus, formatContributorActivityStatus, formatDateTime, slugify } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface ContributorFormState extends Omit<ContributorInput, 'avatarAssetId' | 'roleIds'> {
@@ -37,6 +38,7 @@ const createBlankForm = (): ContributorFormState => ({
   sortOrder: 0,
   roleIds: [],
   status: 'draft',
+  activityStatus: 'active',
 });
 
 const form = reactive<ContributorFormState>(createBlankForm());
@@ -80,6 +82,7 @@ const applyPayload = (payload: AdminContributorDetailPayload) => {
     sortOrder: payload.contributor.sortOrder,
     roleIds: payload.contributor.roleIds,
     status: payload.contributor.status,
+    activityStatus: payload.contributor.activityStatus,
   });
   slugTouched.value = true;
 };
@@ -195,6 +198,10 @@ onMounted(() => void loadRecord());
               <dd class="muted">{{ contactSummary }}</dd>
             </div>
             <div class="summary-item">
+              <dt>活跃状态</dt>
+              <dd class="muted">{{ formatContributorActivityStatus(form.activityStatus) }}</dd>
+            </div>
+            <div class="summary-item">
               <dt>更新时间</dt>
               <dd class="muted">{{ detail ? formatDateTime(detail.contributor.updatedAt) : '新建后生成' }}</dd>
             </div>
@@ -305,16 +312,25 @@ onMounted(() => void loadRecord());
               <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
             </select>
           </label>
-          <div class="field">
-            <span>角色分组</span>
-            <div class="checkbox-list">
-              <label v-for="role in availableRoles" :key="role.id" class="checkbox-chip">
-                <input :checked="form.roleIds.includes(role.id)" type="checkbox" @change="toggleRole(role.id)" />
-                <span>{{ role.name }}</span>
-              </label>
-            </div>
-            <small v-if="fieldIssues.roleIds" class="field-error">{{ fieldIssues.roleIds }}</small>
+          <label class="field">
+            <span>活跃状态</span>
+            <select v-model="form.activityStatus">
+              <option v-for="option in contributorActivityStatusOptions" :key="option.value" :value="option.value">
+                {{ formatContributorActivityStatus(option.value) }}
+              </option>
+            </select>
+          </label>
+        </div>
+
+        <div class="field">
+          <span>角色分组</span>
+          <div class="checkbox-list">
+            <label v-for="role in availableRoles" :key="role.id" class="checkbox-chip">
+              <input :checked="form.roleIds.includes(role.id)" type="checkbox" @change="toggleRole(role.id)" />
+              <span>{{ role.name }}</span>
+            </label>
           </div>
+          <small v-if="fieldIssues.roleIds" class="field-error">{{ fieldIssues.roleIds }}</small>
         </div>
       </section>
     </div>

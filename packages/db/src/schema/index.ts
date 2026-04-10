@@ -17,6 +17,7 @@ export const staffAccountStatusEnum = pgEnum('staff_account_status', ['invited',
 export const contentStatusEnum = pgEnum('content_status', ['draft', 'published', 'archived']);
 export const assetStatusEnum = pgEnum('asset_status', ['uploaded', 'active', 'archived', 'deleted']);
 export const assetVisibilityEnum = pgEnum('asset_visibility', ['public', 'private']);
+export const contributorActivityStatusEnum = pgEnum('contributor_activity_status', ['active', 'inactive']);
 
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -303,6 +304,7 @@ export const contributors = pgTable('contributors', {
   telegram: text('telegram'),
   sortOrder: integer('sort_order').default(0).notNull(),
   status: contentStatusEnum('status').default('draft').notNull(),
+  activityStatus: contributorActivityStatusEnum('activity_status').default('active').notNull(),
   updatedByStaffId: uuid('updated_by_staff_id').references(() => staffAccounts.id, { onDelete: 'set null' }),
   createdAt,
   updatedAt,

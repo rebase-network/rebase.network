@@ -1,4 +1,4 @@
-import type { AssetStatus, ContentStatus, RegistrationMode, StaffAccountStatus } from '@rebase/shared';
+import type { AssetStatus, ContentStatus, ContributorActivityStatus, RegistrationMode, StaffAccountStatus } from '@rebase/shared';
 
 export const formatDateTime = (value?: string | null) => {
   if (!value) {
@@ -56,6 +56,17 @@ export const formatStaffAccountStatus = (status: StaffAccountStatus) => {
       return '暂停';
     case 'disabled':
       return '停用';
+    default:
+      return status;
+  }
+};
+
+export const formatContributorActivityStatus = (status: ContributorActivityStatus) => {
+  switch (status) {
+    case 'active':
+      return '活跃';
+    case 'inactive':
+      return '不活跃';
     default:
       return status;
   }

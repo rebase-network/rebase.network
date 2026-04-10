@@ -43,10 +43,10 @@ const roleNotes: Record<string, string> = {
       </div>
       <h1 class="hero-title">社区不是抽象概念，它总是由具体的人把内容、活动和协作推着往前走。</h1>
       <p class="hero-summary">
-        这页先把当前公开的角色组、代表成员和可识别的协作关系整理出来，让 Rebase 的“人”也成为站点结构的一部分。
+        这页先把当前公开的角色组、协作关系与长期参与者整理出来，让 Rebase 的“人”也成为站点结构的一部分。
       </p>
       <p class="brand-note">
-        首页负责讲站点主张，详情页负责讲内容，而贡献者页应该回答另一个问题：到底是谁在把这些内容和协作真正维持下去。
+        首页负责讲站点主张，详情页负责讲内容，而贡献者页应该回答另一个问题：到底是谁在把这些内容和协作真正维持下去。当前仍在长期参与的人会优先展示，历史贡献者也会继续保留在公共档案里。
       </p>
       <div class="hero-facts">
         {contributorSignals.map((signal) => (
@@ -79,21 +79,10 @@ const roleNotes: Record<string, string> = {
         <p class="group-note">{roleNotes[group.role.slug] ?? '这组贡献者持续帮助 Rebase 保持内容与协作的长期连续性。'}</p>
 
         {group.contributors[0] ? (
-          <div class="group-layout">
-            <ContributorCard contributor={group.contributors[0]} featured={true} />
-            {group.contributors.length > 1 ? (
-              <div class="group-grid">
-                {group.contributors.slice(1).map((contributor) => (
-                  <ContributorCard contributor={contributor} />
-                ))}
-              </div>
-            ) : (
-              <div class="group-empty card">
-                <p class="hero-kicker">持续扩展</p>
-                <h3>这组人物档案会继续补全。</h3>
-                <span>当前先保留代表成员，后续再把更多参与者、协作方式和故事补进来。</span>
-              </div>
-            )}
+          <div class="group-grid">
+            {group.contributors.map((contributor) => (
+              <ContributorCard contributor={contributor} />
+            ))}
           </div>
         ) : null}
       </section>
@@ -267,10 +256,7 @@ const roleNotes: Record<string, string> = {
   .group-head h2,
   .group-count,
   .group-description,
-  .group-note,
-  .group-empty p,
-  .group-empty h3,
-  .group-empty span {
+  .group-note {
     margin: 0;
   }
 
@@ -316,40 +302,14 @@ const roleNotes: Record<string, string> = {
     line-height: 1.75;
   }
 
-  .group-layout {
+  .group-grid {
     display: grid;
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1rem;
     margin-top: 1.15rem;
   }
 
-  .group-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  .group-empty {
-    display: grid;
-    align-content: start;
-    gap: 0.7rem;
-    padding: 1.2rem;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 252, 250, 0.88));
-  }
-
-  .group-empty h3 {
-    font-size: 1.35rem;
-    line-height: 1.15;
-  }
-
-  .group-empty span {
-    color: var(--muted);
-    line-height: 1.75;
-  }
-
   @media (max-width: 1100px) {
-    .group-layout,
     .group-grid {
       grid-template-columns: 1fr;
     }

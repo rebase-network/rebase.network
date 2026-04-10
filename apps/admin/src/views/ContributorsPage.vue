@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import {
   contentStatusOptions,
+  contributorActivityStatusOptions,
   defaultAdminPageSize,
   type AdminContributorListItem,
   type AdminContributorRoleRecord,
@@ -12,7 +13,7 @@ import {
 
 import PaginationBar from '../components/PaginationBar.vue';
 import { adminFetch, adminFetchWithMeta, adminRequest, getValidationIssues } from '../lib/api';
-import { formatContentStatus, formatDateTime } from '../lib/format';
+import { formatContentStatus, formatContributorActivityStatus, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const contributors = ref<AdminContributorListItem[]>([]);
@@ -26,6 +27,7 @@ const selectedRoleId = ref('new');
 const savingRole = ref(false);
 const showRoleManager = ref(false);
 const contributorPage = ref(1);
+const filters = reactive({ activityStatus: 'all' });
 
 const roleForm = reactive({
   slug: '',
@@ -52,8 +54,8 @@ const contributorStats = computed(() => [
     detail: `第 ${pagination.value?.page ?? 1} 页`,
   },
   {
-    label: '本页已发布',
-    value: contributors.value.filter((item) => item.status === 'published').length,
+    label: '本页活跃',
+    value: contributors.value.filter((item) => item.activityStatus === 'active').length,
     detail: '当前页数据',
   },
   {
@@ -110,11 +112,18 @@ const closeRoleManager = () => {
   resetRoleForm();
 };
 
-const buildContributorsRequestPath = () =>
-  `/api/admin/v1/contributors?${new URLSearchParams({
+const buildContributorsRequestPath = () => {
+  const params = new URLSearchParams({
     page: String(contributorPage.value),
     pageSize: String(defaultAdminPageSize),
-  }).toString()}`;
+  });
+
+  if (filters.activityStatus !== 'all') {
+    params.set('activityStatus', filters.activityStatus);
+  }
+
+  return `/api/admin/v1/contributors?${params.toString()}`;
+};
 
 const loadData = async () => {
   loading.value = true;
@@ -144,10 +153,25 @@ const loadData = async () => {
   }
 };
 
-const goToContributorPage = async (nextPage: number) => {
+const goToContributorPage = (nextPage: number) => {
   contributorPage.value = nextPage;
-  await loadData();
 };
+
+watch(
+  () => filters.activityStatus,
+  () => {
+    if (contributorPage.value === 1) {
+      void loadData();
+      return;
+    }
+
+    contributorPage.value = 1;
+  },
+);
+
+watch(contributorPage, () => {
+  void loadData();
+});
 
 const saveRole = async () => {
   savingRole.value = true;
@@ -242,6 +266,27 @@ onMounted(() => void loadData());
         </section>
       </div>
 
+      <section class="panel filter-panel">
+        <div class="panel-toolbar">
+          <div>
+            <h3>筛选</h3>
+            <div class="panel-meta">按贡献活跃状态查看公开成员</div>
+          </div>
+          <div class="panel-meta">{{ pagination?.totalItems ?? contributors.length }} 人</div>
+        </div>
+        <div class="field-grid field-grid-2">
+          <label class="field">
+            <span>活跃状态</span>
+            <select v-model="filters.activityStatus">
+              <option value="all">全部成员</option>
+              <option v-for="option in contributorActivityStatusOptions" :key="option.value" :value="option.value">
+                {{ formatContributorActivityStatus(option.value) }}
+              </option>
+            </select>
+          </label>
+        </div>
+      </section>
+
       <section class="panel stacked-gap">
         <div class="panel-toolbar">
           <div>
@@ -260,6 +305,7 @@ onMounted(() => void loadData());
                 <th>贡献者</th>
                 <th>角色</th>
                 <th>状态</th>
+                <th>活跃状态</th>
                 <th>更新时间</th>
                 <th></th>
               </tr>
@@ -274,6 +320,7 @@ onMounted(() => void loadData());
                 </td>
                 <td>{{ row.roleNames.join('、') || '未分配角色' }}</td>
                 <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
+                <td><span class="status-pill" :class="{ 'status-pill-muted': row.activityStatus === 'inactive' }">{{ formatContributorActivityStatus(row.activityStatus) }}</span></td>
                 <td>{{ formatDateTime(row.updatedAt) }}</td>
                 <td class="table-actions-cell">
                   <div class="table-action-list">
@@ -365,3 +412,10 @@ onMounted(() => void loadData());
     </template>
   </section>
 </template>
+
+<style scoped>
+.status-pill-muted {
+  background: rgba(148, 163, 184, 0.14);
+  color: rgba(71, 85, 105, 0.92);
+}
+</style>

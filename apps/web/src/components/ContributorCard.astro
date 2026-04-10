@@ -5,10 +5,9 @@ import { renderMarkdown } from '@/lib/markdown';
 
 interface Props {
   contributor: Contributor;
-  featured?: boolean;
 }
 
-const { contributor, featured = false } = Astro.props;
+const { contributor } = Astro.props;
 const avatarBackground = createAvatarData(contributor.avatarSeed);
 const bioHtml = renderMarkdown(contributor.bio);
 const telegramHref = contributor.telegram
@@ -17,9 +16,10 @@ const telegramHref = contributor.telegram
     : `https://t.me/${contributor.telegram.replace(/^@/, '')}`
   : undefined;
 const hasContacts = Boolean(contributor.twitterUrl || telegramHref || contributor.wechat);
+const isHistoricalContributor = contributor.activityStatus === 'inactive';
 ---
 
-<article class:list={['contributor-card', 'card', { featured }]}>
+<article class="contributor-card card">
   {contributor.avatarUrl ? (
     <img class="avatar image" src={contributor.avatarUrl} alt={`${contributor.name} 头像`} loading="lazy" />
   ) : (
@@ -28,7 +28,7 @@ const hasContacts = Boolean(contributor.twitterUrl || telegramHref || contributo
     </div>
   )}
   <div class="content">
-    {featured && <p class="profile-kicker">本组代表</p>}
+    {isHistoricalContributor && <p class="profile-kicker">历史贡献者</p>}
     <h3>{contributor.name}</h3>
     <p class="headline">{contributor.headline}</p>
     <div class="bio" set:html={bioHtml} />
@@ -63,14 +63,6 @@ const hasContacts = Boolean(contributor.twitterUrl || telegramHref || contributo
     box-shadow: var(--shadow-strong);
   }
 
-  .featured {
-    grid-template-columns: minmax(4.8rem, auto) 1fr;
-    padding: 1.35rem;
-    background:
-      radial-gradient(circle at top right, rgba(243, 196, 110, 0.16), transparent 24%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 252, 250, 0.9));
-  }
-
   .avatar {
     display: grid;
     width: 4rem;
@@ -81,13 +73,6 @@ const hasContacts = Boolean(contributor.twitterUrl || telegramHref || contributo
     font-size: 1.35rem;
     font-weight: 800;
     box-shadow: 0 16px 32px rgba(26, 40, 34, 0.12);
-  }
-
-  .featured .avatar {
-    width: 4.8rem;
-    height: 4.8rem;
-    border-radius: 1.45rem;
-    font-size: 1.55rem;
   }
 
   .image {
@@ -166,13 +151,11 @@ const hasContacts = Boolean(contributor.twitterUrl || telegramHref || contributo
   }
 
   @media (max-width: 720px) {
-    .contributor-card,
-    .featured {
+    .contributor-card {
       grid-template-columns: 1fr;
     }
 
-    .avatar,
-    .featured .avatar {
+    .avatar {
       width: 4rem;
       height: 4rem;
       border-radius: 1.25rem;

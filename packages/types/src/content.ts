@@ -124,6 +124,7 @@ export interface Contributor {
   headline: string;
   bio: string;
   roleSlugs: string[];
+  activityStatus: 'active' | 'inactive';
   twitterUrl?: string;
   wechat?: string;
   telegram?: string;

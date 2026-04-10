@@ -238,6 +238,14 @@ Suggested fields:
 - `telegram`
 - `sort_order`
 - `status`
+- `activity_status`
+
+Contributor activity is managed manually in V1:
+
+- `active`: currently participating and displayed first in public lists
+- `inactive`: historical contributor, still publicly visible, but sorted after active contributors
+
+The public contributors page should not elevate a single representative member. Contributors in the same role are shown as peers, while inactive contributors can carry a lightweight `historical contributor` label in the UI.
 
 V1 only requires the public list page, not individual contributor detail pages.
 

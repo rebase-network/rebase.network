@@ -2,6 +2,7 @@ import { asc, count, desc, eq, inArray, sql } from 'drizzle-orm';
 
 import { contributorRoleBindings, contributorRoles, contributors } from '@rebase/db';
 import type {
+  ContributorActivityStatus,
   AdminContributorDetailPayload,
   AdminContributorListItem,
   AdminContributorRoleRecord,
@@ -15,6 +16,7 @@ import { listPublicAssetUrlsById } from './assets.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
 import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
+import { combineFilters } from './query-filters.js';
 import { toIsoString } from './utils.js';
 
 const mapRoleRecord = (row: any): AdminContributorRoleRecord => ({
@@ -64,6 +66,7 @@ const mapContributorDetail = (row: any, roleIds: string[]) => ({
   sortOrder: row.sortOrder,
   roleIds,
   status: row.status,
+  activityStatus: row.activityStatus,
   createdAt: toIsoString(row.createdAt) ?? new Date().toISOString(),
   updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
 });
@@ -163,10 +166,18 @@ export const updateAdminContributorRole = async (id: string, input: ContributorR
   return mapRoleRecord(updated);
 };
 
-export const listAdminContributors = async (input: PaginationInput = {}): Promise<PaginatedResult<AdminContributorListItem>> => {
+interface ListAdminContributorsInput extends PaginationInput {
+  activityStatus?: ContributorActivityStatus;
+}
+
+export const listAdminContributors = async (input: ListAdminContributorsInput = {}): Promise<PaginatedResult<AdminContributorListItem>> => {
   const db = getDb();
-  const [countRow, roleMap] = await Promise.all([
-    db.select({ value: count() }).from(contributors),
+  const where = combineFilters([
+    input.activityStatus ? eq(contributors.activityStatus, input.activityStatus) : undefined,
+  ]);
+  const [countRow, totalAllRow, roleMap] = await Promise.all([
+    db.select({ value: count() }).from(contributors).where(where),
+    input.activityStatus ? db.select({ value: count() }).from(contributors) : Promise.resolve([{ value: 0 }]),
     contributorRoleMap(),
   ]);
 
@@ -178,7 +189,8 @@ export const listAdminContributors = async (input: PaginationInput = {}): Promis
       : await db
           .select()
           .from(contributors)
-          .orderBy(asc(contributors.sortOrder), desc(contributors.updatedAt))
+          .where(where)
+          .orderBy(asc(contributors.activityStatus), asc(contributors.sortOrder), desc(contributors.updatedAt))
           .limit(pagination.pageSize)
           .offset(pagination.offset);
 
@@ -191,11 +203,12 @@ export const listAdminContributors = async (input: PaginationInput = {}): Promis
       name: row.name,
       headline: row.headline,
       status: row.status,
+      activityStatus: row.activityStatus,
       roleNames: (bindings.get(row.id) ?? []).map((roleId) => roleMap.get(roleId)?.name ?? '').filter(Boolean),
       sortOrder: row.sortOrder,
       updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
     })),
-    meta: buildPaginatedMeta(pagination),
+    meta: buildPaginatedMeta(pagination, input.activityStatus ? totalAllRow[0]?.value ?? totalItems : totalItems),
   };
 };
 
@@ -235,6 +248,7 @@ export const createAdminContributor = async (input: ContributorInput, actor: Aud
       telegram: input.telegram,
       sortOrder: input.sortOrder,
       status: input.status,
+      activityStatus: input.activityStatus,
       updatedByStaffId: actor.actorStaffAccountId ?? null,
     })
     .returning();
@@ -275,6 +289,7 @@ export const updateAdminContributor = async (id: string, input: ContributorInput
       telegram: input.telegram,
       sortOrder: input.sortOrder,
       status: input.status,
+      activityStatus: input.activityStatus,
       updatedByStaffId: actor.actorStaffAccountId ?? null,
       updatedAt: new Date(),
     })
@@ -305,7 +320,7 @@ export const listPublicContributorGroups = async () => {
       .select()
       .from(contributors)
       .where(eq(contributors.status, 'published'))
-      .orderBy(asc(contributors.sortOrder), asc(contributors.name)),
+      .orderBy(asc(contributors.activityStatus), asc(contributors.sortOrder), asc(contributors.name)),
     contributorBindingsMap(),
   ]);
   const avatarUrls = await listPublicAssetUrlsById(contributorRows.map((contributor) => contributor.avatarAssetId));
@@ -324,6 +339,7 @@ export const listPublicContributorGroups = async () => {
         headline: contributor.headline,
         bio: contributor.bio,
         roleSlugs: (bindings.get(contributor.id) ?? []).map((bindingRoleId) => roleMap.get(bindingRoleId)?.slug ?? '').filter(Boolean),
+        activityStatus: contributor.activityStatus,
         twitterUrl: contributor.twitterUrl ?? undefined,
         wechat: contributor.wechat ?? undefined,
         telegram: contributor.telegram ?? undefined,
@@ -342,22 +358,29 @@ export const listPublicContributorGroups = async () => {
   }));
 };
 
-export const listRandomPublicContributors = async (limit = 10) => {
+const listRandomPublicContributorsByActivity = async (activityStatus: ContributorActivityStatus, limit: number) => {
   const db = getDb();
-  const contributorRows =
-    limit > 0
-      ? await db
-          .select({
-            slug: contributors.slug,
-            name: contributors.name,
-            avatarAssetId: contributors.avatarAssetId,
-            avatarSeed: contributors.avatarSeed,
-          })
-          .from(contributors)
-          .where(eq(contributors.status, 'published'))
-          .orderBy(sql`random()`)
-          .limit(limit)
-      : [];
+
+  return limit > 0
+    ? db
+        .select({
+          slug: contributors.slug,
+          name: contributors.name,
+          avatarAssetId: contributors.avatarAssetId,
+          avatarSeed: contributors.avatarSeed,
+        })
+        .from(contributors)
+        .where(combineFilters([eq(contributors.status, 'published'), eq(contributors.activityStatus, activityStatus)]))
+        .orderBy(sql`random()`)
+        .limit(limit)
+    : [];
+};
+
+export const listRandomPublicContributors = async (limit = 10) => {
+  const activeRows = await listRandomPublicContributorsByActivity('active', limit);
+  const remaining = Math.max(limit - activeRows.length, 0);
+  const inactiveRows = remaining > 0 ? await listRandomPublicContributorsByActivity('inactive', remaining) : [];
+  const contributorRows = [...activeRows, ...inactiveRows];
 
   const avatarUrls = await listPublicAssetUrlsById(contributorRows.map((contributor) => contributor.avatarAssetId));
 

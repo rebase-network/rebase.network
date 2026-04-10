@@ -30,6 +30,14 @@ export type StaffAccountStatus = (typeof staffAccountStatusValues)[number];
 export const assetStatusValues = ['uploaded', 'active', 'archived', 'deleted'] as const;
 export type AssetStatus = (typeof assetStatusValues)[number];
 
+export const contributorActivityStatusValues = ['active', 'inactive'] as const;
+export type ContributorActivityStatus = (typeof contributorActivityStatusValues)[number];
+
+export const contributorActivityStatusOptions = contributorActivityStatusValues.map((value) => ({
+  value,
+  label: value,
+}));
+
 export const registrationModeValues = ['external_url', 'announcement_only'] as const;
 export type RegistrationMode = (typeof registrationModeValues)[number];
 
@@ -270,6 +278,7 @@ export const contributorSchema = z.object({
   sortOrder: z.number().int().default(0),
   roleIds: z.array(z.string().uuid()).min(1, 'at least one contributor role is required'),
   status: z.enum(contentStatusValues).default('draft'),
+  activityStatus: z.enum(contributorActivityStatusValues).default('active'),
 });
 
 export type ContributorInput = z.infer<typeof contributorSchema>;
@@ -516,6 +525,7 @@ export interface AdminContributorListItem {
   name: string;
   headline: string;
   status: ContentStatus;
+  activityStatus: ContributorActivityStatus;
   roleNames: string[];
   sortOrder: number;
   updatedAt: string;

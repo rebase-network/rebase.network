@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import {
   assetStatusValues,
   contentStatusValues,
+  contributorActivityStatusValues,
   validateAboutPageInput,
   validateArticleInput,
   validateAssetInput,
@@ -169,7 +170,10 @@ adminRoutes.patch('/contributors/roles/:id', requireActiveStaff('contributor.wri
   return c.json(ok(await updateAdminContributorRole(c.req.param('id'), payload, getAuditActor(c))));
 });
 adminRoutes.get('/contributors', requireActiveStaff('contributor.read'), async (c) => {
-  const result = await listAdminContributors(readPaginationInput({ page: c.req.query('page'), pageSize: c.req.query('pageSize') }));
+  const result = await listAdminContributors({
+    ...readPaginationInput({ page: c.req.query('page'), pageSize: c.req.query('pageSize') }),
+    activityStatus: readEnumQueryValue(c.req.query('activityStatus'), contributorActivityStatusValues),
+  });
   return c.json(ok(result.items, result.meta));
 });
 adminRoutes.post('/contributors', requireActiveStaff('contributor.write'), async (c) => {
