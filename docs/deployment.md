@@ -90,6 +90,7 @@ Use these settings in Workers > `rebase-web` > Settings > Build:
 - production branch: `main`
 - non-production branch builds: enabled
 - root directory: `/`
+- install command: `pnpm install --frozen-lockfile`
 - build command: `pnpm build:web:prod`
 - deploy command: `pnpm exec wrangler deploy --config apps/web/dist/server/wrangler.production.json`
 - non-production branch deploy command: `pnpm exec wrangler versions upload --config apps/web/dist/server/wrangler.production.json`
@@ -106,6 +107,12 @@ Required environment variables for `rebase-web` build settings:
 
 This avoids Wrangler trying to auto-provision a duplicate `SESSION` KV namespace during deploy.
 
+Cloudflare-specific note:
+
+- do not wrap the install or build command in `corepack` unless Workers Builds stops recognizing `pnpm` correctly
+- the normal dashboard setup should keep `pnpm install --frozen-lockfile` as the install command
+- `SESSION_KV_NAMESPACE_ID` and `SESSION_KV_NAMESPACE_PREVIEW_ID` should be configured as plain environment values in Workers Builds, not secrets
+
 ### `rebase-admin` Worker Build Settings
 
 Use these settings in Workers > `rebase-admin` > Settings > Build:
@@ -114,6 +121,7 @@ Use these settings in Workers > `rebase-admin` > Settings > Build:
 - production branch: `main`
 - non-production branch builds: enabled
 - root directory: `/`
+- install command: `pnpm install --frozen-lockfile`
 - build command: `pnpm build:admin:prod`
 - deploy command: `pnpm exec wrangler deploy --config apps/admin/wrangler.production.jsonc`
 - non-production branch deploy command: `pnpm exec wrangler versions upload --config apps/admin/wrangler.production.jsonc`
@@ -122,6 +130,17 @@ Recommended build watch paths for `rebase-admin`:
 
 - include: `apps/admin/*, packages/shared/*, scripts/deploy/*, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.base.json`
 - exclude: `docs/*, infra/*, refcode/*, apps/web/*`
+
+Required environment variables for `rebase-admin` build settings:
+
+- `VITE_API_BASE_URL=https://api.rebase.network`
+- `VITE_PUBLIC_SITE_BASE_URL=https://rebase.network`
+
+Cloudflare-specific note:
+
+- keep the install command as `pnpm install --frozen-lockfile`
+- do not add `corepack` unless the Workers Build image stops exposing the expected `pnpm` version
+- `VITE_API_BASE_URL` and `VITE_PUBLIC_SITE_BASE_URL` should be configured as plain environment values, not secrets
 
 ### Root Directory Choice
 
@@ -134,6 +153,16 @@ Although Cloudflare supports setting the root directory to a project subdirector
 ### Important Cloudflare Limitation
 
 Workers Builds does not honor custom build configuration declared inside Wrangler config files. Build, deploy, preview deploy, branch control, and watch paths should therefore be configured in the Cloudflare Dashboard for each Worker.
+
+## Recommended Workers Builds Template
+
+Use this exact pattern for both `rebase-web` and `rebase-admin` unless Cloudflare changes its build image behavior:
+
+- install command: `pnpm install --frozen-lockfile`
+- build command: worker-specific build command from the sections above
+- deploy command: worker-specific deploy command from the sections above
+- package manager handling: rely on Workers Builds detecting `pnpm`
+- `corepack`: keep out of the dashboard commands by default; add it only as a fallback when Cloudflare no longer exposes the expected `pnpm` version
 
 ## Worker Deployment Files
 
