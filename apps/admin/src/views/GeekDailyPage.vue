@@ -39,28 +39,8 @@ const buildRequestPath = () => {
   return `/api/admin/v1/geekdaily?${params.toString()}`;
 };
 
-const geekdailyStats = computed(() => [
-  {
-    label: '期数总数',
-    value: pagination.value?.totalAllItems ?? pagination.value?.totalItems ?? rows.value.length,
-    detail: '全部期刊',
-  },
-  {
-    label: '筛选结果',
-    value: pagination.value?.totalItems ?? rows.value.length,
-    detail: '当前条件',
-  },
-  {
-    label: '当前页条目',
-    value: rows.value.reduce((total, row) => total + row.itemCount, 0),
-    detail: `第 ${pagination.value?.page ?? 1} 页`,
-  },
-  {
-    label: '本页最新期数',
-    value: rows.value.reduce((latest, row) => Math.max(latest, row.episodeNumber), 0),
-    detail: '当前页数据',
-  },
-]);
+const totalEpisodes = computed(() => pagination.value?.totalAllItems ?? pagination.value?.totalItems ?? rows.value.length);
+const filteredEpisodes = computed(() => pagination.value?.totalItems ?? rows.value.length);
 
 const loadRows = async () => {
   loading.value = true;
@@ -115,45 +95,29 @@ onMounted(() => {
     <div v-else-if="loading" class="panel"><p>正在加载极客日报列表…</p></div>
 
     <template v-else>
-      <div class="panel-grid panel-grid-2">
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <div>
-              <h3>期刊概览</h3>
-              <div class="panel-meta">查看期数库存与分页结果</div>
-            </div>
-            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 期内容</div>
+      <section class="panel stacked-gap-tight geekdaily-toolbar-panel">
+        <div class="panel-toolbar">
+          <div>
+            <h3>筛选与定位</h3>
+            <div class="panel-meta">共 {{ totalEpisodes }} 期，当前结果 {{ filteredEpisodes }} 期</div>
           </div>
+          <div class="panel-meta">第 {{ pagination?.page ?? 1 }} 页</div>
+        </div>
 
-          <div class="compact-stat-grid compact-stat-grid-4">
-            <article v-for="item in geekdailyStats" :key="item.label" class="compact-stat-card">
-              <span class="compact-stat-label">{{ item.label }}</span>
-              <strong>{{ item.value }}</strong>
-              <small>{{ item.detail }}</small>
-            </article>
-          </div>
-        </section>
-
-        <section class="panel filter-panel">
-          <div class="panel-toolbar">
-            <h3>筛选</h3>
-            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 期内容</div>
-          </div>
-          <div class="field-grid field-grid-2">
-            <label class="field">
-              <span>搜索</span>
-              <input v-model="filters.query" type="search" placeholder="搜索标题、期数或 slug" />
-            </label>
-            <label class="field">
-              <span>状态</span>
-              <select v-model="filters.status">
-                <option value="all">全部状态</option>
-                <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-              </select>
-            </label>
-          </div>
-        </section>
-      </div>
+        <div class="field-grid field-grid-2 field-grid-compact geekdaily-filter-grid">
+          <label class="field">
+            <span>搜索</span>
+            <input v-model="filters.query" type="search" placeholder="搜索标题、期数或 slug" />
+          </label>
+          <label class="field geekdaily-filter-status">
+            <span>状态</span>
+            <select v-model="filters.status">
+              <option value="all">全部状态</option>
+              <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+            </select>
+          </label>
+        </div>
+      </section>
 
       <div v-if="rows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有极客日报内容。</p></div>
 
@@ -198,3 +162,31 @@ onMounted(() => {
     </template>
   </section>
 </template>
+
+<style scoped>
+.geekdaily-toolbar-panel {
+  gap: 0.58rem;
+}
+
+.geekdaily-filter-grid {
+  align-items: end;
+}
+
+.geekdaily-filter-grid .field {
+  gap: 0.24rem;
+}
+
+.geekdaily-filter-grid .field span {
+  font-size: 0.82rem;
+}
+
+.geekdaily-filter-status {
+  max-width: 220px;
+}
+
+@media (max-width: 1100px) {
+  .geekdaily-filter-status {
+    max-width: none;
+  }
+}
+</style>
