@@ -286,6 +286,11 @@ onBeforeUnmount(() => {
   min-height: 2.5rem;
 }
 
+.geekdaily-toolbar-search .geekdaily-toolbar-label {
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
 .geekdaily-toolbar-search input {
   width: 100%;
 }
