@@ -46,7 +46,7 @@ export const adminModules: ReadonlyArray<AdminModule> = [
     key: 'contributors',
     label: '贡献者',
     href: '/contributors',
-    summary: '维护贡献者资料与角色分组。',
+    summary: '维护贡献者资料、活跃状态与角色入口。',
     permission: 'contributor.read',
   },
   {
