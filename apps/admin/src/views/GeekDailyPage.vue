@@ -162,6 +162,7 @@ onMounted(() => {
           <thead>
             <tr>
               <th>期数</th>
+              <th>编辑</th>
               <th>状态</th>
               <th>条目数</th>
               <th>发布时间</th>
@@ -175,9 +176,9 @@ onMounted(() => {
                 <div class="table-cell-stack">
                   <strong>{{ row.title }}</strong>
                   <div class="muted-row">第 {{ row.episodeNumber }} 期</div>
-                  <div v-if="row.editors.length > 0" class="muted-row">编辑：{{ row.editors.join('、') }}</div>
                 </div>
               </td>
+              <td>{{ row.editors.length > 0 ? row.editors.join('、') : '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td>{{ row.itemCount }}</td>
               <td>{{ formatDateTime(row.publishedAt) }}</td>
