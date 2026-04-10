@@ -19,7 +19,7 @@ const hasContacts = Boolean(contributor.twitterUrl || telegramHref || contributo
 const isHistoricalContributor = contributor.activityStatus === 'inactive';
 ---
 
-<article class="contributor-card card">
+<article class:list={['contributor-card', 'card', { 'is-historical': isHistoricalContributor }]}>
   {contributor.avatarUrl ? (
     <img class="avatar image" src={contributor.avatarUrl} alt={`${contributor.name} 头像`} loading="lazy" />
   ) : (
@@ -56,6 +56,13 @@ const isHistoricalContributor = contributor.activityStatus === 'inactive';
       linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(247, 252, 250, 0.86));
   }
 
+  .is-historical {
+    border-color: rgba(71, 85, 105, 0.12);
+    background:
+      radial-gradient(circle at top right, rgba(148, 163, 184, 0.12), transparent 26%),
+      linear-gradient(180deg, rgba(252, 253, 255, 0.96), rgba(245, 248, 250, 0.92));
+  }
+
   .contributor-card:hover,
   .contributor-card:focus-within {
     transform: translateY(-4px);
@@ -88,10 +95,17 @@ const isHistoricalContributor = contributor.activityStatus === 'inactive';
   }
 
   .profile-kicker {
-    color: var(--accent-strong);
-    font-size: 0.72rem;
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.28rem 0.62rem;
+    border: 1px solid rgba(71, 85, 105, 0.14);
+    border-radius: 999px;
+    background: rgba(241, 245, 249, 0.9);
+    color: rgba(51, 65, 85, 0.92);
+    font-size: 0.7rem;
     font-weight: 800;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
@@ -108,10 +122,18 @@ const isHistoricalContributor = contributor.activityStatus === 'inactive';
     line-height: 1.5;
   }
 
+  .is-historical .headline {
+    color: rgba(71, 85, 105, 0.88);
+  }
+
   .bio {
     margin-top: 0.65rem;
     color: var(--muted);
     line-height: 1.7;
+  }
+
+  .is-historical .bio {
+    color: rgba(71, 85, 105, 0.86);
   }
 
   .bio :global(p) {
