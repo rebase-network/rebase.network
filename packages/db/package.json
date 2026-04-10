@@ -16,7 +16,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.seed.json --noEmit",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
-    "seed": "node --env-file=../../.env --import tsx src/seed.ts"
+    "seed": "node --env-file=../../.env --import tsx src/seed.ts",
+    "replace-media-host": "node scripts/replace-media-host.mjs"
   },
   "dependencies": {
     "@rebase/shared": "workspace:*",
