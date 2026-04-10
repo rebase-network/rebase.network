@@ -85,7 +85,7 @@ onMounted(() => void loadData());
     <header class="page-header page-header-row">
       <div>
         <h2>社区贡献者</h2>
-        <p>贡献者与角色</p>
+        <p>维护贡献者资料、活跃状态与角色归属</p>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link" to="/contributors/roles">管理角色</RouterLink>
@@ -99,25 +99,14 @@ onMounted(() => void loadData());
     <template v-else>
       <div class="panel-grid panel-grid-2">
         <section class="panel compact-summary-card">
-          <div class="panel-toolbar">
-            <div>
-              <h3>列表概览</h3>
-              <div class="panel-meta">只保留贡献者总数，避免和列表信息重复。</div>
-            </div>
-          </div>
+          <div class="compact-summary-head">贡献者总数</div>
           <div class="compact-summary-value">
             <strong>{{ totalContributors }}</strong>
-            <span>贡献者总数</span>
           </div>
         </section>
 
         <section class="panel compact-summary-card">
-          <div class="panel-toolbar">
-            <div>
-              <h3>角色概览</h3>
-              <div class="panel-meta">角色管理改为单独页面，和贡献者列表解耦。</div>
-            </div>
-          </div>
+          <div class="compact-summary-head">角色概览</div>
           <div class="compact-summary-value">
             <strong>{{ publishedRoleCount }} / {{ roles.length }}</strong>
             <span>已启用角色</span>
@@ -189,15 +178,23 @@ onMounted(() => void loadData());
 
 <style scoped>
 .compact-summary-card {
-  gap: 0.58rem;
+  gap: 0.42rem;
+  padding-block: 0.72rem;
+}
+
+.compact-summary-head {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .compact-summary-value {
   display: grid;
   gap: 0.16rem;
-  padding: 0.72rem 0.86rem;
+  padding: 0.58rem 0.74rem;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.74);
 }
 
