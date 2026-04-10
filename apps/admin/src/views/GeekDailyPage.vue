@@ -95,21 +95,19 @@ onMounted(() => {
     <div v-else-if="loading" class="panel"><p>正在加载极客日报列表…</p></div>
 
     <template v-else>
-      <section class="panel stacked-gap-tight geekdaily-toolbar-panel">
-        <div class="panel-toolbar">
-          <div>
+      <section class="panel geekdaily-toolbar-panel">
+        <div class="geekdaily-toolbar-row">
+          <div class="geekdaily-toolbar-summary">
             <h3>筛选与定位</h3>
-            <div class="panel-meta">共 {{ totalEpisodes }} 期，当前结果 {{ filteredEpisodes }} 期</div>
+            <div class="panel-meta">共 {{ totalEpisodes }} 期，当前结果 {{ filteredEpisodes }} 期，第 {{ pagination?.page ?? 1 }} 页</div>
           </div>
-          <div class="panel-meta">第 {{ pagination?.page ?? 1 }} 页</div>
-        </div>
 
-        <div class="field-grid field-grid-2 field-grid-compact geekdaily-filter-grid">
-          <label class="field">
+          <label class="field geekdaily-toolbar-field geekdaily-search-field">
             <span>搜索</span>
             <input v-model="filters.query" type="search" placeholder="搜索标题、期数或 slug" />
           </label>
-          <label class="field geekdaily-filter-status">
+
+          <label class="field geekdaily-toolbar-field geekdaily-filter-status">
             <span>状态</span>
             <select v-model="filters.status">
               <option value="all">全部状态</option>
@@ -165,28 +163,46 @@ onMounted(() => {
 
 <style scoped>
 .geekdaily-toolbar-panel {
-  gap: 0.58rem;
+  padding-block: 0.72rem;
 }
 
-.geekdaily-filter-grid {
+.geekdaily-toolbar-row {
+  display: grid;
+  grid-template-columns: minmax(220px, auto) minmax(360px, 1fr) 180px;
+  gap: 0.72rem;
   align-items: end;
 }
 
-.geekdaily-filter-grid .field {
+.geekdaily-toolbar-summary {
+  display: grid;
+  gap: 0.16rem;
+  align-self: center;
+}
+
+.geekdaily-toolbar-summary h3 {
+  margin: 0;
+}
+
+.geekdaily-toolbar-field {
   gap: 0.24rem;
 }
 
-.geekdaily-filter-grid .field span {
+.geekdaily-toolbar-field span {
   font-size: 0.82rem;
 }
 
+.geekdaily-search-field {
+  min-width: 0;
+}
+
 .geekdaily-filter-status {
-  max-width: 220px;
+  min-width: 0;
 }
 
 @media (max-width: 1100px) {
-  .geekdaily-filter-status {
-    max-width: none;
+  .geekdaily-toolbar-row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 }
 </style>
