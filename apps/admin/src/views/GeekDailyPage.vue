@@ -155,7 +155,6 @@ onBeforeUnmount(() => {
       <section class="panel geekdaily-toolbar-panel">
         <div class="geekdaily-toolbar-row">
           <div class="geekdaily-toolbar-summary">
-            <span class="geekdaily-toolbar-label">筛选与定位</span>
             <div class="panel-meta">共 {{ totalEpisodes }} 期 / 当前 {{ filteredEpisodes }} 期 / 第 {{ pagination?.page ?? 1 }} 页</div>
           </div>
 
