@@ -8,6 +8,7 @@ import AssetsPage from './views/AssetsPage.vue';
 import AuditLogsPage from './views/AuditLogsPage.vue';
 import ContributorEditorPage from './views/ContributorEditorPage.vue';
 import ContributorsPage from './views/ContributorsPage.vue';
+import ContributorRolesPage from './views/ContributorRolesPage.vue';
 import DashboardPage from './views/DashboardPage.vue';
 import EventEditorPage from './views/EventEditorPage.vue';
 import EventsPage from './views/EventsPage.vue';
@@ -38,6 +39,7 @@ export const router = createRouter({
     { path: '/geekdaily/new', name: 'geekdaily-create', component: GeekDailyEditorPage, meta: { requiresAuth: true } },
     { path: '/geekdaily/:id/edit', name: 'geekdaily-edit', component: GeekDailyEditorPage, meta: { requiresAuth: true } },
     { path: '/contributors', name: 'contributors', component: ContributorsPage, meta: { requiresAuth: true } },
+    { path: '/contributors/roles', name: 'contributor-roles', component: ContributorRolesPage, meta: { requiresAuth: true } },
     { path: '/contributors/new', name: 'contributor-create', component: ContributorEditorPage, meta: { requiresAuth: true } },
     { path: '/contributors/:id/edit', name: 'contributor-edit', component: ContributorEditorPage, meta: { requiresAuth: true } },
     { path: '/site', name: 'site', component: SiteEditorPage, meta: { requiresAuth: true } },

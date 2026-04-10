@@ -1,6 +1,6 @@
 import { count, desc, eq, ilike, or } from 'drizzle-orm';
 
-import { jobs } from '@rebase/db';
+import { jobs, staffAccounts } from '@rebase/db';
 import type { AdminJobListItem, ContentStatus, JobInput, PaginatedResult } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
@@ -11,15 +11,16 @@ import { combineFilters, toContainsPattern } from './query-filters.js';
 import { ensurePublishedAt, toIsoString } from './utils.js';
 
 const mapJobListItem = (row: any): AdminJobListItem => ({
-  id: row.id,
-  slug: row.slug,
-  companyName: row.companyName,
-  roleTitle: row.roleTitle,
-  status: row.status,
-  publishedAt: toIsoString(row.publishedAt),
-  expiresAt: toIsoString(row.expiresAt),
-  updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
-  supportsRemote: row.supportsRemote,
+  id: row.job.id,
+  slug: row.job.slug,
+  companyName: row.job.companyName,
+  roleTitle: row.job.roleTitle,
+  editorName: row.editorName ?? null,
+  status: row.job.status,
+  publishedAt: toIsoString(row.job.publishedAt),
+  expiresAt: toIsoString(row.job.expiresAt),
+  updatedAt: toIsoString(row.job.updatedAt) ?? new Date().toISOString(),
+  supportsRemote: row.job.supportsRemote,
 });
 
 const mapJobDetail = (row: any) => ({
@@ -86,7 +87,17 @@ export const listAdminJobs = async (input: ListAdminJobsInput = {}): Promise<Pag
   const rows =
     totalItems === 0
       ? []
-      : await db.select().from(jobs).where(where).orderBy(desc(jobs.updatedAt)).limit(pagination.pageSize).offset(pagination.offset);
+      : await db
+          .select({
+            job: jobs,
+            editorName: staffAccounts.displayName,
+          })
+          .from(jobs)
+          .leftJoin(staffAccounts, eq(staffAccounts.id, jobs.updatedByStaffId))
+          .where(where)
+          .orderBy(desc(jobs.updatedAt))
+          .limit(pagination.pageSize)
+          .offset(pagination.offset);
 
   return {
     items: rows.map(mapJobListItem),

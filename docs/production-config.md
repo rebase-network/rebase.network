@@ -53,6 +53,7 @@ If a production setting changes, update this file together with the real config 
 - Production branch: `main`
 - Non-production branch builds: enabled
 - Root directory: `/`
+- Install command: `pnpm install --frozen-lockfile`
 - Build command: `pnpm build:web:prod`
 - Deploy command: `pnpm exec wrangler deploy --config apps/web/dist/server/wrangler.production.json`
 - Non-production deploy command: `pnpm exec wrangler versions upload --config apps/web/dist/server/wrangler.production.json`
@@ -66,6 +67,7 @@ Runtime vars and bindings:
 - `SESSION` KV binding backed by namespace title `rebase-web-session`
 - `SESSION_KV_NAMESPACE_ID` is configured in Cloudflare Workers Builds environment settings
 - `SESSION_KV_NAMESPACE_PREVIEW_ID` should normally match the production namespace id unless a dedicated preview namespace is introduced
+- `corepack` is not required in the dashboard commands while Workers Builds already detects `pnpm@10.6.5`
 
 ### `rebase-admin`
 
@@ -74,6 +76,7 @@ Runtime vars and bindings:
 - Production branch: `main`
 - Non-production branch builds: enabled
 - Root directory: `/`
+- Install command: `pnpm install --frozen-lockfile`
 - Build command: `pnpm build:admin:prod`
 - Deploy command: `pnpm exec wrangler deploy --config apps/admin/wrangler.production.jsonc`
 - Non-production deploy command: `pnpm exec wrangler versions upload --config apps/admin/wrangler.production.jsonc`
@@ -83,6 +86,7 @@ Build-time targets:
 
 - `VITE_API_BASE_URL=https://api.rebase.network`
 - `VITE_PUBLIC_SITE_BASE_URL=https://rebase.network`
+- `corepack` is not required in the dashboard commands while Workers Builds already detects `pnpm@10.6.5`
 
 ## Server Inventory
 

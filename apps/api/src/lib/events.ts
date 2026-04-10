@@ -1,6 +1,6 @@
 import { asc, count, desc, eq, ilike, or } from 'drizzle-orm';
 
-import { events } from '@rebase/db';
+import { events, staffAccounts } from '@rebase/db';
 import type { AdminEventListItem, ContentStatus, EventInput, PaginatedResult } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
@@ -12,15 +12,16 @@ import { combineFilters, toContainsPattern } from './query-filters.js';
 import { ensurePublishedAt, toIsoString } from './utils.js';
 
 const mapEventListItem = (row: any): AdminEventListItem => ({
-  id: row.id,
-  slug: row.slug,
-  title: row.title,
-  status: row.status,
-  startAt: toIsoString(row.startAt) ?? new Date().toISOString(),
-  endAt: toIsoString(row.endAt) ?? new Date().toISOString(),
-  city: row.city,
-  registrationMode: row.registrationMode,
-  updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
+  id: row.event.id,
+  slug: row.event.slug,
+  title: row.event.title,
+  editorName: row.editorName ?? null,
+  status: row.event.status,
+  startAt: toIsoString(row.event.startAt) ?? new Date().toISOString(),
+  endAt: toIsoString(row.event.endAt) ?? new Date().toISOString(),
+  city: row.event.city,
+  registrationMode: row.event.registrationMode,
+  updatedAt: toIsoString(row.event.updatedAt) ?? new Date().toISOString(),
 });
 
 const mapEventDetail = (row: any) => ({
@@ -85,7 +86,17 @@ export const listAdminEvents = async (input: ListAdminEventsInput = {}): Promise
   const rows =
     totalItems === 0
       ? []
-      : await db.select().from(events).where(where).orderBy(desc(events.startAt)).limit(pagination.pageSize).offset(pagination.offset);
+      : await db
+          .select({
+            event: events,
+            editorName: staffAccounts.displayName,
+          })
+          .from(events)
+          .leftJoin(staffAccounts, eq(staffAccounts.id, events.updatedByStaffId))
+          .where(where)
+          .orderBy(desc(events.startAt))
+          .limit(pagination.pageSize)
+          .offset(pagination.offset);
 
   return {
     items: rows.map(mapEventListItem),

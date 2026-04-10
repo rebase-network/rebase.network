@@ -19,6 +19,27 @@ For local `astro dev`, the repo intentionally skips the Cloudflare adapter and u
 
 ## One-Time Setup
 
+Recommended local toolchain:
+
+- Node: `22.21.1` via `nvm`
+- package manager: `pnpm@10.6.5`
+- package manager launcher: `corepack`
+
+Repository hints:
+
+- `.nvmrc` pins the recommended local Node version
+- `package.json` pins `pnpm@10.6.5` through the `packageManager` field
+
+Suggested first-time setup:
+
+```bash
+nvm install
+nvm use
+corepack enable
+corepack prepare pnpm@10.6.5 --activate
+pnpm install
+```
+
 1. Copy `.env.example` to `.env`
 2. Install dependencies with `pnpm install`
 3. Run:
@@ -39,6 +60,52 @@ Default local operator credentials:
 
 - email: `admin@rebase.local`
 - password: `RebaseAdmin123456!`
+
+## Node And Package Manager Conventions
+
+This repository expects:
+
+- `node` to come from `nvm`
+- `pnpm` to match the version pinned in `package.json`
+- `corepack` to be the normal way to activate that `pnpm` version
+
+Quick checks:
+
+```bash
+which node
+node -v
+which pnpm
+pnpm -v
+```
+
+Healthy output should look like:
+
+- `node` resolves under `~/.nvm/versions/node/...`
+- `pnpm` resolves under the same active Node installation, not `/usr/local/bin/pnpm`
+
+If `pnpm` is broken because an old global shim is still on the machine, recover with:
+
+```bash
+rm -f /usr/local/bin/pnpm /usr/local/bin/pnpx
+hash -r
+corepack enable
+corepack prepare pnpm@10.6.5 --activate
+hash -r
+```
+
+Then re-check:
+
+```bash
+which pnpm
+pnpm -v
+```
+
+If you only need a temporary workaround, run commands through Corepack directly:
+
+```bash
+corepack pnpm install --frozen-lockfile
+corepack pnpm build:admin:prod
+```
 
 ## Daily Development Commands
 

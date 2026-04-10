@@ -29,7 +29,7 @@ const quickLinks = [
   { to: '/jobs', title: '招聘信息', detail: '岗位与投递入口' },
   { to: '/events', title: '社区活动', detail: '时间、地点、报名' },
   { to: '/geekdaily', title: '极客日报', detail: '期数、条目、归档' },
-  { to: '/contributors', title: '贡献者', detail: '角色、头像、社交' },
+  { to: '/contributors', title: '贡献者', detail: '资料、活跃状态、角色入口' },
   { to: '/site', title: '站点页面', detail: '首页、关于页、页脚' },
   { to: '/assets', title: '媒体库', detail: '上传、路径、复用' },
   { to: '/staff', title: '工作人员', detail: '账号与权限' },
