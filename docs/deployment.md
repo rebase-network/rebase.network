@@ -97,8 +97,8 @@ Use these settings in Workers > `rebase-web` > Settings > Build:
 
 Recommended build watch paths for `rebase-web`:
 
-- include: `apps/web/*, packages/*, scripts/deploy/*, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.base.json`
-- exclude: `docs/*, infra/*, refcode/*, apps/admin/*, apps/api/*`
+- include: `apps/web/**, packages/**, scripts/deploy/**, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.base.json`
+- exclude: `docs/**, infra/**, refcode/**, apps/admin/**, apps/api/**`
 
 Required environment variables for `rebase-web` build settings:
 
@@ -128,8 +128,8 @@ Use these settings in Workers > `rebase-admin` > Settings > Build:
 
 Recommended build watch paths for `rebase-admin`:
 
-- include: `apps/admin/*, packages/shared/*, scripts/deploy/*, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.base.json`
-- exclude: `docs/*, infra/*, refcode/*, apps/web/*`
+- include: `apps/admin/**, packages/shared/**, scripts/deploy/**, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.base.json`
+- exclude: `docs/**, infra/**, refcode/**, apps/web/**`
 
 Required environment variables for `rebase-admin` build settings:
 
@@ -141,6 +141,7 @@ Cloudflare-specific note:
 - keep the install command as `pnpm install --frozen-lockfile`
 - do not add `corepack` unless the Workers Build image stops exposing the expected `pnpm` version
 - `VITE_API_BASE_URL` and `VITE_PUBLIC_SITE_BASE_URL` should be configured as plain environment values, not secrets
+- use recursive `**` glob patterns for build watch paths; single-level `*` patterns do not cover nested files such as `apps/admin/src/**`
 
 ### Root Directory Choice
 
