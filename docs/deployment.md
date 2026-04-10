@@ -287,8 +287,21 @@ Warning:
 
 Rebase currently supports two production paths for media uploads:
 
-1. preferred long-term: set `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`
-2. fallback used for the first rollout: mount a logged-in Wrangler profile and set `R2_DEV_USE_WRANGLER=true`
+1. current production path: set `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`
+2. fallback-only path: mount a logged-in Wrangler profile and set `R2_DEV_USE_WRANGLER=true`
+
+Production now runs on the first path. The API has been verified in `r2-s3` mode against bucket `rebase-media` with a successful `HeadBucket`, `PutObject`, and `DeleteObject` round trip.
+
+Recommended production env:
+
+```env
+R2_ACCOUNT_ID=7e327cb72b95b88c927c7122db11baa6
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_BUCKET=rebase-media
+R2_PUBLIC_BASE_URL=https://pub-7a14b84296a7475bbb88b26f89b4226f.r2.dev
+R2_DEV_USE_WRANGLER=false
+```
 
 The fallback path is useful when the bucket already exists but dedicated S3 credentials have not been issued yet. In that mode:
 
@@ -305,6 +318,12 @@ scp ~/Library/Preferences/.wrangler/config/default.toml rebase@101.33.75.240:/ho
 
 Wrangler can then refresh the OAuth session as needed while the API shells out for uploads.
 
+Troubleshooting notes from production rollout:
+
+- if upload requests return `500` while the API is in `wrangler-cli` mode, verify the container can resolve the `wrangler` executable
+- if upload requests return `401` while the API is in `r2-s3` mode, verify `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and the bucket-scoped `Object Read & Write` permissions
+- if the API image build fails on `COPY geekdaily.csv`, remove that dependency from the Docker image build because `geekdaily.csv` is ignored by git and is not part of the release artifact set
+
 ## Verification Checklist
 
 After deployment, verify:
@@ -316,6 +335,7 @@ After deployment, verify:
 - `https://admin.rebase.network`
 - homepage, GeekDaily list, article list, events list, and hiring list
 - admin login and one content edit round trip
+- one admin media upload round trip
 
 ## Operational Notes
 
