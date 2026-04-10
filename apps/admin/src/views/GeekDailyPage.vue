@@ -168,7 +168,7 @@ onMounted(() => {
 
 .geekdaily-toolbar-row {
   display: grid;
-  grid-template-columns: minmax(220px, auto) minmax(360px, 1fr) 180px;
+  grid-template-columns: minmax(240px, 0.95fr) minmax(360px, 1.45fr) minmax(180px, 0.8fr);
   gap: 0.72rem;
   align-items: end;
 }
@@ -176,7 +176,11 @@ onMounted(() => {
 .geekdaily-toolbar-summary {
   display: grid;
   gap: 0.16rem;
-  align-self: center;
+  align-self: stretch;
+  padding: 0.52rem 0.68rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.58);
 }
 
 .geekdaily-toolbar-summary h3 {
@@ -197,6 +201,11 @@ onMounted(() => {
 
 .geekdaily-filter-status {
   min-width: 0;
+}
+
+.geekdaily-toolbar-field input,
+.geekdaily-toolbar-field select {
+  width: 100%;
 }
 
 @media (max-width: 1100px) {
