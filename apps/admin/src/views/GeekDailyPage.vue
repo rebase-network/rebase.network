@@ -155,20 +155,18 @@ onBeforeUnmount(() => {
       <section class="panel geekdaily-toolbar-panel">
         <div class="geekdaily-toolbar-row">
           <div class="geekdaily-toolbar-summary">
-            <h3>筛选与定位</h3>
+            <span class="geekdaily-toolbar-label">筛选与定位</span>
             <div class="panel-meta">共 {{ totalEpisodes }} 期 / 当前 {{ filteredEpisodes }} 期 / 第 {{ pagination?.page ?? 1 }} 页</div>
           </div>
 
-          <label class="field geekdaily-toolbar-field geekdaily-search-field">
-            <span>搜索</span>
-            <input v-model="filters.query" type="search" placeholder="搜索标题、期数或 slug" />
+          <label class="geekdaily-toolbar-search" for="geekdaily-search">
+            <span class="geekdaily-toolbar-label">搜索</span>
+            <input id="geekdaily-search" v-model="filters.query" type="search" placeholder="搜索标题、期数或 slug" />
           </label>
         </div>
       </section>
 
-      <div v-if="rows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有极客日报内容。</p></div>
-
-      <div v-else class="panel table-panel">
+      <div class="panel table-panel">
         <table class="data-table dense-table">
           <thead>
             <tr>
@@ -215,6 +213,9 @@ onBeforeUnmount(() => {
             </tr>
           </thead>
           <tbody>
+            <tr v-if="rows.length === 0">
+              <td class="table-empty-row" colspan="7">当前筛选条件下没有极客日报内容，请调整搜索或状态筛选。</td>
+            </tr>
             <tr v-for="row in rows" :key="row.id">
               <td>
                 <div class="table-cell-stack">
@@ -237,7 +238,14 @@ onBeforeUnmount(() => {
           </tbody>
         </table>
 
-        <PaginationBar :meta="pagination" :current-count="rows.length" item-label="期" :loading="loading" @change-page="goToPage" />
+        <PaginationBar
+          v-if="pagination && pagination.totalItems > 0"
+          :meta="pagination"
+          :current-count="rows.length"
+          item-label="期"
+          :loading="loading"
+          @change-page="goToPage"
+        />
       </div>
     </template>
   </section>
@@ -250,42 +258,49 @@ onBeforeUnmount(() => {
 
 .geekdaily-toolbar-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.72rem;
-  align-items: end;
+  align-items: center;
 }
 
 .geekdaily-toolbar-summary {
   grid-column: 1;
-  display: grid;
-  gap: 0.16rem;
-  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   padding: 0.52rem 0.68rem;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.58);
 }
 
-.geekdaily-toolbar-summary h3 {
-  margin: 0;
-}
-
-.geekdaily-toolbar-field {
-  gap: 0.24rem;
-}
-
-.geekdaily-toolbar-field span {
+.geekdaily-toolbar-label {
+  flex: none;
   font-size: 0.82rem;
+  font-weight: 700;
 }
 
-.geekdaily-search-field {
-  grid-column: 4;
+.geekdaily-toolbar-search {
+  grid-column: 3;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.6rem;
   min-width: 0;
-  justify-self: stretch;
+  padding: 0.52rem 0.68rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.58);
 }
 
-.geekdaily-toolbar-field input {
+.geekdaily-toolbar-search input {
   width: 100%;
+}
+
+.table-empty-row {
+  padding: 1rem 0.45rem;
+  color: var(--muted);
+  text-align: center;
 }
 
 .table-filter-menu {
@@ -392,8 +407,12 @@ onBeforeUnmount(() => {
     align-items: stretch;
   }
 
-  .geekdaily-search-field {
-    justify-self: stretch;
+  .geekdaily-toolbar-search {
+    grid-column: auto;
+  }
+
+  .geekdaily-toolbar-summary {
+    flex-wrap: wrap;
   }
 }
 </style>
