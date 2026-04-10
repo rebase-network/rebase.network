@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import {
@@ -15,16 +15,30 @@ import { adminFetch, adminFetchWithMeta } from '../lib/api';
 import { formatContentStatus, formatContributorActivityStatus, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
+type ActivityFilterValue = 'all' | 'active' | 'inactive';
+
 const contributors = ref<AdminContributorListItem[]>([]);
 const roles = ref<AdminContributorRoleRecord[]>([]);
 const pagination = ref<PaginatedMeta | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
 const contributorPage = ref(1);
-const filters = reactive({ activityStatus: 'all' });
+const filters = reactive<{ activityStatus: ActivityFilterValue }>({ activityStatus: 'all' });
+const activityFilterOpen = ref(false);
+const activityFilterRef = ref<HTMLElement | null>(null);
 
 const totalContributors = computed(() => pagination.value?.totalAllItems ?? pagination.value?.totalItems ?? contributors.value.length);
 const publishedRoleCount = computed(() => roles.value.filter((item) => item.status === 'published').length);
+const activityFilterOptions = computed(() => [
+  { value: 'all' as ActivityFilterValue, label: '全部' },
+  ...contributorActivityStatusOptions.map((option) => ({
+    value: option.value as ActivityFilterValue,
+    label: formatContributorActivityStatus(option.value),
+  })),
+]);
+const activeFilterLabel = computed(() =>
+  filters.activityStatus === 'all' ? '' : formatContributorActivityStatus(filters.activityStatus),
+);
 
 const buildContributorsRequestPath = () => {
   const params = new URLSearchParams({
@@ -61,6 +75,40 @@ const goToContributorPage = (nextPage: number) => {
   contributorPage.value = nextPage;
 };
 
+const setActivityFilter = (value: ActivityFilterValue) => {
+  filters.activityStatus = value;
+  activityFilterOpen.value = false;
+};
+
+const toggleActivityFilter = () => {
+  activityFilterOpen.value = !activityFilterOpen.value;
+};
+
+const closeActivityFilter = () => {
+  activityFilterOpen.value = false;
+};
+
+const handlePointerDown = (event: PointerEvent) => {
+  if (!activityFilterOpen.value) {
+    return;
+  }
+
+  const target = event.target;
+  if (!(target instanceof Node)) {
+    return;
+  }
+
+  if (!activityFilterRef.value?.contains(target)) {
+    closeActivityFilter();
+  }
+};
+
+const handleEscape = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    closeActivityFilter();
+  }
+};
+
 watch(
   () => filters.activityStatus,
   () => {
@@ -77,7 +125,16 @@ watch(contributorPage, () => {
   void loadData();
 });
 
-onMounted(() => void loadData());
+onMounted(() => {
+  document.addEventListener('pointerdown', handlePointerDown);
+  document.addEventListener('keydown', handleEscape);
+  void loadData();
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', handlePointerDown);
+  document.removeEventListener('keydown', handleEscape);
+});
 </script>
 
 <template>
@@ -133,14 +190,37 @@ onMounted(() => void loadData());
                 <th>角色</th>
                 <th>状态</th>
                 <th class="activity-filter-column">
-                  <div class="table-filter-head">
-                    <span>活跃状态</span>
-                    <select v-model="filters.activityStatus" aria-label="按活跃状态筛选贡献者">
-                      <option value="all">全部</option>
-                      <option v-for="option in contributorActivityStatusOptions" :key="option.value" :value="option.value">
-                        {{ formatContributorActivityStatus(option.value) }}
-                      </option>
-                    </select>
+                  <div ref="activityFilterRef" class="table-filter-menu">
+                    <button
+                      class="table-filter-trigger"
+                      :class="{ 'is-active': filters.activityStatus !== 'all', 'is-open': activityFilterOpen }"
+                      type="button"
+                      aria-haspopup="menu"
+                      :aria-expanded="activityFilterOpen ? 'true' : 'false'"
+                      @click="toggleActivityFilter"
+                    >
+                      <span class="table-filter-trigger-label">活跃状态</span>
+                      <span v-if="activeFilterLabel" class="table-filter-badge">{{ activeFilterLabel }}</span>
+                      <svg class="table-filter-arrow" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M4 6.5 8 10.5l4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" />
+                      </svg>
+                    </button>
+
+                    <div v-if="activityFilterOpen" class="table-filter-popover" role="menu" aria-label="按活跃状态筛选贡献者">
+                      <button
+                        v-for="option in activityFilterOptions"
+                        :key="option.value"
+                        class="table-filter-option"
+                        :class="{ 'is-selected': option.value === filters.activityStatus }"
+                        type="button"
+                        role="menuitemradio"
+                        :aria-checked="option.value === filters.activityStatus ? 'true' : 'false'"
+                        @click="setActivityFilter(option.value)"
+                      >
+                        <span>{{ option.label }}</span>
+                        <span v-if="option.value === filters.activityStatus" class="table-filter-check">✓</span>
+                      </button>
+                    </div>
                   </div>
                 </th>
                 <th>更新时间</th>
@@ -218,24 +298,102 @@ onMounted(() => void loadData());
   font-size: 0.78rem;
 }
 
-.table-filter-head {
+.table-filter-menu {
+  position: relative;
+}
+
+.table-filter-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.table-filter-trigger-label {
+  font-weight: 700;
+}
+
+.table-filter-trigger:hover .table-filter-trigger-label,
+.table-filter-trigger.is-active .table-filter-trigger-label {
+  color: var(--accent-strong);
+}
+
+.table-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.18rem;
+  padding: 0.02rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(15, 109, 100, 0.1);
+  color: var(--accent-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.table-filter-arrow {
+  width: 0.82rem;
+  height: 0.82rem;
+  color: var(--muted);
+  transition: transform 0.18s ease;
+}
+
+.table-filter-trigger.is-open .table-filter-arrow {
+  transform: rotate(180deg);
+}
+
+.table-filter-popover {
+  position: absolute;
+  top: calc(100% + 0.42rem);
+  left: 0;
+  z-index: 20;
   display: grid;
-  gap: 0.2rem;
+  min-width: 148px;
+  padding: 0.3rem;
+  border: 1px solid rgba(15, 109, 100, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 252, 247, 0.96);
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
 }
 
-.table-filter-head span {
-  display: block;
-}
-
-.table-filter-head select {
-  min-width: 0;
-  padding: 0.28rem 0.42rem;
-  font-size: 0.78rem;
+.table-filter-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.45rem 0.52rem;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8rem;
   font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.table-filter-option:hover,
+.table-filter-option.is-selected {
+  background: rgba(15, 109, 100, 0.08);
+}
+
+.table-filter-check {
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
 .activity-filter-column {
-  min-width: 132px;
+  min-width: 154px;
 }
 
 .status-pill-muted {
