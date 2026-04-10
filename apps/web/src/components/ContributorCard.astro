@@ -57,10 +57,10 @@ const isHistoricalContributor = contributor.activityStatus === 'inactive';
   }
 
   .is-historical {
-    border-color: rgba(71, 85, 105, 0.12);
+    border-color: rgba(71, 85, 105, 0.08);
     background:
-      radial-gradient(circle at top right, rgba(148, 163, 184, 0.12), transparent 26%),
-      linear-gradient(180deg, rgba(252, 253, 255, 0.96), rgba(245, 248, 250, 0.92));
+      radial-gradient(circle at top right, rgba(148, 163, 184, 0.08), transparent 24%),
+      linear-gradient(180deg, rgba(253, 254, 255, 0.97), rgba(246, 249, 251, 0.94));
   }
 
   .contributor-card:hover,
@@ -97,20 +97,26 @@ const isHistoricalContributor = contributor.activityStatus === 'inactive';
   .profile-kicker {
     display: inline-flex;
     align-items: center;
+    gap: 0.32rem;
     width: fit-content;
-    padding: 0.28rem 0.62rem;
-    border: 1px solid rgba(71, 85, 105, 0.14);
+    padding: 0;
+    color: rgba(100, 116, 139, 0.82);
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+
+  .profile-kicker::before {
+    content: '';
+    width: 0.34rem;
+    height: 0.34rem;
     border-radius: 999px;
-    background: rgba(241, 245, 249, 0.9);
-    color: rgba(51, 65, 85, 0.92);
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    background: rgba(148, 163, 184, 0.56);
   }
 
   .content h3 {
-    margin-top: 0.2rem;
+    margin-top: 0.14rem;
     font-size: 1.4rem;
     line-height: 1.08;
   }
