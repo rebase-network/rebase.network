@@ -123,6 +123,14 @@ Use `infra/production/server.env.example` as the committed template.
 
 ### R2-related values
 
+Current production state:
+
+- media uploads use `r2-s3`
+- bucket: `rebase-media`
+- canonical public base URL: `https://media.rebase.network`
+- alternate public media host: `https://media.rebase.community`
+- Wrangler-backed upload is retained only as an emergency fallback, not the normal production path
+
 | Variable | Purpose | Secret | Location |
 | --- | --- | --- | --- |
 | `R2_ACCOUNT_ID` | Cloudflare account target for R2 | no | remote env |
@@ -130,9 +138,9 @@ Use `infra/production/server.env.example` as the committed template.
 | `R2_SECRET_ACCESS_KEY` | direct S3-style secret key | yes | remote env |
 | `R2_BUCKET` | media bucket name, currently `rebase-media` | no | remote env |
 | `R2_PUBLIC_BASE_URL` | public media base URL | no | remote env |
-| `R2_DEV_USE_WRANGLER` | fallback Wrangler-based upload mode | no | remote env |
-| `CLOUDFLARE_API_TOKEN` | fallback CLI-based upload token | yes | remote env |
-| `WRANGLER_CONFIG_DIR` | mounted Wrangler profile path | no | remote env |
+| `R2_DEV_USE_WRANGLER` | fallback Wrangler-based upload mode, keep `false` in normal production | no | remote env |
+| `CLOUDFLARE_API_TOKEN` | optional fallback CLI-based upload token | yes | remote env |
+| `WRANGLER_CONFIG_DIR` | optional mounted Wrangler profile path for fallback mode | no | remote env |
 
 ## Operations Entry Points
 
