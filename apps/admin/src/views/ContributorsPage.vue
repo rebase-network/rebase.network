@@ -107,7 +107,7 @@ onMounted(() => void loadData());
 
         <section class="panel compact-summary-card">
           <div class="compact-summary-head">角色概览</div>
-          <div class="compact-summary-value">
+          <div class="compact-summary-value compact-summary-value-inline">
             <strong>{{ publishedRoleCount }} / {{ roles.length }}</strong>
             <span>已启用角色</span>
           </div>
@@ -206,6 +206,16 @@ onMounted(() => void loadData());
 .compact-summary-value span {
   color: var(--muted);
   font-size: 0.8rem;
+}
+
+.compact-summary-value-inline {
+  display: flex;
+  align-items: baseline;
+  gap: 0.44rem;
+}
+
+.compact-summary-value-inline span {
+  font-size: 0.78rem;
 }
 
 .table-filter-head {
