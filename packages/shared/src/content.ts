@@ -477,6 +477,7 @@ export interface AdminJobListItem {
   slug: string;
   companyName: string;
   roleTitle: string;
+  editorName: string | null;
   status: ContentStatus;
   publishedAt: string | null;
   expiresAt: string | null;
@@ -494,6 +495,7 @@ export interface AdminEventListItem {
   id: string;
   slug: string;
   title: string;
+  editorName: string | null;
   status: ContentStatus;
   startAt: string;
   endAt: string;
