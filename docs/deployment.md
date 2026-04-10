@@ -292,6 +292,11 @@ Rebase currently supports two production paths for media uploads:
 
 Production now runs on the first path. The API has been verified in `r2-s3` mode against bucket `rebase-media` with a successful `HeadBucket`, `PutObject`, and `DeleteObject` round trip.
 
+Canonical public media host:
+
+- `https://media.rebase.network`
+- alternate public host: `https://media.rebase.community`
+
 Recommended production env:
 
 ```env
@@ -299,7 +304,7 @@ R2_ACCOUNT_ID=7e327cb72b95b88c927c7122db11baa6
 R2_ACCESS_KEY_ID=...
 R2_SECRET_ACCESS_KEY=...
 R2_BUCKET=rebase-media
-R2_PUBLIC_BASE_URL=https://pub-7a14b84296a7475bbb88b26f89b4226f.r2.dev
+R2_PUBLIC_BASE_URL=https://media.rebase.network
 R2_DEV_USE_WRANGLER=false
 ```
 

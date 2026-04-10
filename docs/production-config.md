@@ -127,7 +127,8 @@ Current production state:
 
 - media uploads use `r2-s3`
 - bucket: `rebase-media`
-- public base URL: `https://pub-7a14b84296a7475bbb88b26f89b4226f.r2.dev`
+- canonical public base URL: `https://media.rebase.network`
+- alternate public media host: `https://media.rebase.community`
 - Wrangler-backed upload is retained only as an emergency fallback, not the normal production path
 
 | Variable | Purpose | Secret | Location |
