@@ -46,4 +46,3 @@ Use the app-specific files below when building or reviewing UI.
 
 - `README.md` for the project-wide documentation index
 - `AGENTS.md` for repository workflow rules
-- `example.md` as a local reference example for DESIGN.md structure and depth
