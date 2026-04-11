@@ -6,7 +6,7 @@ import { contentStatusOptions, type AdminJobRecord } from '@rebase/shared';
 
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
-import { formatContentStatus, formatDateTime, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
+import { formatContentStatus, formatDateTime, fromDateInputValue, slugify, toDateInputValue } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface JobFormState {
@@ -28,7 +28,6 @@ interface JobFormState {
   seoDescription: string;
   status: 'draft' | 'published' | 'archived';
   expiresAt: string;
-  publishedAt: string;
 }
 
 const route = useRoute();
@@ -53,7 +52,6 @@ const createBlankForm = (): JobFormState => ({
   seoDescription: '',
   status: 'draft',
   expiresAt: '',
-  publishedAt: '',
 });
 
 const form = reactive<JobFormState>(createBlankForm());
@@ -71,6 +69,8 @@ const isNew = computed(() => jobId.value.length === 0);
 const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/who-is-hiring/${form.slug}`) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新增招聘' : `编辑招聘：${record.value?.roleTitle ?? ''}`));
 const statusLabel = computed(() => formatContentStatus(form.status));
+const publishedMetaLabel = computed(() => (record.value?.publishedAt ? formatDateTime(record.value.publishedAt) : '首次发布后生成'));
+const updatedMetaLabel = computed(() => (record.value ? formatDateTime(record.value.updatedAt) : '创建后生成'));
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -98,8 +98,7 @@ const applyRecord = (payload: AdminJobRecord) => {
     seoTitle: payload.seoTitle,
     seoDescription: payload.seoDescription,
     status: payload.status,
-    expiresAt: toDateTimeInputValue(payload.expiresAt),
-    publishedAt: toDateTimeInputValue(payload.publishedAt),
+    expiresAt: toDateInputValue(payload.expiresAt),
   });
   slugTouched.value = true;
 };
@@ -136,8 +135,7 @@ const save = async () => {
     const payload = {
       ...form,
       applyUrl: form.applyUrl || null,
-      expiresAt: fromDateTimeInputValue(form.expiresAt),
-      publishedAt: fromDateTimeInputValue(form.publishedAt),
+      expiresAt: fromDateInputValue(form.expiresAt),
     };
 
     const nextRecord = await adminRequest<AdminJobRecord>(
@@ -256,21 +254,19 @@ onMounted(() => void loadRecord());
               <dd>{{ publicUrl }}</dd>
             </div>
             <div class="summary-item">
+              <dt>首次发布</dt>
+              <dd class="muted">{{ publishedMetaLabel }}</dd>
+            </div>
+            <div class="summary-item">
               <dt>最后更新</dt>
-              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '创建后生成' }}</dd>
+              <dd class="muted">{{ updatedMetaLabel }}</dd>
             </div>
           </dl>
 
-          <div class="field-grid field-grid-compact job-schedule-grid">
-            <label class="field">
-              <span>发布时间</span>
-              <input v-model="form.publishedAt" type="datetime-local" />
-            </label>
-            <label class="field">
-              <span>过期时间</span>
-              <input v-model="form.expiresAt" type="datetime-local" />
-            </label>
-          </div>
+          <label class="field">
+            <span>截止日期</span>
+            <input v-model="form.expiresAt" type="date" />
+          </label>
         </section>
 
         <section class="panel stacked-gap job-sidebar-card">
@@ -363,15 +359,6 @@ onMounted(() => void loadRecord());
 
 .job-meta-grid {
   gap: 0.55rem;
-}
-
-.job-schedule-grid {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.job-schedule-grid input {
-  min-width: 0;
-  width: 100%;
 }
 
 .job-remote-field {

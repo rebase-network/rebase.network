@@ -33,6 +33,30 @@ export const toDateTimeInputValue = (value?: string | null) => {
 
 export const fromDateTimeInputValue = (value: string) => (value ? new Date(value).toISOString() : null);
 
+export const toDateInputValue = (value?: string | null) => {
+  if (!value) {
+    return '';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const offsetMinutes = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - offsetMinutes * 60_000);
+  return local.toISOString().slice(0, 10);
+};
+
+export const fromDateInputValue = (value: string) => {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(`${value}T23:59:59.999`);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+};
+
 export const formatContentStatus = (status: ContentStatus) => {
   switch (status) {
     case 'draft':

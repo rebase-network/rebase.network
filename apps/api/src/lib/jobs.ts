@@ -48,6 +48,14 @@ const mapJobDetail = (row: any) => ({
   updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
 });
 
+const resolveJobPublishedAt = (status: ContentStatus, currentPublishedAt?: string | null) => {
+  if (currentPublishedAt) {
+    return new Date(currentPublishedAt);
+  }
+
+  return status === 'published' ? new Date() : null;
+};
+
 const ensureUniqueSlug = async (slug: string, currentId?: string) => {
   const db = getDb();
   const rows = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.slug, slug)).limit(1);
@@ -136,7 +144,7 @@ export const createAdminJob = async (input: JobInput, actor: AuditActor) => {
       seoDescription: input.seoDescription,
       status: input.status,
       expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
-      publishedAt: ensurePublishedAt(input.status, input.publishedAt),
+      publishedAt: resolveJobPublishedAt(input.status),
       updatedByStaffId: actor.actorStaffAccountId ?? null,
     })
     .returning();
@@ -182,7 +190,7 @@ export const updateAdminJob = async (id: string, input: JobInput, actor: AuditAc
       seoDescription: input.seoDescription,
       status: input.status,
       expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
-      publishedAt: ensurePublishedAt(input.status, input.publishedAt),
+      publishedAt: resolveJobPublishedAt(input.status, current.publishedAt),
       updatedByStaffId: actor.actorStaffAccountId ?? null,
       updatedAt: new Date(),
     })
