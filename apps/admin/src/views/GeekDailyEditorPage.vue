@@ -72,6 +72,7 @@ const episodeSuggestionHint = computed(() =>
 const derivedTitle = computed(() => (form.episodeNumber > 0 ? `极客日报#${form.episodeNumber}` : '极客日报#'));
 const statusLabel = computed(() => formatContentStatus(form.status));
 const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft') ? '保存草稿' : '保存修改'));
+const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'button-primary'].filter(Boolean).join(' '));
 const canPublish = computed(() => form.status !== 'published');
 const canArchive = computed(() => Boolean(record.value) && form.status !== 'archived');
 const workflowHint = computed(() => {
@@ -288,7 +289,7 @@ const persist = async (nextStatus: GeekDailyFormState['status'], mode: 'save' | 
     );
 
     applyRecord(nextRecord);
-    successMessage.value = mode === 'publish' ? '极客日报已发布。' : isNew.value ? '草稿已保存。' : '修改已保存。';
+    successMessage.value = mode === 'publish' ? '已发布。' : isNew.value ? '草稿已保存。' : '修改已保存。';
 
     if (isNew.value) {
       await router.replace(`/geekdaily/${nextRecord.id}/edit`);
@@ -318,7 +319,7 @@ const runAction = async (action: 'archive') => {
   try {
     const nextRecord = await adminRequest<AdminGeekDailyRecord>(`/api/admin/v1/geekdaily/${record.value.id}/${action}`, { method: 'POST' });
     applyRecord(nextRecord);
-    successMessage.value = '极客日报已归档。';
+    successMessage.value = '已归档。';
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '无法执行该操作。';
   } finally {
@@ -351,10 +352,10 @@ onBeforeUnmount(() => {
       </div>
       <div class="page-actions">
         <RouterLink class="button-link" to="/geekdaily">返回列表</RouterLink>
-        <button class="button-link button-primary" type="button" :disabled="loading || saving || actioning" @click="save">
+        <button :class="saveButtonClass" type="button" :disabled="loading || saving || actioning" @click="save">
           {{ saving ? '保存中…' : saveButtonLabel }}
         </button>
-        <button v-if="canPublish" class="button-link" type="button" :disabled="loading || saving || actioning" @click="publish">
+        <button v-if="canPublish" class="button-link button-primary" type="button" :disabled="loading || saving || actioning" @click="publish">
           {{ actioning ? '发布中…' : '发布' }}
         </button>
         <button v-if="canArchive" class="button-link button-danger" type="button" :disabled="saving || actioning" @click="runAction('archive')">归档</button>
