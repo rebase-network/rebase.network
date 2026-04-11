@@ -1,11 +1,10 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import DetailHero from '@/components/DetailHero.astro';
-import DetailSidebarLinksSection from '@/components/DetailSidebarLinksSection.astro';
+import JobCard from '@/components/JobCard.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
 import { getJobBySlug, getJobs, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
-import { getJobPath } from '@/lib/paths';
 
 const slug = Astro.params.slug ?? '';
 const [site, job, jobs] = await Promise.all([getSiteSettings(), getJobBySlug(slug), getJobs()]);
@@ -22,29 +21,8 @@ const jobBreadcrumbs = job
       { label: job.roleTitle, current: true },
     ]
   : [];
-const jobHeroMeta = job ? [job.workMode, job.location, remoteLabel].filter(Boolean) : [];
-const jobHeroActions = job
-  ? [
-      ...(job.applyUrl ? [{ href: job.applyUrl, label: '立即投递', external: true, showIcon: true }] : []),
-      { href: '/who-is-hiring', label: '回到招聘列表', secondary: true },
-    ]
-  : [];
-const jobJumpLinks = [
-  { href: '#job-overview', label: '岗位概览' },
-  { href: '#job-info', label: '投递信息' },
-];
-const jobWayfindingLinks = [
-  { href: '#job-overview', label: '查看岗位概览' },
-  { href: '#job-info', label: '查看投递信息' },
-];
-const jobActionLinks = [
-  ...(job?.applyUrl ? [{ href: job.applyUrl, label: '打开外部投递链接', external: true }] : []),
-  { href: '/who-is-hiring', label: '回到招聘列表' },
-];
-const jobRelatedLinks = related.map((item) => ({
-  href: getJobPath(item.slug),
-  label: item.roleTitle,
-}));
+const metaItems = job ? [job.salary, job.workMode, job.location, remoteLabel, deadlineLabel].filter(Boolean) : [];
+const contactCopy = job?.contactValue ? `${job.contactLabel || '联系方式'}：${job.contactValue}` : '请优先使用岗位投递渠道。';
 
 if (!job) {
   Astro.response.status = 404;
@@ -60,22 +38,49 @@ if (!job) {
   {job ? (
     <>
       <section class="shell page-hero single">
-        <DetailHero
-          kicker="岗位详情"
-          breadcrumbs={jobBreadcrumbs}
-          edition={job.companyName}
-          title={job.roleTitle}
-          summary={job.summary}
-          meta={jobHeroMeta}
-          note={`${job.salary} · ${deadlineLabel}`}
-          actions={jobHeroActions}
-          jumps={jobJumpLinks}
-          heroClass="job-hero"
-        />
+        <article class="card job-header">
+          <div class="job-header-topline">
+            <div class="job-header-context">
+              <p class="hero-kicker">岗位详情</p>
+              <nav class="job-breadcrumbs" aria-label="Breadcrumb">
+                {jobBreadcrumbs.map((item, index) => (
+                  <>
+                    {item.current || !item.href ? (
+                      <span aria-current={item.current ? 'page' : undefined}>{item.label}</span>
+                    ) : (
+                      <a href={item.href}>{item.label}</a>
+                    )}
+                    {index < jobBreadcrumbs.length - 1 && <span aria-hidden="true">/</span>}
+                  </>
+                ))}
+              </nav>
+            </div>
+            <span class="job-company-chip">{job.companyName}</span>
+          </div>
+
+          <h1 class="job-header-title">{job.roleTitle}</h1>
+          <p class="job-header-summary">{job.summary}</p>
+
+          <div class="job-header-meta">
+            {metaItems.map((item) => (
+              <span>{item}</span>
+            ))}
+          </div>
+
+          <div class="button-row">
+            {job.applyUrl && (
+              <a class="button-link" href={job.applyUrl} target="_blank" rel="noreferrer">
+                立即投递
+                <span>↗</span>
+              </a>
+            )}
+            <a class="button-link secondary" href="/who-is-hiring">回到招聘列表</a>
+          </div>
+        </article>
       </section>
 
-      <section class="shell page-section detail-shell">
-        <article id="job-overview" class="card detail-body-card job-detail">
+      <section class="shell page-section job-detail-layout">
+        <article class="card job-content-card">
           <div class="job-meta-grid">
             <article>
               <span>公司</span>
@@ -98,17 +103,21 @@ if (!job) {
           <MarkdownContent content={job.description} />
         </article>
 
-        <aside class="card detail-sidebar">
-          <DetailSidebarLinksSection
-            title="页面导览"
-            copy="如果你是从搜索结果或职位分享进入，可以先用这些锚点快速判断是否匹配。"
-            links={jobWayfindingLinks}
-          />
+        <aside class="card job-apply-card">
+          <section class="job-apply-section">
+            <h2>投递方式</h2>
+            <p class="job-apply-copy">{applyCopy}</p>
 
-          <section id="job-info" class="detail-sidebar-section">
-            <h2>投递信息</h2>
-            <p class="detail-sidebar-copy">{applyCopy}</p>
-            <ul class="detail-fact-list">
+            <div class="job-apply-actions">
+              {job.applyUrl && (
+                <a class="button-link" href={job.applyUrl} target="_blank" rel="noreferrer">
+                  打开投递链接
+                  <span>↗</span>
+                </a>
+              )}
+            </div>
+
+            <ul class="job-fact-list">
               <li>
                 <strong>投递周期</strong>
                 <span>{deadlineLabel}</span>
@@ -119,28 +128,33 @@ if (!job) {
               </li>
               <li>
                 <strong>联系方式</strong>
-                <span>{job.contactValue ? `${job.contactLabel || '联系方式'}：${job.contactValue}` : '请优先使用岗位投递渠道。'}</span>
+                <span>{contactCopy}</span>
               </li>
             </ul>
+
             {job.tags.length > 0 && (
-              <ul class="detail-tag-list">
+              <ul class="job-tag-list">
                 {job.tags.map((tag) => <li>{tag}</li>)}
               </ul>
             )}
           </section>
-
-          <DetailSidebarLinksSection id="job-actions" title="继续查看" links={jobActionLinks} />
-
-          {related.length > 0 && (
-            <DetailSidebarLinksSection
-              id="job-related"
-              title="相关岗位"
-              links={jobRelatedLinks}
-              listClass="related-list"
-            />
-          )}
         </aside>
       </section>
+
+      {related.length > 0 && (
+        <section class="shell page-section">
+          <SectionHeader
+            eyebrow="更多机会"
+            title="继续浏览其他岗位"
+            description="如果这个岗位暂时不匹配，可以继续看看同一批公开机会。"
+            href="/who-is-hiring"
+            hrefLabel="回到岗位列表"
+          />
+          <div class="grid-2 job-related-grid">
+            {related.map((item) => <JobCard job={item} />)}
+          </div>
+        </section>
+      )}
     </>
   ) : (
     <section class="shell page-hero single">
@@ -158,17 +172,184 @@ if (!job) {
     grid-template-columns: 1fr;
   }
 
-  .job-hero {
-    color: white;
+  .job-header {
+    padding: 1.4rem;
     background:
-      radial-gradient(circle at 15% 18%, rgba(125, 211, 252, 0.2), transparent 24%),
-      linear-gradient(135deg, rgba(19, 33, 68, 0.98), rgba(15, 118, 110, 0.92));
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 28px 60px rgba(19, 33, 68, 0.24);
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.22), transparent 22%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(249, 253, 252, 0.92));
   }
 
-  .light {
-    color: white;
+  .job-header-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    justify-content: space-between;
+    gap: 0.9rem;
+  }
+
+  .job-header-context {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .job-breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  .job-company-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.46rem 0.76rem;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 118, 110, 0.12);
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .job-header-title {
+    margin: 0.9rem 0 0;
+    max-width: 12ch;
+    font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+    line-height: 0.94;
+  }
+
+  .job-header-summary {
+    margin: 0.9rem 0 0;
+    max-width: 60ch;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .job-header-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+
+  .job-header-meta span {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.46rem 0.74rem;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.06);
+    color: var(--accent-strong);
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+
+  .job-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.62fr) minmax(18rem, 0.78fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .job-content-card {
+    padding: 1.35rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 252, 247, 0.9));
+  }
+
+  .job-apply-card {
+    position: sticky;
+    top: 6.3rem;
+    padding: 1rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 251, 250, 0.92));
+  }
+
+  .job-apply-section {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .job-apply-section h2,
+  .job-apply-copy {
+    margin: 0;
+  }
+
+  .job-apply-section h2 {
+    font-size: 1.2rem;
+  }
+
+  .job-apply-copy {
+    color: var(--muted);
+    line-height: 1.72;
+  }
+
+  .job-apply-actions {
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .job-apply-actions .button-link {
+    justify-content: center;
+  }
+
+  .job-fact-list,
+  .job-tag-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .job-fact-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .job-fact-list li {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed rgba(31, 41, 51, 0.12);
+  }
+
+  .job-fact-list li:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .job-fact-list strong,
+  .job-fact-list span {
+    display: block;
+  }
+
+  .job-fact-list strong {
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .job-fact-list span {
+    margin-top: 0.34rem;
+    line-height: 1.68;
+  }
+
+  .job-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .job-tag-list li {
+    padding: 0.36rem 0.66rem;
+    border-radius: 999px;
+    background: rgba(31, 41, 51, 0.05);
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+
+  .job-related-grid {
+    align-items: start;
   }
 
   .job-meta-grid {
@@ -201,7 +382,16 @@ if (!job) {
     margin-top: 0.4rem;
     font-size: 1.05rem;
   }
+
   @media (max-width: 960px) {
+    .job-detail-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .job-apply-card {
+      position: static;
+    }
+
     .job-meta-grid {
       grid-template-columns: 1fr;
     }
