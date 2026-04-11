@@ -117,7 +117,6 @@ interface BaselineJob {
   location: string;
   summary: string;
   description: string;
-  responsibilities: string[];
   apply_url: string | null;
   apply_note: string | null;
   contact_label: string | null;
@@ -482,7 +481,6 @@ const seedContent = async (database: Database, baselineData: BaselineData) => {
       location: job.location,
       summary: job.summary,
       descriptionMarkdown: job.description,
-      responsibilitiesJson: job.responsibilities,
       applyUrl: job.apply_url,
       applyNote: job.apply_note,
       contactLabel: job.contact_label,

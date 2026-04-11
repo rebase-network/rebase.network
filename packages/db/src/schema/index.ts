@@ -238,7 +238,6 @@ export const jobs = pgTable('jobs', {
   location: text('location').notNull(),
   summary: text('summary').notNull(),
   descriptionMarkdown: text('description_markdown').notNull(),
-  responsibilitiesJson: jsonb('responsibilities_json').notNull(),
   applyUrl: text('apply_url'),
   applyNote: text('apply_note'),
   contactLabel: text('contact_label'),
