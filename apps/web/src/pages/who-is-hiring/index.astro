@@ -13,17 +13,14 @@ const jobSignals = [
   {
     value: String(jobs.length).padStart(2, '0'),
     label: '开放岗位',
-    detail: '当前公开可读的岗位机会，优先收敛到同一个入口里浏览和比较。',
   },
   {
     value: String(remoteJobCount).padStart(2, '0'),
     label: '支持远程',
-    detail: '远程信息直接前置展示，帮助求职者更快判断是否适合自己。',
   },
   {
     value: String(datedJobCount).padStart(2, '0'),
     label: '标注截止',
-    detail: '有明确截止日期的岗位会直接写明，方便优先安排投递顺序。',
   },
 ];
 ---
@@ -35,6 +32,7 @@ const jobSignals = [
     title="查看 Rebase 社区当前开放的岗位机会。"
     summary="把薪资、工作模式、地点、远程支持和投递入口集中放在同一个公开入口里，方便快速判断和比较。"
     signals={jobSignals}
+    compactSignals={true}
     heroClass="jobs-hero"
   />
 
@@ -59,58 +57,3 @@ const jobSignals = [
     )}
   </section>
 </BaseLayout>
-
-<style>
-  :global(.jobs-hero) {
-    background:
-      radial-gradient(circle at top left, rgba(243, 196, 110, 0.28), transparent 30%),
-      radial-gradient(circle at 92% 18%, rgba(56, 189, 248, 0.16), transparent 24%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 251, 244, 0.92));
-  }
-
-  :global(.jobs-hero::before) {
-    content: 'HIRING';
-    position: absolute;
-    top: 1rem;
-    right: 1.25rem;
-    color: rgba(17, 94, 89, 0.08);
-    font-family: var(--display-font);
-    font-size: clamp(3.8rem, 8vw, 6.6rem);
-    letter-spacing: 0.08em;
-    line-height: 0.82;
-    pointer-events: none;
-  }
-
-  :global(.jobs-hero .hero-title) {
-    max-width: 10ch;
-    font-size: clamp(2.4rem, 4.9vw, 4.6rem);
-  }
-
-  :global(.jobs-hero .hero-summary) {
-    max-width: 52ch;
-  }
-
-  :global(.jobs-hero .hero-facts article p) {
-    line-height: 1.62;
-  }
-
-  .jobs-empty-state {
-    padding: 1.35rem;
-  }
-
-  .jobs-empty-state h2,
-  .jobs-empty-state p {
-    margin: 0;
-  }
-
-  .jobs-empty-state h2 {
-    font-size: clamp(1.45rem, 2.2vw, 2.1rem);
-  }
-
-  .jobs-empty-state p:not(.hero-kicker) {
-    margin-top: 0.75rem;
-    max-width: 56ch;
-    color: var(--muted);
-    line-height: 1.75;
-  }
-</style>

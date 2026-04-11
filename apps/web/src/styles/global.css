@@ -797,35 +797,53 @@ h4 {
   align-items: start;
 }
 
-.job-detail-page .job-meta-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.8rem;
-  margin-bottom: 1.2rem;
+.jobs-hero {
+  background:
+    radial-gradient(circle at top left, rgba(243, 196, 110, 0.28), transparent 30%),
+    radial-gradient(circle at 92% 18%, rgba(56, 189, 248, 0.16), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 251, 244, 0.92));
 }
 
-.job-detail-page .job-meta-grid article {
-  padding: 1rem;
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.74);
-  border: 1px solid rgba(31, 41, 51, 0.08);
-}
-
-.job-detail-page .job-meta-grid span,
-.job-detail-page .job-meta-grid strong {
-  display: block;
-}
-
-.job-detail-page .job-meta-grid span {
-  color: var(--muted);
-  font-size: 0.78rem;
+.jobs-hero::before {
+  content: 'HIRING';
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  color: rgba(17, 94, 89, 0.08);
+  font-family: var(--display-font);
+  font-size: clamp(3.8rem, 8vw, 6.6rem);
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+  line-height: 0.82;
+  pointer-events: none;
 }
 
-.job-detail-page .job-meta-grid strong {
-  margin-top: 0.4rem;
-  font-size: 1.05rem;
+.jobs-hero .hero-title {
+  max-width: 10ch;
+  font-size: clamp(2.4rem, 4.9vw, 4.6rem);
+}
+
+.jobs-hero .hero-summary {
+  max-width: 52ch;
+}
+
+.jobs-empty-state {
+  padding: 1.35rem;
+}
+
+.jobs-empty-state h2,
+.jobs-empty-state p {
+  margin: 0;
+}
+
+.jobs-empty-state h2 {
+  font-size: clamp(1.45rem, 2.2vw, 2.1rem);
+}
+
+.jobs-empty-state p:not(.hero-kicker) {
+  margin-top: 0.75rem;
+  max-width: 56ch;
+  color: var(--muted);
+  line-height: 1.75;
 }
 
 @media (max-width: 960px) {
@@ -837,8 +855,12 @@ h4 {
     position: static;
   }
 
-  .job-detail-page .job-fact-list,
-  .job-detail-page .job-meta-grid {
+  .job-detail-page .job-fact-list {
     grid-template-columns: 1fr;
+  }
+
+  .jobs-hero .hero-topline {
+    align-items: start;
+    justify-content: start;
   }
 }

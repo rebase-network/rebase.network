@@ -81,25 +81,6 @@ if (!job) {
 
         <section class="shell page-section job-detail-layout">
           <article class="card job-content-card">
-            <div class="job-meta-grid">
-              <article>
-                <span>公司</span>
-                <strong>{job.companyName}</strong>
-              </article>
-              <article>
-                <span>薪资</span>
-                <strong>{job.salary}</strong>
-              </article>
-              <article>
-                <span>模式</span>
-                <strong>{job.workMode}</strong>
-              </article>
-              <article>
-                <span>地点</span>
-                <strong>{job.location}</strong>
-              </article>
-            </div>
-
             <MarkdownContent content={job.description} />
           </article>
 
