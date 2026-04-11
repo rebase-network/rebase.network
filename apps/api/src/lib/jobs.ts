@@ -284,6 +284,7 @@ export const listPublicJobs = async () => {
     contactLabel: row.contactLabel ?? '',
     contactValue: row.contactValue ?? '',
     publishedAt: toIsoString(row.publishedAt),
+    expiresAt: toIsoString(row.expiresAt),
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
   }));
 };
@@ -311,6 +312,7 @@ export const getPublicJobBySlug = async (slug: string) => {
     contactLabel: row.contactLabel ?? '',
     contactValue: row.contactValue ?? '',
     publishedAt: toIsoString(row.publishedAt),
+    expiresAt: toIsoString(row.expiresAt),
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
   };
 };

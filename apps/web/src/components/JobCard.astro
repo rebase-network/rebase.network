@@ -9,6 +9,7 @@ interface Props {
 
 const { job } = Astro.props;
 const companyInitial = job.companyName.slice(0, 1).toUpperCase();
+const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` : '长期开放';
 ---
 
 <article class="job-card card">
@@ -16,7 +17,7 @@ const companyInitial = job.companyName.slice(0, 1).toUpperCase();
     <div class="company-mark" aria-hidden="true">{companyInitial}</div>
     <div class="company-copy">
       <p>{job.companyName}</p>
-      <span>{formatDate(job.publishedAt)}</span>
+      <span>{availabilityLabel}</span>
     </div>
     {job.supportsRemote && <strong class="remote-flag">远程</strong>}
   </div>

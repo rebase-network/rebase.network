@@ -11,6 +11,7 @@ const slug = Astro.params.slug ?? '';
 const [site, job, jobs] = await Promise.all([getSiteSettings(), getJobBySlug(slug), getJobs()]);
 const related = job ? jobs.filter((item) => item.slug !== job.slug).slice(0, 2) : [];
 const remoteLabel = job ? (job.supportsRemote ? '支持远程' : '线下优先') : '';
+const deadlineLabel = job ? (job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` : '长期开放') : '';
 const applyCopy = job
   ? job.applyNote || (job.applyUrl ? '请通过下方外部链接投递。' : '请通过下方联系方式投递。')
   : '';
@@ -66,7 +67,7 @@ if (!job) {
           title={job.roleTitle}
           summary={job.summary}
           meta={jobHeroMeta}
-          note={`${job.salary} · 发布时间 ${formatDate(job.publishedAt)}`}
+          note={`${job.salary} · ${deadlineLabel}`}
           actions={jobHeroActions}
           jumps={jobJumpLinks}
           heroClass="job-hero"
@@ -109,8 +110,8 @@ if (!job) {
             <p class="detail-sidebar-copy">{applyCopy}</p>
             <ul class="detail-fact-list">
               <li>
-                <strong>发布时间</strong>
-                <span>{formatDate(job.publishedAt)}</span>
+                <strong>投递周期</strong>
+                <span>{deadlineLabel}</span>
               </li>
               <li>
                 <strong>远程支持</strong>
