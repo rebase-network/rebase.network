@@ -12,7 +12,7 @@ import {
 
 import PaginationBar from '../components/PaginationBar.vue';
 import { adminFetchWithMeta } from '../lib/api';
-import { formatBoolean, formatContentStatus, formatDateTime } from '../lib/format';
+import { formatBoolean, formatContentStatus, formatDate, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const rows = ref<AdminJobListItem[]>([]);
@@ -208,8 +208,8 @@ onBeforeUnmount(() => {
                 </div>
               </th>
               <th class="admin-col-remote">远程</th>
-              <th class="admin-col-time">发布时间</th>
-              <th class="admin-col-updated">更新时间</th>
+              <th class="admin-col-time">截止日期</th>
+              <th class="admin-col-updated">最后更新</th>
               <th></th>
             </tr>
           </thead>
@@ -227,7 +227,7 @@ onBeforeUnmount(() => {
               <td>{{ row.editorName || '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td>{{ formatBoolean(row.supportsRemote) }}</td>
-              <td>{{ formatDateTime(row.publishedAt) }}</td>
+              <td>{{ formatDate(row.expiresAt) }}</td>
               <td>{{ formatDateTime(row.updatedAt) }}</td>
               <td class="table-actions-cell">
                 <div class="table-action-list">
