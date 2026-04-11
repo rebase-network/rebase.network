@@ -2,7 +2,6 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import JobCard from '@/components/JobCard.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
-import SectionHeader from '@/components/SectionHeader.astro';
 import { getJobBySlug, getJobs, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 
@@ -118,13 +117,13 @@ if (!job) {
 
         {related.length > 0 && (
           <section class="shell page-section">
-            <SectionHeader
-              eyebrow="更多机会"
-              title="继续浏览其他岗位"
-              description="如果这个岗位暂时不匹配，可以继续看看同一批公开机会。"
-              href="/who-is-hiring"
-              hrefLabel="回到岗位列表"
-            />
+            <div class="job-related-toolbar">
+              <p class="job-related-toolbar-copy">
+                <strong>更多岗位</strong>
+                <span>{related.length} 个岗位</span>
+              </p>
+              <a class="button-link secondary job-related-toolbar-link" href="/who-is-hiring">回到招聘列表</a>
+            </div>
             <div class="grid-2 job-related-grid">
               {related.map((item) => <JobCard job={item} />)}
             </div>
