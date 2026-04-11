@@ -44,6 +44,7 @@ The target architecture is no longer a headless CMS workflow.
 
 ## Documentation
 
+- `DESIGN.md`: public and admin design principles, UI density rules, and page-pattern guidance for future development
 - `docs/v1-scope.md`: V1 goals, scope, and non-goals
 - `docs/architecture.md`: target system architecture, deployment, caching, and runtime decisions
 - `docs/content-model.md`: public content domains, field design, and URL conventions
