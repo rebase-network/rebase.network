@@ -158,7 +158,7 @@ publicRoutes.get('/geekdaily/archive', async (c) => {
   const year = rawYear && /^\d{4}$/.test(rawYear) ? Number.parseInt(rawYear, 10) : undefined;
   const tag = c.req.query('tag')?.trim() ?? '';
   const page = getPositiveLimit(c.req.query('page'), 1);
-  const pageSize = getPositiveLimit(c.req.query('pageSize'), 18);
+  const pageSize = getPositiveLimit(c.req.query('pageSize'), 10);
   const result = await listPublicGeekDailyArchivePage({
     page,
     pageSize,

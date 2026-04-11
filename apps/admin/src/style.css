@@ -1008,6 +1008,178 @@ code {
   white-space: nowrap;
 }
 
+.admin-list-toolbar-panel {
+  padding-block: 0.72rem;
+}
+
+.admin-list-toolbar-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.72rem;
+  align-items: center;
+}
+
+.admin-list-toolbar-summary {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.5rem;
+}
+
+.admin-list-toolbar-label {
+  flex: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.admin-list-toolbar-search {
+  grid-column: 3;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  min-height: 2.5rem;
+}
+
+.admin-list-toolbar-search .admin-list-toolbar-label {
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.admin-list-toolbar-search input {
+  width: 100%;
+}
+
+.admin-table-empty-row {
+  padding: 1rem 0.45rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.admin-table-filter-menu {
+  position: relative;
+}
+
+.admin-table-filter-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-table-filter-trigger-label {
+  font-weight: 700;
+}
+
+.admin-table-filter-trigger:hover .admin-table-filter-trigger-label,
+.admin-table-filter-trigger.is-active .admin-table-filter-trigger-label {
+  color: var(--accent-strong);
+}
+
+.admin-table-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.18rem;
+  padding: 0.02rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(15, 109, 100, 0.1);
+  color: var(--accent-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.admin-table-filter-arrow {
+  width: 0.82rem;
+  height: 0.82rem;
+  color: var(--muted);
+  transition: transform 0.18s ease;
+}
+
+.admin-table-filter-trigger.is-open .admin-table-filter-arrow {
+  transform: rotate(180deg);
+}
+
+.admin-table-filter-popover {
+  position: absolute;
+  top: calc(100% + 0.42rem);
+  left: 0;
+  z-index: 20;
+  display: grid;
+  min-width: 148px;
+  padding: 0.3rem;
+  border: 1px solid rgba(15, 109, 100, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 252, 247, 0.96);
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+}
+
+.admin-table-filter-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.45rem 0.52rem;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-table-filter-option:hover,
+.admin-table-filter-option.is-selected {
+  background: rgba(15, 109, 100, 0.08);
+}
+
+.admin-table-filter-check {
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.admin-status-filter-column {
+  min-width: 154px;
+}
+
+.admin-col-editor,
+.admin-col-author {
+  width: 150px;
+}
+
+.admin-col-count,
+.admin-col-remote,
+.admin-col-city {
+  width: 88px;
+}
+
+.admin-col-time,
+.admin-col-updated {
+  width: 152px;
+}
+
+.admin-list-table .table-action-list {
+  gap: 0.42rem;
+}
+
+.admin-list-table .muted-row {
+  font-size: 0.8rem;
+}
+
 .table-cell-stack {
   gap: 0.18rem;
 }
@@ -1597,6 +1769,21 @@ code {
 
   .sticky-stack {
     position: static;
+  }
+}
+
+@media (max-width: 1100px) {
+  .admin-list-toolbar-row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .admin-list-toolbar-search {
+    grid-column: auto;
+  }
+
+  .admin-list-toolbar-summary {
+    flex-wrap: wrap;
   }
 }
 

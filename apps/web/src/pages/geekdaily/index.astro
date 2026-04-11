@@ -4,7 +4,7 @@ import { getGeekDailyArchiveOverview, getGeekDailyEpisodes, getSiteSettings } fr
 import { formatDate } from '@/lib/dates';
 import { getGeekDailyPath } from '@/lib/paths';
 
-const pageSize = 18;
+const pageSize = 10;
 const [site, overview, episodes] = await Promise.all([
   getSiteSettings(),
   getGeekDailyArchiveOverview(),
@@ -176,7 +176,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       data: SearchDocumentPayload[];
     };
 
-    const pageSize = 18;
+    const pageSize = 10;
     const input = document.querySelector<HTMLInputElement>('#geekdaily-search');
     const list = document.querySelector<HTMLElement>('#results-list');
     const totalEpisodes = Number(list?.dataset.totalEpisodes ?? '0');

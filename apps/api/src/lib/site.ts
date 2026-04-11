@@ -19,6 +19,17 @@ const defaultSiteSettings: SiteSettingsInput = {
   copyrightText: 'Copyright © Rebase Community. All rights reserved.',
 };
 
+const githubSocialLink: SiteSettingsInput['socialLinks'][number] = {
+  label: 'GitHub',
+  href: 'https://github.com/rebase-network',
+  handle: '',
+};
+
+const normalizeSocialLinks = (links: SiteSettingsInput['socialLinks']) => {
+  const hasGithub = links.some((item) => item.label === githubSocialLink.label || item.href === githubSocialLink.href);
+  return hasGithub ? links : [...links, githubSocialLink];
+};
+
 const defaultHomePage: HomePageInput = {
   heroTitle: 'Rebase Community 是由中国开发者们在业余时间用热爱建立的开发者社区。',
   heroSummary:
@@ -133,7 +144,7 @@ export const getAdminSite = async (): Promise<AdminSiteEditorPayload> => {
       primaryDomain: settings.primaryDomain,
       secondaryDomain: settings.secondaryDomain,
       mediaDomain: settings.mediaDomain,
-      socialLinks: (settings.socialLinksJson as SiteSettingsInput['socialLinks']) ?? [],
+      socialLinks: normalizeSocialLinks((settings.socialLinksJson as SiteSettingsInput['socialLinks']) ?? []),
       footerGroups: (settings.footerGroupsJson as SiteSettingsInput['footerGroups']) ?? [],
       copyrightText: settings.copyrightText,
     },

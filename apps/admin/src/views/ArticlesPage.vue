@@ -154,47 +154,47 @@ onBeforeUnmount(() => {
     <div v-else-if="loading" class="panel"><p>正在加载文章列表…</p></div>
 
     <template v-else>
-      <section class="panel list-toolbar-panel">
-        <div class="list-toolbar-row">
-          <div class="list-toolbar-summary">
+      <section class="panel admin-list-toolbar-panel">
+        <div class="admin-list-toolbar-row">
+          <div class="admin-list-toolbar-summary">
             <div class="panel-meta">共 {{ totalArticles }} 篇 / 当前 {{ filteredArticles }} 篇 / 第 {{ pagination?.page ?? 1 }} 页</div>
           </div>
 
-          <label class="list-toolbar-search" for="article-search">
-            <span class="list-toolbar-label">搜索</span>
+          <label class="admin-list-toolbar-search" for="article-search">
+            <span class="admin-list-toolbar-label">搜索</span>
             <input id="article-search" v-model="filters.query" type="search" placeholder="搜索标题、slug 或作者" />
           </label>
         </div>
       </section>
 
       <div class="panel table-panel">
-        <table class="data-table dense-table">
+        <table class="data-table dense-table admin-list-table">
           <thead>
             <tr>
               <th>标题</th>
-              <th>作者</th>
-              <th class="status-filter-column">
-                <div ref="statusFilterRef" class="table-filter-menu">
+              <th class="admin-col-author">作者</th>
+              <th class="admin-status-filter-column">
+                <div ref="statusFilterRef" class="admin-table-filter-menu">
                   <button
-                    class="table-filter-trigger"
+                    class="admin-table-filter-trigger"
                     :class="{ 'is-active': filters.status !== 'all', 'is-open': statusFilterOpen }"
                     type="button"
                     aria-haspopup="menu"
                     :aria-expanded="statusFilterOpen ? 'true' : 'false'"
                     @click="toggleStatusFilter"
                   >
-                    <span class="table-filter-trigger-label">状态</span>
-                    <span v-if="activeStatusFilterLabel" class="table-filter-badge">{{ activeStatusFilterLabel }}</span>
-                    <svg class="table-filter-arrow" viewBox="0 0 16 16" aria-hidden="true">
+                    <span class="admin-table-filter-trigger-label">状态</span>
+                    <span v-if="activeStatusFilterLabel" class="admin-table-filter-badge">{{ activeStatusFilterLabel }}</span>
+                    <svg class="admin-table-filter-arrow" viewBox="0 0 16 16" aria-hidden="true">
                       <path d="M4 6.5 8 10.5l4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" />
                     </svg>
                   </button>
 
-                  <div v-if="statusFilterOpen" class="table-filter-popover" role="menu" aria-label="按状态筛选文章">
+                  <div v-if="statusFilterOpen" class="admin-table-filter-popover" role="menu" aria-label="按状态筛选文章">
                     <button
                       v-for="option in statusFilterOptions"
                       :key="option.value"
-                      class="table-filter-option"
+                      class="admin-table-filter-option"
                       :class="{ 'is-selected': option.value === filters.status }"
                       type="button"
                       role="menuitemradio"
@@ -202,19 +202,19 @@ onBeforeUnmount(() => {
                       @click="setStatusFilter(option.value)"
                     >
                       <span>{{ option.label }}</span>
-                      <span v-if="option.value === filters.status" class="table-filter-check">✓</span>
+                      <span v-if="option.value === filters.status" class="admin-table-filter-check">✓</span>
                     </button>
                   </div>
                 </div>
               </th>
-              <th>发布时间</th>
-              <th>更新时间</th>
+              <th class="admin-col-time">发布时间</th>
+              <th class="admin-col-updated">更新时间</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="rows.length === 0">
-              <td class="table-empty-row" colspan="6">当前筛选条件下没有文章，请调整搜索或状态筛选。</td>
+              <td class="admin-table-empty-row" colspan="6">当前筛选条件下没有文章，请调整搜索或状态筛选。</td>
             </tr>
             <tr v-for="row in rows" :key="row.id">
               <td>
@@ -249,168 +249,3 @@ onBeforeUnmount(() => {
     </template>
   </section>
 </template>
-
-<style scoped>
-.list-toolbar-panel {
-  padding-block: 0.72rem;
-}
-
-.list-toolbar-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.72rem;
-  align-items: center;
-}
-
-.list-toolbar-summary {
-  grid-column: 1;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  min-height: 2.5rem;
-}
-
-.list-toolbar-label {
-  flex: none;
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.list-toolbar-search {
-  grid-column: 3;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 0.6rem;
-  min-width: 0;
-  min-height: 2.5rem;
-}
-
-.list-toolbar-search .list-toolbar-label {
-  font-size: 0.96rem;
-  font-weight: 800;
-}
-
-.list-toolbar-search input {
-  width: 100%;
-}
-
-.table-empty-row {
-  padding: 1rem 0.45rem;
-  color: var(--muted);
-  text-align: center;
-}
-
-.table-filter-menu {
-  position: relative;
-}
-
-.table-filter-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.32rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  cursor: pointer;
-}
-
-.table-filter-trigger-label {
-  font-weight: 700;
-}
-
-.table-filter-trigger:hover .table-filter-trigger-label,
-.table-filter-trigger.is-active .table-filter-trigger-label {
-  color: var(--accent-strong);
-}
-
-.table-filter-badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.18rem;
-  padding: 0.02rem 0.4rem;
-  border-radius: 999px;
-  background: rgba(15, 109, 100, 0.1);
-  color: var(--accent-strong);
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.table-filter-arrow {
-  width: 0.82rem;
-  height: 0.82rem;
-  color: var(--muted);
-  transition: transform 0.18s ease;
-}
-
-.table-filter-trigger.is-open .table-filter-arrow {
-  transform: rotate(180deg);
-}
-
-.table-filter-popover {
-  position: absolute;
-  top: calc(100% + 0.42rem);
-  left: 0;
-  z-index: 20;
-  display: grid;
-  min-width: 148px;
-  padding: 0.3rem;
-  border: 1px solid rgba(15, 109, 100, 0.12);
-  border-radius: 12px;
-  background: rgba(255, 252, 247, 0.96);
-  box-shadow:
-    0 12px 28px rgba(15, 23, 42, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-}
-
-.table-filter-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
-  width: 100%;
-  padding: 0.45rem 0.52rem;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-}
-
-.table-filter-option:hover,
-.table-filter-option.is-selected {
-  background: rgba(15, 109, 100, 0.08);
-}
-
-.table-filter-check {
-  color: var(--accent-strong);
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.status-filter-column {
-  min-width: 154px;
-}
-
-@media (max-width: 1100px) {
-  .list-toolbar-row {
-    grid-template-columns: 1fr;
-    align-items: stretch;
-  }
-
-  .list-toolbar-search {
-    grid-column: auto;
-  }
-
-  .list-toolbar-summary {
-    flex-wrap: wrap;
-  }
-}
-</style>

@@ -20,6 +20,7 @@ export const siteSettings = {
     { label: 'Discord', href: 'https://discord.gg/9BATkxjfXS' },
     { label: 'Twitter', href: 'https://x.com/RebaseCommunity', handle: '@RebaseCommunity' },
     { label: 'Telegram', href: 'https://t.me/rebasenetwork', handle: '@rebasenetwork' },
+    { label: 'GitHub', href: 'https://github.com/rebase-network' },
     { label: '微信公众号', href: 'https://mp.weixin.qq.com/', handle: 'rebase_network' },
     { label: 'QQ 群', href: 'https://qm.qq.com/', handle: '1001507060' },
   ],
