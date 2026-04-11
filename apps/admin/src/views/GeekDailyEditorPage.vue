@@ -71,6 +71,21 @@ const episodeSuggestionHint = computed(() =>
 );
 const derivedTitle = computed(() => (form.episodeNumber > 0 ? `极客日报#${form.episodeNumber}` : '极客日报#'));
 const statusLabel = computed(() => formatContentStatus(form.status));
+const workflowHint = computed(() => {
+  if (isNew.value) {
+    return '先保存草稿，再点击“发布”；右侧可继续复制微信公众号内容。';
+  }
+
+  if (form.status === 'published') {
+    return '已发布内容继续使用“保存修改”；右侧微信稿会同步更新。';
+  }
+
+  if (form.status === 'archived') {
+    return '已归档内容仅后台可见。';
+  }
+
+  return '草稿内容仅后台可见，点击“发布”后前台才会显示。';
+});
 const episodeEditorLabel = computed(() => {
   if (record.value) {
     return record.value.editors.length > 0 ? record.value.editors.join('、') : '待补充';
@@ -265,7 +280,7 @@ const save = async () => {
     );
 
     applyRecord(nextRecord);
-    successMessage.value = isNew.value ? '极客日报已创建。' : '极客日报已保存。';
+    successMessage.value = isNew.value ? '草稿已保存。' : '修改已保存。';
 
     if (isNew.value) {
       await router.replace(`/geekdaily/${nextRecord.id}/edit`);
@@ -317,11 +332,12 @@ onBeforeUnmount(() => {
       <div>
         <h2>{{ pageTitle }}</h2>
         <p>期数内容与条目 · {{ statusLabel }}</p>
+        <small class="panel-meta">{{ workflowHint }}</small>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link" to="/geekdaily">返回列表</RouterLink>
         <button class="button-link button-primary" type="button" :disabled="loading || saving" @click="save">
-          {{ saving ? '保存中…' : isNew ? '创建一期' : '保存修改' }}
+          {{ saving ? '保存中…' : isNew ? '保存草稿' : '保存修改' }}
         </button>
         <button class="button-link" type="button" :disabled="!record || actioning" @click="runAction('publish')">发布</button>
         <button class="button-link button-danger" type="button" :disabled="!record || actioning" @click="runAction('archive')">归档</button>

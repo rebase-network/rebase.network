@@ -3,7 +3,6 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import {
-  contentStatusOptions,
   type AdminArticleRecord,
 } from '@rebase/shared';
 
@@ -64,6 +63,21 @@ const isNew = computed(() => articleId.value.length === 0);
 const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/articles/${form.slug}`) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新建文章' : `编辑文章：${article.value?.title ?? ''}`));
 const statusLabel = computed(() => formatContentStatus(form.status));
+const workflowHint = computed(() => {
+  if (isNew.value) {
+    return '先保存草稿，再点击“发布”，前台才会显示。';
+  }
+
+  if (form.status === 'published') {
+    return '已发布内容继续使用“保存修改”。';
+  }
+
+  if (form.status === 'archived') {
+    return '已归档内容仅后台可见。';
+  }
+
+  return '草稿内容仅后台可见，点击“发布”后前台才会显示。';
+});
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -142,7 +156,7 @@ const save = async () => {
     );
 
     applyRecord(record);
-    successMessage.value = isNew.value ? '文章已创建。' : '文章已保存。';
+    successMessage.value = isNew.value ? '草稿已保存。' : '修改已保存。';
 
     if (isNew.value) {
       await router.replace(`/articles/${record.id}/edit`);
@@ -183,12 +197,13 @@ onMounted(() => void loadArticle());
       <div>
         <h2>{{ pageTitle }}</h2>
         <p>优先完成正文，其余字段保持精简。</p>
+        <small class="panel-meta">{{ workflowHint }}</small>
       </div>
 
       <div class="page-actions">
         <RouterLink class="button-link" to="/articles">返回列表</RouterLink>
         <button class="button-link button-primary" type="button" :disabled="loading || saving" @click="save">
-          {{ saving ? '保存中…' : isNew ? '创建文章' : '保存修改' }}
+          {{ saving ? '保存中…' : isNew ? '保存草稿' : '保存修改' }}
         </button>
         <button class="button-link" type="button" :disabled="!article || actioning" @click="runAction('publish')">发布</button>
         <button class="button-link button-danger" type="button" :disabled="!article || actioning" @click="runAction('archive')">归档</button>
@@ -244,13 +259,6 @@ onMounted(() => void loadArticle());
             <h3>发布设置</h3>
             <span class="status-pill">{{ statusLabel }}</span>
           </div>
-
-          <label class="field">
-            <span>文章状态</span>
-            <select v-model="form.status">
-              <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-            </select>
-          </label>
 
           <dl class="summary-grid summary-grid-1 article-meta-grid">
             <div class="summary-item">
