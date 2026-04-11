@@ -1,8 +1,6 @@
 ---
 import ArticleCard from '@/components/ArticleCard.astro';
-import ListBriefGrid from '@/components/ListBriefGrid.astro';
 import ListEmptyState from '@/components/ListEmptyState.astro';
-import ListLeadSection from '@/components/ListLeadSection.astro';
 import ListPageHero from '@/components/ListPageHero.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
@@ -11,97 +9,43 @@ import { getArticles, getSiteSettings } from '@/lib/content';
 const [site, articles] = await Promise.all([getSiteSettings(), getArticles()]);
 const leadArticle = articles[0];
 const archiveArticles = articles.slice(1);
-
-const articleSignals = [
-  {
-    value: String(articles.length).padStart(2, '0'),
-    label: '已发布文章',
-    detail: '先保持结构清晰、可读、可订阅，而不是把长文散落在不同平台里。',
-  },
-  {
-    value: 'RSS',
-    label: '标准输出',
-    detail: '订阅源固定在 /articles/rss.xml，让写作同时服务站内浏览与外部阅读器。',
-  },
-  {
-    value: 'Lead',
-    label: '主稿入口',
-    detail: '栏目首页保留一个编辑推荐入口，先承接最值得完整阅读的一篇长文。',
-  },
-];
-
-const articleBriefs = [
-  {
-    eyebrow: 'Writing desk',
-    title: '主稿 + 归档',
-    summary: '栏目首页先给一个主稿入口，再把其余文章组织成稳定归档，阅读节奏更像编辑台而不是普通列表。',
-    tone: 'warm',
-  },
-  {
-    eyebrow: 'Front page flow',
-    title: '从首页流向长文',
-    summary: '首页负责发现和更新速度，文章页负责把判断、复盘和方法沉淀成完整上下文。',
-    tone: 'cool',
-  },
-  {
-    eyebrow: 'Editorial scope',
-    title: '方法论先于宣传',
-    summary: '这里优先承载产品、信息架构、社区运营和 builder workflow，而不是轻量口号式内容。',
-    tone: 'neutral',
-  },
-];
-
-const articleLeadPoints = [
-  {
-    title: '优先完整',
-    description: '把结论、过程、引用和后续动作留在同一页里，减少信息散落。',
-  },
-  {
-    title: '持续分发',
-    description: '通过首页入口、详情页和 RSS，让长文保持可再次进入的阅读能力。',
-  },
-];
 ---
 
 <BaseLayout site={site} title="Rebase 文章" description="浏览 Rebase 社区发布的文章、复盘与方法总结。">
   <ListPageHero
-    kicker="文章归档"
-    edition="Archive Index"
-    title="把社区里的想法、复盘和方法写成可以沉淀下来的文章。"
-    summary="文章页承接更长线的讨论：产品、信息架构、社区运营和 builder workflow。"
-    note="首页负责告诉读者现在在发生什么，文章栏目页则负责把判断、过程和方法沉淀成可以再次引用的上下文。"
-    signals={articleSignals}
-    jumps={[
-      { href: '#editorial-desk', label: '编辑推荐' },
-      { href: '#article-archive', label: '全部文章' },
-    ]}
+    kicker="文章"
+    edition="Rebase Writing"
+    title="Rebase 文章"
+    summary="把社区里的判断、复盘和方法整理成可以继续阅读、继续引用的长内容。"
     heroClass="articles-hero"
   />
 
-  <ListBriefGrid id="article-brief" items={articleBriefs} />
-
-  {leadArticle && (
-    <ListLeadSection
-      id="editorial-desk"
-      eyebrow="主推荐"
-      title="编辑台推荐阅读"
-      description="文章栏目首页先给出一个代表当前判断和方法论的主稿入口，再把其余内容交给归档承接。"
-      noteEyebrow="Reading desk"
-      noteTitle="一篇栏目主稿，应该先告诉读者 Rebase 正在如何思考、如何迭代。"
-      noteSummary="它不只是“最新文章”，而是负责承接最完整的一次判断、复盘或方法总结。"
-      notePoints={articleLeadPoints}
-      noteLinkHref="/articles/rss.xml"
-      noteLinkLabel="订阅文章 RSS"
-    >
-      <ArticleCard article={leadArticle} featured />
-    </ListLeadSection>
-  )}
+  <section id="article-latest" class="shell page-section">
+    <SectionHeader
+      eyebrow="最新文章"
+      title="先从最近的一篇开始"
+      description="最新发布的长文放在最前面，其余文章继续留在归档里。"
+      href="/articles/rss.xml"
+      hrefLabel="订阅 RSS"
+    />
+    {leadArticle ? (
+      <div class="article-lead-grid">
+        <ArticleCard article={leadArticle} featured />
+      </div>
+    ) : (
+      <ListEmptyState
+        kicker="持续整理"
+        title="文章归档正在建立中。"
+        description="新的复盘、方法和判断会逐步补充进这个栏目。"
+      />
+    )}
+  </section>
 
   <section id="article-archive" class="shell page-section">
     <SectionHeader
-      eyebrow="文章列表"
+      eyebrow="文章归档"
       title="全部文章"
-      description="归档保持简单直接：先保证阅读、订阅和二次进入，再继续扩展更多运营能力。"
+      description="按发布时间持续归档，方便继续查找、继续引用。"
       href="/articles/rss.xml"
       hrefLabel="订阅 RSS"
     />
@@ -141,7 +85,11 @@ const articleLeadPoints = [
   }
 
   :global(.articles-hero .hero-title) {
-    max-width: 12ch;
+    max-width: 8ch;
     text-wrap: balance;
+  }
+
+  .article-lead-grid {
+    display: grid;
   }
 </style>

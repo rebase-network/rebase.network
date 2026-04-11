@@ -1,8 +1,6 @@
 ---
 import EventCard from '@/components/EventCard.astro';
-import ListBriefGrid from '@/components/ListBriefGrid.astro';
 import ListEmptyState from '@/components/ListEmptyState.astro';
-import ListLeadSection from '@/components/ListLeadSection.astro';
 import ListPageHero from '@/components/ListPageHero.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
@@ -15,110 +13,41 @@ const [site, upcomingEvents, pastEvents] = await Promise.all([
 ]);
 const leadUpcomingEvent = upcomingEvents[0];
 const remainingUpcomingEvents = leadUpcomingEvent ? upcomingEvents.slice(1) : upcomingEvents;
-
-const eventSignals = [
-  {
-    value: String(upcomingEvents.length).padStart(2, '0'),
-    label: '当前活动',
-    detail: '当前可参与的活动先被明确摆在最前面，避免读者还要自己筛找报名入口。',
-  },
-  {
-    value: String(pastEvents.length).padStart(2, '0'),
-    label: '历史归档',
-    detail: '过去的活动继续保留地点、议题和说明，不让社区上下文从记忆里消失。',
-  },
-  {
-    value: 'RSS',
-    label: '订阅出口',
-    detail: '活动变化继续通过 /events/rss.xml 对外输出，保持公开更新能力。',
-  },
-];
-
-const eventBriefs = [
-  {
-    eyebrow: 'Participation',
-    title: '外部报名优先',
-    summary: '第一版不做站内复杂表单，先把时间、地点、说明和报名链接准确地摆在同一个页面里。',
-    tone: 'warm',
-  },
-  {
-    eyebrow: 'Context',
-    title: '活动说明要完整',
-    summary: '一张活动卡片之外，还要交代议题、场地和参与门槛，减少读者来回跳转确认信息。',
-    tone: 'cool',
-  },
-  {
-    eyebrow: 'Archive value',
-    title: '历史也有价值',
-    summary: '活动结束后页面继续留存，方便回看过往主题、合作方和社区节奏。',
-    tone: 'neutral',
-  },
-];
-
-const eventLeadPoints = [
-  {
-    title: '动作前置',
-    description: '把最主要的报名入口放在首屏附近，不让读者在页面里反复寻找。',
-  },
-  {
-    title: '归档不丢失',
-    description: '即使活动结束，页面也继续保留，方便社区回看曾经发生过什么。',
-  },
-];
 ---
 
 <BaseLayout site={site} title="Rebase 活动" description="查看 Rebase 社区的当前活动与历史活动归档。">
   <ListPageHero
-    kicker="活动归档"
-    edition="Agenda Index"
-    title="活动页先做好表达与归档，再慢慢加深运营能力。"
-    summary="第一版活动详情页不做站内报名表，但会清晰展示时间、地点、说明和外部报名入口。"
-    note="活动栏目既要服务当前报名，也要服务后续回看；它不只是“近期活动列表”，也是社区节奏的公开档案。"
-    signals={eventSignals}
-    jumps={[
-      { href: '#lead-event', label: '当前主推' },
-      { href: '#upcoming-archive', label: '近期活动' },
-      { href: '#past-archive', label: '历史归档' },
-    ]}
+    kicker="活动"
+    edition="Rebase Agenda"
+    title="Rebase 活动"
+    summary="查看当前活动、外部报名入口和历史活动归档。"
     heroClass="events-hero"
   />
-
-  <ListBriefGrid id="event-brief" items={eventBriefs} />
-
-  {leadUpcomingEvent && (
-    <ListLeadSection
-      id="lead-event"
-      eyebrow="重点活动"
-      title="当前主推活动"
-      description="活动栏目先给一个足够明确的主推入口，让读者一眼知道什么时候、在哪里、为什么值得参与。"
-      noteEyebrow="Participation desk"
-      noteTitle="主推活动应该一眼回答“什么时候、在哪里、为什么值得去”。"
-      noteSummary="活动详情页优先保证时间、地点、议题和报名方式准确清晰，把参与门槛降到最低。"
-      notePoints={eventLeadPoints}
-      noteLinkHref="/events/rss.xml"
-      noteLinkLabel="订阅活动 RSS"
-    >
-      <EventCard event={leadUpcomingEvent} />
-    </ListLeadSection>
-  )}
 
   <section id="upcoming-archive" class="shell page-section">
     <SectionHeader
       eyebrow="近期活动"
       title="当前活动"
-      description="主推入口之外，近期活动继续按公开可读、可报名、可订阅的方式组织。"
+      description="把可参与的活动放在最前面，时间、地点和报名方式一眼可见。"
       href="/events/rss.xml"
       hrefLabel="订阅 RSS"
     />
-    {remainingUpcomingEvents.length > 0 ? (
-      <div class="grid-3">
-        {remainingUpcomingEvents.map((event) => <EventCard event={event} />)}
+    {leadUpcomingEvent ? (
+      <div class="events-current-stack">
+        <div class="event-lead-grid">
+          <EventCard event={leadUpcomingEvent} />
+        </div>
+        {remainingUpcomingEvents.length > 0 && (
+          <div class="grid-3">
+            {remainingUpcomingEvents.map((event) => <EventCard event={event} />)}
+          </div>
+        )}
       </div>
     ) : (
       <ListEmptyState
         kicker="持续排期"
         title="更多活动正在安排中。"
-        description="当前先保留主推活动入口，新的公开活动会继续按同一结构补进这条时间线里。"
+        description="新的公开活动会继续按同一结构补进这条时间线里。"
       />
     )}
   </section>
@@ -166,7 +95,16 @@ const eventLeadPoints = [
   }
 
   :global(.events-hero .hero-title) {
-    max-width: 11ch;
+    max-width: 8ch;
     text-wrap: balance;
+  }
+
+  .events-current-stack {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .event-lead-grid {
+    display: grid;
   }
 </style>
