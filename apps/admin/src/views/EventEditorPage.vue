@@ -11,7 +11,7 @@ import {
 import AssetPickerField from '../components/AssetPickerField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
-import { formatRegistrationMode, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
+import { formatContentStatus, formatDateTime, formatRegistrationMode, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface EventFormState {
@@ -80,6 +80,7 @@ const publicUrl = computed(() => {
   return getPublicSiteUrl(`/events/${routeParam}`);
 });
 const pageTitle = computed(() => (isNew.value ? '新增活动' : `编辑活动：${record.value?.title ?? ''}`));
+const statusLabel = computed(() => formatContentStatus(form.status));
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -211,82 +212,159 @@ onMounted(() => void loadRecord());
     <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
     <div v-if="loading" class="panel"><p>正在准备活动编辑器…</p></div>
 
-    <div v-else class="stacked-gap">
-      <section class="panel stacked-gap editor-main">
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>活动标题</span>
-            <input v-model="form.title" type="text" placeholder="Rebase Shanghai Builder Night" @input="onTitleInput" />
-          </label>
-          <label class="field">
-            <span>URL 标识</span>
-            <input v-model="form.slug" type="text" placeholder="rebase-shanghai-builder-night" @input="slugTouched = true" />
-          </label>
-        </div>
+    <div v-else class="editor-grid editor-grid-focus event-editor-layout">
+      <section class="panel stacked-gap editor-main event-editor-main">
+        <div class="field-shell stacked-gap event-leading-fields">
+          <div class="field-inline-row field-inline-row-compact">
+            <div class="field-inline-label">
+              <span>标题</span>
+            </div>
+            <div class="field-inline-control">
+              <input v-model="form.title" class="event-title-input" type="text" placeholder="Rebase Shanghai Builder Night" @input="onTitleInput" />
+              <small v-if="fieldIssues.title" class="field-error">{{ fieldIssues.title }}</small>
+            </div>
+          </div>
 
-        <label class="field">
-          <span>摘要</span>
-          <textarea v-model="form.summary" rows="3" placeholder="用一句话介绍这场活动的核心主题。" />
-        </label>
-
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>开始时间</span>
-            <input v-model="form.startAt" type="datetime-local" />
-          </label>
-          <label class="field">
-            <span>结束时间</span>
-            <input v-model="form.endAt" type="datetime-local" />
-          </label>
-        </div>
-
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>城市</span>
-            <input v-model="form.city" type="text" placeholder="上海" />
-          </label>
-          <label class="field">
-            <span>地点描述</span>
-            <input v-model="form.location" type="text" placeholder="上海市静安区 / 线下空间" />
-          </label>
-        </div>
-
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>报名模式</span>
-            <select v-model="form.registrationMode">
-              <option v-for="value in registrationModeValues" :key="value" :value="value">{{ formatRegistrationMode(value) }}</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>报名链接</span>
-            <input v-model="form.registrationUrl" :disabled="form.registrationMode !== 'external_url'" type="url" placeholder="https://lu.ma/..." />
-          </label>
+          <div class="field-inline-row field-inline-row-compact">
+            <div class="field-inline-label">
+              <span>摘要</span>
+            </div>
+            <div class="field-inline-control">
+              <textarea v-model="form.summary" rows="2" placeholder="用一句话介绍这场活动的核心主题。" />
+              <small v-if="fieldIssues.summary" class="field-error">{{ fieldIssues.summary }}</small>
+            </div>
+          </div>
         </div>
 
         <MarkdownEditorField
           v-model="form.bodyMarkdown"
           label="活动详情"
           placeholder="使用 Markdown 描述活动流程、议题和参与说明。"
-          :rows="20"
+          :rows="26"
         />
       </section>
 
-      <section class="panel stacked-gap">
-        <div class="panel-toolbar">
-          <h3>发布设置</h3>
-          <div class="panel-meta">{{ publicUrl }}</div>
-        </div>
-        <div class="field-grid field-grid-2">
+      <aside class="stacked-gap editor-sidebar sticky-stack">
+        <section class="panel stacked-gap event-sidebar-card">
+          <div class="panel-toolbar">
+            <h3>发布设置</h3>
+            <span class="status-pill">{{ statusLabel }}</span>
+          </div>
+
           <label class="field">
-            <span>状态</span>
+            <span>活动状态</span>
             <select v-model="form.status">
               <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
             </select>
           </label>
+
+          <dl class="summary-grid summary-grid-1 event-meta-grid">
+            <div class="summary-item">
+              <dt>公开地址</dt>
+              <dd>{{ publicUrl }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>最后更新</dt>
+              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '创建后生成' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel stacked-gap event-sidebar-card">
+          <div class="panel-toolbar">
+            <h3>封面</h3>
+            <div class="panel-meta">{{ form.coverAssetId ? '已设置' : '未设置' }}</div>
+          </div>
           <AssetPickerField v-model="form.coverAssetId" label="封面资源" empty-label="当前未选择封面资源。" />
-        </div>
-      </section>
+        </section>
+
+        <section class="panel stacked-gap event-sidebar-card">
+          <div class="panel-toolbar">
+            <h3>时间与地点</h3>
+            <div class="panel-meta">活动基础信息</div>
+          </div>
+
+          <label class="field">
+            <span>URL 标识</span>
+            <input v-model="form.slug" type="text" placeholder="rebase-shanghai-builder-night" @input="slugTouched = true" />
+            <small v-if="fieldIssues.slug" class="field-error">{{ fieldIssues.slug }}</small>
+          </label>
+
+          <div class="field-grid field-grid-2 field-grid-compact">
+            <label class="field">
+              <span>开始时间</span>
+              <input v-model="form.startAt" type="datetime-local" />
+            </label>
+            <label class="field">
+              <span>结束时间</span>
+              <input v-model="form.endAt" type="datetime-local" />
+            </label>
+          </div>
+
+          <div class="field-grid field-grid-2 field-grid-compact">
+            <label class="field">
+              <span>城市</span>
+              <input v-model="form.city" type="text" placeholder="上海" />
+            </label>
+            <label class="field">
+              <span>地点描述</span>
+              <input v-model="form.location" type="text" placeholder="上海市静安区 / 线下空间" />
+            </label>
+          </div>
+        </section>
+
+        <section class="panel stacked-gap event-sidebar-card">
+          <div class="panel-toolbar">
+            <h3>报名设置</h3>
+            <div class="panel-meta">{{ formatRegistrationMode(form.registrationMode) }}</div>
+          </div>
+
+          <label class="field">
+            <span>报名模式</span>
+            <select v-model="form.registrationMode">
+              <option v-for="value in registrationModeValues" :key="value" :value="value">{{ formatRegistrationMode(value) }}</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>报名链接</span>
+            <input v-model="form.registrationUrl" :disabled="form.registrationMode !== 'external_url'" type="url" placeholder="https://lu.ma/..." />
+          </label>
+        </section>
+      </aside>
     </div>
   </section>
 </template>
+
+<style scoped>
+.event-editor-layout {
+  grid-template-columns: minmax(0, 2.48fr) minmax(260px, 0.9fr);
+}
+
+.event-editor-main {
+  gap: 0.75rem;
+}
+
+.event-leading-fields {
+  gap: 0.65rem;
+}
+
+.event-title-input {
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.event-sidebar-card {
+  gap: 0.7rem;
+}
+
+.event-meta-grid {
+  gap: 0.55rem;
+}
+
+@media (max-width: 1280px) {
+  .event-editor-layout {
+    grid-template-columns: minmax(0, 2.18fr) minmax(240px, 0.92fr);
+  }
+}
+</style>
