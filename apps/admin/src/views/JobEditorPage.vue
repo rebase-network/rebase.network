@@ -261,7 +261,7 @@ onMounted(() => void loadRecord());
             </div>
           </dl>
 
-          <div class="field-grid field-grid-2 field-grid-compact">
+          <div class="field-grid field-grid-compact job-schedule-grid">
             <label class="field">
               <span>发布时间</span>
               <input v-model="form.publishedAt" type="datetime-local" />
@@ -363,6 +363,15 @@ onMounted(() => void loadRecord());
 
 .job-meta-grid {
   gap: 0.55rem;
+}
+
+.job-schedule-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.job-schedule-grid input {
+  min-width: 0;
+  width: 100%;
 }
 
 .job-remote-field {
