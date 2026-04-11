@@ -11,7 +11,7 @@ import AssetPickerField from '../components/AssetPickerField.vue';
 import AuthorsField from '../components/AuthorsField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
-import { fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
+import { formatContentStatus, formatDateTime, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface ArticleFormState {
@@ -63,6 +63,7 @@ const articleId = computed(() => (typeof route.params.id === 'string' ? route.pa
 const isNew = computed(() => articleId.value.length === 0);
 const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/articles/${form.slug}`) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新建文章' : `编辑文章：${article.value?.title ?? ''}`));
+const statusLabel = computed(() => formatContentStatus(form.status));
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -198,52 +199,127 @@ onMounted(() => void loadArticle());
     <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
     <div v-if="loading" class="panel"><p>正在准备文章编辑器…</p></div>
 
-    <div v-else class="stacked-gap">
-      <section class="panel stacked-gap editor-main">
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>标题</span>
-            <input v-model="form.title" type="text" placeholder="把 Rebase 做成一个持续更新的社区媒体站点" @input="onTitleInput" />
-            <small v-if="fieldIssues.title" class="field-error">{{ fieldIssues.title }}</small>
-          </label>
-          <label class="field">
-            <span>URL 标识</span>
-            <input v-model="form.slug" type="text" placeholder="building-rebase-in-public" @input="onSlugInput" />
-            <small v-if="fieldIssues.slug" class="field-error">{{ fieldIssues.slug }}</small>
-          </label>
+    <div v-else class="editor-grid editor-grid-focus article-editor-layout">
+      <section class="panel stacked-gap editor-main article-editor-main">
+        <div class="field-shell stacked-gap article-leading-fields">
+          <div class="field-inline-row field-inline-row-compact">
+            <div class="field-inline-label">
+              <span>标题</span>
+            </div>
+            <div class="field-inline-control">
+              <input
+                v-model="form.title"
+                class="article-title-input"
+                type="text"
+                placeholder="把 Rebase 做成一个持续更新的社区媒体站点"
+                @input="onTitleInput"
+              />
+              <small v-if="fieldIssues.title" class="field-error">{{ fieldIssues.title }}</small>
+            </div>
+          </div>
+
+          <div class="field-inline-row field-inline-row-compact">
+            <div class="field-inline-label">
+              <span>摘要</span>
+            </div>
+            <div class="field-inline-control">
+              <textarea v-model="form.summary" rows="2" placeholder="用一句话描述这篇文章的意义。" />
+              <small v-if="fieldIssues.summary" class="field-error">{{ fieldIssues.summary }}</small>
+            </div>
+          </div>
         </div>
 
-        <label class="field">
-          <span>摘要</span>
-          <textarea v-model="form.summary" rows="3" placeholder="用一句话描述这篇文章的意义。" />
-          <small v-if="fieldIssues.summary" class="field-error">{{ fieldIssues.summary }}</small>
-        </label>
-
-        <AuthorsField v-model="form.authors" :show-role="false" />
         <MarkdownEditorField
           v-model="form.bodyMarkdown"
           label="正文"
           placeholder="使用 Markdown 编写文章正文。"
           :error="fieldIssues.bodyMarkdown"
-          :rows="22"
+          :rows="28"
         />
       </section>
 
-      <section class="panel stacked-gap">
-        <div class="panel-toolbar">
-          <h3>发布设置</h3>
-          <div class="panel-meta">{{ publicUrl }}</div>
-        </div>
-        <div class="field-grid field-grid-2">
+      <aside class="stacked-gap editor-sidebar sticky-stack">
+        <section class="panel stacked-gap article-sidebar-card">
+          <div class="panel-toolbar">
+            <h3>发布设置</h3>
+            <span class="status-pill">{{ statusLabel }}</span>
+          </div>
+
           <label class="field">
-            <span>状态</span>
+            <span>文章状态</span>
             <select v-model="form.status">
               <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
             </select>
           </label>
+
+          <dl class="summary-grid summary-grid-1 article-meta-grid">
+            <div class="summary-item">
+              <dt>公开地址</dt>
+              <dd>{{ publicUrl }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>最后更新</dt>
+              <dd class="muted">{{ article ? formatDateTime(article.updatedAt) : '创建后生成' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel stacked-gap article-sidebar-card">
+          <div class="panel-toolbar">
+            <h3>封面</h3>
+            <div class="panel-meta">{{ form.coverAssetId ? '已设置' : '未设置' }}</div>
+          </div>
           <AssetPickerField v-model="form.coverAssetId" label="封面资源" empty-label="当前未选择封面资源。" />
-        </div>
-      </section>
+        </section>
+
+        <section class="panel stacked-gap article-sidebar-card">
+          <div class="panel-toolbar">
+            <h3>链接与作者</h3>
+            <div class="panel-meta">基础信息</div>
+          </div>
+
+          <label class="field">
+            <span>URL 标识</span>
+            <input v-model="form.slug" type="text" placeholder="building-rebase-in-public" @input="onSlugInput" />
+            <small v-if="fieldIssues.slug" class="field-error">{{ fieldIssues.slug }}</small>
+          </label>
+
+          <AuthorsField v-model="form.authors" :show-role="false" compact />
+        </section>
+      </aside>
     </div>
   </section>
 </template>
+
+<style scoped>
+.article-editor-layout {
+  grid-template-columns: minmax(0, 2.55fr) minmax(260px, 0.86fr);
+}
+
+.article-editor-main {
+  gap: 0.75rem;
+}
+
+.article-leading-fields {
+  gap: 0.65rem;
+}
+
+.article-title-input {
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.article-sidebar-card {
+  gap: 0.7rem;
+}
+
+.article-meta-grid {
+  gap: 0.55rem;
+}
+
+@media (max-width: 1280px) {
+  .article-editor-layout {
+    grid-template-columns: minmax(0, 2.2fr) minmax(240px, 0.9fr);
+  }
+}
+</style>
