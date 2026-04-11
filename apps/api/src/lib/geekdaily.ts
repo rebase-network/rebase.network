@@ -166,6 +166,14 @@ const coerceDate = (value: Date | string | null | undefined) => {
   return Number.isNaN(date.getTime()) ? new Date() : date;
 };
 
+const resolveGeekDailyPublishedAt = (status: ContentStatus, currentPublishedAt?: Date | string | null) => {
+  if (status !== 'published') {
+    return currentPublishedAt ? coerceDate(currentPublishedAt) : new Date();
+  }
+
+  return currentPublishedAt ? coerceDate(currentPublishedAt) : new Date();
+};
+
 const mapEpisodeDetail = (row: any, items: any[]) => ({
   id: row.id,
   slug: getGeekDailyEpisodeSlug(row.episodeNumber),
@@ -331,8 +339,8 @@ export const createAdminGeekDailyEpisode = async (input: GeekDailyEpisodeInput, 
       bodyMarkdown: buildGeekDailyBodyMarkdown({ ...input, editors }),
       editorsJson: editors,
       tagsJson: input.tags,
-      status: 'draft',
-      publishedAt: new Date(),
+      status: input.status,
+      publishedAt: resolveGeekDailyPublishedAt(input.status),
       updatedByStaffId: actor.actorStaffAccountId ?? null,
     })
     .returning();
@@ -371,8 +379,8 @@ export const updateAdminGeekDailyEpisode = async (id: string, input: GeekDailyEp
       bodyMarkdown: buildGeekDailyBodyMarkdown({ ...input, editors }),
       editorsJson: editors,
       tagsJson: input.tags,
-      status: current.status,
-      publishedAt: coerceDate(current.publishedAt),
+      status: input.status,
+      publishedAt: resolveGeekDailyPublishedAt(input.status, current.publishedAt),
       updatedByStaffId: actor.actorStaffAccountId ?? null,
       updatedAt: new Date(),
     })

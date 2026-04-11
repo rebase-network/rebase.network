@@ -133,7 +133,6 @@ Suggested fields:
 - `work_mode`
 - `summary`
 - `description`
-- `responsibilities`
 - `apply_url`
 - `apply_note`
 - `contact_label`
@@ -150,6 +149,7 @@ Notes:
 - public path should use `/who-is-hiring/{slug}`
 - `slug` should be stable after publication
 - `description` should support Markdown
+- responsibilities and role scope should be written directly in `description`
 - at least one of `apply_url` or contact info should exist before publication
 
 ### `articles`

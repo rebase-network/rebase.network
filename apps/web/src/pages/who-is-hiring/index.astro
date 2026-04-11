@@ -1,65 +1,25 @@
 ---
 import JobCard from '@/components/JobCard.astro';
-import ListBriefGrid from '@/components/ListBriefGrid.astro';
-import ListEmptyState from '@/components/ListEmptyState.astro';
-import ListLeadSection from '@/components/ListLeadSection.astro';
 import ListPageHero from '@/components/ListPageHero.astro';
-import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getJobs, getSiteSettings } from '@/lib/content';
 
 const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
-const leadJob = jobs[0];
-const archiveJobs = jobs.slice(1);
 const remoteJobCount = jobs.filter((job) => job.supportsRemote).length;
+const datedJobCount = jobs.filter((job) => Boolean(job.expiresAt)).length;
 
 const jobSignals = [
   {
     value: String(jobs.length).padStart(2, '0'),
     label: '开放岗位',
-    detail: '岗位页优先把当前仍然可投递的机会集中放在同一个公开入口里。',
   },
   {
     value: String(remoteJobCount).padStart(2, '0'),
     label: '支持远程',
-    detail: '远程信息直接进入首屏信号卡，帮助求职者更快筛掉不匹配的机会。',
   },
   {
-    value: 'RSS',
-    label: '订阅出口',
-    detail: '招聘信息继续通过 /who-is-hiring/rss.xml 输出，保持被阅读器和搜索消费的能力。',
-  },
-];
-
-const jobBriefs = [
-  {
-    eyebrow: 'Publishing flow',
-    title: '如何发布招聘',
-    summary: '当前先由后台人工录入，后续再逐步把历史 Who-Is-Hiring issue 数据结构化迁移过来。',
-    tone: 'warm',
-  },
-  {
-    eyebrow: 'Reading standard',
-    title: '如何评估岗位',
-    summary: '每条职位都应该明确工作模式、薪资范围、联系方式和公司背景，而不是只留下模糊口号。',
-    tone: 'cool',
-  },
-  {
-    eyebrow: 'Archive value',
-    title: '为什么保留归档',
-    summary: '职位下线后仍保留公开页面，方便社区回看组织、团队和岗位变化的长期轨迹。',
-    tone: 'neutral',
-  },
-];
-
-const jobLeadPoints = [
-  {
-    title: '筛选前置',
-    description: '远程、薪资、联系方式和岗位类型越早讲清楚，越能减少无效点击和误投递。',
-  },
-  {
-    title: '上下文完整',
-    description: '职位详情不只讲要求，也要交代团队背景、工作方式和真实的投递动作。',
+    value: String(datedJobCount).padStart(2, '0'),
+    label: '标注截止',
   },
 ];
 ---
@@ -68,86 +28,31 @@ const jobLeadPoints = [
   <ListPageHero
     kicker="社区招聘"
     edition="Opportunity Board"
-    title="让招聘信息不仅被发出来，还能被读懂、被订阅、被稳定地回看。"
-    summary="第一版提供公开招聘列表、详情页与 RSS 输出，帮助求职者快速找到合适机会。"
-    note="招聘页不是信息堆砌，而是把角色背景、工作方式、薪资范围和投递入口写清楚，让双方在进入前就有足够判断。"
+    title="查看 Rebase 社区当前开放的岗位机会。"
+    summary="把薪资、工作模式、地点、远程支持和投递入口集中放在同一个公开入口里，方便快速判断和比较。"
     signals={jobSignals}
-    jumps={[
-      { href: '#hiring-brief', label: '发布方式' },
-      { href: '#lead-job', label: '主推岗位' },
-      { href: '#job-archive', label: '岗位列表' },
-    ]}
+    compactSignals={true}
     heroClass="jobs-hero"
   />
 
-  <ListBriefGrid id="hiring-brief" items={jobBriefs} />
-
-  {leadJob && (
-    <ListLeadSection
-      id="lead-job"
-      eyebrow="主推岗位"
-      title="本周优先浏览的岗位"
-      description="招聘页也应该像媒体栏目一样，有一个优先承接读者注意力的主职位入口。"
-      noteEyebrow="Opportunity desk"
-      noteTitle="职位信息不是口号，而是要把工作方式、薪资范围和投递方式讲明白。"
-      noteSummary="第一版先由后台人工录入，后续可以继续把历史 Who-Is-Hiring issue 数据结构化迁移过来。"
-      notePoints={jobLeadPoints}
-      noteLinkHref="/who-is-hiring/rss.xml"
-      noteLinkLabel="订阅招聘 RSS"
-    >
-      <JobCard job={leadJob} />
-    </ListLeadSection>
-  )}
-
   <section id="job-archive" class="shell page-section">
-    <SectionHeader
-      eyebrow="岗位列表"
-      title="社区招聘信息"
-      description="主推岗位之外，其余职位继续按清晰、可筛读、可订阅的方式组织在同一个公开列表里。"
-      href="/who-is-hiring/rss.xml"
-      hrefLabel="订阅 RSS"
-    />
-    {archiveJobs.length > 0 ? (
+    <div class="jobs-toolbar">
+      <p class="jobs-toolbar-copy">
+        <strong>开放岗位</strong>
+        <span>{jobs.length} 个岗位</span>
+      </p>
+      <a class="button-link secondary jobs-toolbar-link" href="/who-is-hiring/rss.xml">订阅 RSS</a>
+    </div>
+    {jobs.length > 0 ? (
       <div class="grid-3">
-        {archiveJobs.map((job) => <JobCard job={job} />)}
+        {jobs.map((job) => <JobCard job={job} />)}
       </div>
     ) : (
-      <ListEmptyState
-        kicker="持续补充"
-        title="更多岗位正在整理中。"
-        description="当前先保留主推职位入口，后续会继续把新的社区岗位按同一标准补进这个公开机会板。"
-      />
+      <article class="card jobs-empty-state">
+        <p class="hero-kicker">持续补充</p>
+        <h2>更多岗位正在整理中。</h2>
+        <p>当前暂时还没有新的公开岗位，后续新增机会会继续通过这个页面和 RSS 一起发布。</p>
+      </article>
     )}
   </section>
 </BaseLayout>
-
-<style>
-  :global(.jobs-hero) {
-    background:
-      radial-gradient(circle at top left, rgba(243, 196, 110, 0.28), transparent 30%),
-      radial-gradient(circle at 92% 18%, rgba(56, 189, 248, 0.16), transparent 24%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 251, 244, 0.92));
-  }
-
-  :global(.jobs-hero::before) {
-    content: 'HIRING';
-    position: absolute;
-    top: 1rem;
-    right: 1.25rem;
-    color: rgba(17, 94, 89, 0.08);
-    font-family: var(--display-font);
-    font-size: clamp(3.8rem, 8vw, 6.6rem);
-    letter-spacing: 0.08em;
-    line-height: 0.82;
-    pointer-events: none;
-  }
-
-  :global(.jobs-hero .hero-title) {
-    max-width: 11ch;
-    text-wrap: balance;
-  }
-
-  :global(.jobs-hero .brand-note) {
-    max-width: 58ch;
-  }
-</style>

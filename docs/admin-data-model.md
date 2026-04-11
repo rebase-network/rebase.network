@@ -254,7 +254,6 @@ Suggested fields:
 - `location`
 - `summary`
 - `description_markdown`
-- `responsibilities_json`
 - `apply_url`
 - `apply_note`
 - `contact_label`
@@ -273,6 +272,7 @@ Constraint notes:
 
 - unique on `slug`
 - application logic should require either `apply_url` or `contact_value`
+- role scope and responsibilities live inside `description_markdown`
 
 ### `events`
 

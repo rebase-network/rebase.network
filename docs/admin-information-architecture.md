@@ -125,7 +125,6 @@ Editor needs:
 - location
 - summary
 - full description
-- responsibilities list
 - apply URL
 - alternate contact label/value
 - expiry date

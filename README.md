@@ -44,6 +44,11 @@ The target architecture is no longer a headless CMS workflow.
 
 ## Documentation
 
+- `DESIGN.md`: design-document index for the repository
+- `apps/web/design_principles.md`: public-site design intent, interaction rules, and content hierarchy guidance
+- `apps/web/DESIGN.md`: public-site hard spec in DESIGN.md format
+- `apps/admin/design_principles.md`: admin UX intent, density rules, and operator workflow guidance
+- `apps/admin/DESIGN.md`: admin hard spec in DESIGN.md format
 - `docs/v1-scope.md`: V1 goals, scope, and non-goals
 - `docs/architecture.md`: target system architecture, deployment, caching, and runtime decisions
 - `docs/content-model.md`: public content domains, field design, and URL conventions

@@ -84,12 +84,12 @@ export interface Job {
   location: string;
   summary: string;
   description: string;
-  responsibilities: string[];
   applyUrl: string;
   applyNote: string;
   contactLabel: string;
   contactValue: string;
   publishedAt: string;
+  expiresAt: string | null;
   tags: string[];
 }
 

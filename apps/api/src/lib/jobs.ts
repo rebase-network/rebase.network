@@ -34,7 +34,6 @@ const mapJobDetail = (row: any) => ({
   location: row.location,
   summary: row.summary,
   descriptionMarkdown: row.descriptionMarkdown,
-  responsibilities: Array.isArray(row.responsibilitiesJson) ? row.responsibilitiesJson : [],
   applyUrl: row.applyUrl ?? '',
   applyNote: row.applyNote ?? '',
   contactLabel: row.contactLabel ?? '',
@@ -48,6 +47,14 @@ const mapJobDetail = (row: any) => ({
   createdAt: toIsoString(row.createdAt) ?? new Date().toISOString(),
   updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
 });
+
+const resolveJobPublishedAt = (status: ContentStatus, currentPublishedAt?: string | null) => {
+  if (currentPublishedAt) {
+    return new Date(currentPublishedAt);
+  }
+
+  return status === 'published' ? new Date() : null;
+};
 
 const ensureUniqueSlug = async (slug: string, currentId?: string) => {
   const db = getDb();
@@ -128,7 +135,6 @@ export const createAdminJob = async (input: JobInput, actor: AuditActor) => {
       location: input.location,
       summary: input.summary,
       descriptionMarkdown: input.descriptionMarkdown,
-      responsibilitiesJson: input.responsibilities,
       applyUrl: input.applyUrl,
       applyNote: input.applyNote,
       contactLabel: input.contactLabel,
@@ -138,7 +144,7 @@ export const createAdminJob = async (input: JobInput, actor: AuditActor) => {
       seoDescription: input.seoDescription,
       status: input.status,
       expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
-      publishedAt: ensurePublishedAt(input.status, input.publishedAt),
+      publishedAt: resolveJobPublishedAt(input.status),
       updatedByStaffId: actor.actorStaffAccountId ?? null,
     })
     .returning();
@@ -175,7 +181,6 @@ export const updateAdminJob = async (id: string, input: JobInput, actor: AuditAc
       location: input.location,
       summary: input.summary,
       descriptionMarkdown: input.descriptionMarkdown,
-      responsibilitiesJson: input.responsibilities,
       applyUrl: input.applyUrl,
       applyNote: input.applyNote,
       contactLabel: input.contactLabel,
@@ -185,7 +190,7 @@ export const updateAdminJob = async (id: string, input: JobInput, actor: AuditAc
       seoDescription: input.seoDescription,
       status: input.status,
       expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
-      publishedAt: ensurePublishedAt(input.status, input.publishedAt),
+      publishedAt: resolveJobPublishedAt(input.status, current.publishedAt),
       updatedByStaffId: actor.actorStaffAccountId ?? null,
       updatedAt: new Date(),
     })
@@ -274,12 +279,12 @@ export const listPublicJobs = async () => {
     location: row.location,
     summary: row.summary,
     description: row.descriptionMarkdown,
-    responsibilities: Array.isArray(row.responsibilitiesJson) ? row.responsibilitiesJson : [],
     applyUrl: row.applyUrl ?? '',
     applyNote: row.applyNote ?? '',
     contactLabel: row.contactLabel ?? '',
     contactValue: row.contactValue ?? '',
     publishedAt: toIsoString(row.publishedAt),
+    expiresAt: toIsoString(row.expiresAt),
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
   }));
 };
@@ -302,12 +307,12 @@ export const getPublicJobBySlug = async (slug: string) => {
     location: row.location,
     summary: row.summary,
     description: row.descriptionMarkdown,
-    responsibilities: Array.isArray(row.responsibilitiesJson) ? row.responsibilitiesJson : [],
     applyUrl: row.applyUrl ?? '',
     applyNote: row.applyNote ?? '',
     contactLabel: row.contactLabel ?? '',
     contactValue: row.contactValue ?? '',
     publishedAt: toIsoString(row.publishedAt),
+    expiresAt: toIsoString(row.expiresAt),
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
   };
 };

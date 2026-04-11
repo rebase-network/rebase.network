@@ -1,16 +1,15 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import DetailHero from '@/components/DetailHero.astro';
-import DetailSidebarLinksSection from '@/components/DetailSidebarLinksSection.astro';
+import JobCard from '@/components/JobCard.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getJobBySlug, getJobs, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
-import { getJobPath } from '@/lib/paths';
 
 const slug = Astro.params.slug ?? '';
 const [site, job, jobs] = await Promise.all([getSiteSettings(), getJobBySlug(slug), getJobs()]);
 const related = job ? jobs.filter((item) => item.slug !== job.slug).slice(0, 2) : [];
 const remoteLabel = job ? (job.supportsRemote ? '支持远程' : '线下优先') : '';
+const deadlineLabel = job ? (job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` : '长期开放') : '';
 const applyCopy = job
   ? job.applyNote || (job.applyUrl ? '请通过下方外部链接投递。' : '请通过下方联系方式投递。')
   : '';
@@ -21,31 +20,8 @@ const jobBreadcrumbs = job
       { label: job.roleTitle, current: true },
     ]
   : [];
-const jobHeroMeta = job ? [job.workMode, job.location, remoteLabel].filter(Boolean) : [];
-const jobHeroActions = job
-  ? [
-      ...(job.applyUrl ? [{ href: job.applyUrl, label: '立即投递', external: true, showIcon: true }] : []),
-      { href: '/who-is-hiring', label: '回到招聘列表', secondary: true },
-    ]
-  : [];
-const jobJumpLinks = [
-  { href: '#job-overview', label: '岗位概览' },
-  { href: '#job-responsibilities', label: '工作内容' },
-  { href: '#job-info', label: '投递信息' },
-];
-const jobWayfindingLinks = [
-  { href: '#job-overview', label: '查看岗位概览' },
-  { href: '#job-responsibilities', label: '查看工作内容' },
-  { href: '#job-info', label: '查看投递信息' },
-];
-const jobActionLinks = [
-  ...(job?.applyUrl ? [{ href: job.applyUrl, label: '打开外部投递链接', external: true }] : []),
-  { href: '/who-is-hiring', label: '回到招聘列表' },
-];
-const jobRelatedLinks = related.map((item) => ({
-  href: getJobPath(item.slug),
-  label: item.roleTitle,
-}));
+const metaItems = job ? [job.salary, job.workMode, job.location, remoteLabel, deadlineLabel].filter(Boolean) : [];
+const contactCopy = job?.contactValue ? `${job.contactLabel || '联系方式'}：${job.contactValue}` : '请优先使用岗位投递渠道。';
 
 if (!job) {
   Astro.response.status = 404;
@@ -60,95 +36,100 @@ if (!job) {
 >
   {job ? (
     <>
-      <section class="shell page-hero single">
-        <DetailHero
-          kicker="岗位详情"
-          breadcrumbs={jobBreadcrumbs}
-          edition={job.companyName}
-          title={job.roleTitle}
-          summary={job.summary}
-          meta={jobHeroMeta}
-          note={`${job.salary} · 发布时间 ${formatDate(job.publishedAt)}`}
-          actions={jobHeroActions}
-          jumps={jobJumpLinks}
-          heroClass="job-hero"
-        />
-      </section>
+      <div class="job-detail-page">
+        <section class="shell page-hero single">
+          <article class="card job-header">
+            <div class="job-header-topline">
+              <div class="job-header-context">
+                <p class="hero-kicker">岗位详情</p>
+                <nav class="job-breadcrumbs" aria-label="Breadcrumb">
+                  {jobBreadcrumbs.map((item, index) => (
+                    <>
+                      {item.current || !item.href ? (
+                        <span aria-current={item.current ? 'page' : undefined}>{item.label}</span>
+                      ) : (
+                        <a href={item.href}>{item.label}</a>
+                      )}
+                      {index < jobBreadcrumbs.length - 1 && <span aria-hidden="true">/</span>}
+                    </>
+                  ))}
+                </nav>
+              </div>
+              <span class="job-company-chip">{job.companyName}</span>
+            </div>
 
-      <section class="shell page-section detail-shell">
-        <article id="job-overview" class="card detail-body-card job-detail">
-          <div class="job-meta-grid">
-            <article>
-              <span>公司</span>
-              <strong>{job.companyName}</strong>
-            </article>
-            <article>
-              <span>薪资</span>
-              <strong>{job.salary}</strong>
-            </article>
-            <article>
-              <span>模式</span>
-              <strong>{job.workMode}</strong>
-            </article>
-            <article>
-              <span>地点</span>
-              <strong>{job.location}</strong>
-            </article>
-          </div>
+            <h1 class="job-header-title">{job.roleTitle}</h1>
+            <p class="job-header-summary">{job.summary}</p>
 
-          <MarkdownContent content={job.description} />
+            <div class="job-header-meta">
+              {metaItems.map((item) => (
+                <span>{item}</span>
+              ))}
+            </div>
 
-          <section id="job-responsibilities" class="responsibilities">
-            <h2>工作内容</h2>
-            <ul>
-              {job.responsibilities.map((item) => <li>{item}</li>)}
-            </ul>
-          </section>
-        </article>
-
-        <aside class="card detail-sidebar">
-          <DetailSidebarLinksSection
-            title="页面导览"
-            copy="如果你是从搜索结果或职位分享进入，可以先用这些锚点快速判断是否匹配。"
-            links={jobWayfindingLinks}
-          />
-
-          <section id="job-info" class="detail-sidebar-section">
-            <h2>投递信息</h2>
-            <p class="detail-sidebar-copy">{applyCopy}</p>
-            <ul class="detail-fact-list">
-              <li>
-                <strong>发布时间</strong>
-                <span>{formatDate(job.publishedAt)}</span>
-              </li>
-              <li>
-                <strong>远程支持</strong>
-                <span>{remoteLabel}</span>
-              </li>
-              <li>
-                <strong>联系方式</strong>
-                <span>{job.contactValue ? `${job.contactLabel || '联系方式'}：${job.contactValue}` : '请优先使用岗位投递渠道。'}</span>
-              </li>
-            </ul>
-            {job.tags.length > 0 && (
-              <ul class="detail-tag-list">
-                {job.tags.map((tag) => <li>{tag}</li>)}
-              </ul>
+            {job.applyUrl && (
+              <div class="button-row">
+                <a class="button-link" href={job.applyUrl} target="_blank" rel="noreferrer">
+                  立即投递
+                  <span>↗</span>
+                </a>
+              </div>
             )}
+          </article>
+        </section>
+
+        <section class="shell page-section job-detail-layout">
+          <article class="card job-content-card">
+            <MarkdownContent content={job.description} />
+          </article>
+
+          <aside class="card job-apply-card">
+            <section class="job-apply-section">
+              <h2>投递方式</h2>
+              <p class="job-apply-copy">{applyCopy}</p>
+
+              <div class="job-apply-actions">
+                {job.applyUrl && (
+                  <a class="button-link" href={job.applyUrl} target="_blank" rel="noreferrer">
+                    打开投递链接
+                    <span>↗</span>
+                  </a>
+                )}
+              </div>
+
+              <dl class="job-fact-list">
+                <div>
+                  <dt>截止时间</dt>
+                  <dd>{deadlineLabel}</dd>
+                </div>
+                <div>
+                  <dt>远程支持</dt>
+                  <dd>{remoteLabel}</dd>
+                </div>
+                <div class="job-fact-wide">
+                  <dt>联系方式</dt>
+                  <dd>{contactCopy}</dd>
+                </div>
+              </dl>
+            </section>
+          </aside>
+        </section>
+
+        {related.length > 0 && (
+          <section class="shell page-section">
+            <div class="job-related-toolbar">
+              <p class="job-related-toolbar-copy">
+                <strong>更多岗位</strong>
+                <span>{related.length} 个岗位</span>
+              </p>
+              <a class="button-link secondary job-related-toolbar-link" href="/who-is-hiring">回到招聘列表</a>
+            </div>
+            <div class="grid-2 job-related-grid">
+              {related.map((item) => <JobCard job={item} />)}
+            </div>
           </section>
-
-          <DetailSidebarLinksSection id="job-actions" title="继续查看" links={jobActionLinks} />
-
-          {related.length > 0 && (
-            <DetailSidebarLinksSection
-              id="job-related"
-              title="相关岗位"
-              links={jobRelatedLinks}
-              listClass="related-list"
-            />
-          )}
-        </aside>
-      </section>
+        )}
+      </div>
     </>
   ) : (
     <section class="shell page-hero single">
@@ -160,75 +141,3 @@ if (!job) {
     </section>
   )}
 </BaseLayout>
-
-<style>
-  .single {
-    grid-template-columns: 1fr;
-  }
-
-  .job-hero {
-    color: white;
-    background:
-      radial-gradient(circle at 15% 18%, rgba(125, 211, 252, 0.2), transparent 24%),
-      linear-gradient(135deg, rgba(19, 33, 68, 0.98), rgba(15, 118, 110, 0.92));
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 28px 60px rgba(19, 33, 68, 0.24);
-  }
-
-  .light {
-    color: white;
-  }
-
-  .job-meta-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.8rem;
-    margin-bottom: 1.2rem;
-  }
-
-  .job-meta-grid article {
-    padding: 1rem;
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.74);
-    border: 1px solid rgba(31, 41, 51, 0.08);
-  }
-
-  .job-meta-grid span,
-  .job-meta-grid strong {
-    display: block;
-  }
-
-  .job-meta-grid span {
-    color: var(--muted);
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .job-meta-grid strong {
-    margin-top: 0.4rem;
-    font-size: 1.05rem;
-  }
-
-  .responsibilities {
-    margin-top: 1.5rem;
-  }
-
-  .responsibilities h2 {
-    margin: 0 0 0.8rem;
-    font-size: 1.4rem;
-  }
-
-  .responsibilities ul {
-    margin: 0;
-    padding-left: 1.1rem;
-    color: var(--muted);
-    line-height: 1.8;
-  }
-
-  @media (max-width: 960px) {
-    .job-meta-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

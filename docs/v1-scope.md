@@ -191,7 +191,7 @@ Suggested hiring detail content includes:
 - salary
 - remote support
 - work mode
-- work scope or responsibilities
+- work scope and responsibilities inside the main description
 - work location
 - contact or application method
 

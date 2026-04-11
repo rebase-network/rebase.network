@@ -2,7 +2,7 @@
 interface HeroSignal {
   value: string;
   label: string;
-  detail: string;
+  detail?: string;
 }
 
 interface HeroJump {
@@ -19,10 +19,11 @@ interface Props {
   signals?: HeroSignal[];
   jumps?: HeroJump[];
   heroClass?: string;
+  compactSignals?: boolean;
 }
 
-const { kicker, edition, title, summary, note, signals = [], jumps = [], heroClass } = Astro.props;
-const heroSignals = signals.filter((signal) => signal.value && signal.label && signal.detail);
+const { kicker, edition, title, summary, note, signals = [], jumps = [], heroClass, compactSignals = false } = Astro.props;
+const heroSignals = signals.filter((signal) => signal.value && signal.label);
 const heroJumps = jumps.filter((jump) => jump.href && jump.label);
 ---
 
@@ -36,12 +37,12 @@ const heroJumps = jumps.filter((jump) => jump.href && jump.label);
     <p class="hero-summary">{summary}</p>
     {note && <p class="brand-note">{note}</p>}
     {heroSignals.length > 0 && (
-      <div class="hero-facts">
+      <div class:list={['hero-facts', compactSignals && 'compact']}>
         {heroSignals.map((signal) => (
           <article>
             <strong>{signal.value}</strong>
             <span>{signal.label}</span>
-            <p>{signal.detail}</p>
+            {signal.detail && <p>{signal.detail}</p>}
           </article>
         ))}
       </div>
@@ -144,6 +145,24 @@ const heroJumps = jumps.filter((jump) => jump.href && jump.label);
     margin-top: 0.55rem;
     color: var(--muted);
     line-height: 1.72;
+  }
+
+  .hero-facts.compact {
+    gap: 0.75rem;
+    margin-top: 1.1rem;
+  }
+
+  .hero-facts.compact article {
+    padding: 0.82rem 0.9rem;
+    box-shadow: none;
+  }
+
+  .hero-facts.compact strong {
+    font-size: 1.28rem;
+  }
+
+  .hero-facts.compact span {
+    margin-top: 0.28rem;
   }
 
   .jump-list {

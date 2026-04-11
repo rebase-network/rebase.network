@@ -87,7 +87,6 @@ declare module '../../../scripts/directus/baseline-data.mjs' {
     location: string;
     summary: string;
     description: string;
-    responsibilities: string[];
     apply_url: string | null;
     apply_note: string | null;
     contact_label: string | null;
