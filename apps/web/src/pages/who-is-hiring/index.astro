@@ -1,6 +1,5 @@
 ---
 import JobCard from '@/components/JobCard.astro';
-import ListBriefGrid from '@/components/ListBriefGrid.astro';
 import ListEmptyState from '@/components/ListEmptyState.astro';
 import ListLeadSection from '@/components/ListLeadSection.astro';
 import ListPageHero from '@/components/ListPageHero.astro';
@@ -17,49 +16,32 @@ const jobSignals = [
   {
     value: String(jobs.length).padStart(2, '0'),
     label: '开放岗位',
-    detail: '岗位页优先把当前仍然可投递的机会集中放在同一个公开入口里。',
+    detail: '当前公开可读的岗位机会，优先收敛到同一个入口里浏览和比较。',
   },
   {
     value: String(remoteJobCount).padStart(2, '0'),
     label: '支持远程',
-    detail: '远程信息直接进入首屏信号卡，帮助求职者更快筛掉不匹配的机会。',
+    detail: '远程信息直接前置展示，帮助求职者更快判断是否适合自己。',
   },
   {
     value: 'RSS',
     label: '订阅出口',
-    detail: '招聘信息继续通过 /who-is-hiring/rss.xml 输出，保持被阅读器和搜索消费的能力。',
-  },
-];
-
-const jobBriefs = [
-  {
-    eyebrow: 'Publishing flow',
-    title: '如何发布招聘',
-    summary: '当前先由后台人工录入，后续再逐步把历史 Who-Is-Hiring issue 数据结构化迁移过来。',
-    tone: 'warm',
-  },
-  {
-    eyebrow: 'Reading standard',
-    title: '如何评估岗位',
-    summary: '每条职位都应该明确工作模式、薪资范围、联系方式和公司背景，而不是只留下模糊口号。',
-    tone: 'cool',
-  },
-  {
-    eyebrow: 'Archive value',
-    title: '为什么保留归档',
-    summary: '职位下线后仍保留公开页面，方便社区回看组织、团队和岗位变化的长期轨迹。',
-    tone: 'neutral',
+    detail: '新增岗位继续通过 RSS 输出，方便长期跟踪社区机会流动。',
   },
 ];
 
 const jobLeadPoints = [
   {
-    title: '筛选前置',
-    description: '远程、薪资、联系方式和岗位类型越早讲清楚，越能减少无效点击和误投递。',
+    title: '先看工作方式',
+    description: '全职、兼职、远程支持和地点，应该在投递前就能快速判断是否匹配。',
   },
   {
-    title: '上下文完整',
-    description: '职位详情不只讲要求，也要交代团队背景、工作方式和真实的投递动作。',
+    title: '再看投递入口',
+    description: '优先选择明确写出投递链接或联系方式的岗位，减少来回确认。',
+  },
+  {
+    title: '注意截止日期',
+    description: '有明确截止日期的岗位更适合优先处理，没有截止日期则按长期开放理解。',
   },
 ];
 ---
@@ -68,29 +50,27 @@ const jobLeadPoints = [
   <ListPageHero
     kicker="社区招聘"
     edition="Opportunity Board"
-    title="让招聘信息不仅被发出来，还能被读懂、被订阅、被稳定地回看。"
-    summary="第一版提供公开招聘列表、详情页与 RSS 输出，帮助求职者快速找到合适机会。"
-    note="招聘页不是信息堆砌，而是把角色背景、工作方式、薪资范围和投递入口写清楚，让双方在进入前就有足够判断。"
+    title="查看 Rebase 社区当前开放的岗位机会。"
+    summary="把薪资、工作模式、地点、远程支持和投递入口集中放在同一个公开入口里，方便快速判断和比较。"
+    note="如果你在找社区、内容、前端或远程相关机会，可以先看主推岗位，再继续浏览完整列表或订阅 RSS。"
     signals={jobSignals}
     jumps={[
-      { href: '#hiring-brief', label: '发布方式' },
-      { href: '#lead-job', label: '主推岗位' },
+      { href: '#lead-job', label: '优先岗位' },
       { href: '#job-archive', label: '岗位列表' },
+      { href: '/who-is-hiring/rss.xml', label: 'RSS 订阅' },
     ]}
     heroClass="jobs-hero"
   />
 
-  <ListBriefGrid id="hiring-brief" items={jobBriefs} />
-
   {leadJob && (
     <ListLeadSection
       id="lead-job"
-      eyebrow="主推岗位"
-      title="本周优先浏览的岗位"
-      description="招聘页也应该像媒体栏目一样，有一个优先承接读者注意力的主职位入口。"
+      eyebrow="优先岗位"
+      title="先看当前最值得点开的岗位"
+      description="主推位优先承接读者注意力，帮助你快速进入这批机会里最值得优先判断的一条。"
       noteEyebrow="Opportunity desk"
-      noteTitle="职位信息不是口号，而是要把工作方式、薪资范围和投递方式讲明白。"
-      noteSummary="第一版先由后台人工录入，后续可以继续把历史 Who-Is-Hiring issue 数据结构化迁移过来。"
+      noteTitle="投递前先看这三件事"
+      noteSummary="这个机会板优先把影响判断的字段放到前面，而不是只给一句模糊的岗位口号。"
       notePoints={jobLeadPoints}
       noteLinkHref="/who-is-hiring/rss.xml"
       noteLinkLabel="订阅招聘 RSS"
@@ -103,7 +83,7 @@ const jobLeadPoints = [
     <SectionHeader
       eyebrow="岗位列表"
       title="社区招聘信息"
-      description="主推岗位之外，其余职位继续按清晰、可筛读、可订阅的方式组织在同一个公开列表里。"
+      description="其余岗位继续按统一格式公开展示，方便直接比较职位信息并回看历史机会。"
       href="/who-is-hiring/rss.xml"
       hrefLabel="订阅 RSS"
     />
