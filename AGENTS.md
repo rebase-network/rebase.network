@@ -35,7 +35,11 @@ Examples:
 ## Documentation Map
 
 - Start with `README.md` for the current project baseline and document index.
-- Use `DESIGN.md` for public/admin design principles, UI density rules, and page-pattern guidance.
+- Use `DESIGN.md` as the repository design-document index.
+- Use `apps/web/design_principles.md` for public-site design intent, interaction rules, and content hierarchy guidance.
+- Use `apps/web/DESIGN.md` for public-site hard visual specification.
+- Use `apps/admin/design_principles.md` for admin UX intent, density rules, and operator workflow guidance.
+- Use `apps/admin/DESIGN.md` for admin hard visual specification.
 - Use `docs/v1-scope.md` for product scope and non-goals.
 - Use `docs/architecture.md` for target architecture, deployment, caching, and runtime decisions.
 - Use `docs/content-model.md` for public content domains, URL rules, RSS rules, and editorial assumptions.
