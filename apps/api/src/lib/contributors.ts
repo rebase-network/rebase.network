@@ -377,10 +377,7 @@ const listRandomPublicContributorsByActivity = async (activityStatus: Contributo
 };
 
 export const listRandomPublicContributors = async (limit = 10) => {
-  const activeRows = await listRandomPublicContributorsByActivity('active', limit);
-  const remaining = Math.max(limit - activeRows.length, 0);
-  const inactiveRows = remaining > 0 ? await listRandomPublicContributorsByActivity('inactive', remaining) : [];
-  const contributorRows = [...activeRows, ...inactiveRows];
+  const contributorRows = await listRandomPublicContributorsByActivity('active', limit);
 
   const avatarUrls = await listPublicAssetUrlsById(contributorRows.map((contributor) => contributor.avatarAssetId));
 
