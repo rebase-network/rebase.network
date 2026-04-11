@@ -63,20 +63,23 @@ const isNew = computed(() => articleId.value.length === 0);
 const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/articles/${form.slug}`) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新建文章' : `编辑文章：${article.value?.title ?? ''}`));
 const statusLabel = computed(() => formatContentStatus(form.status));
+const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft') ? '保存草稿' : '保存修改'));
+const canPublish = computed(() => form.status !== 'published');
+const canArchive = computed(() => Boolean(article.value) && form.status !== 'archived');
 const workflowHint = computed(() => {
   if (isNew.value) {
-    return '先保存草稿，再点击“发布”，前台才会显示。';
+    return '可先保存草稿，也可直接发布。';
   }
 
   if (form.status === 'published') {
-    return '已发布内容继续使用“保存修改”。';
+    return '已发布内容保存后会直接更新前台。';
   }
 
   if (form.status === 'archived') {
-    return '已归档内容仅后台可见。';
+    return '已归档内容仅后台可见，点击“发布”可重新上线。';
   }
 
-  return '草稿内容仅后台可见，点击“发布”后前台才会显示。';
+  return '草稿内容仅后台可见，可继续修改后再发布。';
 });
 
 const resetFeedback = () => {
@@ -135,12 +138,17 @@ const onSlugInput = () => {
   slugTouched.value = true;
 };
 
-const save = async () => {
+const persist = async (nextStatus: ArticleFormState['status'], mode: 'save' | 'publish') => {
   resetFeedback();
-  saving.value = true;
+  if (mode === 'publish') {
+    actioning.value = true;
+  } else {
+    saving.value = true;
+  }
   try {
     const payload = {
       ...form,
+      status: nextStatus,
       readingTime: form.readingTime || '5 min read',
       coverAccent: form.coverAccent || 'linear-gradient(135deg, #efc37b 0%, #0f766e 100%)',
       coverAssetId: form.coverAssetId || null,
@@ -156,20 +164,27 @@ const save = async () => {
     );
 
     applyRecord(record);
-    successMessage.value = isNew.value ? '草稿已保存。' : '修改已保存。';
+    successMessage.value = mode === 'publish' ? '文章已发布。' : isNew.value ? '草稿已保存。' : '修改已保存。';
 
     if (isNew.value) {
       await router.replace(`/articles/${record.id}/edit`);
     }
   } catch (error) {
     fieldIssues.value = getValidationIssues(error);
-    errorMessage.value = error instanceof Error ? error.message : '无法保存文章。';
+    errorMessage.value = error instanceof Error ? error.message : mode === 'publish' ? '发布失败。' : '无法保存文章。';
   } finally {
-    saving.value = false;
+    if (mode === 'publish') {
+      actioning.value = false;
+    } else {
+      saving.value = false;
+    }
   }
 };
 
-const runAction = async (action: 'publish' | 'archive') => {
+const save = async () => persist(form.status === 'published' ? 'published' : form.status === 'archived' ? 'archived' : 'draft', 'save');
+const publish = async () => persist('published', 'publish');
+
+const runAction = async (action: 'archive') => {
   if (!article.value) {
     return;
   }
@@ -179,7 +194,7 @@ const runAction = async (action: 'publish' | 'archive') => {
   try {
     const record = await adminRequest<AdminArticleRecord>(`/api/admin/v1/articles/${article.value.id}/${action}`, { method: 'POST' });
     applyRecord(record);
-    successMessage.value = action === 'publish' ? '文章已发布。' : '文章已归档。';
+    successMessage.value = '文章已归档。';
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '无法执行该操作。';
   } finally {
@@ -202,11 +217,13 @@ onMounted(() => void loadArticle());
 
       <div class="page-actions">
         <RouterLink class="button-link" to="/articles">返回列表</RouterLink>
-        <button class="button-link button-primary" type="button" :disabled="loading || saving" @click="save">
-          {{ saving ? '保存中…' : isNew ? '保存草稿' : '保存修改' }}
+        <button class="button-link button-primary" type="button" :disabled="loading || saving || actioning" @click="save">
+          {{ saving ? '保存中…' : saveButtonLabel }}
         </button>
-        <button class="button-link" type="button" :disabled="!article || actioning" @click="runAction('publish')">发布</button>
-        <button class="button-link button-danger" type="button" :disabled="!article || actioning" @click="runAction('archive')">归档</button>
+        <button v-if="canPublish" class="button-link" type="button" :disabled="loading || saving || actioning" @click="publish">
+          {{ actioning ? '发布中…' : '发布' }}
+        </button>
+        <button v-if="canArchive" class="button-link button-danger" type="button" :disabled="saving || actioning" @click="runAction('archive')">归档</button>
       </div>
     </header>
 
