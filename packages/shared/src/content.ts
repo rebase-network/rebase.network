@@ -190,7 +190,6 @@ export const jobSchema = z
     location: requiredTrimmedString('location is required'),
     summary: requiredTrimmedString('summary is required'),
     descriptionMarkdown: requiredTrimmedString('description is required'),
-    responsibilities: z.array(requiredTrimmedString('responsibility is required')).default([]),
     applyUrl: optionalTrimmedString,
     applyNote: trimmedString.optional().default(''),
     contactLabel: trimmedString.optional().default(''),

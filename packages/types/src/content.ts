@@ -84,7 +84,6 @@ export interface Job {
   location: string;
   summary: string;
   description: string;
-  responsibilities: string[];
   applyUrl: string;
   applyNote: string;
   contactLabel: string;

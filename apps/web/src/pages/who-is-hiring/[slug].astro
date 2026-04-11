@@ -30,12 +30,10 @@ const jobHeroActions = job
   : [];
 const jobJumpLinks = [
   { href: '#job-overview', label: '岗位概览' },
-  { href: '#job-responsibilities', label: '工作内容' },
   { href: '#job-info', label: '投递信息' },
 ];
 const jobWayfindingLinks = [
   { href: '#job-overview', label: '查看岗位概览' },
-  { href: '#job-responsibilities', label: '查看工作内容' },
   { href: '#job-info', label: '查看投递信息' },
 ];
 const jobActionLinks = [
@@ -97,13 +95,6 @@ if (!job) {
           </div>
 
           <MarkdownContent content={job.description} />
-
-          <section id="job-responsibilities" class="responsibilities">
-            <h2>工作内容</h2>
-            <ul>
-              {job.responsibilities.map((item) => <li>{item}</li>)}
-            </ul>
-          </section>
         </article>
 
         <aside class="card detail-sidebar">
@@ -209,23 +200,6 @@ if (!job) {
     margin-top: 0.4rem;
     font-size: 1.05rem;
   }
-
-  .responsibilities {
-    margin-top: 1.5rem;
-  }
-
-  .responsibilities h2 {
-    margin: 0 0 0.8rem;
-    font-size: 1.4rem;
-  }
-
-  .responsibilities ul {
-    margin: 0;
-    padding-left: 1.1rem;
-    color: var(--muted);
-    line-height: 1.8;
-  }
-
   @media (max-width: 960px) {
     .job-meta-grid {
       grid-template-columns: 1fr;

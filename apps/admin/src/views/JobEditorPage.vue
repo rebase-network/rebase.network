@@ -5,7 +5,6 @@ import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { contentStatusOptions, type AdminJobRecord } from '@rebase/shared';
 
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
-import StringListField from '../components/StringListField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
@@ -20,7 +19,6 @@ interface JobFormState {
   location: string;
   summary: string;
   descriptionMarkdown: string;
-  responsibilities: string[];
   applyUrl: string;
   applyNote: string;
   contactLabel: string;
@@ -46,7 +44,6 @@ const createBlankForm = (): JobFormState => ({
   location: '',
   summary: '',
   descriptionMarkdown: '',
-  responsibilities: [],
   applyUrl: '',
   applyNote: '',
   contactLabel: '',
@@ -93,7 +90,6 @@ const applyRecord = (payload: AdminJobRecord) => {
     location: payload.location,
     summary: payload.summary,
     descriptionMarkdown: payload.descriptionMarkdown,
-    responsibilities: payload.responsibilities,
     applyUrl: payload.applyUrl ?? '',
     applyNote: payload.applyNote ?? '',
     contactLabel: payload.contactLabel ?? '',
@@ -232,8 +228,12 @@ onMounted(() => void loadRecord());
           </div>
         </div>
 
-        <MarkdownEditorField v-model="form.descriptionMarkdown" label="岗位详情" placeholder="使用 Markdown 描述岗位背景、要求和团队信息。" :rows="24" />
-        <StringListField v-model="form.responsibilities" label="工作内容 / 职责" add-label="新增职责" placeholder="实现 Astro 前端体验" />
+        <MarkdownEditorField
+          v-model="form.descriptionMarkdown"
+          label="岗位详情"
+          placeholder="使用 Markdown 描述岗位职责、任职要求、团队背景和投递说明。"
+          :rows="24"
+        />
       </section>
 
       <aside class="stacked-gap editor-sidebar sticky-stack">
