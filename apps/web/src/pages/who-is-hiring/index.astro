@@ -1,16 +1,13 @@
 ---
 import JobCard from '@/components/JobCard.astro';
-import ListEmptyState from '@/components/ListEmptyState.astro';
-import ListLeadSection from '@/components/ListLeadSection.astro';
 import ListPageHero from '@/components/ListPageHero.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getJobs, getSiteSettings } from '@/lib/content';
 
 const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
-const leadJob = jobs[0];
-const archiveJobs = jobs.slice(1);
 const remoteJobCount = jobs.filter((job) => job.supportsRemote).length;
+const datedJobCount = jobs.filter((job) => Boolean(job.expiresAt)).length;
 
 const jobSignals = [
   {
@@ -24,24 +21,9 @@ const jobSignals = [
     detail: '远程信息直接前置展示，帮助求职者更快判断是否适合自己。',
   },
   {
-    value: 'RSS',
-    label: '订阅出口',
-    detail: '新增岗位继续通过 RSS 输出，方便长期跟踪社区机会流动。',
-  },
-];
-
-const jobLeadPoints = [
-  {
-    title: '先看工作方式',
-    description: '全职、兼职、远程支持和地点，应该在投递前就能快速判断是否匹配。',
-  },
-  {
-    title: '再看投递入口',
-    description: '优先选择明确写出投递链接或联系方式的岗位，减少来回确认。',
-  },
-  {
-    title: '注意截止日期',
-    description: '有明确截止日期的岗位更适合优先处理，没有截止日期则按长期开放理解。',
+    value: String(datedJobCount).padStart(2, '0'),
+    label: '标注截止',
+    detail: '有明确截止日期的岗位会直接写明，方便优先安排投递顺序。',
   },
 ];
 ---
@@ -52,51 +34,32 @@ const jobLeadPoints = [
     edition="Opportunity Board"
     title="查看 Rebase 社区当前开放的岗位机会。"
     summary="把薪资、工作模式、地点、远程支持和投递入口集中放在同一个公开入口里，方便快速判断和比较。"
-    note="如果你在找社区、内容、前端或远程相关机会，可以先看主推岗位，再继续浏览完整列表或订阅 RSS。"
     signals={jobSignals}
     jumps={[
-      { href: '#lead-job', label: '优先岗位' },
       { href: '#job-archive', label: '岗位列表' },
       { href: '/who-is-hiring/rss.xml', label: 'RSS 订阅' },
     ]}
     heroClass="jobs-hero"
   />
 
-  {leadJob && (
-    <ListLeadSection
-      id="lead-job"
-      eyebrow="优先岗位"
-      title="先看当前最值得点开的岗位"
-      description="主推位优先承接读者注意力，帮助你快速进入这批机会里最值得优先判断的一条。"
-      noteEyebrow="Opportunity desk"
-      noteTitle="投递前先看这三件事"
-      noteSummary="这个机会板优先把影响判断的字段放到前面，而不是只给一句模糊的岗位口号。"
-      notePoints={jobLeadPoints}
-      noteLinkHref="/who-is-hiring/rss.xml"
-      noteLinkLabel="订阅招聘 RSS"
-    >
-      <JobCard job={leadJob} />
-    </ListLeadSection>
-  )}
-
   <section id="job-archive" class="shell page-section">
     <SectionHeader
-      eyebrow="岗位列表"
-      title="社区招聘信息"
-      description="其余岗位继续按统一格式公开展示，方便直接比较职位信息并回看历史机会。"
+      eyebrow="当前开放岗位"
+      title="直接浏览全部岗位"
+      description="全部岗位按最近发布时间排序，优先把能快速判断和立即投递的信息放在卡片里。"
       href="/who-is-hiring/rss.xml"
       hrefLabel="订阅 RSS"
     />
-    {archiveJobs.length > 0 ? (
+    {jobs.length > 0 ? (
       <div class="grid-3">
-        {archiveJobs.map((job) => <JobCard job={job} />)}
+        {jobs.map((job) => <JobCard job={job} />)}
       </div>
     ) : (
-      <ListEmptyState
-        kicker="持续补充"
-        title="更多岗位正在整理中。"
-        description="当前先保留主推职位入口，后续会继续把新的社区岗位按同一标准补进这个公开机会板。"
-      />
+      <article class="card jobs-empty-state">
+        <p class="hero-kicker">持续补充</p>
+        <h2>更多岗位正在整理中。</h2>
+        <p>当前暂时还没有新的公开岗位，后续新增机会会继续通过这个页面和 RSS 一起发布。</p>
+      </article>
     )}
   </section>
 </BaseLayout>
@@ -123,11 +86,35 @@ const jobLeadPoints = [
   }
 
   :global(.jobs-hero .hero-title) {
-    max-width: 11ch;
-    text-wrap: balance;
+    max-width: 10ch;
+    font-size: clamp(2.4rem, 4.9vw, 4.6rem);
   }
 
-  :global(.jobs-hero .brand-note) {
-    max-width: 58ch;
+  :global(.jobs-hero .hero-summary) {
+    max-width: 52ch;
+  }
+
+  :global(.jobs-hero .hero-facts article p) {
+    line-height: 1.62;
+  }
+
+  .jobs-empty-state {
+    padding: 1.35rem;
+  }
+
+  .jobs-empty-state h2,
+  .jobs-empty-state p {
+    margin: 0;
+  }
+
+  .jobs-empty-state h2 {
+    font-size: clamp(1.45rem, 2.2vw, 2.1rem);
+  }
+
+  .jobs-empty-state p:not(.hero-kicker) {
+    margin-top: 0.75rem;
+    max-width: 56ch;
+    color: var(--muted);
+    line-height: 1.75;
   }
 </style>
