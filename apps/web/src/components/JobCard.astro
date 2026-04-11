@@ -11,7 +11,7 @@ const { job } = Astro.props;
 const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` : '长期开放';
 ---
 
-<article class="job-card card">
+<a class="job-card card" href={getJobPath(job.slug)}>
   <div class="job-card-topline">
     <p class="company-name">{job.companyName}</p>
     <div class="job-card-flags">
@@ -19,9 +19,7 @@ const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` 
       {job.supportsRemote && <strong class="remote-flag">远程</strong>}
     </div>
   </div>
-  <h3>
-    <a href={getJobPath(job.slug)}>{job.roleTitle}</a>
-  </h3>
+  <h3>{job.roleTitle}</h3>
   <p class="summary">{job.summary}</p>
   <dl class="job-facts">
     <div>
@@ -37,7 +35,7 @@ const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` 
       <dd>{job.location}</dd>
     </div>
   </dl>
-</article>
+</a>
 
 <style is:global>
   .job-card {
@@ -47,7 +45,7 @@ const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` 
   }
 
   .job-card:hover,
-  .job-card:focus-within {
+  .job-card:focus-visible {
     transform: translateY(-4px);
     border-color: rgba(15, 118, 110, 0.18);
     box-shadow: var(--shadow-strong);
@@ -101,14 +99,11 @@ const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` 
     margin: 0;
     font-size: 1.32rem;
     line-height: 1.05;
-  }
-
-  .job-card h3 a {
     transition: color 160ms ease;
   }
 
-  .job-card:hover h3 a,
-  .job-card:focus-within h3 a {
+  .job-card:hover h3,
+  .job-card:focus-visible h3 {
     color: var(--accent-strong);
   }
 
