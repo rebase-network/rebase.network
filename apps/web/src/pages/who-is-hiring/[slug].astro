@@ -68,15 +68,14 @@ if (!job) {
               ))}
             </div>
 
-            <div class="button-row">
-              {job.applyUrl && (
+            {job.applyUrl && (
+              <div class="button-row">
                 <a class="button-link" href={job.applyUrl} target="_blank" rel="noreferrer">
                   立即投递
                   <span>↗</span>
                 </a>
-              )}
-              <a class="button-link secondary" href="/who-is-hiring">回到招聘列表</a>
-            </div>
+              </div>
+            )}
           </article>
         </section>
 
@@ -118,26 +117,20 @@ if (!job) {
                 )}
               </div>
 
-              <ul class="job-fact-list">
-                <li>
-                  <strong>投递周期</strong>
-                  <span>{deadlineLabel}</span>
-                </li>
-                <li>
-                  <strong>远程支持</strong>
-                  <span>{remoteLabel}</span>
-                </li>
-                <li>
-                  <strong>联系方式</strong>
-                  <span>{contactCopy}</span>
-                </li>
-              </ul>
-
-              {job.tags.length > 0 && (
-                <ul class="job-tag-list">
-                  {job.tags.map((tag) => <li>{tag}</li>)}
-                </ul>
-              )}
+              <dl class="job-fact-list">
+                <div>
+                  <dt>截止时间</dt>
+                  <dd>{deadlineLabel}</dd>
+                </div>
+                <div>
+                  <dt>远程支持</dt>
+                  <dd>{remoteLabel}</dd>
+                </div>
+                <div class="job-fact-wide">
+                  <dt>联系方式</dt>
+                  <dd>{contactCopy}</dd>
+                </div>
+              </dl>
             </section>
           </aside>
         </section>

@@ -8,25 +8,22 @@ interface Props {
 }
 
 const { job } = Astro.props;
-const companyInitial = job.companyName.slice(0, 1).toUpperCase();
 const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` : '长期开放';
-const visibleTags = job.tags.slice(0, 2);
 ---
 
 <article class="job-card card">
-  <div class="meta-row">
-    <div class="company-mark" aria-hidden="true">{companyInitial}</div>
-    <div class="company-copy">
-      <p>{job.companyName}</p>
+  <div class="job-card-topline">
+    <p class="company-name">{job.companyName}</p>
+    <div class="job-card-flags">
       <span>{availabilityLabel}</span>
+      {job.supportsRemote && <strong class="remote-flag">远程</strong>}
     </div>
-    {job.supportsRemote && <strong class="remote-flag">远程</strong>}
   </div>
   <h3>
     <a href={getJobPath(job.slug)}>{job.roleTitle}</a>
   </h3>
   <p class="summary">{job.summary}</p>
-  <dl>
+  <dl class="job-facts">
     <div>
       <dt>薪资</dt>
       <dd>{job.salary}</dd>
@@ -40,16 +37,13 @@ const visibleTags = job.tags.slice(0, 2);
       <dd>{job.location}</dd>
     </div>
   </dl>
-  {visibleTags.length > 0 && (
-    <ul class="tag-list">
-      {visibleTags.map((tag) => <li>{tag}</li>)}
-    </ul>
-  )}
 </article>
 
-<style>
+<style is:global>
   .job-card {
-    padding: 1.25rem;
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.15rem;
   }
 
   .job-card:hover,
@@ -59,71 +53,57 @@ const visibleTags = job.tags.slice(0, 2);
     box-shadow: var(--shadow-strong);
   }
 
-  .meta-row,
-  dl {
-    display: flex;
-    align-items: start;
-    gap: 1rem;
-  }
-
-  .meta-row {
-    margin-bottom: 0.8rem;
-    align-items: center;
-  }
-
-  .company-mark {
+  .job-card .job-card-topline {
     display: grid;
-    width: 2.8rem;
-    height: 2.8rem;
-    place-items: center;
-    border-radius: 0.95rem;
-    background: linear-gradient(135deg, rgba(15, 118, 110, 0.15), rgba(245, 158, 11, 0.22));
-    color: var(--accent-strong);
-    font-size: 1.05rem;
-    font-weight: 800;
+    gap: 0.45rem;
   }
 
-  .company-copy {
-    min-width: 0;
-  }
-
-  .company-copy p,
-  .company-copy span {
+  .job-card .company-name {
     margin: 0;
-  }
-
-  .company-copy p {
-    font-size: 0.92rem;
-    font-weight: 800;
+    color: var(--muted);
+    font-size: 0.84rem;
+    font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
 
-  .company-copy span {
-    margin-top: 0.25rem;
-    display: block;
-    color: var(--muted);
-    font-size: 0.8rem;
+  .job-card .job-card-flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
   }
 
-  .remote-flag {
-    margin-left: auto;
-    padding: 0.34rem 0.68rem;
+  .job-card .job-card-flags span,
+  .job-card .remote-flag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.62rem;
     border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .job-card .job-card-flags span {
+    background: rgba(31, 41, 51, 0.05);
+    color: var(--muted);
+  }
+
+  .job-card .remote-flag {
+    margin: 0;
     background: rgba(15, 118, 110, 0.1);
     color: var(--accent-strong);
-    font-size: 0.72rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }
 
-  h3 {
-    margin: 0 0 0.75rem;
-    font-size: 1.45rem;
-    line-height: 1.08;
+  .job-card h3 {
+    margin: 0;
+    font-size: 1.32rem;
+    line-height: 1.05;
   }
 
-  h3 a {
+  .job-card h3 a {
     transition: color 160ms ease;
   }
 
@@ -132,51 +112,46 @@ const visibleTags = job.tags.slice(0, 2);
     color: var(--accent-strong);
   }
 
-  .summary {
-    margin: 0 0 1rem;
+  .job-card .summary {
+    margin: 0;
     color: var(--muted);
-    line-height: 1.7;
+    line-height: 1.65;
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
 
-  dl {
-    flex-wrap: wrap;
+  .job-card .job-facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
     margin: 0;
-    padding-top: 1rem;
+    padding-top: 0.9rem;
     border-top: 1px solid var(--line);
-    justify-content: space-between;
   }
 
-  dt {
+  .job-card .job-facts div {
+    min-width: 0;
+  }
+
+  .job-card dt {
     color: var(--muted);
     font-size: 0.76rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
-  dd {
-    margin: 0.3rem 0 0;
+  .job-card dd {
+    margin: 0.28rem 0 0;
     font-weight: 700;
+    line-height: 1.45;
   }
 
-  .tag-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    margin: 0.9rem 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .tag-list li {
-    padding: 0.32rem 0.62rem;
-    border-radius: 999px;
-    background: rgba(31, 41, 51, 0.05);
-    color: var(--muted);
-    font-size: 0.74rem;
-    font-weight: 700;
+  @media (max-width: 720px) {
+    .job-card .job-facts {
+      grid-template-columns: 1fr;
+      gap: 0.6rem;
+    }
   }
 </style>
