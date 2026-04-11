@@ -37,124 +37,126 @@ if (!job) {
 >
   {job ? (
     <>
-      <section class="shell page-hero single">
-        <article class="card job-header">
-          <div class="job-header-topline">
-            <div class="job-header-context">
-              <p class="hero-kicker">岗位详情</p>
-              <nav class="job-breadcrumbs" aria-label="Breadcrumb">
-                {jobBreadcrumbs.map((item, index) => (
-                  <>
-                    {item.current || !item.href ? (
-                      <span aria-current={item.current ? 'page' : undefined}>{item.label}</span>
-                    ) : (
-                      <a href={item.href}>{item.label}</a>
-                    )}
-                    {index < jobBreadcrumbs.length - 1 && <span aria-hidden="true">/</span>}
-                  </>
-                ))}
-              </nav>
+      <div class="job-detail-page">
+        <section class="shell page-hero single">
+          <article class="card job-header">
+            <div class="job-header-topline">
+              <div class="job-header-context">
+                <p class="hero-kicker">岗位详情</p>
+                <nav class="job-breadcrumbs" aria-label="Breadcrumb">
+                  {jobBreadcrumbs.map((item, index) => (
+                    <>
+                      {item.current || !item.href ? (
+                        <span aria-current={item.current ? 'page' : undefined}>{item.label}</span>
+                      ) : (
+                        <a href={item.href}>{item.label}</a>
+                      )}
+                      {index < jobBreadcrumbs.length - 1 && <span aria-hidden="true">/</span>}
+                    </>
+                  ))}
+                </nav>
+              </div>
+              <span class="job-company-chip">{job.companyName}</span>
             </div>
-            <span class="job-company-chip">{job.companyName}</span>
-          </div>
 
-          <h1 class="job-header-title">{job.roleTitle}</h1>
-          <p class="job-header-summary">{job.summary}</p>
+            <h1 class="job-header-title">{job.roleTitle}</h1>
+            <p class="job-header-summary">{job.summary}</p>
 
-          <div class="job-header-meta">
-            {metaItems.map((item) => (
-              <span>{item}</span>
-            ))}
-          </div>
+            <div class="job-header-meta">
+              {metaItems.map((item) => (
+                <span>{item}</span>
+              ))}
+            </div>
 
-          <div class="button-row">
-            {job.applyUrl && (
-              <a class="button-link" href={job.applyUrl} target="_blank" rel="noreferrer">
-                立即投递
-                <span>↗</span>
-              </a>
-            )}
-            <a class="button-link secondary" href="/who-is-hiring">回到招聘列表</a>
-          </div>
-        </article>
-      </section>
-
-      <section class="shell page-section job-detail-layout">
-        <article class="card job-content-card">
-          <div class="job-meta-grid">
-            <article>
-              <span>公司</span>
-              <strong>{job.companyName}</strong>
-            </article>
-            <article>
-              <span>薪资</span>
-              <strong>{job.salary}</strong>
-            </article>
-            <article>
-              <span>模式</span>
-              <strong>{job.workMode}</strong>
-            </article>
-            <article>
-              <span>地点</span>
-              <strong>{job.location}</strong>
-            </article>
-          </div>
-
-          <MarkdownContent content={job.description} />
-        </article>
-
-        <aside class="card job-apply-card">
-          <section class="job-apply-section">
-            <h2>投递方式</h2>
-            <p class="job-apply-copy">{applyCopy}</p>
-
-            <div class="job-apply-actions">
+            <div class="button-row">
               {job.applyUrl && (
                 <a class="button-link" href={job.applyUrl} target="_blank" rel="noreferrer">
-                  打开投递链接
+                  立即投递
                   <span>↗</span>
                 </a>
               )}
+              <a class="button-link secondary" href="/who-is-hiring">回到招聘列表</a>
+            </div>
+          </article>
+        </section>
+
+        <section class="shell page-section job-detail-layout">
+          <article class="card job-content-card">
+            <div class="job-meta-grid">
+              <article>
+                <span>公司</span>
+                <strong>{job.companyName}</strong>
+              </article>
+              <article>
+                <span>薪资</span>
+                <strong>{job.salary}</strong>
+              </article>
+              <article>
+                <span>模式</span>
+                <strong>{job.workMode}</strong>
+              </article>
+              <article>
+                <span>地点</span>
+                <strong>{job.location}</strong>
+              </article>
             </div>
 
-            <ul class="job-fact-list">
-              <li>
-                <strong>投递周期</strong>
-                <span>{deadlineLabel}</span>
-              </li>
-              <li>
-                <strong>远程支持</strong>
-                <span>{remoteLabel}</span>
-              </li>
-              <li>
-                <strong>联系方式</strong>
-                <span>{contactCopy}</span>
-              </li>
-            </ul>
+            <MarkdownContent content={job.description} />
+          </article>
 
-            {job.tags.length > 0 && (
-              <ul class="job-tag-list">
-                {job.tags.map((tag) => <li>{tag}</li>)}
+          <aside class="card job-apply-card">
+            <section class="job-apply-section">
+              <h2>投递方式</h2>
+              <p class="job-apply-copy">{applyCopy}</p>
+
+              <div class="job-apply-actions">
+                {job.applyUrl && (
+                  <a class="button-link" href={job.applyUrl} target="_blank" rel="noreferrer">
+                    打开投递链接
+                    <span>↗</span>
+                  </a>
+                )}
+              </div>
+
+              <ul class="job-fact-list">
+                <li>
+                  <strong>投递周期</strong>
+                  <span>{deadlineLabel}</span>
+                </li>
+                <li>
+                  <strong>远程支持</strong>
+                  <span>{remoteLabel}</span>
+                </li>
+                <li>
+                  <strong>联系方式</strong>
+                  <span>{contactCopy}</span>
+                </li>
               </ul>
-            )}
-          </section>
-        </aside>
-      </section>
 
-      {related.length > 0 && (
-        <section class="shell page-section">
-          <SectionHeader
-            eyebrow="更多机会"
-            title="继续浏览其他岗位"
-            description="如果这个岗位暂时不匹配，可以继续看看同一批公开机会。"
-            href="/who-is-hiring"
-            hrefLabel="回到岗位列表"
-          />
-          <div class="grid-2 job-related-grid">
-            {related.map((item) => <JobCard job={item} />)}
-          </div>
+              {job.tags.length > 0 && (
+                <ul class="job-tag-list">
+                  {job.tags.map((tag) => <li>{tag}</li>)}
+                </ul>
+              )}
+            </section>
+          </aside>
         </section>
-      )}
+
+        {related.length > 0 && (
+          <section class="shell page-section">
+            <SectionHeader
+              eyebrow="更多机会"
+              title="继续浏览其他岗位"
+              description="如果这个岗位暂时不匹配，可以继续看看同一批公开机会。"
+              href="/who-is-hiring"
+              hrefLabel="回到岗位列表"
+            />
+            <div class="grid-2 job-related-grid">
+              {related.map((item) => <JobCard job={item} />)}
+            </div>
+          </section>
+        )}
+      </div>
     </>
   ) : (
     <section class="shell page-hero single">
@@ -166,234 +168,3 @@ if (!job) {
     </section>
   )}
 </BaseLayout>
-
-<style>
-  .single {
-    grid-template-columns: 1fr;
-  }
-
-  .job-header {
-    padding: 1.4rem;
-    background:
-      radial-gradient(circle at top right, rgba(243, 196, 110, 0.22), transparent 22%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(249, 253, 252, 0.92));
-  }
-
-  .job-header-topline {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: start;
-    justify-content: space-between;
-    gap: 0.9rem;
-  }
-
-  .job-header-context {
-    display: grid;
-    gap: 0.45rem;
-  }
-
-  .job-breadcrumbs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    color: var(--muted);
-    font-size: 0.78rem;
-  }
-
-  .job-company-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.46rem 0.76rem;
-    border-radius: 999px;
-    border: 1px solid rgba(15, 118, 110, 0.12);
-    background: rgba(255, 255, 255, 0.74);
-    color: var(--accent-strong);
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .job-header-title {
-    margin: 0.9rem 0 0;
-    max-width: 12ch;
-    font-size: clamp(2.2rem, 4.5vw, 3.8rem);
-    line-height: 0.94;
-  }
-
-  .job-header-summary {
-    margin: 0.9rem 0 0;
-    max-width: 60ch;
-    color: var(--muted);
-    line-height: 1.75;
-  }
-
-  .job-header-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-top: 1rem;
-  }
-
-  .job-header-meta span {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.46rem 0.74rem;
-    border-radius: 999px;
-    background: rgba(15, 118, 110, 0.06);
-    color: var(--accent-strong);
-    font-size: 0.74rem;
-    font-weight: 700;
-  }
-
-  .job-detail-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.62fr) minmax(18rem, 0.78fr);
-    gap: 1rem;
-    align-items: start;
-  }
-
-  .job-content-card {
-    padding: 1.35rem;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 252, 247, 0.9));
-  }
-
-  .job-apply-card {
-    position: sticky;
-    top: 6.3rem;
-    padding: 1rem;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 251, 250, 0.92));
-  }
-
-  .job-apply-section {
-    display: grid;
-    gap: 0.9rem;
-  }
-
-  .job-apply-section h2,
-  .job-apply-copy {
-    margin: 0;
-  }
-
-  .job-apply-section h2 {
-    font-size: 1.2rem;
-  }
-
-  .job-apply-copy {
-    color: var(--muted);
-    line-height: 1.72;
-  }
-
-  .job-apply-actions {
-    display: grid;
-    gap: 0.7rem;
-  }
-
-  .job-apply-actions .button-link {
-    justify-content: center;
-  }
-
-  .job-fact-list,
-  .job-tag-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .job-fact-list {
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .job-fact-list li {
-    padding-bottom: 0.75rem;
-    border-bottom: 1px dashed rgba(31, 41, 51, 0.12);
-  }
-
-  .job-fact-list li:last-child {
-    padding-bottom: 0;
-    border-bottom: none;
-  }
-
-  .job-fact-list strong,
-  .job-fact-list span {
-    display: block;
-  }
-
-  .job-fact-list strong {
-    color: var(--muted);
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .job-fact-list span {
-    margin-top: 0.34rem;
-    line-height: 1.68;
-  }
-
-  .job-tag-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-  }
-
-  .job-tag-list li {
-    padding: 0.36rem 0.66rem;
-    border-radius: 999px;
-    background: rgba(31, 41, 51, 0.05);
-    color: var(--muted);
-    font-size: 0.74rem;
-    font-weight: 700;
-  }
-
-  .job-related-grid {
-    align-items: start;
-  }
-
-  .job-meta-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.8rem;
-    margin-bottom: 1.2rem;
-  }
-
-  .job-meta-grid article {
-    padding: 1rem;
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.74);
-    border: 1px solid rgba(31, 41, 51, 0.08);
-  }
-
-  .job-meta-grid span,
-  .job-meta-grid strong {
-    display: block;
-  }
-
-  .job-meta-grid span {
-    color: var(--muted);
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .job-meta-grid strong {
-    margin-top: 0.4rem;
-    font-size: 1.05rem;
-  }
-
-  @media (max-width: 960px) {
-    .job-detail-layout {
-      grid-template-columns: 1fr;
-    }
-
-    .job-apply-card {
-      position: static;
-    }
-
-    .job-meta-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
