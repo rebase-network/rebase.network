@@ -826,6 +826,38 @@ h4 {
   max-width: 52ch;
 }
 
+.jobs-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.jobs-toolbar-copy {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.jobs-toolbar-copy strong {
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.jobs-toolbar-copy span {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.jobs-toolbar-link {
+  margin-top: 0;
+  padding: 0.72rem 0.95rem;
+}
+
 .jobs-empty-state {
   padding: 1.35rem;
 }
@@ -862,5 +894,10 @@ h4 {
   .jobs-hero .hero-topline {
     align-items: start;
     justify-content: start;
+  }
+
+  .jobs-toolbar {
+    align-items: start;
+    flex-direction: column;
   }
 }

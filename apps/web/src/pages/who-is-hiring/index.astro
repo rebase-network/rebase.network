@@ -1,7 +1,6 @@
 ---
 import JobCard from '@/components/JobCard.astro';
 import ListPageHero from '@/components/ListPageHero.astro';
-import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getJobs, getSiteSettings } from '@/lib/content';
 
@@ -37,13 +36,13 @@ const jobSignals = [
   />
 
   <section id="job-archive" class="shell page-section">
-    <SectionHeader
-      eyebrow="当前开放岗位"
-      title="直接浏览全部岗位"
-      description="全部岗位按最近发布时间排序，优先把能快速判断和立即投递的信息放在卡片里。"
-      href="/who-is-hiring/rss.xml"
-      hrefLabel="订阅 RSS"
-    />
+    <div class="jobs-toolbar">
+      <p class="jobs-toolbar-copy">
+        <strong>开放岗位</strong>
+        <span>{jobs.length} 个岗位</span>
+      </p>
+      <a class="button-link secondary jobs-toolbar-link" href="/who-is-hiring/rss.xml">订阅 RSS</a>
+    </div>
     {jobs.length > 0 ? (
       <div class="grid-3">
         {jobs.map((job) => <JobCard job={job} />)}
