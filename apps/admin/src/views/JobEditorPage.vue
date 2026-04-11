@@ -73,10 +73,7 @@ const jobId = computed(() => (typeof route.params.id === 'string' ? route.params
 const isNew = computed(() => jobId.value.length === 0);
 const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/who-is-hiring/${form.slug}`) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新增招聘' : `编辑招聘：${record.value?.roleTitle ?? ''}`));
-const deliverySummary = computed(() => form.applyUrl || form.contactValue || '未填写');
-const workModeSummary = computed(() => [form.workMode, form.location].filter(Boolean).join(' / ') || '未填写');
-const tagSummary = computed(() => form.tags.join('、') || '未填写');
-const responsibilitiesCount = computed(() => form.responsibilities.filter((item) => item.trim().length > 0).length);
+const statusLabel = computed(() => formatContentStatus(form.status));
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -211,183 +208,170 @@ onMounted(() => void loadRecord());
     <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
     <div v-if="loading" class="panel"><p>正在准备招聘编辑器…</p></div>
 
-    <div v-else class="stacked-gap">
-      <div class="editor-overview-grid">
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>发布信息</h3>
-            <div class="panel-meta">{{ formatContentStatus(form.status) }}</div>
+    <div v-else class="editor-grid editor-grid-focus job-editor-layout">
+      <section class="panel stacked-gap editor-main job-editor-main">
+        <div class="field-shell stacked-gap job-leading-fields">
+          <div class="field-grid field-grid-2 field-grid-compact">
+            <label class="field">
+              <span>团队 / 公司</span>
+              <input v-model="form.companyName" class="job-title-input" type="text" placeholder="Rebase Studio" />
+            </label>
+            <label class="field">
+              <span>岗位名称</span>
+              <input v-model="form.roleTitle" class="job-title-input" type="text" placeholder="前端工程师" />
+            </label>
           </div>
-          <dl class="summary-grid summary-grid-2">
+
+          <div class="field-inline-row field-inline-row-compact">
+            <div class="field-inline-label">
+              <span>摘要</span>
+            </div>
+            <div class="field-inline-control">
+              <textarea v-model="form.summary" rows="2" placeholder="用一句话概括岗位和团队亮点。" />
+            </div>
+          </div>
+        </div>
+
+        <MarkdownEditorField v-model="form.descriptionMarkdown" label="岗位详情" placeholder="使用 Markdown 描述岗位背景、要求和团队信息。" :rows="24" />
+        <StringListField v-model="form.responsibilities" label="工作内容 / 职责" add-label="新增职责" placeholder="实现 Astro 前端体验" />
+      </section>
+
+      <aside class="stacked-gap editor-sidebar sticky-stack">
+        <section class="panel stacked-gap job-sidebar-card">
+          <div class="panel-toolbar">
+            <h3>发布设置</h3>
+            <span class="status-pill">{{ statusLabel }}</span>
+          </div>
+
+          <label class="field">
+            <span>招聘状态</span>
+            <select v-model="form.status">
+              <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+            </select>
+          </label>
+
+          <dl class="summary-grid summary-grid-1 job-meta-grid">
             <div class="summary-item">
               <dt>公开地址</dt>
               <dd>{{ publicUrl }}</dd>
             </div>
             <div class="summary-item">
-              <dt>发布时间</dt>
-              <dd class="muted">{{ form.publishedAt || '未设置' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>过期时间</dt>
-              <dd class="muted">{{ form.expiresAt || '未设置' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>更新时间</dt>
-              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '新建后生成' }}</dd>
+              <dt>最后更新</dt>
+              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '创建后生成' }}</dd>
             </div>
           </dl>
-        </section>
 
-        <section class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <h3>投递摘要</h3>
-            <div class="panel-meta">{{ form.supportsRemote ? '支持远程' : '现场为主' }}</div>
+          <div class="field-grid field-grid-2 field-grid-compact">
+            <label class="field">
+              <span>发布时间</span>
+              <input v-model="form.publishedAt" type="datetime-local" />
+            </label>
+            <label class="field">
+              <span>过期时间</span>
+              <input v-model="form.expiresAt" type="datetime-local" />
+            </label>
           </div>
-          <dl class="summary-grid summary-grid-2">
-            <div class="summary-item">
-              <dt>投递方式</dt>
-              <dd class="muted">{{ deliverySummary }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>工作模式</dt>
-              <dd class="muted">{{ workModeSummary }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>薪资范围</dt>
-              <dd class="muted">{{ form.salary || '未填写' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>标签</dt>
-              <dd class="muted">{{ tagSummary }}</dd>
-            </div>
-          </dl>
         </section>
 
-        <section class="panel stacked-gap">
+        <section class="panel stacked-gap job-sidebar-card">
           <div class="panel-toolbar">
-            <h3>岗位摘要</h3>
-            <div class="panel-meta">{{ form.companyName || '未填写团队' }}</div>
+            <h3>岗位信息</h3>
+            <div class="panel-meta">基础配置</div>
           </div>
-          <dl class="summary-grid summary-grid-2">
-            <div class="summary-item">
-              <dt>岗位名称</dt>
-              <dd>{{ form.roleTitle || '未填写' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>远程状态</dt>
-              <dd class="muted">{{ form.supportsRemote ? '支持远程' : '不支持远程' }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>职责条目</dt>
-              <dd>{{ responsibilitiesCount }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>联系方式</dt>
-              <dd class="muted">{{ form.contactLabel || form.contactValue ? `${form.contactLabel || '联系方式'} / ${form.contactValue || '未填写'}` : '未填写' }}</dd>
-            </div>
-          </dl>
-        </section>
-      </div>
 
-      <section class="panel stacked-gap editor-main">
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>团队 / 公司</span>
-            <input v-model="form.companyName" type="text" placeholder="Rebase Studio" />
-          </label>
-          <label class="field">
-            <span>岗位名称</span>
-            <input v-model="form.roleTitle" type="text" placeholder="前端工程师" />
-          </label>
-        </div>
-
-        <div class="field-grid field-grid-2">
           <label class="field">
             <span>URL 标识</span>
             <input v-model="form.slug" type="text" placeholder="frontend-engineer-community-platform" @input="slugTouched = true" />
             <small v-if="fieldIssues.slug" class="field-error">{{ fieldIssues.slug }}</small>
           </label>
+
           <label class="field">
             <span>薪资范围</span>
             <input v-model="form.salary" type="text" placeholder="$5,000 - $8,500 / month" />
           </label>
-        </div>
 
-        <label class="field">
-          <span>摘要</span>
-          <textarea v-model="form.summary" rows="3" placeholder="用一句话概括岗位和团队亮点。" />
-        </label>
+          <div class="field-grid field-grid-2 field-grid-compact">
+            <label class="field">
+              <span>工作模式</span>
+              <input v-model="form.workMode" type="text" placeholder="全职" />
+            </label>
+            <label class="field">
+              <span>地点</span>
+              <input v-model="form.location" type="text" placeholder="远程 / 中国时区优先" />
+            </label>
+          </div>
 
-        <div class="field-grid field-grid-3">
-          <label class="field">
-            <span>工作模式</span>
-            <input v-model="form.workMode" type="text" placeholder="全职" />
-          </label>
-          <label class="field">
-            <span>地点</span>
-            <input v-model="form.location" type="text" placeholder="远程 / 中国时区优先" />
-          </label>
-          <label class="field checkbox-field">
+          <label class="field checkbox-field job-remote-field">
             <span>支持远程</span>
             <input v-model="form.supportsRemote" type="checkbox" />
           </label>
-        </div>
+        </section>
 
-        <div class="field-grid field-grid-3">
-          <label class="field">
-            <span>状态</span>
-            <select v-model="form.status">
-              <option v-for="option in contentStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>发布时间</span>
-            <input v-model="form.publishedAt" type="datetime-local" />
-          </label>
-          <label class="field">
-            <span>过期时间</span>
-            <input v-model="form.expiresAt" type="datetime-local" />
-          </label>
-        </div>
+        <section class="panel stacked-gap job-sidebar-card">
+          <div class="panel-toolbar">
+            <h3>投递方式</h3>
+            <div class="panel-meta">简历入口</div>
+          </div>
 
-        <div class="field-grid field-grid-2">
           <label class="field">
             <span>投递链接</span>
             <input v-model="form.applyUrl" type="url" placeholder="https://example.com/jobs/frontend-engineer" />
           </label>
+
           <label class="field">
             <span>投递说明</span>
             <input v-model="form.applyNote" type="text" placeholder="欢迎附上项目作品或写作样本。" />
           </label>
-        </div>
 
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>联系方式标签</span>
-            <input v-model="form.contactLabel" type="text" placeholder="telegram / 微信 / 邮箱" />
-          </label>
-          <label class="field">
-            <span>联系方式值</span>
-            <input v-model="form.contactValue" type="text" placeholder="@rebase_hiring" />
-          </label>
-        </div>
-
-        <StringListField v-model="form.responsibilities" label="工作内容 / 职责" add-label="新增职责" placeholder="实现 Astro 前端体验" />
-        <StringListField v-model="form.tags" label="标签" add-label="新增标签" placeholder="frontend" />
-
-        <div class="field-grid field-grid-2">
-          <label class="field">
-            <span>SEO 标题</span>
-            <input v-model="form.seoTitle" type="text" placeholder="可选" />
-          </label>
-          <label class="field">
-            <span>SEO 描述</span>
-            <input v-model="form.seoDescription" type="text" placeholder="可选" />
-          </label>
-        </div>
-
-        <MarkdownEditorField v-model="form.descriptionMarkdown" label="岗位详情" placeholder="使用 Markdown 描述岗位背景、要求和团队信息。" />
-      </section>
+          <div class="field-grid field-grid-2 field-grid-compact">
+            <label class="field">
+              <span>联系方式标签</span>
+              <input v-model="form.contactLabel" type="text" placeholder="telegram / 微信 / 邮箱" />
+            </label>
+            <label class="field">
+              <span>联系方式值</span>
+              <input v-model="form.contactValue" type="text" placeholder="@rebase_hiring" />
+            </label>
+          </div>
+        </section>
+      </aside>
     </div>
   </section>
 </template>
+
+<style scoped>
+.job-editor-layout {
+  grid-template-columns: minmax(0, 2.44fr) minmax(270px, 0.92fr);
+}
+
+.job-editor-main {
+  gap: 0.75rem;
+}
+
+.job-leading-fields {
+  gap: 0.65rem;
+}
+
+.job-title-input {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.job-sidebar-card {
+  gap: 0.7rem;
+}
+
+.job-meta-grid {
+  gap: 0.55rem;
+}
+
+.job-remote-field {
+  align-items: center;
+}
+
+@media (max-width: 1280px) {
+  .job-editor-layout {
+    grid-template-columns: minmax(0, 2.12fr) minmax(248px, 0.96fr);
+  }
+}
+</style>
