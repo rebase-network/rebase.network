@@ -113,9 +113,8 @@ const heroSecondaryAction = leadUpcomingEvent
   {remainingUpcomingEvents.length > 0 && (
     <section id="upcoming-archive" class="shell page-section">
       <SectionHeader
-        eyebrow="其他当前活动"
-        title="更多近期活动"
-        description="重点活动已经放在首屏，其他当前活动继续保持同样清晰的时间与地点信息。"
+        eyebrow="近期"
+        title="更多活动"
       />
       <div class="grid-3">
         {remainingUpcomingEvents.map((event) => <EventCard event={event} compact />)}
@@ -125,9 +124,8 @@ const heroSecondaryAction = leadUpcomingEvent
 
   <section id="event-archive" class="shell page-section">
     <SectionHeader
-      eyebrow="历史归档"
+      eyebrow="归档"
       title="历史活动"
-      description="历史活动也应该保留完整上下文，而不是在活动结束后就从社区表面消失。"
     />
     {pastEvents.length > 0 ? (
       <div class="grid-3">
