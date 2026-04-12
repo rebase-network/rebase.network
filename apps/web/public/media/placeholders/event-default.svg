@@ -1,0 +1,33 @@
+<svg width="1600" height="960" viewBox="0 0 1600 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="960" rx="48" fill="#0F766E"/>
+  <rect width="1600" height="960" rx="48" fill="url(#bg)"/>
+  <circle cx="1326" cy="186" r="196" fill="#F2C46C" fill-opacity="0.28"/>
+  <circle cx="260" cy="122" r="178" fill="#D7F4EA" fill-opacity="0.16"/>
+  <circle cx="1480" cy="814" r="210" fill="#1C3F39" fill-opacity="0.44"/>
+  <rect x="94" y="122" width="432" height="520" rx="28" fill="white" fill-opacity="0.1" stroke="white" stroke-opacity="0.18" stroke-width="4"/>
+  <rect x="94" y="122" width="432" height="520" rx="28" fill="url(#panel)"/>
+  <path d="M264 100C264 70.1766 288.177 46 318 46H468C580.666 46 672 137.334 672 250V250" stroke="#56D364" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="670" cy="250" r="18" fill="#56D364"/>
+  <text x="128" y="258" fill="#FFF9EF" font-family="Avenir Next, Segoe UI, sans-serif" font-size="52" font-weight="700" letter-spacing="8">REBASE</text>
+  <text x="128" y="340" fill="#FFF9EF" font-family="Iowan Old Style, Georgia, serif" font-size="126" font-weight="700">EVENT</text>
+  <text x="128" y="438" fill="#FFF9EF" font-family="Iowan Old Style, Georgia, serif" font-size="126" font-weight="700">AGENDA</text>
+  <text x="128" y="532" fill="#D7F4EA" font-family="Avenir Next, Segoe UI, sans-serif" font-size="30" font-weight="600">COMMUNITY GATHERINGS / BUILDER TALKS / EDITORIAL SALONS</text>
+  <rect x="734" y="170" width="586" height="90" rx="45" fill="white" fill-opacity="0.1" stroke="white" stroke-opacity="0.16" stroke-width="4"/>
+  <text x="782" y="227" fill="#F8FBF9" font-family="Avenir Next, Segoe UI, sans-serif" font-size="34" font-weight="700" letter-spacing="6">FEATURED ACTIVITY</text>
+  <rect x="734" y="330" width="632" height="142" rx="34" fill="white" fill-opacity="0.08"/>
+  <rect x="734" y="522" width="432" height="118" rx="28" fill="white" fill-opacity="0.08"/>
+  <rect x="1188" y="522" width="178" height="118" rx="28" fill="#F2C46C" fill-opacity="0.2"/>
+  <rect x="734" y="686" width="534" height="34" rx="17" fill="white" fill-opacity="0.1"/>
+  <rect x="734" y="754" width="426" height="34" rx="17" fill="white" fill-opacity="0.1"/>
+  <defs>
+    <linearGradient id="bg" x1="130" y1="74" x2="1490" y2="890" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#123A33"/>
+      <stop offset="0.5" stop-color="#115E59"/>
+      <stop offset="1" stop-color="#17463F"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="128" y1="122" x2="526" y2="642" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A2A25" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#031816" stop-opacity="0.28"/>
+    </linearGradient>
+  </defs>
+</svg>

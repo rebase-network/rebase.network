@@ -5,6 +5,7 @@ import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getPastEvents, getSiteSettings, getUpcomingEvents } from '@/lib/content';
 import { formatEventWindow } from '@/lib/dates';
+import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
 import { getEventPath } from '@/lib/paths';
 
 const [site, upcomingEvents, pastEvents] = await Promise.all([
@@ -15,9 +16,17 @@ const [site, upcomingEvents, pastEvents] = await Promise.all([
 
 const leadUpcomingEvent = upcomingEvents[0];
 const remainingUpcomingEvents = leadUpcomingEvent ? upcomingEvents.slice(1) : [];
+const featureEventBadge = leadUpcomingEvent ? (leadUpcomingEvent.registrationUrl ? '正在报名' : '即将开始') : '';
+const featureEventDate = leadUpcomingEvent
+  ? new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', timeZone: 'Asia/Shanghai' })
+      .format(new Date(leadUpcomingEvent.startAt))
+      .split('/')
+      .join(' / ')
+  : '';
+const featureEventPlace = leadUpcomingEvent ? (leadUpcomingEvent.city === 'online' ? '线上活动' : leadUpcomingEvent.location) : '';
 const heroPrimaryAction = leadUpcomingEvent
   ? leadUpcomingEvent.registrationUrl
-    ? { href: leadUpcomingEvent.registrationUrl, label: '外部报名', external: true }
+    ? { href: leadUpcomingEvent.registrationUrl, label: '立即报名', external: true }
     : { href: getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug), label: '查看详情', external: false }
   : null;
 const heroSecondaryAction = leadUpcomingEvent
@@ -44,37 +53,54 @@ const heroSecondaryAction = leadUpcomingEvent
 
     {leadUpcomingEvent ? (
       <article class="card event-spotlight">
-        <div class="event-spotlight-topline">
-          <p class="event-spotlight-kicker">当前重点活动</p>
-          <span>{leadUpcomingEvent.registrationUrl ? '开放报名' : '活动说明'}</span>
-        </div>
-        <h2>
-          <a href={getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug)}>{leadUpcomingEvent.title}</a>
-        </h2>
-        <p class="event-spotlight-summary">{leadUpcomingEvent.summary}</p>
-        <dl class="event-spotlight-facts">
-          <div>
-            <dt>时间</dt>
-            <dd>{formatEventWindow(leadUpcomingEvent.startAt, leadUpcomingEvent.endAt)}</dd>
+        <a class="event-spotlight-cover" href={getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug)} aria-label={leadUpcomingEvent.title}>
+          <img
+            class:list={['event-spotlight-image', !leadUpcomingEvent.coverImageUrl && 'default']}
+            src={leadUpcomingEvent.coverImageUrl ?? DEFAULT_EVENT_COVER_PATH}
+            alt=""
+            loading="lazy"
+          />
+          <div class="event-spotlight-cover-overlay">
+            <span class="event-spotlight-badge">{featureEventBadge}</span>
+            <div class="event-spotlight-date-block">
+              <strong>{featureEventDate}</strong>
+              <span>{featureEventPlace}</span>
+            </div>
           </div>
-          <div>
-            <dt>地点</dt>
-            <dd>{leadUpcomingEvent.location} · {leadUpcomingEvent.venue}</dd>
+        </a>
+        <div class="event-spotlight-body">
+          <div class="event-spotlight-topline">
+            <p class="event-spotlight-kicker">本周活动</p>
+            <span>{leadUpcomingEvent.registrationUrl ? '外部报名' : '活动详情'}</span>
           </div>
-        </dl>
-        <div class="event-spotlight-actions">
-          {heroPrimaryAction && (
-            <a
-              class="button-link"
-              href={heroPrimaryAction.href}
-              target={heroPrimaryAction.external ? '_blank' : undefined}
-              rel={heroPrimaryAction.external ? 'noreferrer' : undefined}
-            >
-              {heroPrimaryAction.label}
-              {heroPrimaryAction.external && <span>↗</span>}
-            </a>
-          )}
-          {heroSecondaryAction && <a class="button-link secondary" href={heroSecondaryAction.href}>{heroSecondaryAction.label}</a>}
+          <h2>
+            <a href={getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug)}>{leadUpcomingEvent.title}</a>
+          </h2>
+          <p class="event-spotlight-summary">{leadUpcomingEvent.summary}</p>
+          <dl class="event-spotlight-facts">
+            <div>
+              <dt>时间</dt>
+              <dd>{formatEventWindow(leadUpcomingEvent.startAt, leadUpcomingEvent.endAt)}</dd>
+            </div>
+            <div>
+              <dt>地点</dt>
+              <dd>{leadUpcomingEvent.location} · {leadUpcomingEvent.venue}</dd>
+            </div>
+          </dl>
+          <div class="event-spotlight-actions">
+            {heroPrimaryAction && (
+              <a
+                class="button-link"
+                href={heroPrimaryAction.href}
+                target={heroPrimaryAction.external ? '_blank' : undefined}
+                rel={heroPrimaryAction.external ? 'noreferrer' : undefined}
+              >
+                {heroPrimaryAction.label}
+                {heroPrimaryAction.external && <span>↗</span>}
+              </a>
+            )}
+            {heroSecondaryAction && <a class="button-link secondary" href={heroSecondaryAction.href}>{heroSecondaryAction.label}</a>}
+          </div>
         </div>
       </article>
     ) : (
@@ -180,6 +206,8 @@ const heroSecondaryAction = leadUpcomingEvent
   }
 
   .event-spotlight {
+    overflow: hidden;
+    padding: 0;
     background:
       radial-gradient(circle at top right, rgba(243, 196, 110, 0.16), transparent 24%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 251, 250, 0.94));
@@ -192,6 +220,52 @@ const heroSecondaryAction = leadUpcomingEvent
       linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(250, 252, 248, 0.92));
   }
 
+  .event-spotlight-body {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.1rem 1.25rem 1.25rem;
+  }
+
+  .event-spotlight-cover {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    min-height: 13.5rem;
+    background: rgba(15, 118, 110, 0.08);
+  }
+
+  .event-spotlight-image {
+    width: 100%;
+    height: 100%;
+    min-height: 13.5rem;
+    object-fit: cover;
+    transition: transform 260ms ease;
+  }
+
+  .event-spotlight-image.default {
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.14), rgba(17, 94, 89, 0.06));
+  }
+
+  .event-spotlight:hover .event-spotlight-image,
+  .event-spotlight:focus-within .event-spotlight-image {
+    transform: scale(1.03);
+  }
+
+  .event-spotlight-cover-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem;
+    background:
+      linear-gradient(180deg, rgba(12, 23, 22, 0.16), rgba(12, 23, 22, 0.04) 30%, rgba(12, 23, 22, 0.62)),
+      linear-gradient(135deg, rgba(12, 23, 22, 0.06), transparent 45%);
+  }
+
+  .event-spotlight-badge,
+  .event-spotlight-date-block strong,
+  .event-spotlight-date-block span,
   .event-spotlight-topline,
   .event-spotlight h2,
   .event-spotlight-summary,
@@ -199,6 +273,41 @@ const heroSecondaryAction = leadUpcomingEvent
   .event-status-card h2,
   .event-status-card p {
     margin: 0;
+  }
+
+  .event-spotlight-badge {
+    justify-self: start;
+    width: fit-content;
+    padding: 0.4rem 0.74rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: rgba(12, 23, 22, 0.46);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .event-spotlight-date-block {
+    display: grid;
+    gap: 0.2rem;
+    color: white;
+  }
+
+  .event-spotlight-date-block strong {
+    font-family: var(--display-font);
+    font-size: clamp(2rem, 3vw, 2.75rem);
+    line-height: 0.96;
+    letter-spacing: -0.04em;
+  }
+
+  .event-spotlight-date-block span {
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.86;
   }
 
   .event-spotlight-topline {
@@ -244,8 +353,16 @@ const heroSecondaryAction = leadUpcomingEvent
     line-height: 1.75;
   }
 
+  .event-spotlight-summary {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
   .event-spotlight-facts {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
     margin: 0;
     padding: 0;
@@ -289,6 +406,10 @@ const heroSecondaryAction = leadUpcomingEvent
   @media (max-width: 960px) {
     .event-spotlight-topline {
       align-items: start;
+    }
+
+    .event-spotlight-facts {
+      grid-template-columns: 1fr;
     }
   }
 </style>
