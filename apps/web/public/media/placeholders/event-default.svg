@@ -1,33 +1,44 @@
 <svg width="1600" height="960" viewBox="0 0 1600 960" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1600" height="960" rx="48" fill="#0F766E"/>
   <rect width="1600" height="960" rx="48" fill="url(#bg)"/>
-  <circle cx="1326" cy="186" r="196" fill="#F2C46C" fill-opacity="0.28"/>
-  <circle cx="260" cy="122" r="178" fill="#D7F4EA" fill-opacity="0.16"/>
-  <circle cx="1480" cy="814" r="210" fill="#1C3F39" fill-opacity="0.44"/>
-  <rect x="94" y="122" width="432" height="520" rx="28" fill="white" fill-opacity="0.1" stroke="white" stroke-opacity="0.18" stroke-width="4"/>
-  <rect x="94" y="122" width="432" height="520" rx="28" fill="url(#panel)"/>
-  <path d="M264 100C264 70.1766 288.177 46 318 46H468C580.666 46 672 137.334 672 250V250" stroke="#56D364" stroke-width="16" stroke-linecap="round"/>
-  <circle cx="670" cy="250" r="18" fill="#56D364"/>
-  <text x="128" y="258" fill="#FFF9EF" font-family="Avenir Next, Segoe UI, sans-serif" font-size="52" font-weight="700" letter-spacing="8">REBASE</text>
-  <text x="128" y="340" fill="#FFF9EF" font-family="Iowan Old Style, Georgia, serif" font-size="126" font-weight="700">EVENT</text>
-  <text x="128" y="438" fill="#FFF9EF" font-family="Iowan Old Style, Georgia, serif" font-size="126" font-weight="700">AGENDA</text>
-  <text x="128" y="532" fill="#D7F4EA" font-family="Avenir Next, Segoe UI, sans-serif" font-size="30" font-weight="600">COMMUNITY GATHERINGS / BUILDER TALKS / EDITORIAL SALONS</text>
-  <rect x="734" y="170" width="586" height="90" rx="45" fill="white" fill-opacity="0.1" stroke="white" stroke-opacity="0.16" stroke-width="4"/>
-  <text x="782" y="227" fill="#F8FBF9" font-family="Avenir Next, Segoe UI, sans-serif" font-size="34" font-weight="700" letter-spacing="6">FEATURED ACTIVITY</text>
-  <rect x="734" y="330" width="632" height="142" rx="34" fill="white" fill-opacity="0.08"/>
-  <rect x="734" y="522" width="432" height="118" rx="28" fill="white" fill-opacity="0.08"/>
-  <rect x="1188" y="522" width="178" height="118" rx="28" fill="#F2C46C" fill-opacity="0.2"/>
-  <rect x="734" y="686" width="534" height="34" rx="17" fill="white" fill-opacity="0.1"/>
-  <rect x="734" y="754" width="426" height="34" rx="17" fill="white" fill-opacity="0.1"/>
+  <circle cx="1386" cy="190" r="198" fill="#F3C46E" fill-opacity="0.2"/>
+  <circle cx="1464" cy="816" r="214" fill="#0B2C27" fill-opacity="0.42"/>
+  <circle cx="242" cy="126" r="178" fill="#D6F4EA" fill-opacity="0.12"/>
+
+  <rect x="78" y="112" width="520" height="560" rx="34" fill="url(#panel)" stroke="rgba(255,255,255,0.18)"/>
+  <path d="M246 88C246 62.5949 266.595 42 292 42H450C568.19 42 664 137.81 664 256" stroke="#54D267" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="664" cy="256" r="18" fill="#54D267"/>
+
+  <text x="124" y="228" fill="#FDF7EA" font-family="Helvetica Neue, Arial, sans-serif" font-size="54" font-weight="700" letter-spacing="8">REBASE</text>
+  <text x="124" y="334" fill="#FDF7EA" font-family="Helvetica Neue, Arial, sans-serif" font-size="106" font-weight="800" letter-spacing="-2">COMMUNITY</text>
+  <text x="124" y="434" fill="#FDF7EA" font-family="Helvetica Neue, Arial, sans-serif" font-size="106" font-weight="800" letter-spacing="-2">EVENTS</text>
+  <text x="124" y="520" fill="#D8F3EA" font-family="Helvetica Neue, Arial, sans-serif" font-size="30" font-weight="600" letter-spacing="3">COMMUNITY GATHERINGS / BUILDER NIGHTS</text>
+  <text x="124" y="568" fill="#D8F3EA" font-family="Helvetica Neue, Arial, sans-serif" font-size="30" font-weight="600" letter-spacing="3">ONLINE SALONS / OPEN CALLS / RETROSPECTIVES</text>
+
+  <rect x="746" y="164" width="434" height="88" rx="44" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.18)" stroke-width="4"/>
+  <text x="792" y="220" fill="#F7FBF9" font-family="Helvetica Neue, Arial, sans-serif" font-size="32" font-weight="700" letter-spacing="5">OPEN CALL FOR EVENTS</text>
+
+  <rect x="746" y="318" width="612" height="168" rx="32" fill="rgba(255,255,255,0.08)"/>
+  <rect x="782" y="358" width="312" height="28" rx="14" fill="rgba(255,255,255,0.18)"/>
+  <rect x="782" y="406" width="526" height="34" rx="17" fill="rgba(255,255,255,0.12)"/>
+
+  <rect x="746" y="536" width="368" height="122" rx="28" fill="rgba(255,255,255,0.08)"/>
+  <rect x="1138" y="536" width="220" height="122" rx="28" fill="rgba(243,196,110,0.18)"/>
+  <rect x="782" y="576" width="126" height="20" rx="10" fill="rgba(255,255,255,0.18)"/>
+  <rect x="782" y="614" width="244" height="22" rx="11" fill="rgba(255,255,255,0.12)"/>
+  <rect x="1182" y="578" width="128" height="38" rx="19" fill="rgba(255,255,255,0.16)"/>
+
+  <rect x="746" y="716" width="540" height="30" rx="15" fill="rgba(255,255,255,0.1)"/>
+  <rect x="746" y="776" width="434" height="30" rx="15" fill="rgba(255,255,255,0.08)"/>
+
   <defs>
-    <linearGradient id="bg" x1="130" y1="74" x2="1490" y2="890" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#123A33"/>
-      <stop offset="0.5" stop-color="#115E59"/>
-      <stop offset="1" stop-color="#17463F"/>
+    <linearGradient id="bg" x1="108" y1="76" x2="1490" y2="888" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#153E37"/>
+      <stop offset="0.52" stop-color="#135F59"/>
+      <stop offset="1" stop-color="#17433D"/>
     </linearGradient>
-    <linearGradient id="panel" x1="128" y1="122" x2="526" y2="642" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0A2A25" stop-opacity="0.22"/>
-      <stop offset="1" stop-color="#031816" stop-opacity="0.28"/>
+    <linearGradient id="panel" x1="110" y1="112" x2="598" y2="672" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#214C45" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#103530" stop-opacity="0.92"/>
     </linearGradient>
   </defs>
 </svg>
