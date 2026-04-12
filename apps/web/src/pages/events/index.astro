@@ -1,58 +1,109 @@
 ---
 import EventCard from '@/components/EventCard.astro';
 import ListEmptyState from '@/components/ListEmptyState.astro';
-import ListPageHero from '@/components/ListPageHero.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getPastEvents, getSiteSettings, getUpcomingEvents } from '@/lib/content';
+import { formatEventWindow } from '@/lib/dates';
+import { getEventPath } from '@/lib/paths';
 
 const [site, upcomingEvents, pastEvents] = await Promise.all([
   getSiteSettings(),
   getUpcomingEvents(),
   getPastEvents(),
 ]);
+
 const leadUpcomingEvent = upcomingEvents[0];
-const remainingUpcomingEvents = leadUpcomingEvent ? upcomingEvents.slice(1) : upcomingEvents;
+const remainingUpcomingEvents = leadUpcomingEvent ? upcomingEvents.slice(1) : [];
+const heroPrimaryAction = leadUpcomingEvent
+  ? leadUpcomingEvent.registrationUrl
+    ? { href: leadUpcomingEvent.registrationUrl, label: '外部报名', external: true }
+    : { href: getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug), label: '查看详情', external: false }
+  : null;
+const heroSecondaryAction = leadUpcomingEvent
+  ? leadUpcomingEvent.registrationUrl
+    ? { href: getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug), label: '活动详情' }
+    : null
+  : null;
 ---
 
 <BaseLayout site={site} title="Rebase 活动" description="查看 Rebase 社区的当前活动与历史活动归档。">
-  <ListPageHero
-    kicker="活动"
-    edition="Rebase Agenda"
-    title="Rebase 活动"
-    summary="查看当前活动、外部报名入口和历史活动归档。"
-    heroClass="events-hero"
-  />
-
-  <section id="upcoming-archive" class="shell page-section">
-    <SectionHeader
-      eyebrow="近期活动"
-      title="当前活动"
-      description="把可参与的活动放在最前面，时间、地点和报名方式一眼可见。"
-      href="/events/rss.xml"
-      hrefLabel="订阅 RSS"
-    />
-    {leadUpcomingEvent ? (
-      <div class="events-current-stack">
-        <div class="event-lead-grid">
-          <EventCard event={leadUpcomingEvent} />
-        </div>
-        {remainingUpcomingEvents.length > 0 && (
-          <div class="grid-3">
-            {remainingUpcomingEvents.map((event) => <EventCard event={event} />)}
-          </div>
-        )}
+  <section class="shell page-hero events-hero-layout">
+    <article class="hero-panel card events-hero">
+      <div class="hero-topline">
+        <p class="hero-kicker">活动</p>
+        <span class="events-hero-chip">Rebase Agenda</span>
       </div>
+      <h1 class="hero-title">Rebase 活动</h1>
+      <p class="hero-summary">集中展示当前活动、外部报名入口和历史归档，让社区活动不会在结束之后就消失。</p>
+      <div class="button-row">
+        <a class="button-link" href="/events/rss.xml">订阅 RSS <span>↗</span></a>
+        <a class="button-link secondary" href="#event-archive">浏览归档</a>
+      </div>
+    </article>
+
+    {leadUpcomingEvent ? (
+      <article class="card event-spotlight">
+        <div class="event-spotlight-topline">
+          <p class="event-spotlight-kicker">当前重点活动</p>
+          <span>{leadUpcomingEvent.registrationUrl ? '开放报名' : '活动说明'}</span>
+        </div>
+        <h2>
+          <a href={getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug)}>{leadUpcomingEvent.title}</a>
+        </h2>
+        <p class="event-spotlight-summary">{leadUpcomingEvent.summary}</p>
+        <dl class="event-spotlight-facts">
+          <div>
+            <dt>时间</dt>
+            <dd>{formatEventWindow(leadUpcomingEvent.startAt, leadUpcomingEvent.endAt)}</dd>
+          </div>
+          <div>
+            <dt>地点</dt>
+            <dd>{leadUpcomingEvent.location} · {leadUpcomingEvent.venue}</dd>
+          </div>
+        </dl>
+        <div class="event-spotlight-actions">
+          {heroPrimaryAction && (
+            <a
+              class="button-link"
+              href={heroPrimaryAction.href}
+              target={heroPrimaryAction.external ? '_blank' : undefined}
+              rel={heroPrimaryAction.external ? 'noreferrer' : undefined}
+            >
+              {heroPrimaryAction.label}
+              {heroPrimaryAction.external && <span>↗</span>}
+            </a>
+          )}
+          {heroSecondaryAction && <a class="button-link secondary" href={heroSecondaryAction.href}>{heroSecondaryAction.label}</a>}
+        </div>
+      </article>
     ) : (
-      <ListEmptyState
-        kicker="持续排期"
-        title="更多活动正在安排中。"
-        description="新的公开活动会继续按同一结构补进这条时间线里。"
-      />
+      <article class="card event-status-card">
+        <p class="event-status-kicker">当前状态</p>
+        <h2>近期暂无公开活动</h2>
+        <p>新的公开活动会在这里更新，也会同步进入活动 RSS 与历史归档。</p>
+        <div class="event-status-actions">
+          <a class="button-link" href="#event-archive">查看历史活动</a>
+          <a class="button-link secondary" href="/events/rss.xml">订阅 RSS</a>
+        </div>
+      </article>
     )}
   </section>
 
-  <section id="past-archive" class="shell page-section">
+  {remainingUpcomingEvents.length > 0 && (
+    <section id="upcoming-archive" class="shell page-section">
+      <SectionHeader
+        eyebrow="其他当前活动"
+        title="更多近期活动"
+        description="重点活动已经放在首屏，其他当前活动继续保持同样清晰的时间与地点信息。"
+      />
+      <div class="grid-3">
+        {remainingUpcomingEvents.map((event) => <EventCard event={event} compact />)}
+      </div>
+    </section>
+  )}
+
+  <section id="event-archive" class="shell page-section">
     <SectionHeader
       eyebrow="历史归档"
       title="历史活动"
@@ -60,7 +111,7 @@ const remainingUpcomingEvents = leadUpcomingEvent ? upcomingEvents.slice(1) : up
     />
     {pastEvents.length > 0 ? (
       <div class="grid-3">
-        {pastEvents.map((event) => <EventCard event={event} />)}
+        {pastEvents.map((event) => <EventCard event={event} compact />)}
       </div>
     ) : (
       <ListEmptyState
@@ -74,14 +125,20 @@ const remainingUpcomingEvents = leadUpcomingEvent ? upcomingEvents.slice(1) : up
 </BaseLayout>
 
 <style>
-  :global(.events-hero) {
+  .events-hero-layout {
+    align-items: stretch;
+  }
+
+  .events-hero {
+    position: relative;
+    overflow: hidden;
     background:
       radial-gradient(circle at top left, rgba(125, 211, 252, 0.24), transparent 30%),
       radial-gradient(circle at 90% 18%, rgba(15, 118, 110, 0.18), transparent 22%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 252, 251, 0.92));
   }
 
-  :global(.events-hero::before) {
+  .events-hero::before {
     content: 'EVENTS';
     position: absolute;
     top: 1rem;
@@ -94,17 +151,144 @@ const remainingUpcomingEvents = leadUpcomingEvent ? upcomingEvents.slice(1) : up
     pointer-events: none;
   }
 
-  :global(.events-hero .hero-title) {
+  .events-hero .hero-title {
     max-width: 8ch;
     text-wrap: balance;
   }
 
-  .events-current-stack {
-    display: grid;
-    gap: 1rem;
+  .events-hero-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.48rem 0.8rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
-  .event-lead-grid {
+  .event-spotlight,
+  .event-status-card {
     display: grid;
+    gap: 0.9rem;
+    padding: 1.25rem;
+    border-color: rgba(15, 118, 110, 0.12);
+    box-shadow: 0 24px 48px rgba(26, 40, 34, 0.1);
+  }
+
+  .event-spotlight {
+    background:
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.16), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 251, 250, 0.94));
+  }
+
+  .event-status-card {
+    align-content: start;
+    background:
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.12), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(250, 252, 248, 0.92));
+  }
+
+  .event-spotlight-topline,
+  .event-spotlight h2,
+  .event-spotlight-summary,
+  .event-status-kicker,
+  .event-status-card h2,
+  .event-status-card p {
+    margin: 0;
+  }
+
+  .event-spotlight-topline {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.8rem;
+    align-items: center;
+  }
+
+  .event-spotlight-kicker,
+  .event-spotlight-topline span,
+  .event-status-kicker {
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .event-spotlight-topline span {
+    color: var(--muted);
+  }
+
+  .event-spotlight h2,
+  .event-status-card h2 {
+    font-size: clamp(1.7rem, 2.2vw, 2.35rem);
+    line-height: 1.04;
+  }
+
+  .event-spotlight h2 a {
+    transition: color 160ms ease;
+  }
+
+  .event-spotlight:hover h2 a,
+  .event-spotlight:focus-within h2 a {
+    color: var(--accent-strong);
+  }
+
+  .event-spotlight-summary,
+  .event-status-card p {
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .event-spotlight-facts {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .event-spotlight-facts div {
+    display: grid;
+    gap: 0.24rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid rgba(15, 118, 110, 0.08);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  .event-spotlight-facts dt,
+  .event-spotlight-facts dd {
+    margin: 0;
+  }
+
+  .event-spotlight-facts dt {
+    color: var(--accent-strong);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .event-spotlight-facts dd {
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .event-spotlight-actions,
+  .event-status-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.1rem;
+  }
+
+  @media (max-width: 960px) {
+    .event-spotlight-topline {
+      align-items: start;
+    }
   }
 </style>

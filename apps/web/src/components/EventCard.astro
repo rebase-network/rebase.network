@@ -5,12 +5,13 @@ import { getEventPath } from '@/lib/paths';
 
 interface Props {
   event: Event;
+  compact?: boolean;
 }
 
-const { event } = Astro.props;
+const { event, compact = false } = Astro.props;
 ---
 
-<article class="event-card card">
+<article class:list={['event-card', 'card', { compact }]}>
   {event.coverImageUrl ? (
     <img class="cover-image" src={event.coverImageUrl} alt="" loading="lazy" />
   ) : (
@@ -31,7 +32,7 @@ const { event } = Astro.props;
     <li>{formatEventWindow(event.startAt, event.endAt)}</li>
     <li>{event.location} · {event.venue}</li>
   </ul>
-  {event.tags.length > 0 && (
+  {!compact && event.tags.length > 0 && (
     <ul class="tag-list">
       {event.tags.map((tag) => <li>{tag}</li>)}
     </ul>
@@ -168,5 +169,32 @@ const { event } = Astro.props;
     color: var(--accent-strong);
     font-size: 0.78rem;
     font-weight: 700;
+  }
+
+  .compact {
+    padding: 1.05rem;
+  }
+
+  .compact .cover-image {
+    width: calc(100% + 2.1rem);
+    margin: -1.05rem -1.05rem 0.9rem;
+    min-height: 8.75rem;
+  }
+
+  .compact h3 {
+    margin-bottom: 0.6rem;
+    font-size: 1.28rem;
+  }
+
+  .compact .summary {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    margin-bottom: 0.85rem;
+  }
+
+  .compact .meta-list {
+    font-size: 0.95rem;
   }
 </style>
