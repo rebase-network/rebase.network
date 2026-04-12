@@ -4,7 +4,6 @@ import ListEmptyState from '@/components/ListEmptyState.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getPastEvents, getSiteSettings, getUpcomingEvents } from '@/lib/content';
-import { formatEventWindow } from '@/lib/dates';
 import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
 import { getEventPath } from '@/lib/paths';
 
@@ -17,13 +16,20 @@ const [site, upcomingEvents, pastEvents] = await Promise.all([
 const leadUpcomingEvent = upcomingEvents[0];
 const remainingUpcomingEvents = leadUpcomingEvent ? upcomingEvents.slice(1) : [];
 const featureEventBadge = leadUpcomingEvent ? (leadUpcomingEvent.registrationUrl ? '正在报名' : '即将开始') : '';
+const featureEventTime = leadUpcomingEvent
+  ? `${new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Shanghai' }).format(new Date(leadUpcomingEvent.startAt))} - ${new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Shanghai' }).format(new Date(leadUpcomingEvent.endAt))}`
+  : '';
 const featureEventDate = leadUpcomingEvent
   ? new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', timeZone: 'Asia/Shanghai' })
       .format(new Date(leadUpcomingEvent.startAt))
       .split('/')
       .join(' / ')
   : '';
-const featureEventPlace = leadUpcomingEvent ? (leadUpcomingEvent.city === 'online' ? '线上活动' : leadUpcomingEvent.location) : '';
+const featureEventPlace = leadUpcomingEvent
+  ? leadUpcomingEvent.city === 'online'
+    ? leadUpcomingEvent.venue
+    : `${leadUpcomingEvent.location} · ${leadUpcomingEvent.venue}`
+  : '';
 const heroPrimaryAction = leadUpcomingEvent
   ? leadUpcomingEvent.registrationUrl
     ? { href: leadUpcomingEvent.registrationUrl, label: '立即报名', external: true }
@@ -65,29 +71,16 @@ const heroSecondaryAction = leadUpcomingEvent
             <span class="event-spotlight-badge">{featureEventBadge}</span>
             <div class="event-spotlight-date-block">
               <strong>{featureEventDate}</strong>
+              <span>{featureEventTime}</span>
               <span>{featureEventPlace}</span>
             </div>
           </div>
         </a>
         <div class="event-spotlight-body">
-          <div class="event-spotlight-topline">
-            <p class="event-spotlight-kicker">本周活动</p>
-            <span>{leadUpcomingEvent.registrationUrl ? '外部报名' : '活动详情'}</span>
-          </div>
           <h2>
             <a href={getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug)}>{leadUpcomingEvent.title}</a>
           </h2>
           <p class="event-spotlight-summary">{leadUpcomingEvent.summary}</p>
-          <dl class="event-spotlight-facts">
-            <div>
-              <dt>时间</dt>
-              <dd>{formatEventWindow(leadUpcomingEvent.startAt, leadUpcomingEvent.endAt)}</dd>
-            </div>
-            <div>
-              <dt>地点</dt>
-              <dd>{leadUpcomingEvent.location} · {leadUpcomingEvent.venue}</dd>
-            </div>
-          </dl>
           <div class="event-spotlight-actions">
             {heroPrimaryAction && (
               <a
@@ -223,22 +216,22 @@ const heroSecondaryAction = leadUpcomingEvent
 
   .event-spotlight-body {
     display: grid;
-    gap: 0.9rem;
-    padding: 1.1rem 1.25rem 1.25rem;
+    gap: 0.72rem;
+    padding: 0.95rem 1.1rem 1.05rem;
   }
 
   .event-spotlight-cover {
     position: relative;
     display: block;
     overflow: hidden;
-    min-height: 13.5rem;
+    min-height: 11.25rem;
     background: rgba(15, 118, 110, 0.08);
   }
 
   .event-spotlight-image {
     width: 100%;
     height: 100%;
-    min-height: 13.5rem;
+    min-height: 11.25rem;
     object-fit: cover;
     transition: transform 260ms ease;
   }
@@ -258,7 +251,7 @@ const heroSecondaryAction = leadUpcomingEvent
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 1rem;
+    padding: 0.9rem;
     background:
       linear-gradient(180deg, rgba(12, 23, 22, 0.16), rgba(12, 23, 22, 0.04) 30%, rgba(12, 23, 22, 0.62)),
       linear-gradient(135deg, rgba(12, 23, 22, 0.06), transparent 45%);
@@ -267,7 +260,6 @@ const heroSecondaryAction = leadUpcomingEvent
   .event-spotlight-badge,
   .event-spotlight-date-block strong,
   .event-spotlight-date-block span,
-  .event-spotlight-topline,
   .event-spotlight h2,
   .event-spotlight-summary,
   .event-status-kicker,
@@ -279,12 +271,12 @@ const heroSecondaryAction = leadUpcomingEvent
   .event-spotlight-badge {
     justify-self: start;
     width: fit-content;
-    padding: 0.4rem 0.74rem;
+    padding: 0.34rem 0.66rem;
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 999px;
     background: rgba(12, 23, 22, 0.46);
     color: white;
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -292,35 +284,25 @@ const heroSecondaryAction = leadUpcomingEvent
 
   .event-spotlight-date-block {
     display: grid;
-    gap: 0.2rem;
+    gap: 0.12rem;
     color: white;
   }
 
   .event-spotlight-date-block strong {
     font-family: var(--display-font);
-    font-size: clamp(2rem, 3vw, 2.75rem);
+    font-size: clamp(1.75rem, 2.7vw, 2.4rem);
     line-height: 0.96;
     letter-spacing: -0.04em;
   }
 
   .event-spotlight-date-block span {
-    font-size: 0.76rem;
+    font-size: 0.7rem;
     font-weight: 800;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     opacity: 0.86;
   }
 
-  .event-spotlight-topline {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.8rem;
-    align-items: center;
-  }
-
-  .event-spotlight-kicker,
-  .event-spotlight-topline span,
   .event-status-kicker {
     color: var(--accent-strong);
     font-size: 0.76rem;
@@ -328,15 +310,10 @@ const heroSecondaryAction = leadUpcomingEvent
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
-
-  .event-spotlight-topline span {
-    color: var(--muted);
-  }
-
   .event-spotlight h2,
   .event-status-card h2 {
-    font-size: clamp(1.7rem, 2.2vw, 2.35rem);
-    line-height: 1.04;
+    font-size: clamp(1.52rem, 2vw, 1.95rem);
+    line-height: 1.02;
   }
 
   .event-spotlight h2 a {
@@ -358,59 +335,26 @@ const heroSecondaryAction = leadUpcomingEvent
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-  }
-
-  .event-spotlight-facts {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
-    margin: 0;
-    padding: 0;
-  }
-
-  .event-spotlight-facts div {
-    display: grid;
-    gap: 0.24rem;
-    padding: 0.8rem 0.9rem;
-    border: 1px solid rgba(15, 118, 110, 0.08);
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.7);
-  }
-
-  .event-spotlight-facts dt,
-  .event-spotlight-facts dd {
-    margin: 0;
-  }
-
-  .event-spotlight-facts dt {
-    color: var(--accent-strong);
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .event-spotlight-facts dd {
-    color: var(--text);
-    line-height: 1.65;
+    -webkit-line-clamp: 2;
   }
 
   .event-spotlight-actions,
   .event-status-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 0.1rem;
+    gap: 0.55rem;
+    margin-top: 0;
+  }
+
+  .event-spotlight-actions .button-link {
+    padding: 0.74rem 0.92rem;
+    font-size: 0.92rem;
   }
 
   @media (max-width: 960px) {
-    .event-spotlight-topline {
-      align-items: start;
-    }
-
-    .event-spotlight-facts {
-      grid-template-columns: 1fr;
+    .event-spotlight-cover,
+    .event-spotlight-image {
+      min-height: 10.4rem;
     }
   }
 </style>
