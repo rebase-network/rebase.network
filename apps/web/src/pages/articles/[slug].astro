@@ -9,7 +9,6 @@ import { getArticlePath } from '@/lib/paths';
 const slug = Astro.params.slug ?? '';
 const [site, article, articles] = await Promise.all([getSiteSettings(), getArticleBySlug(slug), getArticles()]);
 const related = article ? articles.filter((item) => item.slug !== article.slug).slice(0, 2) : [];
-const articleAuthors = article?.authors.map((author) => author.name).join(' · ') ?? '';
 const articleBreadcrumbs = article
   ? [
       { href: '/', label: '首页' },
@@ -17,7 +16,9 @@ const articleBreadcrumbs = article
       { label: article.title, current: true },
     ]
   : [];
-const articleHeroMeta = article ? [formatDate(article.publishedAt), article.readingTime, articleAuthors].filter(Boolean) : [];
+const articleHeroMeta = article
+  ? [formatDate(article.publishedAt), article.readingTime, article.authors.map((author) => author.name).join(' · ')].filter(Boolean)
+  : [];
 const articleHeroActions = [
   { href: '/articles', label: '回到文章列表', secondary: true },
 ];
@@ -36,11 +37,11 @@ if (!article) {
 >
   {article ? (
     <>
-      <section class="shell page-hero single">
+      <section class="shell page-hero single article-detail-hero-shell">
         <DetailHero
           kicker="文章"
           breadcrumbs={articleBreadcrumbs}
-          edition="Longform"
+          edition="Rebase Writing"
           title={article.title}
           summary={article.summary}
           meta={articleHeroMeta}
@@ -52,17 +53,9 @@ if (!article) {
 
       <section class="shell page-section article-detail-shell">
         <article id="article-body" class="card detail-body-card article-detail">
-          {(articleAuthors || article.tags.length > 0) && (
-            <header class="article-reading-header">
-              {articleAuthors && <p class="article-reading-meta">{articleAuthors}</p>}
-              {article.tags.length > 0 && (
-                <ul class="article-reading-tags">
-                  {article.tags.map((tag) => <li>{tag}</li>)}
-                </ul>
-              )}
-            </header>
-          )}
-          <MarkdownContent content={article.body} />
+          <div class="article-reading-frame">
+            <MarkdownContent content={article.body} />
+          </div>
         </article>
       </section>
 
@@ -71,7 +64,7 @@ if (!article) {
           <article class="card article-followup-card">
             <p class="followup-kicker">订阅与归档</p>
             <h2>继续追踪 Rebase 写作</h2>
-            <p>如果你是从搜索、分享或 RSS 进入，读完这篇后可以继续回到文章归档。</p>
+            <p>读完这篇之后，可以继续回到文章归档，或者直接订阅 RSS。</p>
             <div class="followup-link-list">
               <a href="/articles/rss.xml">订阅文章 RSS</a>
               <a href="/articles">返回文章列表</a>
@@ -108,8 +101,15 @@ if (!article) {
     grid-template-columns: 1fr;
   }
 
+  .article-detail-hero-shell,
+  .article-detail-shell,
+  .article-followup-shell {
+    width: min(calc(100% - 2rem), 980px);
+  }
+
   .article-hero {
     color: white;
+    padding: 1.45rem 1.55rem;
     background:
       linear-gradient(135deg, rgba(12, 23, 22, 0.72), rgba(12, 23, 22, 0.3)),
       var(--article-accent);
@@ -117,47 +117,37 @@ if (!article) {
     box-shadow: 0 28px 60px rgba(23, 32, 29, 0.22);
   }
 
-  .light {
-    color: white;
+  .article-hero :global(.hero-title) {
+    max-width: 12ch;
+    font-size: clamp(2.4rem, 5vw, 4.4rem);
+  }
+
+  .article-hero :global(.hero-summary) {
+    max-width: 54ch;
+    margin-top: 0.95rem;
   }
 
   .article-detail-shell {
     grid-template-columns: 1fr;
   }
 
-  .article-reading-header {
-    display: grid;
-    gap: 0.9rem;
-    margin-bottom: 1.15rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--line);
+  .article-detail {
+    padding: 1.5rem 1.55rem;
   }
 
-  .article-reading-meta {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.84rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .article-reading-frame {
+    width: min(100%, 46rem);
+    margin: 0 auto;
   }
 
-  .article-reading-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  .article-detail :global(.markdown) {
+    font-size: 1.05rem;
+    line-height: 1.86;
   }
 
-  .article-reading-tags li {
-    padding: 0.42rem 0.72rem;
-    border-radius: 999px;
-    background: rgba(15, 118, 110, 0.08);
-    color: var(--accent-strong);
-    font-size: 0.78rem;
-    font-weight: 700;
+  .article-detail :global(.markdown h2) {
+    margin-top: 2.3rem;
+    font-size: 1.75rem;
   }
 
   .article-followup-grid {
@@ -223,6 +213,12 @@ if (!article) {
   @media (max-width: 960px) {
     .article-followup-grid {
       grid-template-columns: 1fr;
+    }
+
+    .article-detail-hero-shell,
+    .article-detail-shell,
+    .article-followup-shell {
+      width: min(calc(100% - 2rem), 100%);
     }
   }
 </style>

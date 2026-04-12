@@ -59,13 +59,13 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
     <SectionHeader
       eyebrow="文章归档"
       title="全部文章"
-      description={leadArticle ? '最新文章已经在首屏，剩余文章继续按发布时间归档。' : '按发布时间持续归档，方便继续查找、继续引用。'}
+      description={leadArticle ? '最新文章已经放在首屏，其余内容继续按发布时间归档。' : '按发布时间持续归档，方便继续查找与引用。'}
       href="/articles/rss.xml"
       hrefLabel="订阅 RSS"
     />
     {(leadArticle ? archiveArticles : articles).length > 0 ? (
       <div class="grid-3">
-        {(leadArticle ? archiveArticles : articles).map((article) => <ArticleCard article={article} />)}
+        {(leadArticle ? archiveArticles : articles).map((article) => <ArticleCard article={article} compact />)}
       </div>
     ) : (
       <ListEmptyState
@@ -230,6 +230,10 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
   .article-spotlight-summary {
     color: var(--muted);
     line-height: 1.72;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
   }
 
   .article-spotlight-link {
