@@ -1,44 +1,55 @@
 <svg width="1600" height="960" viewBox="0 0 1600 960" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1600" height="960" rx="48" fill="url(#bg)"/>
-  <circle cx="1386" cy="190" r="198" fill="#F3C46E" fill-opacity="0.2"/>
-  <circle cx="1464" cy="816" r="214" fill="#0B2C27" fill-opacity="0.42"/>
-  <circle cx="242" cy="126" r="178" fill="#D6F4EA" fill-opacity="0.12"/>
-
-  <rect x="78" y="112" width="520" height="560" rx="34" fill="url(#panel)" stroke="rgba(255,255,255,0.18)"/>
-  <path d="M246 88C246 62.5949 266.595 42 292 42H450C568.19 42 664 137.81 664 256" stroke="#54D267" stroke-width="18" stroke-linecap="round"/>
-  <circle cx="664" cy="256" r="18" fill="#54D267"/>
-
-  <text x="124" y="228" fill="#FDF7EA" font-family="Helvetica Neue, Arial, sans-serif" font-size="54" font-weight="700" letter-spacing="8">REBASE</text>
-  <text x="124" y="334" fill="#FDF7EA" font-family="Helvetica Neue, Arial, sans-serif" font-size="106" font-weight="800" letter-spacing="-2">COMMUNITY</text>
-  <text x="124" y="434" fill="#FDF7EA" font-family="Helvetica Neue, Arial, sans-serif" font-size="106" font-weight="800" letter-spacing="-2">EVENTS</text>
-  <text x="124" y="520" fill="#D8F3EA" font-family="Helvetica Neue, Arial, sans-serif" font-size="30" font-weight="600" letter-spacing="3">COMMUNITY GATHERINGS / BUILDER NIGHTS</text>
-  <text x="124" y="568" fill="#D8F3EA" font-family="Helvetica Neue, Arial, sans-serif" font-size="30" font-weight="600" letter-spacing="3">ONLINE SALONS / OPEN CALLS / RETROSPECTIVES</text>
-
-  <rect x="746" y="164" width="434" height="88" rx="44" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.18)" stroke-width="4"/>
-  <text x="792" y="220" fill="#F7FBF9" font-family="Helvetica Neue, Arial, sans-serif" font-size="32" font-weight="700" letter-spacing="5">OPEN CALL FOR EVENTS</text>
-
-  <rect x="746" y="318" width="612" height="168" rx="32" fill="rgba(255,255,255,0.08)"/>
-  <rect x="782" y="358" width="312" height="28" rx="14" fill="rgba(255,255,255,0.18)"/>
-  <rect x="782" y="406" width="526" height="34" rx="17" fill="rgba(255,255,255,0.12)"/>
-
-  <rect x="746" y="536" width="368" height="122" rx="28" fill="rgba(255,255,255,0.08)"/>
-  <rect x="1138" y="536" width="220" height="122" rx="28" fill="rgba(243,196,110,0.18)"/>
-  <rect x="782" y="576" width="126" height="20" rx="10" fill="rgba(255,255,255,0.18)"/>
-  <rect x="782" y="614" width="244" height="22" rx="11" fill="rgba(255,255,255,0.12)"/>
-  <rect x="1182" y="578" width="128" height="38" rx="19" fill="rgba(255,255,255,0.16)"/>
-
-  <rect x="746" y="716" width="540" height="30" rx="15" fill="rgba(255,255,255,0.1)"/>
-  <rect x="746" y="776" width="434" height="30" rx="15" fill="rgba(255,255,255,0.08)"/>
-
   <defs>
-    <linearGradient id="bg" x1="108" y1="76" x2="1490" y2="888" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#153E37"/>
-      <stop offset="0.52" stop-color="#135F59"/>
-      <stop offset="1" stop-color="#17433D"/>
+    <linearGradient id="bg" x1="80" y1="44" x2="1508" y2="918" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#123A34"/>
+      <stop offset="0.56" stop-color="#17675E"/>
+      <stop offset="1" stop-color="#102F2A"/>
     </linearGradient>
-    <linearGradient id="panel" x1="110" y1="112" x2="598" y2="672" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#214C45" stop-opacity="0.7"/>
-      <stop offset="1" stop-color="#103530" stop-opacity="0.92"/>
+    <linearGradient id="panel" x1="88" y1="96" x2="676" y2="692" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#163F39" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#102F2A" stop-opacity="0.99"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="760" y1="168" x2="1406" y2="742" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FCFB" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#F8FCFB" stop-opacity="0.06"/>
     </linearGradient>
   </defs>
+
+  <rect width="1600" height="960" rx="48" fill="url(#bg)"/>
+  <circle cx="194" cy="118" r="224" fill="#D6F4EA" fill-opacity="0.08"/>
+  <circle cx="1406" cy="174" r="196" fill="#F3C46E" fill-opacity="0.18"/>
+  <circle cx="1462" cy="834" r="230" fill="#0B2B26" fill-opacity="0.58"/>
+  <path d="M1004 48C1188 142 1278 316 1268 526C1256 758 1118 904 920 936" stroke="#D7F3EA" stroke-opacity="0.08" stroke-width="2" stroke-dasharray="10 16"/>
+
+  <rect x="88" y="96" width="588" height="596" rx="42" fill="url(#panel)" stroke="#F8FCFB" stroke-opacity="0.12"/>
+  <image href="data:image/png;base64,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" x="116" y="126" width="478" height="194" preserveAspectRatio="xMidYMid meet"/>
+  <rect x="126" y="350" width="214" height="52" rx="26" fill="#F3C46E" fill-opacity="0.16" stroke="#F3C46E" stroke-opacity="0.18"/>
+  <text x="160" y="384" fill="#F9F4E8" font-family="Helvetica Neue, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="2">COMMUNITY EVENTS</text>
+  <text x="126" y="470" fill="#F9F4E8" font-family="Helvetica Neue, Arial, sans-serif" font-size="76" font-weight="800" letter-spacing="-2">default</text>
+  <text x="126" y="552" fill="#F9F4E8" font-family="Helvetica Neue, Arial, sans-serif" font-size="76" font-weight="800" letter-spacing="-2">event cover</text>
+  <text x="128" y="616" fill="#D4EEE6" font-family="Helvetica Neue, Arial, sans-serif" font-size="25" font-weight="600">Used when an event has no custom poster yet.</text>
+  <rect x="126" y="644" width="266" height="1" fill="#D7F3EA" fill-opacity="0.18"/>
+  <text x="128" y="688" fill="#C8E3DB" font-family="Helvetica Neue, Arial, sans-serif" font-size="22" font-weight="500">Fallback artwork for events without a poster.</text>
+
+  <rect x="748" y="162" width="592" height="126" rx="34" fill="url(#glass)" stroke="#F8FCFB" stroke-opacity="0.14"/>
+  <text x="796" y="220" fill="#F8FCFB" font-family="Helvetica Neue, Arial, sans-serif" font-size="32" font-weight="700" letter-spacing="4">OPEN CALL FOR EVENTS</text>
+  <text x="796" y="262" fill="#D5ECE6" font-family="Helvetica Neue, Arial, sans-serif" font-size="24" font-weight="500">Share your meetup with Rebase.</text>
+
+  <rect x="748" y="340" width="648" height="222" rx="34" fill="#F8FCFB" fill-opacity="0.08"/>
+  <rect x="786" y="382" width="188" height="140" rx="28" fill="#F4EBDD" fill-opacity="0.94"/>
+  <text x="832" y="434" fill="#153A35" font-family="Helvetica Neue, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="2">DATE</text>
+  <text x="816" y="498" fill="#153A35" font-family="Helvetica Neue, Arial, sans-serif" font-size="52" font-weight="800" letter-spacing="-2">MM / DD</text>
+  <rect x="1010" y="388" width="340" height="28" rx="14" fill="#F8FCFB" fill-opacity="0.22"/>
+  <rect x="1010" y="436" width="294" height="26" rx="13" fill="#F8FCFB" fill-opacity="0.18"/>
+  <rect x="1010" y="482" width="322" height="26" rx="13" fill="#F8FCFB" fill-opacity="0.14"/>
+  <rect x="1010" y="528" width="248" height="26" rx="13" fill="#F8FCFB" fill-opacity="0.12"/>
+
+  <rect x="748" y="612" width="390" height="130" rx="30" fill="#F8FCFB" fill-opacity="0.08"/>
+  <rect x="1166" y="612" width="230" height="130" rx="30" fill="#F3C46E" fill-opacity="0.14"/>
+  <rect x="790" y="650" width="158" height="22" rx="11" fill="#F8FCFB" fill-opacity="0.2"/>
+  <rect x="790" y="690" width="232" height="24" rx="12" fill="#F8FCFB" fill-opacity="0.14"/>
+  <rect x="1204" y="652" width="150" height="50" rx="25" fill="#F8FCFB" fill-opacity="0.14"/>
+
+  <rect x="748" y="790" width="520" height="24" rx="12" fill="#F8FCFB" fill-opacity="0.1"/>
+  <rect x="748" y="838" width="416" height="24" rx="12" fill="#F8FCFB" fill-opacity="0.08"/>
 </svg>
