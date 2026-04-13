@@ -7,6 +7,9 @@ interface Props {
 
 const { site } = Astro.props;
 const isExternalLink = (href: string) => href.startsWith('http');
+const footerSummary = site.tagline.trim()
+  ? `${site.tagline.trim().replace(/[。！!？?]+$/u, '')}。`
+  : site.description;
 const socialIconMap: Record<string, string> = {
   'B 站': '/social-icons/bilibili.svg',
   YouTube: '/social-icons/youtube.svg',
@@ -31,7 +34,7 @@ const socialIconMap: Record<string, string> = {
           height="101"
         />
         <div>
-          <p class="summary">{site.description}</p>
+          <p class="summary">{footerSummary}</p>
         </div>
       </div>
     </div>
