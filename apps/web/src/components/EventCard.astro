@@ -1,24 +1,24 @@
 ---
 import type { Event } from '@rebase/types';
 import { formatEventWindow } from '@/lib/dates';
+import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
 import { getEventPath } from '@/lib/paths';
 
 interface Props {
   event: Event;
+  compact?: boolean;
 }
 
-const { event } = Astro.props;
+const { event, compact = false } = Astro.props;
 ---
 
-<article class="event-card card">
-  {event.coverImageUrl ? (
-    <img class="cover-image" src={event.coverImageUrl} alt="" loading="lazy" />
-  ) : (
-    <div class:list={['cover-image', 'cover-fallback', event.status]}>
-      <span>{event.status === 'upcoming' ? '即将开始' : '活动归档'}</span>
-      <strong>{event.city}</strong>
-    </div>
-  )}
+<article class:list={['event-card', 'card', { compact }]}>
+  <img
+    class:list={['cover-image', !event.coverImageUrl && 'default-cover-image']}
+    src={event.coverImageUrl ?? DEFAULT_EVENT_COVER_PATH}
+    alt=""
+    loading="lazy"
+  />
   <div class="status-row">
     <p class="status">{event.status === 'upcoming' ? '即将举行' : '往期活动'}</p>
     {event.registrationUrl && <span class="chip">外部报名</span>}
@@ -31,7 +31,7 @@ const { event } = Astro.props;
     <li>{formatEventWindow(event.startAt, event.endAt)}</li>
     <li>{event.location} · {event.venue}</li>
   </ul>
-  {event.tags.length > 0 && (
+  {!compact && event.tags.length > 0 && (
     <ul class="tag-list">
       {event.tags.map((tag) => <li>{tag}</li>)}
     </ul>
@@ -59,29 +59,15 @@ const { event } = Astro.props;
     transition: transform 260ms ease;
   }
 
+  .default-cover-image {
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(17, 94, 89, 0.04));
+  }
+
   .event-card:hover .cover-image,
   .event-card:focus-within .cover-image {
     transform: scale(1.03);
   }
 
-  .cover-fallback {
-    display: flex;
-    flex-direction: column;
-    justify-content: end;
-    gap: 0.55rem;
-    padding: 1rem;
-    color: white;
-  }
-
-  .cover-fallback.upcoming {
-    background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%);
-  }
-
-  .cover-fallback.past {
-    background: linear-gradient(135deg, #7c2d12 0%, #1f2933 100%);
-  }
-
-  .cover-fallback span,
   .status {
     margin: 0 0 0.8rem;
     color: var(--accent-strong);
@@ -89,16 +75,6 @@ const { event } = Astro.props;
     font-weight: 800;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-  }
-
-  .cover-fallback span {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.82);
-  }
-
-  .cover-fallback strong {
-    font-size: 2rem;
-    line-height: 1;
   }
 
   .status-row {
@@ -168,5 +144,32 @@ const { event } = Astro.props;
     color: var(--accent-strong);
     font-size: 0.78rem;
     font-weight: 700;
+  }
+
+  .compact {
+    padding: 1.05rem;
+  }
+
+  .compact .cover-image {
+    width: calc(100% + 2.1rem);
+    margin: -1.05rem -1.05rem 0.9rem;
+    min-height: 8.75rem;
+  }
+
+  .compact h3 {
+    margin-bottom: 0.6rem;
+    font-size: 1.28rem;
+  }
+
+  .compact .summary {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    margin-bottom: 0.85rem;
+  }
+
+  .compact .meta-list {
+    font-size: 0.95rem;
   }
 </style>

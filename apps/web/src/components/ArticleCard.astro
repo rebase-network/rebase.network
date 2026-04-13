@@ -2,26 +2,21 @@
 import type { Article } from '@rebase/types';
 import { formatDate } from '@/lib/dates';
 import { getArticlePath } from '@/lib/paths';
+import { DEFAULT_ARTICLE_COVER_PATH } from '@/lib/placeholders';
 
 interface Props {
   article: Article;
   featured?: boolean;
+  compact?: boolean;
 }
 
-const { article, featured = false } = Astro.props;
+const { article, featured = false, compact = false } = Astro.props;
 const authorLine = article.authors.map((author) => author.name).filter(Boolean).join(' · ');
 ---
 
-<article class:list={['article-card', 'card', { featured }] }>
+<article class:list={['article-card', 'card', { featured, compact }] }>
   <a class="cover-link" href={getArticlePath(article.slug)} aria-label={article.title}>
-    {article.coverImageUrl ? (
-      <img class="cover image" src={article.coverImageUrl} alt="" loading="lazy" />
-    ) : (
-      <div class="cover fallback" style={`background:${article.coverAccent}`}>
-        <span class="cover-label">Rebase 文章</span>
-        <strong>{article.tags[0] ?? article.authors[0]?.name ?? '社区手记'}</strong>
-      </div>
-    )}
+    <img class="cover image" src={article.coverImageUrl ?? DEFAULT_ARTICLE_COVER_PATH} alt="" loading="lazy" />
   </a>
   <div class="content">
     <p class="meta">{formatDate(article.publishedAt)} · {article.readingTime}</p>
@@ -30,9 +25,11 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
     </h3>
     <p class="summary">{article.summary}</p>
     {authorLine && <p class="author-line">{authorLine}</p>}
-    <ul class="tags">
-      {article.tags.map((tag) => <li>{tag}</li>)}
-    </ul>
+    {!compact && article.tags.length > 0 && (
+      <ul class="tags">
+        {article.tags.map((tag) => <li>{tag}</li>)}
+      </ul>
+    )}
   </div>
 </article>
 
@@ -71,16 +68,6 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
     transform: scale(1.03);
   }
 
-  .fallback {
-    display: flex;
-    flex-direction: column;
-    justify-content: end;
-    gap: 0.7rem;
-    padding: 1.25rem;
-    color: white;
-  }
-
-  .cover-label,
   .author-line {
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -88,11 +75,6 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
     font-weight: 800;
   }
 
-  .fallback strong {
-    max-width: 13ch;
-    font-size: clamp(1.2rem, 2.1vw, 2rem);
-    line-height: 0.98;
-  }
 
   .content {
     padding: 1.25rem;
@@ -164,5 +146,29 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
 
   .featured .author-line {
     margin-top: 1.15rem;
+  }
+
+  .compact .cover {
+    min-height: 9.75rem;
+  }
+
+  .compact .content {
+    padding: 1.1rem;
+  }
+
+  .compact h3 {
+    margin-bottom: 0.65rem;
+    font-size: 1.28rem;
+  }
+
+  .compact .summary {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .compact .author-line {
+    margin-top: 0.9rem;
   }
 </style>

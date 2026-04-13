@@ -1,137 +1,135 @@
 ---
 import EventCard from '@/components/EventCard.astro';
-import ListBriefGrid from '@/components/ListBriefGrid.astro';
 import ListEmptyState from '@/components/ListEmptyState.astro';
-import ListLeadSection from '@/components/ListLeadSection.astro';
-import ListPageHero from '@/components/ListPageHero.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getPastEvents, getSiteSettings, getUpcomingEvents } from '@/lib/content';
+import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
+import { getEventPath } from '@/lib/paths';
 
 const [site, upcomingEvents, pastEvents] = await Promise.all([
   getSiteSettings(),
   getUpcomingEvents(),
   getPastEvents(),
 ]);
+
 const leadUpcomingEvent = upcomingEvents[0];
-const remainingUpcomingEvents = leadUpcomingEvent ? upcomingEvents.slice(1) : upcomingEvents;
-
-const eventSignals = [
-  {
-    value: String(upcomingEvents.length).padStart(2, '0'),
-    label: '当前活动',
-    detail: '当前可参与的活动先被明确摆在最前面，避免读者还要自己筛找报名入口。',
-  },
-  {
-    value: String(pastEvents.length).padStart(2, '0'),
-    label: '历史归档',
-    detail: '过去的活动继续保留地点、议题和说明，不让社区上下文从记忆里消失。',
-  },
-  {
-    value: 'RSS',
-    label: '订阅出口',
-    detail: '活动变化继续通过 /events/rss.xml 对外输出，保持公开更新能力。',
-  },
-];
-
-const eventBriefs = [
-  {
-    eyebrow: 'Participation',
-    title: '外部报名优先',
-    summary: '第一版不做站内复杂表单，先把时间、地点、说明和报名链接准确地摆在同一个页面里。',
-    tone: 'warm',
-  },
-  {
-    eyebrow: 'Context',
-    title: '活动说明要完整',
-    summary: '一张活动卡片之外，还要交代议题、场地和参与门槛，减少读者来回跳转确认信息。',
-    tone: 'cool',
-  },
-  {
-    eyebrow: 'Archive value',
-    title: '历史也有价值',
-    summary: '活动结束后页面继续留存，方便回看过往主题、合作方和社区节奏。',
-    tone: 'neutral',
-  },
-];
-
-const eventLeadPoints = [
-  {
-    title: '动作前置',
-    description: '把最主要的报名入口放在首屏附近，不让读者在页面里反复寻找。',
-  },
-  {
-    title: '归档不丢失',
-    description: '即使活动结束，页面也继续保留，方便社区回看曾经发生过什么。',
-  },
-];
+const remainingUpcomingEvents = leadUpcomingEvent ? upcomingEvents.slice(1) : [];
+const featureEventBadge = leadUpcomingEvent ? (leadUpcomingEvent.registrationUrl ? '正在报名' : '即将开始') : '';
+const featureEventTime = leadUpcomingEvent
+  ? `${new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Shanghai' }).format(new Date(leadUpcomingEvent.startAt))} - ${new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Shanghai' }).format(new Date(leadUpcomingEvent.endAt))}`
+  : '';
+const featureEventDate = leadUpcomingEvent
+  ? new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', timeZone: 'Asia/Shanghai' })
+      .format(new Date(leadUpcomingEvent.startAt))
+      .split('/')
+      .join(' / ')
+  : '';
+const featureEventPlace = leadUpcomingEvent
+  ? leadUpcomingEvent.city === 'online'
+    ? leadUpcomingEvent.venue
+    : `${leadUpcomingEvent.location} · ${leadUpcomingEvent.venue}`
+  : '';
+const heroPrimaryAction = leadUpcomingEvent
+  ? leadUpcomingEvent.registrationUrl
+    ? { href: leadUpcomingEvent.registrationUrl, label: '立即报名', external: true }
+    : { href: getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug), label: '查看详情', external: false }
+  : null;
+const heroSecondaryAction = leadUpcomingEvent
+  ? leadUpcomingEvent.registrationUrl
+    ? { href: getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug), label: '活动详情' }
+    : null
+  : null;
 ---
 
 <BaseLayout site={site} title="Rebase 活动" description="查看 Rebase 社区的当前活动与历史活动归档。">
-  <ListPageHero
-    kicker="活动归档"
-    edition="Agenda Index"
-    title="活动页先做好表达与归档，再慢慢加深运营能力。"
-    summary="第一版活动详情页不做站内报名表，但会清晰展示时间、地点、说明和外部报名入口。"
-    note="活动栏目既要服务当前报名，也要服务后续回看；它不只是“近期活动列表”，也是社区节奏的公开档案。"
-    signals={eventSignals}
-    jumps={[
-      { href: '#lead-event', label: '当前主推' },
-      { href: '#upcoming-archive', label: '近期活动' },
-      { href: '#past-archive', label: '历史归档' },
-    ]}
-    heroClass="events-hero"
-  />
-
-  <ListBriefGrid id="event-brief" items={eventBriefs} />
-
-  {leadUpcomingEvent && (
-    <ListLeadSection
-      id="lead-event"
-      eyebrow="重点活动"
-      title="当前主推活动"
-      description="活动栏目先给一个足够明确的主推入口，让读者一眼知道什么时候、在哪里、为什么值得参与。"
-      noteEyebrow="Participation desk"
-      noteTitle="主推活动应该一眼回答“什么时候、在哪里、为什么值得去”。"
-      noteSummary="活动详情页优先保证时间、地点、议题和报名方式准确清晰，把参与门槛降到最低。"
-      notePoints={eventLeadPoints}
-      noteLinkHref="/events/rss.xml"
-      noteLinkLabel="订阅活动 RSS"
-    >
-      <EventCard event={leadUpcomingEvent} />
-    </ListLeadSection>
-  )}
-
-  <section id="upcoming-archive" class="shell page-section">
-    <SectionHeader
-      eyebrow="近期活动"
-      title="当前活动"
-      description="主推入口之外，近期活动继续按公开可读、可报名、可订阅的方式组织。"
-      href="/events/rss.xml"
-      hrefLabel="订阅 RSS"
-    />
-    {remainingUpcomingEvents.length > 0 ? (
-      <div class="grid-3">
-        {remainingUpcomingEvents.map((event) => <EventCard event={event} />)}
+  <section class="shell page-hero events-hero-layout">
+    <article class="hero-panel card events-hero">
+      <div class="hero-topline">
+        <p class="hero-kicker">活动</p>
+        <span class="events-hero-chip">Rebase Agenda</span>
       </div>
+      <h1 class="hero-title">Rebase 活动</h1>
+      <p class="hero-summary">在此页面展示 Rebase 社区里的活动，其他社区发起、Rebase 社区配合宣传和组织的活动也会展示在这里。任何社区希望 Rebase 社区能够一起合作的活动都可以提交，我们将有志愿者编辑负责整理和发布。</p>
+      <div class="button-row">
+        <a class="button-link" href="https://github.com/rebase-network/event-pool/issues" target="_blank" rel="noreferrer">提交活动 <span>↗</span></a>
+        <a class="button-link secondary" href="/events/rss.xml">订阅 RSS <span>↗</span></a>
+        <a class="button-link secondary" href="#event-archive">浏览归档</a>
+      </div>
+    </article>
+
+    {leadUpcomingEvent ? (
+      <article class="card event-spotlight">
+        <a class="event-spotlight-cover" href={getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug)} aria-label={leadUpcomingEvent.title}>
+          <img
+            class:list={['event-spotlight-image', !leadUpcomingEvent.coverImageUrl && 'default']}
+            src={leadUpcomingEvent.coverImageUrl ?? DEFAULT_EVENT_COVER_PATH}
+            alt=""
+            loading="lazy"
+          />
+          <div class="event-spotlight-cover-overlay">
+            <span class="event-spotlight-badge">{featureEventBadge}</span>
+            <div class="event-spotlight-date-block">
+              <strong>{featureEventDate}</strong>
+              <span>{featureEventTime}</span>
+              <span>{featureEventPlace}</span>
+            </div>
+          </div>
+        </a>
+        <div class="event-spotlight-body">
+          <h2>
+            <a href={getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug)}>{leadUpcomingEvent.title}</a>
+          </h2>
+          <p class="event-spotlight-summary">{leadUpcomingEvent.summary}</p>
+          <div class="event-spotlight-actions">
+            {heroPrimaryAction && (
+              <a
+                class="button-link"
+                href={heroPrimaryAction.href}
+                target={heroPrimaryAction.external ? '_blank' : undefined}
+                rel={heroPrimaryAction.external ? 'noreferrer' : undefined}
+              >
+                {heroPrimaryAction.label}
+                {heroPrimaryAction.external && <span>↗</span>}
+              </a>
+            )}
+            {heroSecondaryAction && <a class="button-link secondary" href={heroSecondaryAction.href}>{heroSecondaryAction.label}</a>}
+          </div>
+        </div>
+      </article>
     ) : (
-      <ListEmptyState
-        kicker="持续排期"
-        title="更多活动正在安排中。"
-        description="当前先保留主推活动入口，新的公开活动会继续按同一结构补进这条时间线里。"
-      />
+      <article class="card event-status-card">
+        <p class="event-status-kicker">当前状态</p>
+        <h2>近期暂无公开活动</h2>
+        <p>新的公开活动会在这里更新，也会同步进入活动 RSS 与历史归档。</p>
+        <div class="event-status-actions">
+          <a class="button-link" href="#event-archive">查看历史活动</a>
+          <a class="button-link secondary" href="/events/rss.xml">订阅 RSS</a>
+        </div>
+      </article>
     )}
   </section>
 
-  <section id="past-archive" class="shell page-section">
+  {remainingUpcomingEvents.length > 0 && (
+    <section id="upcoming-archive" class="shell page-section">
+      <SectionHeader
+        eyebrow="近期"
+        title="更多活动"
+      />
+      <div class="grid-3">
+        {remainingUpcomingEvents.map((event) => <EventCard event={event} compact />)}
+      </div>
+    </section>
+  )}
+
+  <section id="event-archive" class="shell page-section">
     <SectionHeader
-      eyebrow="历史归档"
+      eyebrow="归档"
       title="历史活动"
-      description="历史活动也应该保留完整上下文，而不是在活动结束后就从社区表面消失。"
     />
     {pastEvents.length > 0 ? (
       <div class="grid-3">
-        {pastEvents.map((event) => <EventCard event={event} />)}
+        {pastEvents.map((event) => <EventCard event={event} compact />)}
       </div>
     ) : (
       <ListEmptyState
@@ -145,14 +143,20 @@ const eventLeadPoints = [
 </BaseLayout>
 
 <style>
-  :global(.events-hero) {
+  .events-hero-layout {
+    align-items: stretch;
+  }
+
+  .events-hero {
+    position: relative;
+    overflow: hidden;
     background:
       radial-gradient(circle at top left, rgba(125, 211, 252, 0.24), transparent 30%),
       radial-gradient(circle at 90% 18%, rgba(15, 118, 110, 0.18), transparent 22%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 252, 251, 0.92));
   }
 
-  :global(.events-hero::before) {
+  .events-hero::before {
     content: 'EVENTS';
     position: absolute;
     top: 1rem;
@@ -165,8 +169,190 @@ const eventLeadPoints = [
     pointer-events: none;
   }
 
-  :global(.events-hero .hero-title) {
-    max-width: 11ch;
+  .events-hero .hero-title {
+    max-width: 8ch;
     text-wrap: balance;
+  }
+
+  .events-hero-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.48rem 0.8rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .event-spotlight,
+  .event-status-card {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.25rem;
+    border-color: rgba(15, 118, 110, 0.12);
+    box-shadow: 0 24px 48px rgba(26, 40, 34, 0.1);
+  }
+
+  .event-spotlight {
+    overflow: hidden;
+    padding: 0;
+    background:
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.16), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 251, 250, 0.94));
+  }
+
+  .event-status-card {
+    align-content: start;
+    background:
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.12), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(250, 252, 248, 0.92));
+  }
+
+  .event-spotlight-body {
+    display: grid;
+    gap: 0.72rem;
+    padding: 0.95rem 1.1rem 1.05rem;
+  }
+
+  .event-spotlight-cover {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    min-height: 11.25rem;
+    background: rgba(15, 118, 110, 0.08);
+  }
+
+  .event-spotlight-image {
+    width: 100%;
+    height: 100%;
+    min-height: 11.25rem;
+    object-fit: cover;
+    transition: transform 260ms ease;
+  }
+
+  .event-spotlight-image.default {
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.14), rgba(17, 94, 89, 0.06));
+  }
+
+  .event-spotlight:hover .event-spotlight-image,
+  .event-spotlight:focus-within .event-spotlight-image {
+    transform: scale(1.03);
+  }
+
+  .event-spotlight-cover-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.9rem;
+    background:
+      linear-gradient(180deg, rgba(12, 23, 22, 0.16), rgba(12, 23, 22, 0.04) 30%, rgba(12, 23, 22, 0.62)),
+      linear-gradient(135deg, rgba(12, 23, 22, 0.06), transparent 45%);
+  }
+
+  .event-spotlight-badge,
+  .event-spotlight-date-block strong,
+  .event-spotlight-date-block span,
+  .event-spotlight h2,
+  .event-spotlight-summary,
+  .event-status-kicker,
+  .event-status-card h2,
+  .event-status-card p {
+    margin: 0;
+  }
+
+  .event-spotlight-badge {
+    justify-self: start;
+    width: fit-content;
+    padding: 0.34rem 0.66rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: rgba(12, 23, 22, 0.46);
+    color: white;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .event-spotlight-date-block {
+    display: grid;
+    gap: 0.12rem;
+    color: white;
+  }
+
+  .event-spotlight-date-block strong {
+    font-family: var(--display-font);
+    font-size: clamp(1.75rem, 2.7vw, 2.4rem);
+    line-height: 0.96;
+    letter-spacing: -0.04em;
+  }
+
+  .event-spotlight-date-block span {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.86;
+  }
+
+  .event-status-kicker {
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .event-spotlight h2,
+  .event-status-card h2 {
+    font-size: clamp(1.52rem, 2vw, 1.95rem);
+    line-height: 1.02;
+  }
+
+  .event-spotlight h2 a {
+    transition: color 160ms ease;
+  }
+
+  .event-spotlight:hover h2 a,
+  .event-spotlight:focus-within h2 a {
+    color: var(--accent-strong);
+  }
+
+  .event-spotlight-summary,
+  .event-status-card p {
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .event-spotlight-summary {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .event-spotlight-actions,
+  .event-status-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 0;
+  }
+
+  .event-spotlight-actions .button-link {
+    padding: 0.74rem 0.92rem;
+    font-size: 0.92rem;
+  }
+
+  @media (max-width: 960px) {
+    .event-spotlight-cover,
+    .event-spotlight-image {
+      min-height: 10.4rem;
+    }
   }
 </style>

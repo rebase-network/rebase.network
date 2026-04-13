@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import DetailHero from '@/components/DetailHero.astro';
-import DetailSidebarLinksSection from '@/components/DetailSidebarLinksSection.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getEventBySlug, getEvents, getSiteSettings } from '@/lib/content';
 import { formatEventWindow } from '@/lib/dates';
@@ -11,8 +10,6 @@ const eventSlug = getEventSlugFromRouteParam(Astro.params.slug ?? '');
 const [site, event, events] = await Promise.all([getSiteSettings(), getEventBySlug(eventSlug), getEvents()]);
 const related = event ? events.filter((item) => item.slug !== event.slug).slice(0, 2) : [];
 const eventStatusLabel = event ? (event.status === 'upcoming' ? '即将举办' : '活动归档') : '';
-const registrationModeLabel = event ? (event.registrationUrl ? '开放报名' : '仅信息说明') : '';
-const eventContinueAnchor = related.length > 0 ? '#event-related' : '#event-actions';
 const eventBreadcrumbs = event
   ? [
       { href: '/', label: '首页' },
@@ -20,7 +17,8 @@ const eventBreadcrumbs = event
       { label: event.title, current: true },
     ]
   : [];
-const eventHeroMeta = event ? [event.city, event.venue, registrationModeLabel].filter(Boolean) : [];
+const registrationModeLabel = event ? (event.registrationUrl ? '开放报名' : '当前仅提供活动说明') : '';
+const eventHeroMeta = event ? [eventStatusLabel, formatEventWindow(event.startAt, event.endAt), `${event.city} · ${event.venue}`].filter(Boolean) : [];
 const eventHeroActions = event
   ? [
       ...(event.registrationUrl
@@ -29,25 +27,6 @@ const eventHeroActions = event
       { href: '/events', label: '返回活动列表', secondary: true },
     ]
   : [];
-const eventJumpLinks = [
-  { href: '#event-body', label: '活动内容' },
-  { href: '#event-info', label: '活动信息' },
-  { href: eventContinueAnchor, label: '继续追踪' },
-];
-const eventWayfindingLinks = [
-  { href: '#event-body', label: '查看活动内容' },
-  { href: '#event-info', label: '查看活动信息' },
-  { href: eventContinueAnchor, label: '继续追踪' },
-];
-const eventActionLinks = [
-  ...(event?.registrationUrl ? [{ href: event.registrationUrl, label: '打开外部报名链接', external: true }] : []),
-  { href: '/events/rss.xml', label: '订阅活动 RSS' },
-  { href: '/events', label: '回到活动列表' },
-];
-const eventRelatedLinks = related.map((item) => ({
-  href: getEventPath(item.startAt, item.slug),
-  label: item.title,
-}));
 
 if (!event) {
   Astro.response.status = 404;
@@ -63,72 +42,84 @@ if (!event) {
 >
   {event ? (
     <>
-      <section class="shell page-hero single">
+      <section class="shell page-hero single event-detail-hero-shell">
         <DetailHero
-          kicker="活动详情"
+          kicker="活动"
           breadcrumbs={eventBreadcrumbs}
           edition={eventStatusLabel}
           title={event.title}
           summary={event.summary}
           meta={eventHeroMeta}
-          note={`${formatEventWindow(event.startAt, event.endAt)} · ${event.location}`}
           actions={eventHeroActions}
-          jumps={eventJumpLinks}
           heroClass="event-hero"
         />
       </section>
 
-      <section class="shell page-section detail-shell">
-        <article id="event-body" class="card detail-body-card event-detail">
-          <div class="detail-body-lead event-meta">
-            <p>{formatEventWindow(event.startAt, event.endAt)}</p>
-            <p>{event.location} · {event.venue}</p>
-          </div>
-          <MarkdownContent content={event.content} />
-        </article>
+      <section class="shell page-section event-overview-shell">
+        <div class="event-overview-layout">
+          <article class="card event-facts-card">
+            <p class="event-facts-kicker">活动信息</p>
+            <dl class="event-fact-list">
+              <div>
+                <dt>时间</dt>
+                <dd>{formatEventWindow(event.startAt, event.endAt)}</dd>
+              </div>
+              <div>
+                <dt>地点</dt>
+                <dd>{event.location} · {event.venue}</dd>
+              </div>
+              <div>
+                <dt>状态</dt>
+                <dd>{eventStatusLabel}</dd>
+              </div>
+            </dl>
+          </article>
 
-        <aside class="card detail-sidebar">
-          <DetailSidebarLinksSection
-            title="页面导览"
-            copy="如果你是从活动分享或历史归档进入，可以先用这些锚点快速定位。"
-            links={eventWayfindingLinks}
-          />
-
-          <section id="event-info" class="detail-sidebar-section">
-            <h2>活动信息</h2>
-            <ul class="detail-fact-list">
-              <li>
-                <strong>活动状态</strong>
-                <span>{eventStatusLabel}</span>
-              </li>
-              <li>
-                <strong>时间窗口</strong>
-                <span>{formatEventWindow(event.startAt, event.endAt)}</span>
-              </li>
-              <li>
-                <strong>地点</strong>
-                <span>{event.location} · {event.venue}</span>
-              </li>
-            </ul>
-            <p class="detail-sidebar-copy">{event.registrationNote ?? '报名方式稍后公布，当前页面先保证活动信息可读、可归档、可订阅。'}</p>
-            {event.tags.length > 0 && (
-              <ul class="detail-tag-list">
-                {event.tags.map((tag) => <li>{tag}</li>)}
-              </ul>
+          <article class="card event-action-card">
+            <p class="event-facts-kicker">报名与说明</p>
+            <h2>{registrationModeLabel}</h2>
+            <p>{event.registrationNote ?? '当前页面提供活动说明，报名方式以公开链接或后续公告为准。'}</p>
+            {event.registrationUrl && (
+              <a class="button-link" href={event.registrationUrl} target="_blank" rel="noreferrer">
+                打开报名链接 <span>↗</span>
+              </a>
             )}
-          </section>
+          </article>
+        </div>
+      </section>
 
-          <DetailSidebarLinksSection id="event-actions" title="继续追踪" links={eventActionLinks} />
+      <section class="shell page-section event-detail-shell">
+        <article id="event-body" class="card detail-body-card event-detail">
+          <div class="event-reading-frame">
+            <MarkdownContent content={event.content} />
+          </div>
+        </article>
+      </section>
+
+      <section class="shell page-section event-followup-shell">
+        <div class="event-followup-grid">
+          <article class="card event-followup-card">
+            <p class="followup-kicker">继续追踪</p>
+            <h2>继续关注活动更新</h2>
+            <p>新的活动会继续出现在公开列表和 RSS 中，历史活动也会留在归档里。</p>
+            <div class="followup-link-list">
+              <a href="/events/rss.xml">订阅活动 RSS</a>
+              <a href="/events">回到活动列表</a>
+            </div>
+          </article>
 
           {related.length > 0 && (
-            <DetailSidebarLinksSection
-              id="event-related"
-              title="相关活动"
-              links={eventRelatedLinks}
-              listClass="related-list"
-            />
+            <article class="card event-followup-card">
+              <p class="followup-kicker">相关活动</p>
+              <h2>继续看这几场</h2>
+              <div class="followup-link-list">
+                {related.map((item) => (
+                  <a href={getEventPath(item.startAt, item.slug)}>{item.title}</a>
+                ))}
+              </div>
+            </article>
           )}
-        </aside>
+        </div>
       </section>
     </>
   ) : (
@@ -147,8 +138,16 @@ if (!event) {
     grid-template-columns: 1fr;
   }
 
+  .event-detail-hero-shell,
+  .event-overview-shell,
+  .event-detail-shell,
+  .event-followup-shell {
+    width: min(calc(100% - 2rem), 980px);
+  }
+
   .event-hero {
     color: white;
+    padding: 1.45rem 1.55rem;
     background:
       radial-gradient(circle at top right, rgba(245, 158, 11, 0.26), transparent 24%),
       linear-gradient(135deg, rgba(16, 37, 34, 0.98), rgba(17, 94, 89, 0.92));
@@ -156,7 +155,190 @@ if (!event) {
     box-shadow: 0 28px 60px rgba(16, 37, 34, 0.24);
   }
 
-  .light {
-    color: white;
+  .event-hero :global(.hero-title) {
+    max-width: 12ch;
+    font-size: clamp(2.35rem, 5vw, 4.35rem);
+  }
+
+  .event-hero :global(.hero-summary) {
+    max-width: 54ch;
+    margin-top: 0.95rem;
+  }
+
+  .event-overview-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+    gap: 1rem;
+  }
+
+  .event-facts-card,
+  .event-action-card {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.3rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 252, 251, 0.92));
+  }
+
+  .event-facts-kicker,
+  .event-action-card h2,
+  .event-action-card p {
+    margin: 0;
+  }
+
+  .event-facts-kicker {
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .event-fact-list {
+    display: grid;
+    gap: 0.8rem;
+    margin: 0;
+  }
+
+  .event-fact-list div {
+    display: grid;
+    gap: 0.22rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(31, 41, 51, 0.08);
+  }
+
+  .event-fact-list div:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .event-fact-list dt,
+  .event-fact-list dd {
+    margin: 0;
+  }
+
+  .event-fact-list dt {
+    color: var(--accent-strong);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .event-fact-list dd {
+    color: var(--text);
+    font-size: 1.05rem;
+    line-height: 1.68;
+  }
+
+  .event-action-card h2 {
+    font-size: clamp(1.45rem, 2vw, 2rem);
+    line-height: 1.08;
+  }
+
+  .event-action-card p {
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .event-action-card .button-link {
+    justify-self: start;
+    margin-top: 0.15rem;
+  }
+
+  .event-detail-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .event-detail {
+    padding: 1.5rem 1.55rem;
+  }
+
+  .event-reading-frame {
+    width: min(100%, 46rem);
+    margin: 0 auto;
+  }
+
+  .event-detail :global(.markdown) {
+    font-size: 1.05rem;
+    line-height: 1.86;
+  }
+
+  .event-detail :global(.markdown h2) {
+    margin-top: 2.3rem;
+    font-size: 1.75rem;
+  }
+
+  .followup-kicker,
+  .event-followup-card h2,
+  .event-followup-card p {
+    margin: 0;
+  }
+
+  .followup-kicker {
+    color: var(--accent-strong);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .event-followup-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .event-followup-card {
+    display: grid;
+    gap: 0.8rem;
+    padding: 1.3rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(249, 252, 250, 0.92));
+  }
+
+  .event-followup-card h2 {
+    font-size: clamp(1.45rem, 2vw, 2rem);
+    line-height: 1.06;
+  }
+
+  .event-followup-card p {
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .followup-link-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .followup-link-list a {
+    display: block;
+    padding: 0.88rem 1rem;
+    border: 1px solid rgba(15, 118, 110, 0.12);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--accent-strong);
+    font-weight: 700;
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .followup-link-list a:hover,
+  .followup-link-list a:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(15, 118, 110, 0.24);
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
+  }
+
+  @media (max-width: 960px) {
+    .event-detail-hero-shell,
+    .event-overview-shell,
+    .event-detail-shell,
+    .event-followup-shell {
+      width: min(calc(100% - 2rem), 100%);
+    }
+
+    .event-overview-layout,
+    .event-followup-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
