@@ -17,22 +17,109 @@ const { content } = Astro.props;
     font-size: 1.02rem;
   }
 
+  .markdown > :first-child {
+    margin-top: 0;
+  }
+
+  .markdown :global(h1),
   .markdown :global(h2) {
-    margin: 2rem 0 0.9rem;
-    font-size: 1.6rem;
+    margin: 2.1rem 0 0.9rem;
+    color: var(--heading);
+    font-family: var(--display-font);
+    letter-spacing: -0.03em;
+  }
+
+  .markdown :global(h1) {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    line-height: 0.98;
+  }
+
+  .markdown :global(h2) {
+    font-size: 1.72rem;
     line-height: 1.1;
+  }
+
+  .markdown :global(h3),
+  .markdown :global(h4) {
+    margin: 1.6rem 0 0.65rem;
+    color: var(--heading);
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .markdown :global(h3) {
+    font-size: 1.26rem;
+  }
+
+  .markdown :global(h4) {
+    font-size: 1.04rem;
+    letter-spacing: 0.02em;
   }
 
   .markdown :global(p) {
     margin: 0 0 1rem;
   }
 
-  .markdown :global(ul) {
+  .markdown :global(ul),
+  .markdown :global(ol) {
+    margin: 0 0 1rem;
     padding-left: 1.1rem;
+  }
+
+  .markdown :global(li) {
+    margin: 0;
   }
 
   .markdown :global(li + li) {
     margin-top: 0.5rem;
+  }
+
+  .markdown :global(img) {
+    display: block;
+    width: 100%;
+    margin: 1.25rem 0;
+    border: 1px solid rgba(15, 118, 110, 0.12);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 16px 34px rgba(26, 40, 34, 0.08);
+    overflow: hidden;
+  }
+
+  .markdown :global(blockquote) {
+    margin: 1.2rem 0;
+    padding: 0.2rem 0 0.2rem 1rem;
+    border-left: 3px solid rgba(15, 118, 110, 0.28);
+    color: var(--muted);
+  }
+
+  .markdown :global(hr) {
+    margin: 1.75rem 0;
+    border: 0;
+    border-top: 1px solid rgba(15, 118, 110, 0.12);
+  }
+
+  .markdown :global(code) {
+    padding: 0.14rem 0.36rem;
+    border-radius: 0.4rem;
+    background: rgba(15, 118, 110, 0.08);
+    font-size: 0.92em;
+  }
+
+  .markdown :global(pre) {
+    margin: 1.1rem 0;
+    padding: 1rem;
+    overflow-x: auto;
+    border-radius: 1rem;
+    background: rgba(17, 24, 39, 0.95);
+    color: rgba(240, 245, 244, 0.96);
+    box-shadow: 0 14px 28px rgba(17, 24, 39, 0.14);
+  }
+
+  .markdown :global(pre code) {
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 0.94rem;
   }
 
   .markdown :global(strong) {
@@ -42,5 +129,8 @@ const { content } = Astro.props;
   .markdown :global(a) {
     color: var(--accent-strong);
     font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.16em;
   }
 </style>
