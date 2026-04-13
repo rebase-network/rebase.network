@@ -81,22 +81,6 @@ const liveWireTypeLabel = {
     ))}
   </section>
 
-  <section class="shell page-section current-desk">
-    <SectionHeader
-      eyebrow="首页编排"
-      title="今天进入 Rebase 最值得先看的内容"
-      description="首屏之下不是简单分栏，而是一份社区首页编辑台：主稿、日报、活动和招聘同时在线。"
-    />
-    <div class="dispatch-grid">
-      {feed.latestArticles[0] && <ArticleCard article={feed.latestArticles[0]} featured />}
-      <div class="dispatch-stack">
-        {feed.latestGeekDaily && <GeekDailyCard episode={feed.latestGeekDaily} />}
-        {feed.latestJobs[0] && <JobCard job={feed.latestJobs[0]} />}
-        {feed.latestEvents[0] && <EventCard event={feed.latestEvents[0]} />}
-      </div>
-    </div>
-  </section>
-
   <section class="shell page-section">
     <SectionHeader
       eyebrow="近期 GeekDaily"
