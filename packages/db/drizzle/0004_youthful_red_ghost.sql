@@ -1,0 +1,1 @@
+ALTER TABLE "home_page" DROP COLUMN "home_signals_json";

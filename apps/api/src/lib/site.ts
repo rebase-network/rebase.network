@@ -100,7 +100,6 @@ export const ensureHomePage = async () => {
       heroPrimaryCtaUrl: defaultHomePage.heroPrimaryCtaUrl,
       heroSecondaryCtaLabel: defaultHomePage.heroSecondaryCtaLabel,
       heroSecondaryCtaUrl: defaultHomePage.heroSecondaryCtaUrl,
-      homeSignalsJson: [],
       homeStatsJson: defaultHomePage.homeStats,
     })
     .returning();

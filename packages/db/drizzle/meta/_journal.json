@@ -29,6 +29,13 @@
       "when": 1775905815413,
       "tag": "0003_safe_king_cobra",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1776109658110,
+      "tag": "0004_youthful_red_ghost",
+      "breakpoints": true
     }
   ]
 }

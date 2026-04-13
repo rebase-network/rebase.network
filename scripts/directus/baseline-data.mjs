@@ -73,29 +73,6 @@ export const siteSettings = {
       ],
     },
   ],
-  home_signals: [
-    {
-      eyebrow: 'community brief',
-      title: '这是一个由中国开发者用业余时间共同维护的非营利社区。',
-      summary: 'Rebase Community 以公益性和长期主义为前提，为开发者持续提供交流、发布和连接的公共场所。',
-      href: '/about',
-      meta: 'non-profit community',
-    },
-    {
-      eyebrow: 'geekdaily',
-      title: 'Web3 极客日报是 Rebase 最稳定的持续发声机制。',
-      summary: '每天更新的极客日报，把社区推荐、工具、研究和信号组织成可搜索、可订阅的长期档案。',
-      href: '/geekdaily',
-      meta: 'daily archive',
-    },
-    {
-      eyebrow: 'opportunities',
-      title: 'Who-Is-Hiring、Event Pool 和社区福利让机会线索长期可见。',
-      summary: '我们希望读者一进入首页，就知道社区最近在写什么、做什么、开放了哪些机会。',
-      href: '/who-is-hiring',
-      meta: 'community opportunities',
-    },
-  ],
   home_stats: [
     { value: '1809+', label: '极客日报期数' },
     { value: '5458+', label: '极客日报推荐条目' },

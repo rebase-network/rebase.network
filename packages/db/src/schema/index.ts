@@ -188,7 +188,6 @@ export const homePage = pgTable('home_page', {
   heroPrimaryCtaUrl: text('hero_primary_cta_url').notNull(),
   heroSecondaryCtaLabel: text('hero_secondary_cta_label').notNull(),
   heroSecondaryCtaUrl: text('hero_secondary_cta_url').notNull(),
-  homeSignalsJson: jsonb('home_signals_json').notNull(),
   homeStatsJson: jsonb('home_stats_json').notNull(),
   updatedByStaffId: uuid('updated_by_staff_id').references(() => staffAccounts.id, { onDelete: 'set null' }),
   createdAt,
