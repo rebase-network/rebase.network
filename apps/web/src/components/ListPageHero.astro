@@ -20,7 +20,7 @@ interface HeroAction {
 
 interface Props {
   kicker?: string;
-  edition: string;
+  edition?: string;
   title: string;
   summary: string;
   note?: string;
@@ -39,10 +39,12 @@ const heroActions = actions.filter((action) => action.href && action.label);
 
 <section class="shell page-hero list-page-hero-shell">
   <article class:list={['hero-panel', 'card', 'list-page-hero', heroClass]}>
-    <div class:list={['hero-topline', !kicker && 'single-item']}>
-      {kicker && <p class="hero-kicker">{kicker}</p>}
-      <span class="edition-chip">{edition}</span>
-    </div>
+    {(kicker || edition) && (
+      <div class:list={['hero-topline', !kicker && 'single-item']}>
+        {kicker && <p class="hero-kicker">{kicker}</p>}
+        {edition && <span class="edition-chip">{edition}</span>}
+      </div>
+    )}
     <h1 class="hero-title">{title}</h1>
     <p class="hero-summary">{summary}</p>
     {note && <p class="brand-note">{note}</p>}

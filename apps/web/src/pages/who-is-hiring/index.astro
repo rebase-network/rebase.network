@@ -9,7 +9,6 @@ const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
 
 <BaseLayout site={site} title="Who-Is-Hiring | Rebase社区招聘" description="查看 Rebase 社区当前公开的招聘信息与岗位详情。">
   <ListPageHero
-    edition="Opportunity Board"
     title="查看 Rebase 社区当前开放的岗位机会。"
     summary="把薪资、工作模式、地点、远程支持和投递入口集中放在同一个公开入口里，方便快速判断和比较。"
     actions={[
