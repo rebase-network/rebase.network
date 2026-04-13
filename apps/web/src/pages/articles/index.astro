@@ -49,11 +49,7 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
   </section>
 
   <section id="article-archive" class="shell page-section">
-    <SectionHeader
-      title="全部文章"
-      href="/articles/rss.xml"
-      hrefLabel="订阅 RSS"
-    />
+    <SectionHeader title="全部文章" />
     {(leadArticle ? archiveArticles : articles).length > 0 ? (
       <div class="grid-3">
         {(leadArticle ? archiveArticles : articles).map((article) => <ArticleCard article={article} compact />)}
