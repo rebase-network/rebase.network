@@ -24,6 +24,57 @@ const escapeXml = (value: string) =>
 
 const wrapCdata = (value: string) => `<![CDATA[${value.replaceAll(']]>', ']]]]><![CDATA[>')}]]>`;
 
+const createWeakEtag = (value: string) => {
+  let hash = 2166136261;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return `W/"${value.length.toString(16)}-${(hash >>> 0).toString(16)}"`;
+};
+
+const getLastModified = (items: WebRssItem[]) => {
+  const timestamps = items
+    .map((item) => (item.pubDate ? Date.parse(String(item.pubDate)) : Number.NaN))
+    .filter((value) => Number.isFinite(value));
+
+  if (timestamps.length === 0) {
+    return null;
+  }
+
+  return new Date(Math.floor(Math.max(...timestamps) / 1000) * 1000);
+};
+
+const matchesIfNoneMatch = (request: Request | undefined, etag: string) => {
+  const ifNoneMatch = request?.headers.get('if-none-match');
+
+  if (!ifNoneMatch) {
+    return false;
+  }
+
+  return ifNoneMatch
+    .split(',')
+    .map((value) => value.trim())
+    .some((value) => value === '*' || value === etag);
+};
+
+const matchesIfModifiedSince = (request: Request | undefined, lastModified: Date | null) => {
+  if (!lastModified) {
+    return false;
+  }
+
+  const ifModifiedSince = request?.headers.get('if-modified-since');
+
+  if (!ifModifiedSince) {
+    return false;
+  }
+
+  const timestamp = Date.parse(ifModifiedSince);
+  return Number.isFinite(timestamp) && timestamp >= lastModified.getTime();
+};
+
 export const withBaseUrl = (baseUrl: string, pathname: string) => new URL(pathname, baseUrl).toString();
 
 export const buildRssXml = (options: WebRssFeedOptions) => {
@@ -60,10 +111,35 @@ export const buildRssXml = (options: WebRssFeedOptions) => {
   ].join('');
 };
 
-export const rssResponse = (options: WebRssFeedOptions) =>
-  new Response(buildRssXml(options), {
-    headers: {
-      'content-type': 'application/rss+xml; charset=utf-8',
-      'cache-control': 'public, max-age=300, stale-while-revalidate=3600',
-    },
+export const rssResponse = (options: WebRssFeedOptions, request?: Request) => {
+  const body = buildRssXml(options);
+  const etag = createWeakEtag(body);
+  const lastModified = getLastModified(options.items);
+  const headers = new Headers({
+    'content-type': 'application/rss+xml; charset=utf-8',
+    'cache-control': 'public, max-age=300, stale-while-revalidate=3600',
+    etag,
   });
+
+  if (lastModified) {
+    headers.set('last-modified', lastModified.toUTCString());
+  }
+
+  if (matchesIfNoneMatch(request, etag)) {
+    return new Response(null, {
+      status: 304,
+      headers,
+    });
+  }
+
+  if (!request?.headers.get('if-none-match') && matchesIfModifiedSince(request, lastModified)) {
+    return new Response(null, {
+      status: 304,
+      headers,
+    });
+  }
+
+  return new Response(body, {
+    headers,
+  });
+};

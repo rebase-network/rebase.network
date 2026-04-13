@@ -2,7 +2,7 @@ import { getLatestGeekDaily, getSiteSettings } from '@/lib/content';
 import { getGeekDailyPath } from '@/lib/paths';
 import { rssResponse, withBaseUrl } from '@/lib/rss';
 
-export async function GET() {
+export async function GET({ request }: { request: Request }) {
   const [site, episodes] = await Promise.all([getSiteSettings(), getLatestGeekDaily(3)]);
   const items = episodes.map((episode) => ({
     title: episode.title,
@@ -11,10 +11,13 @@ export async function GET() {
     link: withBaseUrl(site.primaryDomain, getGeekDailyPath(episode.episodeNumber)),
   }));
 
-  return rssResponse({
-    title: 'GeekDaily feed',
-    link: withBaseUrl(site.primaryDomain, '/geekdaily/rss.xml'),
-    description: 'Latest GeekDaily episodes from Rebase.',
-    items,
-  });
+  return rssResponse(
+    {
+      title: 'GeekDaily feed',
+      link: withBaseUrl(site.primaryDomain, '/geekdaily/rss.xml'),
+      description: 'Latest GeekDaily episodes from Rebase.',
+      items,
+    },
+    request,
+  );
 }

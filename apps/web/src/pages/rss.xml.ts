@@ -8,7 +8,7 @@ import {
 import { getArticlePath, getEventPath, getGeekDailyPath, getJobPath } from '@/lib/paths';
 import { rssResponse, withBaseUrl } from '@/lib/rss';
 
-export async function GET() {
+export async function GET({ request }: { request: Request }) {
   const [site, episodes, articles, events, jobs] = await Promise.all([
     getSiteSettings(),
     getLatestGeekDaily(3),
@@ -46,10 +46,13 @@ export async function GET() {
     .sort((a, b) => +b.pubDate - +a.pubDate)
     .slice(0, 3);
 
-  return rssResponse({
-    title: 'Rebase feed',
-    link: withBaseUrl(site.primaryDomain, '/rss.xml'),
-    description: 'The latest community signals from Rebase.',
-    items,
-  });
+  return rssResponse(
+    {
+      title: 'Rebase feed',
+      link: withBaseUrl(site.primaryDomain, '/rss.xml'),
+      description: 'The latest community signals from Rebase.',
+      items,
+    },
+    request,
+  );
 }
