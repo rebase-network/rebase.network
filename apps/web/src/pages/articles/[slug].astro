@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import DetailHero from '@/components/DetailHero.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getArticleBySlug, getArticles, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
@@ -9,6 +10,12 @@ import { DEFAULT_ARTICLE_COVER_PATH } from '@/lib/placeholders';
 const slug = Astro.params.slug ?? '';
 const [site, article, articles] = await Promise.all([getSiteSettings(), getArticleBySlug(slug), getArticles()]);
 const related = article ? articles.filter((item) => item.slug !== article.slug).slice(0, 2) : [];
+const articleAuthors = article?.authors.map((author) => author.name).join(' · ') ?? '';
+const articleContextNote = article
+  ? article.tags.length > 0
+    ? `关键词：${article.tags.join(' · ')}`
+    : '把社区里的方法、复盘和判断整理成可以反复回看的长内容。'
+  : '';
 const articleBreadcrumbs = article
   ? [
       { href: '/', label: '首页' },
@@ -16,9 +23,12 @@ const articleBreadcrumbs = article
       { label: article.title, current: true },
     ]
   : [];
-const articleMetaLine = article
-  ? [formatDate(article.publishedAt), article.readingTime, article.authors.map((author) => author.name).join(' · ')].filter(Boolean)
-  : [];
+const articleHeroMeta = article ? [formatDate(article.publishedAt), article.readingTime, articleAuthors].filter(Boolean) : [];
+const articleHeroActions = [
+  { href: '/articles/rss.xml', label: '订阅文章 RSS', showIcon: true },
+  { href: '/articles', label: '回到文章列表', secondary: true },
+];
+const articleJumpTarget = related.length > 0 ? '#article-related' : '#article-actions';
 
 if (!article) {
   Astro.response.status = 404;
@@ -34,66 +44,89 @@ if (!article) {
 >
   {article ? (
     <>
-      <section class="shell page-hero single article-detail-hero-shell">
-        <article class="card article-intro-card" style={`--article-accent:${article.coverAccent};`}>
-          <div class="article-intro-topline">
-            <p class="article-intro-kicker">文章</p>
-            <nav class="article-intro-breadcrumbs" aria-label="Breadcrumb">
-              {articleBreadcrumbs.map((item, index) => (
-                <>
-                  {item.current || !item.href ? (
-                    <span aria-current={item.current ? 'page' : undefined}>{item.label}</span>
-                  ) : (
-                    <a href={item.href}>{item.label}</a>
-                  )}
-                  {index < articleBreadcrumbs.length - 1 && <span aria-hidden="true">/</span>}
-                </>
-              ))}
-            </nav>
-          </div>
-
-          <h1 class="article-intro-title">{article.title}</h1>
-          <p class="article-intro-summary">{article.summary}</p>
-          {articleMetaLine.length > 0 && <p class="article-intro-meta">{articleMetaLine.join(' · ')}</p>}
-
-          <div class="article-intro-links">
-            <a href="/articles">返回文章列表</a>
-            <a href="/articles/rss.xml">订阅文章 RSS</a>
-          </div>
-        </article>
+      <section class="shell page-hero single">
+        <DetailHero
+          kicker="文章"
+          breadcrumbs={articleBreadcrumbs}
+          edition="Longform Dispatch"
+          title={article.title}
+          summary={article.summary}
+          meta={articleHeroMeta}
+          note={articleContextNote}
+          actions={articleHeroActions}
+          jumps={[
+            { href: '#article-body', label: '进入正文' },
+            { href: '#article-info', label: '文章信息' },
+            { href: articleJumpTarget, label: '继续阅读' },
+          ]}
+          heroClass="article-hero"
+          heroStyle={`--article-accent:${article.coverAccent};`}
+        />
       </section>
 
-      <section class="shell page-section article-detail-shell">
+      <section class="shell page-section detail-shell">
         <article id="article-body" class="card detail-body-card article-detail">
-          <div class="article-reading-frame">
-            <MarkdownContent content={article.body} />
+          <div class="detail-body-lead article-meta">
+            <p>{formatDate(article.publishedAt)} · {article.readingTime}</p>
+            <p>{articleAuthors}</p>
           </div>
+          <MarkdownContent content={article.body} />
         </article>
-      </section>
 
-      <section class="shell page-section article-followup-shell">
-        <article class="card article-followup-card">
-          <div class="article-followup-copy">
-            <p class="followup-kicker">继续阅读</p>
-            <h2>读完这一篇之后，继续沿着文章归档往下走。</h2>
-            <p>回到文章列表继续浏览，或者直接订阅 RSS，后续更新会更方便追踪。</p>
-            <div class="followup-link-list">
-              <a href="/articles">返回文章列表</a>
-              <a href="/articles/rss.xml">订阅文章 RSS</a>
-            </div>
-          </div>
+        <aside class="card detail-sidebar">
+          <section class="detail-sidebar-section">
+            <h2>页面导览</h2>
+            <p class="detail-sidebar-copy">如果你是从搜索、分享或 RSS 进入，可以先用这几个锚点快速定位。</p>
+            <ul class="detail-sidebar-list">
+              <li><a href="#article-body">进入正文</a></li>
+              <li><a href="#article-info">查看文章信息</a></li>
+              <li><a href={articleJumpTarget}>继续阅读</a></li>
+            </ul>
+          </section>
+
+          <section id="article-info" class="detail-sidebar-section">
+            <h2>文章信息</h2>
+            <ul class="detail-fact-list">
+              <li>
+                <strong>发布时间</strong>
+                <span>{formatDate(article.publishedAt)}</span>
+              </li>
+              <li>
+                <strong>作者</strong>
+                <span>{articleAuthors}</span>
+              </li>
+              <li>
+                <strong>阅读时长</strong>
+                <span>{article.readingTime}</span>
+              </li>
+            </ul>
+            {article.tags.length > 0 && (
+              <ul class="detail-tag-list">
+                {article.tags.map((tag) => <li>{tag}</li>)}
+              </ul>
+            )}
+          </section>
+
+          <section id="article-actions" class="detail-sidebar-section">
+            <h2>继续阅读</h2>
+            <p class="detail-sidebar-copy">除了当前正文，还保留订阅入口和完整归档，方便后续继续追踪。</p>
+            <ul class="detail-sidebar-list">
+              <li><a href="/articles/rss.xml">订阅文章 RSS</a></li>
+              <li><a href="/articles">返回文章列表</a></li>
+            </ul>
+          </section>
 
           {related.length > 0 && (
-            <div class="article-followup-related">
-              <p class="followup-kicker">延伸阅读</p>
-              <div class="followup-link-list related-links">
+            <section id="article-related" class="detail-sidebar-section">
+              <h2>延伸阅读</h2>
+              <ul class="related-list">
                 {related.map((item) => (
-                  <a href={getArticlePath(item.slug)}>{item.title}</a>
+                  <li><a href={getArticlePath(item.slug)}>{item.title}</a></li>
                 ))}
-              </div>
-            </div>
+              </ul>
+            </section>
           )}
-        </article>
+        </aside>
       </section>
     </>
   ) : (
@@ -112,224 +145,20 @@ if (!article) {
     grid-template-columns: 1fr;
   }
 
-  .article-detail-hero-shell,
-  .article-detail-shell,
-  .article-followup-shell {
-    width: min(calc(100% - 2rem), 920px);
-  }
-
-  .article-detail-hero-shell {
-    padding-top: 1rem;
-    padding-bottom: 0.5rem;
-  }
-
-  .article-intro-card {
-    position: relative;
-    overflow: hidden;
-    padding: 1.2rem 1.35rem 1.25rem;
+  .article-hero {
+    color: white;
     background:
-      radial-gradient(circle at top right, rgba(255, 255, 255, 0.72), transparent 24%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(248, 252, 250, 0.93));
-    border-color: rgba(15, 118, 110, 0.1);
-    box-shadow: 0 18px 40px rgba(26, 40, 34, 0.08);
+      linear-gradient(135deg, rgba(12, 23, 22, 0.72), rgba(12, 23, 22, 0.3)),
+      var(--article-accent);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 28px 60px rgba(23, 32, 29, 0.22);
   }
 
-  .article-intro-card::before {
-    content: '';
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 4px;
-    background: var(--article-accent);
-    opacity: 0.9;
-  }
-
-  .article-intro-topline {
-    display: grid;
-    gap: 0.35rem;
-  }
-
-  .article-intro-kicker,
-  .article-intro-title,
-  .article-intro-summary,
-  .article-intro-meta {
-    margin: 0;
-  }
-
-  .article-intro-kicker {
-    color: var(--accent-strong);
-    font-size: 0.76rem;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-
-  .article-intro-breadcrumbs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.38rem;
-    color: var(--muted);
-    font-size: 0.84rem;
-  }
-
-  .article-intro-breadcrumbs a {
-    color: var(--muted);
-  }
-
-  .article-intro-title {
-    max-width: 12ch;
-    margin-top: 0.35rem;
-    font-family: var(--display-font);
-    font-size: clamp(2.2rem, 4vw, 3.7rem);
-    line-height: 0.94;
-    letter-spacing: -0.04em;
-    text-wrap: balance;
-  }
-
-  .article-intro-summary {
-    max-width: 56ch;
-    margin-top: 0.9rem;
-    color: var(--muted);
-    line-height: 1.72;
-  }
-
-  .article-intro-meta {
-    margin-top: 0.95rem;
-    color: var(--muted);
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .article-intro-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.9rem 1.1rem;
-    margin-top: 1rem;
-  }
-
-  .article-intro-links a {
-    color: var(--accent-strong);
-    font-weight: 700;
-  }
-
-  .article-intro-links a:hover,
-  .article-intro-links a:focus-visible,
-  .article-intro-breadcrumbs a:hover,
-  .article-intro-breadcrumbs a:focus-visible {
-    color: var(--heading);
-  }
-
-  .article-detail-shell {
-    grid-template-columns: 1fr;
-    padding-top: 0.35rem;
-    padding-bottom: 1.1rem;
-  }
-
-  .article-detail {
-    padding: 1.25rem 1.35rem 1.4rem;
-    border-color: rgba(15, 118, 110, 0.08);
-    box-shadow: 0 16px 34px rgba(26, 40, 34, 0.07);
-  }
-
-  .article-reading-frame {
-    width: min(100%, 47rem);
-    margin: 0 auto;
-  }
-
-  .article-detail :global(.markdown) {
-    font-size: 1.04rem;
-    line-height: 1.84;
+  .light {
+    color: white;
   }
 
   .article-detail :global(.markdown > h1:first-child) {
     display: none;
-  }
-
-  .article-detail :global(.markdown h2) {
-    margin-top: 2.15rem;
-    font-size: 1.75rem;
-  }
-
-  .article-followup-shell {
-    padding-top: 0.2rem;
-  }
-
-  .article-followup-card {
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    gap: 1.1rem;
-    padding: 1.15rem 1.25rem;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(249, 252, 250, 0.92));
-  }
-
-  .article-followup-copy,
-  .article-followup-related {
-    display: grid;
-    align-content: start;
-    gap: 0.72rem;
-  }
-
-  .followup-kicker,
-  .article-followup-card h2,
-  .article-followup-card p {
-    margin: 0;
-  }
-
-  .followup-kicker {
-    color: var(--accent-strong);
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .article-followup-card h2 {
-    font-size: clamp(1.45rem, 2vw, 2rem);
-    line-height: 1.06;
-  }
-
-  .article-followup-card p {
-    color: var(--muted);
-    line-height: 1.75;
-  }
-
-  .followup-link-list {
-    display: grid;
-    gap: 0.65rem;
-  }
-
-  .related-links {
-    margin-top: 0.1rem;
-  }
-
-  .followup-link-list a {
-    display: block;
-    padding: 0.8rem 0.95rem;
-    border: 1px solid rgba(15, 118, 110, 0.12);
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.74);
-    color: var(--accent-strong);
-    font-weight: 700;
-    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-  }
-
-  .followup-link-list a:hover,
-  .followup-link-list a:focus-visible {
-    transform: translateY(-2px);
-    border-color: rgba(15, 118, 110, 0.24);
-    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
-  }
-
-  @media (max-width: 960px) {
-    .article-followup-card {
-      grid-template-columns: 1fr;
-    }
-
-    .article-detail-hero-shell,
-    .article-detail-shell,
-    .article-followup-shell {
-      width: min(calc(100% - 2rem), 100%);
-    }
   }
 </style>
