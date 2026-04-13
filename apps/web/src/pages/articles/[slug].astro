@@ -10,12 +10,8 @@ import { DEFAULT_ARTICLE_COVER_PATH } from '@/lib/placeholders';
 const slug = Astro.params.slug ?? '';
 const [site, article, articles] = await Promise.all([getSiteSettings(), getArticleBySlug(slug), getArticles()]);
 const related = article ? articles.filter((item) => item.slug !== article.slug).slice(0, 2) : [];
+const articleJumpTarget = related.length > 0 ? '#article-related' : '#article-actions';
 const articleAuthors = article?.authors.map((author) => author.name).join(' · ') ?? '';
-const articleContextNote = article
-  ? article.tags.length > 0
-    ? `关键词：${article.tags.join(' · ')}`
-    : '把社区里的方法、复盘和判断整理成可以反复回看的长内容。'
-  : '';
 const articleBreadcrumbs = article
   ? [
       { href: '/', label: '首页' },
@@ -25,10 +21,8 @@ const articleBreadcrumbs = article
   : [];
 const articleHeroMeta = article ? [formatDate(article.publishedAt), article.readingTime, articleAuthors].filter(Boolean) : [];
 const articleHeroActions = [
-  { href: '/articles/rss.xml', label: '订阅文章 RSS', showIcon: true },
-  { href: '/articles', label: '回到文章列表', secondary: true },
+  { href: '/articles/rss.xml', label: '订阅文章 RSS', showIcon: false, secondary: true },
 ];
-const articleJumpTarget = related.length > 0 ? '#article-related' : '#article-actions';
 
 if (!article) {
   Astro.response.status = 404;
@@ -52,13 +46,7 @@ if (!article) {
           title={article.title}
           summary={article.summary}
           meta={articleHeroMeta}
-          note={articleContextNote}
           actions={articleHeroActions}
-          jumps={[
-            { href: '#article-body', label: '进入正文' },
-            { href: '#article-info', label: '文章信息' },
-            { href: articleJumpTarget, label: '继续阅读' },
-          ]}
           heroClass="article-hero"
           heroStyle={`--article-accent:${article.coverAccent};`}
         />
@@ -145,8 +133,9 @@ if (!article) {
     grid-template-columns: 1fr;
   }
 
-  .article-hero {
+  :global(.article-hero) {
     color: white;
+    padding: 1.2rem 1.3rem 1rem;
     background:
       linear-gradient(135deg, rgba(12, 23, 22, 0.72), rgba(12, 23, 22, 0.3)),
       var(--article-accent);
@@ -154,8 +143,86 @@ if (!article) {
     box-shadow: 0 28px 60px rgba(23, 32, 29, 0.22);
   }
 
-  .light {
+  :global(.article-hero .light) {
     color: white;
+  }
+
+  :global(.article-hero .detail-topline) {
+    gap: 0.45rem 0.9rem;
+  }
+
+  :global(.article-hero .detail-context) {
+    gap: 0.3rem;
+  }
+
+  :global(.article-hero .hero-kicker) {
+    margin: 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+  }
+
+  :global(.article-hero .detail-breadcrumbs a),
+  :global(.article-hero .detail-breadcrumbs span) {
+    font-size: 0.76rem;
+  }
+
+  :global(.article-hero .detail-edition) {
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    opacity: 0.58;
+  }
+
+  :global(.article-hero .hero-title) {
+    max-width: 10ch;
+    margin-top: 0.2rem;
+    font-size: clamp(2.45rem, 4.8vw, 4.2rem);
+    line-height: 0.92;
+  }
+
+  :global(.article-hero .hero-summary) {
+    max-width: 56ch;
+    margin-top: 0.72rem;
+    font-size: 0.98rem;
+    line-height: 1.65;
+  }
+
+  :global(.article-hero .detail-meta-strip) {
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+
+  :global(.article-hero .detail-meta-pill) {
+    position: relative;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    opacity: 0.92;
+  }
+
+  :global(.article-hero .detail-meta-pill:not(:last-child)::after) {
+    content: '·';
+    margin-left: 0.5rem;
+    opacity: 0.45;
+  }
+
+  :global(.article-hero .button-row) {
+    justify-content: flex-end;
+    margin-top: 0.55rem;
+  }
+
+  :global(.article-hero .button-link.secondary) {
+    padding: 0.42rem 0.78rem;
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
   .article-detail :global(.markdown > h1:first-child) {
