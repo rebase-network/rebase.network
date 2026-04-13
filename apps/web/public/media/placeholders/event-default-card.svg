@@ -19,7 +19,7 @@
     </linearGradient>
   </defs>
 
-  <rect width="1600" height="960" rx="48" fill="url(#bg)"/>
+  <rect width="1600" height="960" fill="url(#bg)"/>
   <circle cx="248" cy="154" r="214" fill="#D6F4EA" fill-opacity="0.08"/>
   <circle cx="1376" cy="178" r="184" fill="#F3C46E" fill-opacity="0.16"/>
   <circle cx="1408" cy="824" r="244" fill="#0A2924" fill-opacity="0.48"/>
@@ -27,8 +27,8 @@
   <path d="M266 116C434 58 650 74 834 158C1036 250 1188 432 1284 656" stroke="#F8FCFB" stroke-opacity="0.08" stroke-width="3" stroke-linecap="round"/>
   <path d="M1218 154C1312 242 1366 356 1370 512" stroke="#F8FCFB" stroke-opacity="0.07" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 18"/>
 
-  <rect x="154" y="118" width="1292" height="724" rx="46" fill="url(#panel)" stroke="#F8FCFB" stroke-opacity="0.12"/>
-  <rect x="194" y="160" width="1212" height="640" rx="38" fill="url(#glass)"/>
+  <rect x="72" y="84" width="1456" height="792" fill="url(#panel)" stroke="#F8FCFB" stroke-opacity="0.1"/>
+  <rect x="108" y="120" width="1384" height="720" fill="url(#glass)"/>
 
   <rect x="624" y="196" width="352" height="42" rx="21" fill="#F8FCFB" fill-opacity="0.08" stroke="#F8FCFB" stroke-opacity="0.10"/>
   <text x="800" y="223" fill="#F8FCFB" font-family="Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="3.8" text-anchor="middle">COMMUNITY CALENDAR</text>
