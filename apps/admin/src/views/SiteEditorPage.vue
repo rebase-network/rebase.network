@@ -28,7 +28,6 @@ const home = reactive<HomePageInput>({
   heroPrimaryCtaUrl: '',
   heroSecondaryCtaLabel: '',
   heroSecondaryCtaUrl: '',
-  homeSignals: [],
   homeStats: [],
 });
 

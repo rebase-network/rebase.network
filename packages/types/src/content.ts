@@ -34,16 +34,7 @@ export interface SiteSettings {
   heroPrimaryCtaUrl: string;
   heroSecondaryCtaLabel: string;
   heroSecondaryCtaUrl: string;
-  homeSignals: HomeSignal[];
   homeStats: HomeStat[];
-}
-
-export interface HomeSignal {
-  eyebrow: string;
-  title: string;
-  summary: string;
-  href: string;
-  meta: string;
 }
 
 export interface HomeStat {
