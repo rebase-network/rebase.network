@@ -42,7 +42,6 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
           <h2>
             <a href={getArticlePath(leadArticle.slug)}>{leadArticle.title}</a>
           </h2>
-          <p class="article-spotlight-summary">{leadArticle.summary}</p>
           <a class="article-spotlight-link" href={getArticlePath(leadArticle.slug)}>阅读全文</a>
         </div>
       </article>
@@ -138,7 +137,7 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
   .article-spotlight-topline,
   .article-spotlight-body {
     display: grid;
-    gap: 0.65rem;
+    gap: 0.55rem;
   }
 
   .article-spotlight-topline {
@@ -150,8 +149,7 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
   .article-spotlight-kicker,
   .article-spotlight-topline span,
   .article-spotlight-meta,
-  .article-spotlight-body h2,
-  .article-spotlight-summary {
+  .article-spotlight-body h2 {
     margin: 0;
   }
 
@@ -210,19 +208,10 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
     color: var(--accent-strong);
   }
 
-  .article-spotlight-summary {
-    color: var(--muted);
-    line-height: 1.72;
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 4;
-  }
-
   .article-spotlight-link {
     display: inline-flex;
     align-items: center;
-    margin-top: 0.15rem;
+    margin-top: 0.05rem;
     color: var(--accent-strong);
     font-weight: 800;
   }
