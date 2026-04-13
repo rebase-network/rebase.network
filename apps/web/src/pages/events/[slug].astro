@@ -5,6 +5,7 @@ import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getEventBySlug, getEvents, getSiteSettings } from '@/lib/content';
 import { formatEventWindow } from '@/lib/dates';
 import { getEventPath, getEventSlugFromRouteParam } from '@/lib/paths';
+import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
 
 const eventSlug = getEventSlugFromRouteParam(Astro.params.slug ?? '');
 const [site, event, events] = await Promise.all([getSiteSettings(), getEventBySlug(eventSlug), getEvents()]);
@@ -37,7 +38,7 @@ if (!event) {
   site={site}
   title={event ? event.title : '活动未找到'}
   description={event ? event.summary : '你访问的活动页面暂时无法找到。'}
-  socialImage={event?.coverImageUrl}
+  socialImage={event?.coverImageUrl ?? DEFAULT_EVENT_COVER_PATH}
   noindex={!event}
 >
   {event ? (
