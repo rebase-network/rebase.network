@@ -15,6 +15,7 @@ const contributorPreview = feed.featuredContributors.slice(0, contributorPreview
 const liveWire = feed.dynamicFeed.slice(0, 6);
 const recentGeekDaily = feed.recentGeekDaily.slice(0, 3);
 const frontPageHighlights = liveWire.slice(0, 3);
+const heroPrimaryCtaLabel = site.heroPrimaryCtaLabel === '进入 GeekDaily' ? '查看极客日报' : site.heroPrimaryCtaLabel;
 
 const liveWireTypeLabel = {
   article: '文章',
@@ -34,7 +35,7 @@ const liveWireTypeLabel = {
       <p class="hero-summary">{site.heroSummary}</p>
       <p class="brand-note">这是一个由中国开发者用热爱和业余时间共同维护的非营利、公益性开发者社区。</p>
       <div class="button-row">
-        <a class="button-link" href={site.heroPrimaryCtaUrl}>{site.heroPrimaryCtaLabel} <span>↗</span></a>
+        <a class="button-link" href={site.heroPrimaryCtaUrl}>{heroPrimaryCtaLabel} <span>↗</span></a>
         <a class="button-link secondary" href={site.heroSecondaryCtaUrl}>{site.heroSecondaryCtaLabel} <span>↗</span></a>
       </div>
       <div class="hero-highlights">
