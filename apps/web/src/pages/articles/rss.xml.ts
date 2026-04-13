@@ -2,7 +2,7 @@ import { getLatestArticles, getSiteSettings } from '@/lib/content';
 import { getArticlePath } from '@/lib/paths';
 import { rssResponse, withBaseUrl } from '@/lib/rss';
 
-export async function GET() {
+export async function GET({ request }: { request: Request }) {
   const [site, articles] = await Promise.all([getSiteSettings(), getLatestArticles(3)]);
   const items = articles.map((article) => ({
     title: article.title,
@@ -11,10 +11,13 @@ export async function GET() {
     link: withBaseUrl(site.primaryDomain, getArticlePath(article.slug)),
   }));
 
-  return rssResponse({
-    title: 'Rebase articles',
-    link: withBaseUrl(site.primaryDomain, '/articles/rss.xml'),
-    description: 'Latest published articles from Rebase.',
-    items,
-  });
+  return rssResponse(
+    {
+      title: 'Rebase articles',
+      link: withBaseUrl(site.primaryDomain, '/articles/rss.xml'),
+      description: 'Latest published articles from Rebase.',
+      items,
+    },
+    request,
+  );
 }

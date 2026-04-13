@@ -2,7 +2,7 @@ import { getEvents, getSiteSettings } from '@/lib/content';
 import { getEventPath } from '@/lib/paths';
 import { rssResponse, withBaseUrl } from '@/lib/rss';
 
-export async function GET() {
+export async function GET({ request }: { request: Request }) {
   const [site, events] = await Promise.all([getSiteSettings(), getEvents()]);
   const items = events
     .sort((a, b) => +new Date(b.startAt) - +new Date(a.startAt))
@@ -14,10 +14,13 @@ export async function GET() {
       link: withBaseUrl(site.primaryDomain, getEventPath(event.startAt, event.slug)),
     }));
 
-  return rssResponse({
-    title: 'Rebase events',
-    link: withBaseUrl(site.primaryDomain, '/events/rss.xml'),
-    description: 'Latest event updates from Rebase.',
-    items,
-  });
+  return rssResponse(
+    {
+      title: 'Rebase events',
+      link: withBaseUrl(site.primaryDomain, '/events/rss.xml'),
+      description: 'Latest event updates from Rebase.',
+      items,
+    },
+    request,
+  );
 }

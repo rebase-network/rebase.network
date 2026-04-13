@@ -9,7 +9,7 @@ import { getEnv, isAuthConfigured, isDatabaseConfigured } from '../lib/env.js';
 import { listPublicEvents } from '../lib/events.js';
 import { listPublicGeekDailyEpisodes } from '../lib/geekdaily.js';
 import { listPublicJobs } from '../lib/jobs.js';
-import { buildRssFeed, type RssItem } from '../lib/rss.js';
+import { rssResponse, type RssItem } from '../lib/rss.js';
 import { getPublicSiteConfig } from '../lib/site.js';
 
 export const rootRoutes = new Hono();
@@ -136,15 +136,15 @@ rootRoutes.get('/rss.xml', async (c) => {
     3,
   );
 
-  const feed = buildRssFeed({
-    title: `${site.siteName} Feed`,
-    link: withBaseUrl(site.primaryDomain, '/rss.xml'),
-    description: `${site.siteName} latest updates`,
-    items,
-  });
-
-  c.header('content-type', 'application/rss+xml; charset=utf-8');
-  return c.body(feed);
+  return rssResponse(
+    {
+      title: `${site.siteName} Feed`,
+      link: withBaseUrl(site.primaryDomain, '/rss.xml'),
+      description: `${site.siteName} latest updates`,
+      items,
+    },
+    c.req.raw.headers,
+  );
 });
 
 rootRoutes.get('/rss/articles.xml', async (c) => {
@@ -156,14 +156,14 @@ rootRoutes.get('/rss/articles.xml', async (c) => {
     pubDate: item.publishedAt,
   }));
 
-  c.header('content-type', 'application/rss+xml; charset=utf-8');
-  return c.body(
-    buildRssFeed({
+  return rssResponse(
+    {
       title: `${site.siteName} Articles`,
       link: withBaseUrl(site.primaryDomain, '/rss/articles.xml'),
       description: `${site.siteName} article feed`,
       items,
-    }),
+    },
+    c.req.raw.headers,
   );
 });
 
@@ -176,14 +176,14 @@ rootRoutes.get('/rss/jobs.xml', async (c) => {
     pubDate: item.publishedAt,
   }));
 
-  c.header('content-type', 'application/rss+xml; charset=utf-8');
-  return c.body(
-    buildRssFeed({
+  return rssResponse(
+    {
       title: `${site.siteName} Who Is Hiring`,
       link: withBaseUrl(site.primaryDomain, '/rss/jobs.xml'),
       description: `${site.siteName} hiring feed`,
       items,
-    }),
+    },
+    c.req.raw.headers,
   );
 });
 
@@ -199,14 +199,14 @@ rootRoutes.get('/rss/events.xml', async (c) => {
       pubDate: item.startAt,
     }));
 
-  c.header('content-type', 'application/rss+xml; charset=utf-8');
-  return c.body(
-    buildRssFeed({
+  return rssResponse(
+    {
       title: `${site.siteName} Events`,
       link: withBaseUrl(site.primaryDomain, '/rss/events.xml'),
       description: `${site.siteName} events feed`,
       items,
-    }),
+    },
+    c.req.raw.headers,
   );
 });
 
@@ -219,13 +219,13 @@ rootRoutes.get('/rss/geekdaily.xml', async (c) => {
     pubDate: item.publishedAt,
   }));
 
-  c.header('content-type', 'application/rss+xml; charset=utf-8');
-  return c.body(
-    buildRssFeed({
+  return rssResponse(
+    {
       title: `${site.siteName} GeekDaily`,
       link: withBaseUrl(site.primaryDomain, '/rss/geekdaily.xml'),
       description: `${site.siteName} geekdaily feed`,
       items,
-    }),
+    },
+    c.req.raw.headers,
   );
 });
