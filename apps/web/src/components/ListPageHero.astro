@@ -11,7 +11,7 @@ interface HeroJump {
 }
 
 interface Props {
-  kicker: string;
+  kicker?: string;
   edition: string;
   title: string;
   summary: string;
@@ -29,8 +29,8 @@ const heroJumps = jumps.filter((jump) => jump.href && jump.label);
 
 <section class="shell page-hero list-page-hero-shell">
   <article class:list={['hero-panel', 'card', 'list-page-hero', heroClass]}>
-    <div class="hero-topline">
-      <p class="hero-kicker">{kicker}</p>
+    <div class:list={['hero-topline', !kicker && 'single-item']}>
+      {kicker && <p class="hero-kicker">{kicker}</p>}
       <span class="edition-chip">{edition}</span>
     </div>
     <h1 class="hero-title">{title}</h1>
@@ -81,6 +81,10 @@ const heroJumps = jumps.filter((jump) => jump.href && jump.label);
     align-items: center;
     justify-content: space-between;
     gap: 0.8rem;
+  }
+
+  .hero-topline.single-item {
+    justify-content: flex-end;
   }
 
   .edition-chip {

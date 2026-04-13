@@ -23,8 +23,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 >
   <section class="shell page-hero single">
     <article class="hero-panel card geekdaily-archive-hero">
-      <div class="hero-topline">
-        <p class="hero-kicker">极客日报</p>
+      <div class="hero-topline geekdaily-topline">
         <span class="edition-chip">Issue Archive</span>
       </div>
       <h1 class="hero-title">Rebase 极客日报</h1>
@@ -671,8 +670,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
     text-transform: uppercase;
   }
 
-  .geekdaily-archive-hero .hero-kicker {
-    margin-bottom: 0;
+  .geekdaily-topline {
+    justify-content: flex-end;
   }
 
   .geekdaily-archive-hero .hero-title {
