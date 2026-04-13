@@ -43,6 +43,10 @@ const { eyebrow, title, description, href, hrefLabel = '查看更多', compact =
     gap: 0.85rem;
   }
 
+  .section-header.compact > div {
+    max-width: 46rem;
+  }
+
   p {
     margin: 0 0 0.45rem;
     color: var(--accent-strong);
@@ -70,9 +74,20 @@ const { eyebrow, title, description, href, hrefLabel = '查看更多', compact =
     margin-bottom: 0.28rem;
   }
 
+  .section-header.compact h2 {
+    font-size: clamp(1.36rem, 1.85vw, 2rem);
+    line-height: 1.08;
+  }
+
   .section-header.compact span {
     margin-top: 0.32rem;
+    font-size: 0.96rem;
     line-height: 1.62;
+  }
+
+  .section-header.compact a {
+    padding: 0.72rem 0.94rem;
+    font-size: 0.95rem;
   }
 
   a {
