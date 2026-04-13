@@ -11,14 +11,6 @@ declare module '../../../scripts/directus/baseline-data.mjs' {
     links: BaselineLinkItem[];
   }
 
-  export interface BaselineHomeSignal {
-    eyebrow: string;
-    title: string;
-    summary: string;
-    href: string;
-    meta: string;
-  }
-
   export interface BaselineHomeStat {
     value: string;
     label: string;
@@ -39,7 +31,6 @@ declare module '../../../scripts/directus/baseline-data.mjs' {
     hero_secondary_cta_url: string;
     social_links: BaselineLinkItem[];
     footer_groups: BaselineFooterGroup[];
-    home_signals: BaselineHomeSignal[];
     home_stats: BaselineHomeStat[];
     copyright_text: string;
   }

@@ -5,12 +5,13 @@ import { getGeekDailyPath } from '@/lib/paths';
 
 interface Props {
   episode: GeekDailyEpisode;
+  compact?: boolean;
 }
 
-const { episode } = Astro.props;
+const { episode, compact = false } = Astro.props;
 ---
 
-<article class="daily-card card">
+<article class:list={['daily-card', 'card', { compact }]}>
   <div class="meta-row">
     <p class="meta">{formatDate(episode.publishedAt)}</p>
     <span class="issue-no">#{episode.episodeNumber}</span>
@@ -120,5 +121,30 @@ const { episode } = Astro.props;
     color: #92400e;
     font-size: 0.82rem;
     font-weight: 700;
+  }
+
+  .compact {
+    padding: 1.05rem;
+  }
+
+  .compact .meta {
+    margin-bottom: 0.62rem;
+  }
+
+  .compact h3 {
+    margin-bottom: 0.62rem;
+    font-size: 1.28rem;
+  }
+
+  .compact .body {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .compact .item-count,
+  .compact .tags {
+    margin-top: 0.88rem;
   }
 </style>

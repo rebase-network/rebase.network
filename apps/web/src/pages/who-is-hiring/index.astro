@@ -5,33 +5,25 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getJobs, getSiteSettings } from '@/lib/content';
 
 const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
-const remoteJobCount = jobs.filter((job) => job.supportsRemote).length;
-const datedJobCount = jobs.filter((job) => Boolean(job.expiresAt)).length;
-
-const jobSignals = [
-  {
-    value: String(jobs.length).padStart(2, '0'),
-    label: '开放岗位',
-  },
-  {
-    value: String(remoteJobCount).padStart(2, '0'),
-    label: '支持远程',
-  },
-  {
-    value: String(datedJobCount).padStart(2, '0'),
-    label: '标注截止',
-  },
-];
 ---
 
 <BaseLayout site={site} title="Who-Is-Hiring | Rebase社区招聘" description="查看 Rebase 社区当前公开的招聘信息与岗位详情。">
   <ListPageHero
-    kicker="社区招聘"
-    edition="Opportunity Board"
     title="查看 Rebase 社区当前开放的岗位机会。"
     summary="把薪资、工作模式、地点、远程支持和投递入口集中放在同一个公开入口里，方便快速判断和比较。"
-    signals={jobSignals}
-    compactSignals={true}
+    actions={[
+      {
+        href: 'https://github.com/rebase-network/who-is-hiring',
+        label: '提交职位',
+        external: true,
+      },
+      {
+        href: '/who-is-hiring/rss.xml',
+        label: '订阅 RSS',
+        secondary: true,
+        showArrow: true,
+      },
+    ]}
     heroClass="jobs-hero"
   />
 
@@ -41,7 +33,6 @@ const jobSignals = [
         <strong>开放岗位</strong>
         <span>{jobs.length} 个岗位</span>
       </p>
-      <a class="button-link secondary jobs-toolbar-link" href="/who-is-hiring/rss.xml">订阅 RSS</a>
     </div>
     {jobs.length > 0 ? (
       <div class="grid-3">

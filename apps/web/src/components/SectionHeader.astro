@@ -1,18 +1,19 @@
 ---
 interface Props {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description?: string;
   href?: string;
   hrefLabel?: string;
+  compact?: boolean;
 }
 
-const { eyebrow, title, description, href, hrefLabel = '查看更多' } = Astro.props;
+const { eyebrow, title, description, href, hrefLabel = '查看更多', compact = false } = Astro.props;
 ---
 
-<div class="section-header">
+<div class:list={['section-header', compact && 'compact']}>
   <div>
-    <p>{eyebrow}</p>
+    {eyebrow && <p>{eyebrow}</p>}
     <h2>{title}</h2>
     {description && <span>{description}</span>}
   </div>
@@ -37,6 +38,15 @@ const { eyebrow, title, description, href, hrefLabel = '查看更多' } = Astro.
     max-width: 52rem;
   }
 
+  .section-header.compact {
+    margin-bottom: 1.05rem;
+    gap: 0.85rem;
+  }
+
+  .section-header.compact > div {
+    max-width: 46rem;
+  }
+
   p {
     margin: 0 0 0.45rem;
     color: var(--accent-strong);
@@ -58,6 +68,26 @@ const { eyebrow, title, description, href, hrefLabel = '查看更多' } = Astro.
     color: var(--muted);
     max-width: 58ch;
     line-height: 1.7;
+  }
+
+  .section-header.compact p {
+    margin-bottom: 0.28rem;
+  }
+
+  .section-header.compact h2 {
+    font-size: clamp(1.36rem, 1.85vw, 2rem);
+    line-height: 1.08;
+  }
+
+  .section-header.compact span {
+    margin-top: 0.32rem;
+    font-size: 0.96rem;
+    line-height: 1.62;
+  }
+
+  .section-header.compact a {
+    padding: 0.72rem 0.94rem;
+    font-size: 0.95rem;
   }
 
   a {

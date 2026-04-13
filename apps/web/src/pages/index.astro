@@ -12,9 +12,8 @@ import { formatDate } from '@/lib/dates';
 const [site, feed] = await Promise.all([getSiteSettings(), getHomeFeed()]);
 const contributorPreviewLimit = 10;
 const contributorPreview = feed.featuredContributors.slice(0, contributorPreviewLimit);
-const liveWire = feed.dynamicFeed.slice(0, 6);
+const liveWire = feed.dynamicFeed.slice(0, 4);
 const recentGeekDaily = feed.recentGeekDaily.slice(0, 3);
-const frontPageHighlights = liveWire.slice(0, 3);
 
 const liveWireTypeLabel = {
   article: '文章',
@@ -29,7 +28,6 @@ const liveWireTypeLabel = {
     <article class="hero-panel card masthead-panel">
       <div class="hero-topline">
         <p class="hero-kicker">面向建设者的社区媒体</p>
-        <span class="edition-chip">Rebase Front Page</span>
       </div>
       <h1 class="hero-title">{site.heroTitle}</h1>
       <p class="hero-summary">{site.heroSummary}</p>
@@ -38,19 +36,11 @@ const liveWireTypeLabel = {
         <a class="button-link" href={site.heroPrimaryCtaUrl}>{site.heroPrimaryCtaLabel} <span>↗</span></a>
         <a class="button-link secondary" href={site.heroSecondaryCtaUrl}>{site.heroSecondaryCtaLabel} <span>↗</span></a>
       </div>
-      <div class="hero-highlights">
-        {frontPageHighlights.map((item, index) => (
-          <a class="highlight-card" href={item.href}>
-            <span>0{index + 1} · {liveWireTypeLabel[item.type]}</span>
-            <strong>{item.title}</strong>
-            <p>{item.summary}</p>
-          </a>
-        ))}
-      </div>
     </article>
 
     <aside class="signal-panel card live-desk">
       <SectionHeader
+        compact
         eyebrow="社区实时线"
         title="正在发生什么"
         description="用一条实时更新的社区新闻线，把文章、活动、GeekDaily 和招聘放在同一个阅读入口里。"
@@ -81,40 +71,24 @@ const liveWireTypeLabel = {
     ))}
   </section>
 
-  <section class="shell page-section current-desk">
-    <SectionHeader
-      eyebrow="首页编排"
-      title="今天进入 Rebase 最值得先看的内容"
-      description="首屏之下不是简单分栏，而是一份社区首页编辑台：主稿、日报、活动和招聘同时在线。"
-    />
-    <div class="dispatch-grid">
-      {feed.latestArticles[0] && <ArticleCard article={feed.latestArticles[0]} featured />}
-      <div class="dispatch-stack">
-        {feed.latestGeekDaily && <GeekDailyCard episode={feed.latestGeekDaily} />}
-        {feed.latestJobs[0] && <JobCard job={feed.latestJobs[0]} />}
-        {feed.latestEvents[0] && <EventCard event={feed.latestEvents[0]} />}
-      </div>
-    </div>
-  </section>
-
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="近期 GeekDaily"
-      title="近期 GeekDaily"
+      compact
+      title="近期极客日报"
       description="日报是 Rebase 最稳定的社区更新机制，也是搜索与 RSS 最常被消费的入口。"
       href="/geekdaily"
-      hrefLabel="进入 GeekDaily"
+      hrefLabel="浏览极客日报"
     />
     <div class="grid-3">
       {recentGeekDaily.map((episode) => (
-        <GeekDailyCard episode={episode} />
+        <GeekDailyCard episode={episode} compact />
       ))}
     </div>
   </section>
 
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="最新文章"
+      compact
       title="近期文章"
       description="从产品、社区到信息架构，公开记录 Rebase 的想法与方法。"
       href="/articles"
@@ -122,44 +96,44 @@ const liveWireTypeLabel = {
     />
     <div class="grid-3">
       {feed.latestArticles.map((article) => (
-        <ArticleCard article={article} />
+        <ArticleCard article={article} compact />
       ))}
     </div>
   </section>
 
   <section class="shell page-section dual-column">
     <SectionHeader
-      eyebrow="社区招聘"
+      compact
       title="新增招聘信息"
       description="帮助读者快速理解岗位背景、工作模式和联系方式。"
       href="/who-is-hiring"
-      hrefLabel="进入招聘板"
+      hrefLabel="浏览全部职位"
     />
     <div class="grid-3">
       {feed.latestJobs.map((job) => (
-        <JobCard job={job} />
+        <JobCard job={job} compact />
       ))}
     </div>
   </section>
 
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="社区活动"
+      compact
       title="社区活动"
-      description="第一版先聚焦活动展示与外部报名入口，后续再扩展更复杂的活动能力。"
+      description="第一版先聚焦活动展示与报名入口，后续再扩展更复杂的活动能力。"
       href="/events"
       hrefLabel="查看活动"
     />
     <div class="grid-3">
       {feed.latestEvents.map((event) => (
-        <EventCard event={event} />
+        <EventCard event={event} compact />
       ))}
     </div>
   </section>
 
   <section class="shell page-section">
     <SectionHeader
-      eyebrow="社区共建者"
+      compact
       title="由更多真实的人，一起把社区持续往前推"
       href="/contributors"
       hrefLabel="查看全部贡献者"
@@ -198,7 +172,6 @@ const liveWireTypeLabel = {
   <section class="shell page-section">
     <article class="card feed-callout">
       <div>
-        <p class="hero-kicker">订阅入口</p>
         <h2>如果你习惯用 RSS 追踪社区内容，Rebase 从第一版开始就把 feed 当成标准输出。</h2>
       </div>
       <div class="feed-links">
@@ -260,20 +233,6 @@ const liveWireTypeLabel = {
     gap: 0.8rem;
   }
 
-  .edition-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.48rem 0.8rem;
-    border: 1px solid rgba(15, 118, 110, 0.14);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.7);
-    color: var(--accent-strong);
-    font-size: 0.76rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
   .masthead-panel .hero-title {
     max-width: 11ch;
     text-wrap: balance;
@@ -287,68 +246,24 @@ const liveWireTypeLabel = {
     line-height: 1.75;
   }
 
-  .hero-highlights {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.85rem;
-    margin-top: 1.35rem;
-  }
-
-  .highlight-card {
-    position: relative;
-    display: grid;
-    gap: 0.45rem;
-    padding: 1rem;
-    border: 1px solid rgba(15, 118, 110, 0.12);
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.76);
-    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.06);
-    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
-  }
-
-  .highlight-card:hover,
-  .highlight-card:focus-visible {
-    transform: translateY(-3px);
-    border-color: rgba(15, 118, 110, 0.24);
-    background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 18px 36px rgba(15, 118, 110, 0.1);
-  }
-
-  .highlight-card span,
-  .highlight-card strong,
-  .highlight-card p {
-    margin: 0;
-  }
-
-  .highlight-card span {
-    color: var(--accent-strong);
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .highlight-card strong {
-    font-family: var(--display-font);
-    font-size: 1.18rem;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-  }
-
-  .highlight-card p {
-    color: var(--muted);
-    font-size: 0.92rem;
-    line-height: 1.65;
-  }
-
   .live-desk {
     display: grid;
-    gap: 1rem;
+    gap: 0.78rem;
+    padding: 1.35rem 1.3rem 1.25rem;
     background:
       radial-gradient(circle at top right, rgba(245, 158, 11, 0.18), transparent 24%),
       linear-gradient(180deg, rgba(16, 37, 34, 0.97), rgba(19, 54, 49, 0.94));
     border-color: rgba(15, 118, 110, 0.22);
     box-shadow: 0 26px 56px rgba(16, 37, 34, 0.24);
+  }
+
+  .live-desk :global(.section-header.compact) {
+    margin-bottom: 0.2rem;
+    gap: 0.72rem;
+  }
+
+  .live-desk :global(.section-header.compact > div) {
+    max-width: 28rem;
   }
 
   .live-desk :global(.section-header p),
@@ -358,7 +273,17 @@ const liveWireTypeLabel = {
     color: rgba(255, 255, 255, 0.9);
   }
 
+  .live-desk :global(.section-header.compact h2) {
+    font-size: clamp(1.28rem, 1.45vw, 1.72rem);
+  }
+
+  .live-desk :global(.section-header.compact span) {
+    font-size: 0.9rem;
+    line-height: 1.56;
+  }
+
   .live-desk :global(.section-header a) {
+    padding: 0.66rem 0.9rem;
     border-color: rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.08);
     box-shadow: none;
@@ -373,7 +298,7 @@ const liveWireTypeLabel = {
 
   .live-wire-list {
     display: grid;
-    gap: 0.85rem;
+    gap: 0.72rem;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -381,7 +306,7 @@ const liveWireTypeLabel = {
 
   .live-wire-item a {
     display: block;
-    padding: 1rem;
+    padding: 0.82rem 0.86rem;
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(223, 244, 238, 0.12);
@@ -406,7 +331,7 @@ const liveWireTypeLabel = {
   .live-wire-meta span,
   .live-wire-meta time {
     color: rgba(223, 244, 238, 0.86);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 800;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -422,16 +347,17 @@ const liveWireTypeLabel = {
   }
 
   .live-wire-item h3 {
-    margin-top: 0.5rem;
-    font-size: 1rem;
-    line-height: 1.35;
+    margin-top: 0.42rem;
+    font-size: 0.96rem;
+    line-height: 1.3;
     color: white;
   }
 
   .live-wire-item p {
-    margin-top: 0.45rem;
+    margin-top: 0.38rem;
     color: rgba(223, 244, 238, 0.72);
-    line-height: 1.65;
+    font-size: 0.92rem;
+    line-height: 1.58;
   }
 
   .current-desk {
@@ -453,7 +379,7 @@ const liveWireTypeLabel = {
     display: grid;
     grid-template-columns: 1.3fr 1fr;
     gap: 1rem;
-    padding: 1.6rem;
+    padding: 1.42rem;
     background:
       radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 28%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 253, 251, 0.9));
@@ -474,7 +400,7 @@ const liveWireTypeLabel = {
 
   .feed-links a {
     display: block;
-    padding: 1rem 1.1rem;
+    padding: 0.9rem 1rem;
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.68);
     border: 1px solid rgba(31, 41, 51, 0.08);
@@ -498,9 +424,9 @@ const liveWireTypeLabel = {
     overflow: hidden;
     display: grid;
     grid-template-columns: minmax(0, 0.82fr) minmax(28rem, 1.18fr);
-    gap: 1.4rem;
+    gap: 1.25rem;
     align-items: center;
-    padding: 1.3rem 1.35rem;
+    padding: 1.18rem 1.25rem;
     background:
       radial-gradient(circle at top left, rgba(243, 196, 110, 0.22), transparent 26%),
       radial-gradient(circle at 82% 18%, rgba(15, 118, 110, 0.18), transparent 24%),
@@ -522,7 +448,7 @@ const liveWireTypeLabel = {
     position: relative;
     z-index: 1;
     display: grid;
-    gap: 0.9rem;
+    gap: 0.78rem;
     max-width: 30rem;
   }
 
@@ -718,7 +644,6 @@ const liveWireTypeLabel = {
   }
 
   @media (max-width: 960px) {
-    .hero-highlights,
     .dispatch-grid,
     .contributors-overview {
       grid-template-columns: 1fr;
@@ -737,10 +662,6 @@ const liveWireTypeLabel = {
     .hero-topline {
       align-items: flex-start;
       flex-direction: column;
-    }
-
-    .highlight-card strong {
-      font-size: 1.08rem;
     }
 
     .feed-links {

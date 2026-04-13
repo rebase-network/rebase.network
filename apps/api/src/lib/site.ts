@@ -38,7 +38,6 @@ const defaultHomePage: HomePageInput = {
   heroPrimaryCtaUrl: '/geekdaily',
   heroSecondaryCtaLabel: '查看招聘板',
   heroSecondaryCtaUrl: '/who-is-hiring',
-  homeSignals: [],
   homeStats: [
     { value: '1809+', label: '极客日报期数' },
     { value: '5458+', label: '极客日报推荐条目' },
@@ -101,7 +100,6 @@ export const ensureHomePage = async () => {
       heroPrimaryCtaUrl: defaultHomePage.heroPrimaryCtaUrl,
       heroSecondaryCtaLabel: defaultHomePage.heroSecondaryCtaLabel,
       heroSecondaryCtaUrl: defaultHomePage.heroSecondaryCtaUrl,
-      homeSignalsJson: defaultHomePage.homeSignals,
       homeStatsJson: defaultHomePage.homeStats,
     })
     .returning();
@@ -156,7 +154,6 @@ export const getAdminSite = async (): Promise<AdminSiteEditorPayload> => {
       heroPrimaryCtaUrl: home.heroPrimaryCtaUrl,
       heroSecondaryCtaLabel: home.heroSecondaryCtaLabel,
       heroSecondaryCtaUrl: home.heroSecondaryCtaUrl,
-      homeSignals: (home.homeSignalsJson as HomePageInput['homeSignals']) ?? [],
       homeStats: (home.homeStatsJson as HomePageInput['homeStats']) ?? [],
     },
     about: {
@@ -215,7 +212,6 @@ export const updateHomePage = async (input: HomePageInput, actor: AuditActor) =>
       heroPrimaryCtaUrl: input.heroPrimaryCtaUrl,
       heroSecondaryCtaLabel: input.heroSecondaryCtaLabel,
       heroSecondaryCtaUrl: input.heroSecondaryCtaUrl,
-      homeSignalsJson: input.homeSignals,
       homeStatsJson: input.homeStats,
       updatedByStaffId: actor.actorStaffAccountId ?? null,
       updatedAt: new Date(),
@@ -289,7 +285,6 @@ export const getPublicSiteConfig = async () => {
     heroPrimaryCtaUrl: payload.home.heroPrimaryCtaUrl,
     heroSecondaryCtaLabel: payload.home.heroSecondaryCtaLabel,
     heroSecondaryCtaUrl: payload.home.heroSecondaryCtaUrl,
-    homeSignals: payload.home.homeSignals,
     homeStats: payload.home.homeStats,
   };
 };

@@ -92,14 +92,6 @@ export const footerGroupSchema = z.object({
   links: z.array(linkItemSchema).default([]),
 });
 
-export const homeSignalSchema = z.object({
-  eyebrow: requiredTrimmedString('eyebrow is required'),
-  title: requiredTrimmedString('title is required'),
-  summary: requiredTrimmedString('summary is required'),
-  href: requiredTrimmedString('href is required'),
-  meta: trimmedString.default(''),
-});
-
 export const homeStatSchema = z.object({
   value: requiredTrimmedString('value is required'),
   label: requiredTrimmedString('label is required'),
@@ -145,7 +137,6 @@ export const homePageSchema = z.object({
   heroPrimaryCtaUrl: requiredTrimmedString('primary cta url is required'),
   heroSecondaryCtaLabel: requiredTrimmedString('secondary cta label is required'),
   heroSecondaryCtaUrl: requiredTrimmedString('secondary cta url is required'),
-  homeSignals: z.array(homeSignalSchema).default([]),
   homeStats: z.array(homeStatSchema).default([]),
 });
 

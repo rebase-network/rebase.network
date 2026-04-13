@@ -1,113 +1,54 @@
 ---
 import ArticleCard from '@/components/ArticleCard.astro';
-import ListBriefGrid from '@/components/ListBriefGrid.astro';
 import ListEmptyState from '@/components/ListEmptyState.astro';
-import ListLeadSection from '@/components/ListLeadSection.astro';
-import ListPageHero from '@/components/ListPageHero.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getArticles, getSiteSettings } from '@/lib/content';
+import { formatDate } from '@/lib/dates';
+import { getArticlePath } from '@/lib/paths';
+import { DEFAULT_ARTICLE_COVER_PATH } from '@/lib/placeholders';
 
 const [site, articles] = await Promise.all([getSiteSettings(), getArticles()]);
 const leadArticle = articles[0];
 const archiveArticles = articles.slice(1);
-
-const articleSignals = [
-  {
-    value: String(articles.length).padStart(2, '0'),
-    label: '已发布文章',
-    detail: '先保持结构清晰、可读、可订阅，而不是把长文散落在不同平台里。',
-  },
-  {
-    value: 'RSS',
-    label: '标准输出',
-    detail: '订阅源固定在 /articles/rss.xml，让写作同时服务站内浏览与外部阅读器。',
-  },
-  {
-    value: 'Lead',
-    label: '主稿入口',
-    detail: '栏目首页保留一个编辑推荐入口，先承接最值得完整阅读的一篇长文。',
-  },
-];
-
-const articleBriefs = [
-  {
-    eyebrow: 'Writing desk',
-    title: '主稿 + 归档',
-    summary: '栏目首页先给一个主稿入口，再把其余文章组织成稳定归档，阅读节奏更像编辑台而不是普通列表。',
-    tone: 'warm',
-  },
-  {
-    eyebrow: 'Front page flow',
-    title: '从首页流向长文',
-    summary: '首页负责发现和更新速度，文章页负责把判断、复盘和方法沉淀成完整上下文。',
-    tone: 'cool',
-  },
-  {
-    eyebrow: 'Editorial scope',
-    title: '方法论先于宣传',
-    summary: '这里优先承载产品、信息架构、社区运营和 builder workflow，而不是轻量口号式内容。',
-    tone: 'neutral',
-  },
-];
-
-const articleLeadPoints = [
-  {
-    title: '优先完整',
-    description: '把结论、过程、引用和后续动作留在同一页里，减少信息散落。',
-  },
-  {
-    title: '持续分发',
-    description: '通过首页入口、详情页和 RSS，让长文保持可再次进入的阅读能力。',
-  },
-];
+const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(Boolean).join(' · ') ?? '';
 ---
 
 <BaseLayout site={site} title="Rebase 文章" description="浏览 Rebase 社区发布的文章、复盘与方法总结。">
-  <ListPageHero
-    kicker="文章归档"
-    edition="Archive Index"
-    title="把社区里的想法、复盘和方法写成可以沉淀下来的文章。"
-    summary="文章页承接更长线的讨论：产品、信息架构、社区运营和 builder workflow。"
-    note="首页负责告诉读者现在在发生什么，文章栏目页则负责把判断、过程和方法沉淀成可以再次引用的上下文。"
-    signals={articleSignals}
-    jumps={[
-      { href: '#editorial-desk', label: '编辑推荐' },
-      { href: '#article-archive', label: '全部文章' },
-    ]}
-    heroClass="articles-hero"
-  />
+  <section class:list={['shell', 'page-hero', 'article-hero-layout', !leadArticle && 'single']}>
+    <article class="hero-panel card articles-hero">
+      <h1 class="hero-title">Rebase 文章</h1>
+      <p class="hero-summary">把社区里的判断、复盘和方法整理成可以继续阅读、继续引用的长内容。</p>
+      <div class="button-row article-hero-actions">
+        <span class="button-link secondary is-disabled" aria-disabled="true" title="推荐文章入口即将开放">推荐文章</span>
+        <a class="button-link" href="/articles/rss.xml">订阅 RSS <span>↗</span></a>
+      </div>
+    </article>
 
-  <ListBriefGrid id="article-brief" items={articleBriefs} />
-
-  {leadArticle && (
-    <ListLeadSection
-      id="editorial-desk"
-      eyebrow="主推荐"
-      title="编辑台推荐阅读"
-      description="文章栏目首页先给出一个代表当前判断和方法论的主稿入口，再把其余内容交给归档承接。"
-      noteEyebrow="Reading desk"
-      noteTitle="一篇栏目主稿，应该先告诉读者 Rebase 正在如何思考、如何迭代。"
-      noteSummary="它不只是“最新文章”，而是负责承接最完整的一次判断、复盘或方法总结。"
-      notePoints={articleLeadPoints}
-      noteLinkHref="/articles/rss.xml"
-      noteLinkLabel="订阅文章 RSS"
-    >
-      <ArticleCard article={leadArticle} featured />
-    </ListLeadSection>
-  )}
+    {leadArticle && (
+      <article class="card article-spotlight">
+        <div class="article-spotlight-topline">
+          <p class="article-spotlight-kicker">最新文章</p>
+          <span>{formatDate(leadArticle.publishedAt)}</span>
+        </div>
+        <a class="article-spotlight-cover" href={getArticlePath(leadArticle.slug)} aria-label={leadArticle.title}>
+          <img src={leadArticle.coverImageUrl ?? DEFAULT_ARTICLE_COVER_PATH} alt="" loading="lazy" />
+        </a>
+        <div class="article-spotlight-body">
+          <p class="article-spotlight-meta">{leadArticle.readingTime}{leadAuthorLine ? ` · ${leadAuthorLine}` : ''}</p>
+          <h2>
+            <a href={getArticlePath(leadArticle.slug)}>{leadArticle.title}</a>
+          </h2>
+        </div>
+      </article>
+    )}
+  </section>
 
   <section id="article-archive" class="shell page-section">
-    <SectionHeader
-      eyebrow="文章列表"
-      title="全部文章"
-      description="归档保持简单直接：先保证阅读、订阅和二次进入，再继续扩展更多运营能力。"
-      href="/articles/rss.xml"
-      hrefLabel="订阅 RSS"
-    />
-    {archiveArticles.length > 0 ? (
+    <SectionHeader title="全部文章" />
+    {(leadArticle ? archiveArticles : articles).length > 0 ? (
       <div class="grid-3">
-        {archiveArticles.map((article) => <ArticleCard article={article} />)}
+        {(leadArticle ? archiveArticles : articles).map((article) => <ArticleCard article={article} compact />)}
       </div>
     ) : (
       <ListEmptyState
@@ -121,6 +62,8 @@ const articleLeadPoints = [
 
 <style>
   :global(.articles-hero) {
+    position: relative;
+    overflow: hidden;
     background:
       radial-gradient(circle at top left, rgba(243, 196, 110, 0.28), transparent 30%),
       radial-gradient(circle at 92% 18%, rgba(15, 118, 110, 0.14), transparent 22%),
@@ -141,7 +84,127 @@ const articleLeadPoints = [
   }
 
   :global(.articles-hero .hero-title) {
-    max-width: 12ch;
+    max-width: 8ch;
     text-wrap: balance;
+  }
+
+  :global(.articles-hero) {
+    padding: 1.3rem 1.6rem 1.55rem;
+  }
+
+  .article-hero-layout {
+    align-items: stretch;
+  }
+
+  .article-hero-layout.single {
+    grid-template-columns: 1fr;
+  }
+
+  .articles-hero .hero-topline {
+    justify-content: flex-end;
+  }
+
+  .article-hero-actions {
+    flex-wrap: wrap;
+  }
+
+  .article-hero-actions .is-disabled {
+    border-color: rgba(15, 118, 110, 0.12);
+    background: rgba(255, 255, 255, 0.58);
+    color: rgba(17, 94, 89, 0.72);
+    box-shadow: none;
+    cursor: default;
+  }
+
+  .article-spotlight {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 0.9rem;
+    padding: 1.2rem;
+    background:
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.16), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 251, 250, 0.94));
+    border-color: rgba(15, 118, 110, 0.12);
+    box-shadow: 0 24px 48px rgba(26, 40, 34, 0.1);
+  }
+
+  .article-spotlight-topline,
+  .article-spotlight-body {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .article-spotlight-topline {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .article-spotlight-kicker,
+  .article-spotlight-topline span,
+  .article-spotlight-meta,
+  .article-spotlight-body h2 {
+    margin: 0;
+  }
+
+  .article-spotlight-kicker,
+  .article-spotlight-topline span,
+  .article-spotlight-meta {
+    font-size: 0.76rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .article-spotlight-kicker,
+  .article-spotlight-meta {
+    color: var(--accent-strong);
+    font-weight: 800;
+  }
+
+  .article-spotlight-topline span {
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .article-spotlight-cover {
+    display: block;
+    overflow: hidden;
+    border-radius: 1rem;
+    aspect-ratio: 5 / 3;
+    background: rgba(15, 118, 110, 0.08);
+  }
+
+  .article-spotlight-cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 240ms ease;
+  }
+
+  .article-spotlight:hover .article-spotlight-cover img,
+  .article-spotlight:focus-within .article-spotlight-cover img {
+    transform: scale(1.03);
+  }
+
+
+  .article-spotlight-body h2 {
+    font-size: clamp(1.45rem, 2vw, 2rem);
+    line-height: 1.04;
+  }
+
+  .article-spotlight-body h2 a {
+    transition: color 160ms ease;
+  }
+
+  .article-spotlight:hover h2 a,
+  .article-spotlight:focus-within h2 a {
+    color: var(--accent-strong);
+  }
+
+  @media (max-width: 960px) {
+    .article-spotlight-topline {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

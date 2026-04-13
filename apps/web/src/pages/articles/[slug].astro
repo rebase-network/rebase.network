@@ -1,52 +1,20 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import DetailHero from '@/components/DetailHero.astro';
-import DetailSidebarLinksSection from '@/components/DetailSidebarLinksSection.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getArticleBySlug, getArticles, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 import { getArticlePath } from '@/lib/paths';
+import { DEFAULT_ARTICLE_COVER_PATH } from '@/lib/placeholders';
 
 const slug = Astro.params.slug ?? '';
 const [site, article, articles] = await Promise.all([getSiteSettings(), getArticleBySlug(slug), getArticles()]);
-const related = article ? articles.filter((item) => item.slug !== article.slug).slice(0, 2) : [];
+const related = article ? articles.filter((item) => item.slug !== article.slug).slice(0, 3) : [];
 const articleAuthors = article?.authors.map((author) => author.name).join(' · ') ?? '';
-const articleContextNote = article
-  ? article.tags.length > 0
-    ? `关键词：${article.tags.join(' · ')}`
-    : '把社区里的方法、复盘和判断整理成可以反复回看的长内容。'
-  : '';
-const articleContinueAnchor = related.length > 0 ? '#article-related' : '#article-actions';
-const articleBreadcrumbs = article
-  ? [
-      { href: '/', label: '首页' },
-      { href: '/articles', label: '文章' },
-      { label: article.title, current: true },
-    ]
-  : [];
 const articleHeroMeta = article ? [formatDate(article.publishedAt), article.readingTime, articleAuthors].filter(Boolean) : [];
 const articleHeroActions = [
-  { href: '/articles/rss.xml', label: '订阅文章 RSS', showIcon: true },
-  { href: '/articles', label: '回到文章列表', secondary: true },
+  { href: '/articles/rss.xml', label: '订阅文章 RSS', showIcon: false, secondary: true },
 ];
-const articleJumpLinks = [
-  { href: '#article-body', label: '进入正文' },
-  { href: '#article-info', label: '文章信息' },
-  { href: articleContinueAnchor, label: '继续阅读' },
-];
-const articleWayfindingLinks = [
-  { href: '#article-body', label: '进入正文' },
-  { href: '#article-info', label: '查看文章信息' },
-  { href: articleContinueAnchor, label: '继续阅读' },
-];
-const articleActionLinks = [
-  { href: '/articles/rss.xml', label: '订阅文章 RSS' },
-  { href: '/articles', label: '返回文章列表' },
-];
-const articleRelatedLinks = related.map((item) => ({
-  href: getArticlePath(item.slug),
-  label: item.title,
-}));
 
 if (!article) {
   Astro.response.status = 404;
@@ -57,22 +25,20 @@ if (!article) {
   site={site}
   title={article ? article.title : '文章未找到'}
   description={article ? article.summary : '你访问的文章暂时无法找到。'}
-  socialImage={article?.coverImageUrl}
+  socialImage={article?.coverImageUrl ?? DEFAULT_ARTICLE_COVER_PATH}
   noindex={!article}
 >
   {article ? (
     <>
       <section class="shell page-hero single">
         <DetailHero
-          kicker="文章详情"
-          breadcrumbs={articleBreadcrumbs}
-          edition="Longform Dispatch"
+          titleAside="Longform Dispatch"
           title={article.title}
           summary={article.summary}
           meta={articleHeroMeta}
-          note={articleContextNote}
           actions={articleHeroActions}
-          jumps={articleJumpLinks}
+          hideTopline={true}
+          inlineMetaActions={true}
           heroClass="article-hero"
           heroStyle={`--article-accent:${article.coverAccent};`}
         />
@@ -88,12 +54,6 @@ if (!article) {
         </article>
 
         <aside class="card detail-sidebar">
-          <DetailSidebarLinksSection
-            title="页面导览"
-            copy="如果你是从搜索、分享或 RSS 进入，可以先用这几个锚点快速定位。"
-            links={articleWayfindingLinks}
-          />
-
           <section id="article-info" class="detail-sidebar-section">
             <h2>文章信息</h2>
             <ul class="detail-fact-list">
@@ -110,27 +70,25 @@ if (!article) {
                 <span>{article.readingTime}</span>
               </li>
             </ul>
-            {article.tags.length > 0 && (
-              <ul class="detail-tag-list">
-                {article.tags.map((tag) => <li>{tag}</li>)}
-              </ul>
-            )}
           </section>
 
-          <DetailSidebarLinksSection
-            id="article-actions"
-            title="继续阅读"
-            copy="除了当前正文，还保留订阅入口和完整归档，方便后续继续追踪。"
-            links={articleActionLinks}
-          />
+          <section id="article-actions" class="detail-sidebar-section">
+            <h2>继续阅读</h2>
+            <ul class="detail-sidebar-list">
+              <li><a href="/articles/rss.xml">订阅文章 RSS</a></li>
+              <li><a href="/articles">返回文章列表</a></li>
+            </ul>
+          </section>
 
           {related.length > 0 && (
-            <DetailSidebarLinksSection
-              id="article-related"
-              title="延伸阅读"
-              links={articleRelatedLinks}
-              listClass="related-list"
-            />
+            <section id="article-related" class="detail-sidebar-section">
+              <h2>延伸阅读</h2>
+              <ul class="related-list">
+                {related.map((item) => (
+                  <li><a href={getArticlePath(item.slug)}>{item.title}</a></li>
+                ))}
+              </ul>
+            </section>
           )}
         </aside>
       </section>
@@ -151,8 +109,9 @@ if (!article) {
     grid-template-columns: 1fr;
   }
 
-  .article-hero {
+  :global(.article-hero) {
     color: white;
+    padding: 1.05rem 1.2rem 0.92rem;
     background:
       linear-gradient(135deg, rgba(12, 23, 22, 0.72), rgba(12, 23, 22, 0.3)),
       var(--article-accent);
@@ -160,7 +119,124 @@ if (!article) {
     box-shadow: 0 28px 60px rgba(23, 32, 29, 0.22);
   }
 
-  .light {
+  :global(.article-hero .light) {
     color: white;
+  }
+
+  :global(.article-hero .detail-topline) {
+    gap: 0.45rem 0.9rem;
+  }
+
+  :global(.article-hero .detail-context) {
+    gap: 0.3rem;
+  }
+
+  :global(.article-hero .hero-kicker) {
+    margin: 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+  }
+
+  :global(.article-hero .detail-breadcrumbs a),
+  :global(.article-hero .detail-breadcrumbs span) {
+    font-size: 0.76rem;
+  }
+
+  :global(.article-hero .detail-edition) {
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    opacity: 0.58;
+  }
+
+  :global(.article-hero .hero-title) {
+    max-width: 11.5ch;
+    margin-top: 0;
+    font-size: clamp(2.22rem, 4.25vw, 3.88rem);
+    line-height: 0.92;
+  }
+
+  :global(.article-hero .detail-title-row) {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  :global(.article-hero .detail-title-aside) {
+    flex-shrink: 0;
+    padding-top: 0.24rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.42;
+  }
+
+  :global(.article-hero .hero-summary) {
+    max-width: 56ch;
+    margin-top: 0.58rem;
+    font-size: 0.95rem;
+    line-height: 1.58;
+  }
+
+  :global(.article-hero .detail-footer-row) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.62rem;
+  }
+
+  :global(.article-hero .detail-meta-strip) {
+    gap: 0.5rem;
+    margin-top: 0;
+  }
+
+  :global(.article-hero .detail-meta-pill) {
+    position: relative;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    opacity: 0.92;
+  }
+
+  :global(.article-hero .detail-meta-pill:not(:last-child)::after) {
+    content: '·';
+    margin-left: 0.5rem;
+    opacity: 0.45;
+  }
+
+  :global(.article-hero .button-row) {
+    justify-content: flex-end;
+    margin-top: 0;
+  }
+
+  :global(.article-hero .button-link.secondary) {
+    padding: 0.34rem 0.7rem;
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 0.69rem;
+    letter-spacing: 0.06em;
+  }
+
+  @media (max-width: 780px) {
+    :global(.article-hero .detail-title-row),
+    :global(.article-hero .detail-footer-row) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    :global(.article-hero .detail-title-aside) {
+      padding-top: 0;
+    }
+  }
+
+  .article-detail :global(.markdown > h1:first-child) {
+    display: none;
   }
 </style>

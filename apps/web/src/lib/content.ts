@@ -29,7 +29,6 @@ interface PublicSiteConfigPayload {
   heroPrimaryCtaUrl: string;
   heroSecondaryCtaLabel: string;
   heroSecondaryCtaUrl: string;
-  homeSignals: Array<{ eyebrow: string; title: string; summary: string; href: string; meta: string }>;
   homeStats: Array<{ value: string; label: string }>;
 }
 
@@ -115,7 +114,6 @@ const mapSiteSettings = (payload: PublicSiteConfigPayload): SiteSettings => ({
   heroPrimaryCtaUrl: payload.heroPrimaryCtaUrl,
   heroSecondaryCtaLabel: payload.heroSecondaryCtaLabel,
   heroSecondaryCtaUrl: payload.heroSecondaryCtaUrl,
-  homeSignals: payload.homeSignals,
   homeStats: payload.homeStats,
 });
 

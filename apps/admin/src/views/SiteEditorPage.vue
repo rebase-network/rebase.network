@@ -5,7 +5,6 @@ import type { AdminSiteEditorPayload, HomePageInput, SiteSettingsInput, AboutPag
 
 import AboutSectionsField from '../components/AboutSectionsField.vue';
 import FooterGroupsField from '../components/FooterGroupsField.vue';
-import HomeSignalsField from '../components/HomeSignalsField.vue';
 import HomeStatsField from '../components/HomeStatsField.vue';
 import LinksField from '../components/LinksField.vue';
 import { adminFetch, adminRequest } from '../lib/api';
@@ -29,7 +28,6 @@ const home = reactive<HomePageInput>({
   heroPrimaryCtaUrl: '',
   heroSecondaryCtaLabel: '',
   heroSecondaryCtaUrl: '',
-  homeSignals: [],
   homeStats: [],
 });
 
@@ -49,7 +47,7 @@ const activeSection = ref<'settings' | 'home' | 'about'>('settings');
 
 const sectionTabs = [
   { key: 'settings', label: '全局设置', detail: '域名、社交、页脚' },
-  { key: 'home', label: '首页', detail: '首屏、动态、数据' },
+  { key: 'home', label: '首页', detail: '首屏、数据' },
   { key: 'about', label: '关于页', detail: '介绍、分段、SEO' },
 ] as const;
 
@@ -63,11 +61,6 @@ const siteStats = computed(() => [
     label: '页脚分组',
     value: settings.footerGroups.length,
     detail: 'footer 导航块',
-  },
-  {
-    label: '首页信号',
-    value: home.homeSignals.length,
-    detail: '首页动态卡片',
   },
   {
     label: '关于分段',
@@ -299,12 +292,11 @@ onMounted(() => void loadSite());
             <article class="site-section-card">
               <div class="site-section-head">
                 <div class="stacked-gap-tight">
-                  <h4>首页动态</h4>
-                  <p class="site-section-note">首页当前展示的内容信号与重点数据。</p>
+                  <h4>首页数据</h4>
+                  <p class="site-section-note">首页当前展示的重点数据。</p>
                 </div>
               </div>
 
-              <HomeSignalsField v-model="home.homeSignals" />
               <HomeStatsField v-model="home.homeStats" />
             </article>
           </div>

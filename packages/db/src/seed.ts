@@ -47,14 +47,6 @@ interface BaselineFooterGroup {
   links: BaselineLinkItem[];
 }
 
-interface BaselineHomeSignal {
-  eyebrow: string;
-  title: string;
-  summary: string;
-  href: string;
-  meta: string;
-}
-
 interface BaselineHomeStat {
   value: string;
   label: string;
@@ -75,7 +67,6 @@ interface BaselineSiteSettings {
   hero_secondary_cta_url: string;
   social_links: BaselineLinkItem[];
   footer_groups: BaselineFooterGroup[];
-  home_signals: BaselineHomeSignal[];
   home_stats: BaselineHomeStat[];
   copyright_text: string;
 }
@@ -332,7 +323,6 @@ const seedSingletons = async (
     heroPrimaryCtaUrl: siteSettingsSeed.hero_primary_cta_url,
     heroSecondaryCtaLabel: siteSettingsSeed.hero_secondary_cta_label,
     heroSecondaryCtaUrl: siteSettingsSeed.hero_secondary_cta_url,
-    homeSignalsJson: siteSettingsSeed.home_signals,
     homeStatsJson: [
       { value: `${totalEpisodes}+`, label: '极客日报期数' },
       { value: `${totalItems}+`, label: '极客日报推荐条目' },

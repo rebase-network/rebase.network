@@ -187,7 +187,6 @@ export const collections = [
       inputField('hero_secondary_cta_url', 'hero_secondary_cta_url varchar(255) not null', { required: true, width: 'half' }),
       jsonField('social_links', "social_links jsonb not null default '[]'::jsonb"),
       jsonField('footer_groups', "footer_groups jsonb not null default '[]'::jsonb"),
-      jsonField('home_signals', "home_signals jsonb not null default '[]'::jsonb"),
       jsonField('home_stats', "home_stats jsonb not null default '[]'::jsonb"),
       textField('copyright_text', 'copyright_text text not null', { required: true }),
       dateUpdatedField(),

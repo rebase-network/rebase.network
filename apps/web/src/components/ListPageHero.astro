@@ -10,29 +10,41 @@ interface HeroJump {
   label: string;
 }
 
+interface HeroAction {
+  href: string;
+  label: string;
+  external?: boolean;
+  secondary?: boolean;
+  showArrow?: boolean;
+}
+
 interface Props {
-  kicker: string;
-  edition: string;
+  kicker?: string;
+  edition?: string;
   title: string;
   summary: string;
   note?: string;
   signals?: HeroSignal[];
   jumps?: HeroJump[];
+  actions?: HeroAction[];
   heroClass?: string;
   compactSignals?: boolean;
 }
 
-const { kicker, edition, title, summary, note, signals = [], jumps = [], heroClass, compactSignals = false } = Astro.props;
+const { kicker, edition, title, summary, note, signals = [], jumps = [], actions = [], heroClass, compactSignals = false } = Astro.props;
 const heroSignals = signals.filter((signal) => signal.value && signal.label);
 const heroJumps = jumps.filter((jump) => jump.href && jump.label);
+const heroActions = actions.filter((action) => action.href && action.label);
 ---
 
 <section class="shell page-hero list-page-hero-shell">
   <article class:list={['hero-panel', 'card', 'list-page-hero', heroClass]}>
-    <div class="hero-topline">
-      <p class="hero-kicker">{kicker}</p>
-      <span class="edition-chip">{edition}</span>
-    </div>
+    {(kicker || edition) && (
+      <div class:list={['hero-topline', !kicker && 'single-item']}>
+        {kicker && <p class="hero-kicker">{kicker}</p>}
+        {edition && <span class="edition-chip">{edition}</span>}
+      </div>
+    )}
     <h1 class="hero-title">{title}</h1>
     <p class="hero-summary">{summary}</p>
     {note && <p class="brand-note">{note}</p>}
@@ -51,6 +63,21 @@ const heroJumps = jumps.filter((jump) => jump.href && jump.label);
       <div class="jump-list">
         {heroJumps.map((jump) => (
           <a href={jump.href}>{jump.label}</a>
+        ))}
+      </div>
+    )}
+    {heroActions.length > 0 && (
+      <div class="button-row hero-actions">
+        {heroActions.map((action) => (
+          <a
+            class:list={['button-link', { secondary: action.secondary }]}
+            href={action.href}
+            target={action.external ? '_blank' : undefined}
+            rel={action.external ? 'noreferrer' : undefined}
+          >
+            {action.label}
+            {(action.external || action.showArrow) && <span>↗</span>}
+          </a>
         ))}
       </div>
     )}
@@ -81,6 +108,10 @@ const heroJumps = jumps.filter((jump) => jump.href && jump.label);
     align-items: center;
     justify-content: space-between;
     gap: 0.8rem;
+  }
+
+  .hero-topline.single-item {
+    justify-content: flex-end;
   }
 
   .edition-chip {
@@ -190,6 +221,10 @@ const heroJumps = jumps.filter((jump) => jump.href && jump.label);
     border-color: rgba(15, 118, 110, 0.26);
     box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
     background: rgba(255, 255, 255, 0.92);
+  }
+
+  .hero-actions {
+    margin-top: 1.25rem;
   }
 
   @media (max-width: 1100px) {

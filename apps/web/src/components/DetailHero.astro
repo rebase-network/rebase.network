@@ -14,8 +14,8 @@ interface DetailAction {
 }
 
 interface Props {
-  kicker: string;
-  edition: string;
+  kicker?: string;
+  edition?: string;
   title: string;
   summary: string;
   note?: string;
@@ -25,6 +25,9 @@ interface Props {
   jumps?: Array<{ href: string; label: string }>;
   heroClass?: string;
   heroStyle?: string;
+  hideTopline?: boolean;
+  titleAside?: string;
+  inlineMetaActions?: boolean;
 }
 
 const {
@@ -39,61 +42,101 @@ const {
   jumps = [],
   heroClass,
   heroStyle,
+  hideTopline = false,
+  titleAside,
+  inlineMetaActions = false,
 } = Astro.props;
 
 const metaItems = meta.filter(Boolean);
 ---
 
 <article class:list={['hero-panel', 'card', 'detail-hero', heroClass]} style={heroStyle}>
-  <div class="detail-topline">
-    <div class="detail-context">
-      <p class="hero-kicker light">{kicker}</p>
-      {breadcrumbs.length > 0 && (
-        <nav class="detail-breadcrumbs light" aria-label="Breadcrumb">
-          {breadcrumbs.map((item, index) => (
-            <>
-              {item.current || !item.href ? (
-                <span aria-current={item.current ? 'page' : undefined}>{item.label}</span>
-              ) : (
-                <a href={item.href}>{item.label}</a>
-              )}
-              {index < breadcrumbs.length - 1 && <span aria-hidden="true">/</span>}
-            </>
-          ))}
-        </nav>
-      )}
+  {!hideTopline && (kicker || breadcrumbs.length > 0 || edition) && (
+    <div class="detail-topline">
+      <div class="detail-context">
+        {kicker && <p class="hero-kicker light">{kicker}</p>}
+        {breadcrumbs.length > 0 && (
+          <nav class="detail-breadcrumbs light" aria-label="Breadcrumb">
+            {breadcrumbs.map((item, index) => (
+              <>
+                {item.current || !item.href ? (
+                  <span aria-current={item.current ? 'page' : undefined}>{item.label}</span>
+                ) : (
+                  <a href={item.href}>{item.label}</a>
+                )}
+                {index < breadcrumbs.length - 1 && <span aria-hidden="true">/</span>}
+              </>
+            ))}
+          </nav>
+        )}
+      </div>
+      {edition && <span class="detail-edition">{edition}</span>}
     </div>
-    <span class="detail-edition">{edition}</span>
-  </div>
+  )}
 
-  <h1 class="hero-title light">{title}</h1>
+  <div class:list={['detail-title-row', titleAside && 'has-aside']}>
+    <h1 class="hero-title light">{title}</h1>
+    {titleAside && <span class="detail-title-aside light">{titleAside}</span>}
+  </div>
   <p class="hero-summary light">{summary}</p>
 
-  {metaItems.length > 0 && (
-    <div class="detail-meta-strip">
-      {metaItems.map((item) => (
-        <span class="detail-meta-pill">{item}</span>
-      ))}
-    </div>
+  {inlineMetaActions ? (
+    (metaItems.length > 0 || actions.length > 0) && (
+      <div class="detail-footer-row">
+        {metaItems.length > 0 && (
+          <div class="detail-meta-strip">
+            {metaItems.map((item) => (
+              <span class="detail-meta-pill">{item}</span>
+            ))}
+          </div>
+        )}
+
+        {actions.length > 0 && (
+          <div class="button-row inline-actions">
+            {actions.map((action) => (
+              <a
+                class:list={['button-link', { secondary: action.secondary }]}
+                href={action.href}
+                target={action.external ? '_blank' : undefined}
+                rel={action.external ? 'noreferrer' : undefined}
+              >
+                {action.label}
+                {(action.showIcon ?? action.external) && <span>↗</span>}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  ) : (
+    <>
+      {metaItems.length > 0 && (
+        <div class="detail-meta-strip">
+          {metaItems.map((item) => (
+            <span class="detail-meta-pill">{item}</span>
+          ))}
+        </div>
+      )}
+
+      {actions.length > 0 && (
+        <div class="button-row">
+          {actions.map((action) => (
+            <a
+              class:list={['button-link', { secondary: action.secondary }]}
+              href={action.href}
+              target={action.external ? '_blank' : undefined}
+              rel={action.external ? 'noreferrer' : undefined}
+            >
+              {action.label}
+              {(action.showIcon ?? action.external) && <span>↗</span>}
+            </a>
+          ))}
+        </div>
+      )}
+    </>
   )}
 
   {note && <p class="detail-hero-note light">{note}</p>}
-
-  {actions.length > 0 && (
-    <div class="button-row">
-      {actions.map((action) => (
-        <a
-          class:list={['button-link', { secondary: action.secondary }]}
-          href={action.href}
-          target={action.external ? '_blank' : undefined}
-          rel={action.external ? 'noreferrer' : undefined}
-        >
-          {action.label}
-          {(action.showIcon ?? action.external) && <span>↗</span>}
-        </a>
-      ))}
-    </div>
-  )}
 
   {jumps.length > 0 && (
     <div class="detail-jump-list">
@@ -103,3 +146,30 @@ const metaItems = meta.filter(Boolean);
     </div>
   )}
 </article>
+
+<style>
+  .detail-title-row,
+  .detail-footer-row {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .detail-title-row.has-aside {
+    align-items: start;
+  }
+
+  .inline-actions {
+    margin-top: 0;
+  }
+
+  @media (min-width: 781px) {
+    .article-hero .detail-title-row.has-aside,
+    .article-hero .detail-footer-row {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .article-hero .detail-footer-row {
+      align-items: center;
+    }
+  }
+</style>

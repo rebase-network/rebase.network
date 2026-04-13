@@ -23,15 +23,15 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 >
   <section class="shell page-hero single">
     <article class="hero-panel card geekdaily-archive-hero">
-      <div class="hero-topline">
-        <p class="hero-kicker">极客日报</p>
-        <span class="edition-chip">Issue Archive</span>
-      </div>
       <h1 class="hero-title">Rebase 极客日报</h1>
       <p class="hero-summary">
         极客日报是 Rebase 最稳定的持续发声机制。每天更新的极客日报，把社区推荐、工具、研究和信号组织成可搜索、可订阅的长期档案。
         由社区志愿者持续整理发布，每期收录值得关注的技术内容、推荐人和推荐语，方便你按期回看、检索与订阅。
       </p>
+      <div class="button-row geekdaily-hero-actions">
+        <span class="button-link secondary is-disabled" aria-disabled="true" title="推荐内容入口即将开放">推荐内容 <span>↗</span></span>
+        <a class="button-link" href="/geekdaily/rss.xml">订阅 RSS <span>↗</span></a>
+      </div>
     </article>
   </section>
 
@@ -96,7 +96,6 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         <p id="results-count">共 {overview.totalEpisodes} 期</p>
         <span id="results-state">默认展示最近 {pageSize} 期。</span>
       </div>
-      <a href="/geekdaily/rss.xml">订阅 RSS ↗</a>
     </div>
 
     <div class="episode-list" id="results-list" data-total-episodes={overview.totalEpisodes} aria-busy="false">
@@ -657,24 +656,6 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
     gap: 0.8rem;
   }
 
-  .edition-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.42rem 0.76rem;
-    border: 1px solid rgba(15, 118, 110, 0.14);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.72);
-    color: var(--accent-strong);
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .geekdaily-archive-hero .hero-kicker {
-    margin-bottom: 0;
-  }
-
   .geekdaily-archive-hero .hero-title {
     max-width: none;
     font-size: clamp(2rem, 4vw, 2.85rem);
@@ -689,6 +670,18 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
     line-height: 1.72;
   }
 
+  .geekdaily-hero-actions {
+    flex-wrap: wrap;
+  }
+
+  .geekdaily-hero-actions .is-disabled {
+    border-color: rgba(15, 118, 110, 0.12);
+    background: rgba(255, 255, 255, 0.58);
+    color: rgba(17, 94, 89, 0.72);
+    box-shadow: none;
+    cursor: default;
+  }
+
   .search-panel,
   .quick-filter-panel,
   .episode-list :global(.episode-card),
@@ -699,7 +692,6 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
   .panel-title,
   .search-panel label,
   .results-head p,
-  .results-head a,
   .results-head span {
     margin: 0;
     font-size: 0.82rem;
@@ -709,8 +701,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
   }
 
   .panel-title,
-  .search-panel label,
-  .results-head a {
+  .search-panel label {
     color: var(--accent-strong);
   }
 
@@ -825,25 +816,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 
   .results-head {
     margin-bottom: 1rem;
-  }
-
-  .results-head a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.72rem 0.95rem;
-    border: 1px solid rgba(15, 118, 110, 0.14);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.86);
-    box-shadow: 0 10px 20px rgba(15, 118, 110, 0.08);
-    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
-  }
-
-  .results-head a:hover,
-  .results-head a:focus-visible {
-    transform: translateY(-1px);
-    border-color: rgba(15, 118, 110, 0.28);
-    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.12);
+    justify-content: flex-start;
   }
 
   .episode-list {
