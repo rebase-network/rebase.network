@@ -14,34 +14,39 @@ const fallbackCoverPath = compact ? DEFAULT_EVENT_CARD_COVER_PATH : DEFAULT_EVEN
 ---
 
 <article class:list={['event-card', 'card', { compact }]}>
-  <img
-    class:list={['cover-image', !event.coverImageUrl && 'default-cover-image']}
-    src={event.coverImageUrl ?? fallbackCoverPath}
-    alt=""
-    loading="lazy"
-  />
-  <div class="status-row">
-    <p class="status">{event.status === 'upcoming' ? '即将举行' : '往期活动'}</p>
-    {event.registrationUrl && <span class="chip">外部报名</span>}
-  </div>
-  <h3>
-    <a href={getEventPath(event.startAt, event.slug)}>{event.title}</a>
-  </h3>
-  <p class="summary">{event.summary}</p>
-  <ul class="meta-list">
-    <li>{formatEventWindow(event.startAt, event.endAt)}</li>
-    <li>{event.location} · {event.venue}</li>
-  </ul>
-  {!compact && event.tags.length > 0 && (
-    <ul class="tag-list">
-      {event.tags.map((tag) => <li>{tag}</li>)}
+  <a class="cover-link" href={getEventPath(event.startAt, event.slug)} aria-label={event.title}>
+    <img
+      class:list={['cover-image', !event.coverImageUrl && 'default-cover-image']}
+      src={event.coverImageUrl ?? fallbackCoverPath}
+      alt=""
+      loading="lazy"
+    />
+  </a>
+  <div class="content">
+    <div class="status-row">
+      <p class="status">{event.status === 'upcoming' ? '即将举行' : '往期活动'}</p>
+      {event.registrationUrl && <span class="chip">外部报名</span>}
+    </div>
+    <h3>
+      <a href={getEventPath(event.startAt, event.slug)}>{event.title}</a>
+    </h3>
+    <p class="summary">{event.summary}</p>
+    <ul class="meta-list">
+      <li>{formatEventWindow(event.startAt, event.endAt)}</li>
+      <li>{event.location} · {event.venue}</li>
     </ul>
-  )}
+    {!compact && event.tags.length > 0 && (
+      <ul class="tag-list">
+        {event.tags.map((tag) => <li>{tag}</li>)}
+      </ul>
+    )}
+  </div>
 </article>
 
 <style>
   .event-card {
-    padding: 1.25rem;
+    display: grid;
+    overflow: hidden;
   }
 
   .event-card:hover,
@@ -51,22 +56,33 @@ const fallbackCoverPath = compact ? DEFAULT_EVENT_CARD_COVER_PATH : DEFAULT_EVEN
     box-shadow: var(--shadow-strong);
   }
 
+  .cover-link {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 5 / 3;
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(17, 94, 89, 0.04));
+  }
+
   .cover-image {
-    width: calc(100% + 2.5rem);
-    margin: -1.25rem -1.25rem 1rem;
-    border-radius: 1rem 1rem 0 0;
-    min-height: 10rem;
+    display: block;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
+    object-position: center;
     transition: transform 260ms ease;
   }
 
   .default-cover-image {
-    background: linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(17, 94, 89, 0.04));
+    background: transparent;
   }
 
   .event-card:hover .cover-image,
   .event-card:focus-within .cover-image {
     transform: scale(1.03);
+  }
+
+  .content {
+    padding: 1.25rem;
   }
 
   .status {
@@ -148,13 +164,11 @@ const fallbackCoverPath = compact ? DEFAULT_EVENT_CARD_COVER_PATH : DEFAULT_EVEN
   }
 
   .compact {
-    padding: 1.05rem;
+    display: grid;
   }
 
-  .compact .cover-image {
-    width: calc(100% + 2.1rem);
-    margin: -1.05rem -1.05rem 0.9rem;
-    min-height: 8.75rem;
+  .compact .content {
+    padding: 1.05rem;
   }
 
   .compact h3 {
