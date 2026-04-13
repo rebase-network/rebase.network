@@ -103,7 +103,7 @@ values
 - builder
 - editor
 - operator
-- 对社区产品感兴趣的人', '2026-04-18T11:30:00.000Z', '2026-04-18T14:30:00.000Z', 'Shanghai', 'West Bund community space', 'shanghai', 'https://example.com/events/rebase-shanghai-builder-night', '报名请先填写外部表单，我们会在活动前一天统一确认。', null, '["offline","builder","shanghai"]'::jsonb),
+- 对社区产品感兴趣的人', '2026-04-18T11:30:00.000Z', '2026-04-18T14:30:00.000Z', 'Shanghai', 'West Bund community space', 'shanghai', 'https://example.com/events/rebase-shanghai-builder-night', '报名请先填写报名表单，我们会在活动前一天统一确认。', null, '["offline","builder","shanghai"]'::jsonb),
   ('published', 'upcoming', 2, '2026-04-25T12:00:00.000Z', '2026-04-25T12:00:00.000Z', 'geekdaily-editor-roundtable', 'GeekDaily Editor Roundtable', '围绕 GeekDaily 的选题、结构和订阅体验，做一次运营和编辑侧的公开讨论。', '## 讨论方向
 
 - 一期 GeekDaily 该如何被组织

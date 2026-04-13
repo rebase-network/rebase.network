@@ -624,7 +624,7 @@ export const events = [
     venue: 'West Bund community space',
     city: 'shanghai',
     registration_url: 'https://example.com/events/rebase-shanghai-builder-night',
-    registration_note: '报名请先填写外部表单，我们会在活动前一天统一确认。',
+    registration_note: '报名请先填写报名表单，我们会在活动前一天统一确认。',
     cover_image_url: null,
     tags: ['offline', 'builder', 'shanghai'],
   },
