@@ -99,7 +99,6 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         <p id="results-count">共 {overview.totalEpisodes} 期</p>
         <span id="results-state">默认展示最近 {pageSize} 期。</span>
       </div>
-      <a href="/geekdaily/rss.xml">订阅 RSS ↗</a>
     </div>
 
     <div class="episode-list" id="results-list" data-total-episodes={overview.totalEpisodes} aria-busy="false">
@@ -714,7 +713,6 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
   .panel-title,
   .search-panel label,
   .results-head p,
-  .results-head a,
   .results-head span {
     margin: 0;
     font-size: 0.82rem;
@@ -724,8 +722,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
   }
 
   .panel-title,
-  .search-panel label,
-  .results-head a {
+  .search-panel label {
     color: var(--accent-strong);
   }
 
@@ -840,25 +837,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 
   .results-head {
     margin-bottom: 1rem;
-  }
-
-  .results-head a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.72rem 0.95rem;
-    border: 1px solid rgba(15, 118, 110, 0.14);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.86);
-    box-shadow: 0 10px 20px rgba(15, 118, 110, 0.08);
-    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
-  }
-
-  .results-head a:hover,
-  .results-head a:focus-visible {
-    transform: translateY(-1px);
-    border-color: rgba(15, 118, 110, 0.28);
-    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.12);
+    justify-content: flex-start;
   }
 
   .episode-list {
