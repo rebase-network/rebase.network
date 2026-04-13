@@ -17,9 +17,6 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
 <BaseLayout site={site} title="Rebase 文章" description="浏览 Rebase 社区发布的文章、复盘与方法总结。">
   <section class:list={['shell', 'page-hero', 'article-hero-layout', !leadArticle && 'single']}>
     <article class="hero-panel card articles-hero">
-      <div class="hero-topline">
-        <span class="article-hero-chip">Rebase Writing</span>
-      </div>
       <h1 class="hero-title">Rebase 文章</h1>
       <p class="hero-summary">把社区里的判断、复盘和方法整理成可以继续阅读、继续引用的长内容。</p>
       <div class="button-row article-hero-actions">
@@ -113,20 +110,6 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
     color: rgba(17, 94, 89, 0.72);
     box-shadow: none;
     cursor: default;
-  }
-
-  .article-hero-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.48rem 0.8rem;
-    border: 1px solid rgba(15, 118, 110, 0.14);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.72);
-    color: var(--accent-strong);
-    font-size: 0.76rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
   }
 
   .article-spotlight {
