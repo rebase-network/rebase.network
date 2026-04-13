@@ -18,7 +18,6 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
   <section class:list={['shell', 'page-hero', 'article-hero-layout', !leadArticle && 'single']}>
     <article class="hero-panel card articles-hero">
       <div class="hero-topline">
-        <p class="hero-kicker">文章</p>
         <span class="article-hero-chip">Rebase Writing</span>
       </div>
       <h1 class="hero-title">Rebase 文章</h1>
@@ -52,9 +51,7 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
 
   <section id="article-archive" class="shell page-section">
     <SectionHeader
-      eyebrow="文章归档"
       title="全部文章"
-      description={leadArticle ? '最新文章已经放在首屏，其余内容继续按发布时间归档。' : '按发布时间持续归档，方便继续查找与引用。'}
       href="/articles/rss.xml"
       hrefLabel="订阅 RSS"
     />
@@ -106,6 +103,10 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
 
   .article-hero-layout.single {
     grid-template-columns: 1fr;
+  }
+
+  .articles-hero .hero-topline {
+    justify-content: flex-end;
   }
 
   .article-hero-chip {
