@@ -15,6 +15,7 @@ interface HeroAction {
   label: string;
   external?: boolean;
   secondary?: boolean;
+  showArrow?: boolean;
 }
 
 interface Props {
@@ -73,7 +74,7 @@ const heroActions = actions.filter((action) => action.href && action.label);
             rel={action.external ? 'noreferrer' : undefined}
           >
             {action.label}
-            {action.external && <span>↗</span>}
+            {(action.external || action.showArrow) && <span>↗</span>}
           </a>
         ))}
       </div>
