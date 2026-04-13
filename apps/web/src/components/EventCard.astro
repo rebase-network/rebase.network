@@ -24,7 +24,7 @@ const { event, compact = false } = Astro.props;
   <div class="content">
     <div class="status-row">
       <p class="status">{event.status === 'upcoming' ? '即将举行' : '往期活动'}</p>
-      {event.registrationUrl && <span class="chip">外部报名</span>}
+      {event.registrationUrl && <span class="chip">立即报名</span>}
     </div>
     <h3>
       <a href={getEventPath(event.startAt, event.slug)}>{event.title}</a>

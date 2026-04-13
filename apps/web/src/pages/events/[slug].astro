@@ -16,7 +16,7 @@ const eventHeroMeta = event ? [formatEventWindow(event.startAt, event.endAt), ev
 const eventHeroActions = event
   ? [
       ...(event.registrationUrl
-        ? [{ href: event.registrationUrl, label: '外部报名', external: true, showIcon: true }]
+        ? [{ href: event.registrationUrl, label: '立即报名', external: true, showIcon: true }]
         : []),
     ]
   : [];
