@@ -6,6 +6,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getArticles, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 import { getArticlePath } from '@/lib/paths';
+import { DEFAULT_ARTICLE_COVER_PATH } from '@/lib/placeholders';
 
 const [site, articles] = await Promise.all([getSiteSettings(), getArticles()]);
 const leadArticle = articles[0];
@@ -35,13 +36,7 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
           <span>{formatDate(leadArticle.publishedAt)}</span>
         </div>
         <a class="article-spotlight-cover" href={getArticlePath(leadArticle.slug)} aria-label={leadArticle.title}>
-          {leadArticle.coverImageUrl ? (
-            <img src={leadArticle.coverImageUrl} alt="" loading="lazy" />
-          ) : (
-            <div class="article-spotlight-fallback" style={`background:${leadArticle.coverAccent}`}>
-              <strong>{leadArticle.tags[0] ?? leadArticle.authors[0]?.name ?? 'Rebase 文章'}</strong>
-            </div>
-          )}
+          <img src={leadArticle.coverImageUrl ?? DEFAULT_ARTICLE_COVER_PATH} alt="" loading="lazy" />
         </a>
         <div class="article-spotlight-body">
           <p class="article-spotlight-meta">{leadArticle.readingTime}{leadAuthorLine ? ` · ${leadAuthorLine}` : ''}</p>
@@ -198,20 +193,6 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
     transform: scale(1.03);
   }
 
-  .article-spotlight-fallback {
-    display: flex;
-    align-items: end;
-    height: 100%;
-    min-height: 10.5rem;
-    padding: 1rem;
-    color: white;
-  }
-
-  .article-spotlight-fallback strong {
-    max-width: 11ch;
-    font-size: clamp(1.2rem, 2vw, 1.7rem);
-    line-height: 0.98;
-  }
 
   .article-spotlight-body h2 {
     font-size: clamp(1.45rem, 2vw, 2rem);
