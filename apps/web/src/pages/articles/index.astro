@@ -42,7 +42,6 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
           <h2>
             <a href={getArticlePath(leadArticle.slug)}>{leadArticle.title}</a>
           </h2>
-          <a class="article-spotlight-link" href={getArticlePath(leadArticle.slug)}>阅读全文</a>
         </div>
       </article>
     )}
@@ -206,14 +205,6 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
   .article-spotlight:hover h2 a,
   .article-spotlight:focus-within h2 a {
     color: var(--accent-strong);
-  }
-
-  .article-spotlight-link {
-    display: inline-flex;
-    align-items: center;
-    margin-top: 0.05rem;
-    color: var(--accent-strong);
-    font-weight: 800;
   }
 
   @media (max-width: 960px) {
