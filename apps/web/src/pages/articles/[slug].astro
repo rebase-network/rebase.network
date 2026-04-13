@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import DetailHero from '@/components/DetailHero.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getArticleBySlug, getArticles, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
@@ -17,12 +16,9 @@ const articleBreadcrumbs = article
       { label: article.title, current: true },
     ]
   : [];
-const articleHeroMeta = article
+const articleMetaLine = article
   ? [formatDate(article.publishedAt), article.readingTime, article.authors.map((author) => author.name).join(' · ')].filter(Boolean)
   : [];
-const articleHeroActions = [
-  { href: '/articles', label: '回到文章列表', secondary: true },
-];
 
 if (!article) {
   Astro.response.status = 404;
@@ -39,17 +35,32 @@ if (!article) {
   {article ? (
     <>
       <section class="shell page-hero single article-detail-hero-shell">
-        <DetailHero
-          kicker="文章"
-          breadcrumbs={articleBreadcrumbs}
-          edition="Rebase Writing"
-          title={article.title}
-          summary={article.summary}
-          meta={articleHeroMeta}
-          actions={articleHeroActions}
-          heroClass="article-hero"
-          heroStyle={`--article-accent:${article.coverAccent};`}
-        />
+        <article class="card article-intro-card" style={`--article-accent:${article.coverAccent};`}>
+          <div class="article-intro-topline">
+            <p class="article-intro-kicker">文章</p>
+            <nav class="article-intro-breadcrumbs" aria-label="Breadcrumb">
+              {articleBreadcrumbs.map((item, index) => (
+                <>
+                  {item.current || !item.href ? (
+                    <span aria-current={item.current ? 'page' : undefined}>{item.label}</span>
+                  ) : (
+                    <a href={item.href}>{item.label}</a>
+                  )}
+                  {index < articleBreadcrumbs.length - 1 && <span aria-hidden="true">/</span>}
+                </>
+              ))}
+            </nav>
+          </div>
+
+          <h1 class="article-intro-title">{article.title}</h1>
+          <p class="article-intro-summary">{article.summary}</p>
+          {articleMetaLine.length > 0 && <p class="article-intro-meta">{articleMetaLine.join(' · ')}</p>}
+
+          <div class="article-intro-links">
+            <a href="/articles">返回文章列表</a>
+            <a href="/articles/rss.xml">订阅文章 RSS</a>
+          </div>
+        </article>
       </section>
 
       <section class="shell page-section article-detail-shell">
@@ -61,29 +72,28 @@ if (!article) {
       </section>
 
       <section class="shell page-section article-followup-shell">
-        <div class="article-followup-grid">
-          <article class="card article-followup-card">
-            <p class="followup-kicker">订阅与归档</p>
-            <h2>继续追踪 Rebase 写作</h2>
-            <p>读完这篇之后，可以继续回到文章归档，或者直接订阅 RSS。</p>
+        <article class="card article-followup-card">
+          <div class="article-followup-copy">
+            <p class="followup-kicker">继续阅读</p>
+            <h2>读完这一篇之后，继续沿着文章归档往下走。</h2>
+            <p>回到文章列表继续浏览，或者直接订阅 RSS，后续更新会更方便追踪。</p>
             <div class="followup-link-list">
-              <a href="/articles/rss.xml">订阅文章 RSS</a>
               <a href="/articles">返回文章列表</a>
+              <a href="/articles/rss.xml">订阅文章 RSS</a>
             </div>
-          </article>
+          </div>
 
           {related.length > 0 && (
-            <article class="card article-followup-card">
+            <div class="article-followup-related">
               <p class="followup-kicker">延伸阅读</p>
-              <h2>继续读这两篇</h2>
-              <div class="followup-link-list">
+              <div class="followup-link-list related-links">
                 {related.map((item) => (
                   <a href={getArticlePath(item.slug)}>{item.title}</a>
                 ))}
               </div>
-            </article>
+            </div>
           )}
-        </div>
+        </article>
       </section>
     </>
   ) : (
@@ -105,63 +115,155 @@ if (!article) {
   .article-detail-hero-shell,
   .article-detail-shell,
   .article-followup-shell {
-    width: min(calc(100% - 2rem), 980px);
+    width: min(calc(100% - 2rem), 920px);
   }
 
-  .article-hero {
-    color: white;
-    padding: 1.45rem 1.55rem;
+  .article-detail-hero-shell {
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .article-intro-card {
+    position: relative;
+    overflow: hidden;
+    padding: 1.2rem 1.35rem 1.25rem;
     background:
-      linear-gradient(135deg, rgba(12, 23, 22, 0.72), rgba(12, 23, 22, 0.3)),
-      var(--article-accent);
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 28px 60px rgba(23, 32, 29, 0.22);
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.72), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(248, 252, 250, 0.93));
+    border-color: rgba(15, 118, 110, 0.1);
+    box-shadow: 0 18px 40px rgba(26, 40, 34, 0.08);
   }
 
-  .article-hero :global(.hero-title) {
+  .article-intro-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--article-accent);
+    opacity: 0.9;
+  }
+
+  .article-intro-topline {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .article-intro-kicker,
+  .article-intro-title,
+  .article-intro-summary,
+  .article-intro-meta {
+    margin: 0;
+  }
+
+  .article-intro-kicker {
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .article-intro-breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.38rem;
+    color: var(--muted);
+    font-size: 0.84rem;
+  }
+
+  .article-intro-breadcrumbs a {
+    color: var(--muted);
+  }
+
+  .article-intro-title {
     max-width: 12ch;
-    font-size: clamp(2.4rem, 5vw, 4.4rem);
+    margin-top: 0.35rem;
+    font-family: var(--display-font);
+    font-size: clamp(2.2rem, 4vw, 3.7rem);
+    line-height: 0.94;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
   }
 
-  .article-hero :global(.hero-summary) {
-    max-width: 54ch;
+  .article-intro-summary {
+    max-width: 56ch;
+    margin-top: 0.9rem;
+    color: var(--muted);
+    line-height: 1.72;
+  }
+
+  .article-intro-meta {
     margin-top: 0.95rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .article-intro-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem 1.1rem;
+    margin-top: 1rem;
+  }
+
+  .article-intro-links a {
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+
+  .article-intro-links a:hover,
+  .article-intro-links a:focus-visible,
+  .article-intro-breadcrumbs a:hover,
+  .article-intro-breadcrumbs a:focus-visible {
+    color: var(--heading);
   }
 
   .article-detail-shell {
     grid-template-columns: 1fr;
+    padding-top: 0.35rem;
+    padding-bottom: 1.1rem;
   }
 
   .article-detail {
-    padding: 1.5rem 1.55rem;
+    padding: 1.25rem 1.35rem 1.4rem;
+    border-color: rgba(15, 118, 110, 0.08);
+    box-shadow: 0 16px 34px rgba(26, 40, 34, 0.07);
   }
 
   .article-reading-frame {
-    width: min(100%, 46rem);
+    width: min(100%, 47rem);
     margin: 0 auto;
   }
 
   .article-detail :global(.markdown) {
-    font-size: 1.05rem;
-    line-height: 1.86;
+    font-size: 1.04rem;
+    line-height: 1.84;
   }
 
   .article-detail :global(.markdown h2) {
-    margin-top: 2.3rem;
+    margin-top: 2.15rem;
     font-size: 1.75rem;
   }
 
-  .article-followup-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
+  .article-followup-shell {
+    padding-top: 0.2rem;
   }
 
   .article-followup-card {
     display: grid;
-    gap: 0.8rem;
-    padding: 1.3rem;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 1.1rem;
+    padding: 1.15rem 1.25rem;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(249, 252, 250, 0.92));
+  }
+
+  .article-followup-copy,
+  .article-followup-related {
+    display: grid;
+    align-content: start;
+    gap: 0.72rem;
   }
 
   .followup-kicker,
@@ -190,12 +292,16 @@ if (!article) {
 
   .followup-link-list {
     display: grid;
-    gap: 0.75rem;
+    gap: 0.65rem;
+  }
+
+  .related-links {
+    margin-top: 0.1rem;
   }
 
   .followup-link-list a {
     display: block;
-    padding: 0.88rem 1rem;
+    padding: 0.8rem 0.95rem;
     border: 1px solid rgba(15, 118, 110, 0.12);
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.74);
@@ -212,7 +318,7 @@ if (!article) {
   }
 
   @media (max-width: 960px) {
-    .article-followup-grid {
+    .article-followup-card {
       grid-template-columns: 1fr;
     }
 
