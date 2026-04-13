@@ -170,16 +170,19 @@ const liveWireTypeLabel = {
   </section>
 
   <section class="shell page-section">
-    <article class="card feed-callout">
-      <div>
-        <h2>如果你习惯用 RSS 追踪社区内容，Rebase 从第一版开始就把 feed 当成标准输出。</h2>
+    <article class="card feed-strip">
+      <div class="feed-strip-copy">
+        <p class="feed-strip-label">RSS 订阅</p>
+        <p>通过 RSS 持续追踪 Rebase 的公开内容更新。</p>
       </div>
-      <div class="feed-links">
-        <a href="/rss.xml">全站 RSS</a>
-        <a href="/geekdaily/rss.xml">GeekDaily RSS</a>
-        <a href="/articles/rss.xml">文章 RSS</a>
-        <a href="/events/rss.xml">活动 RSS</a>
-        <a href="/who-is-hiring/rss.xml">招聘 RSS</a>
+      <div class="feed-strip-links">
+        <a class="feed-primary-link" href="/rss.xml">全站 RSS <span>↗</span></a>
+        <div class="feed-secondary-links">
+          <a href="/geekdaily/rss.xml">极客日报</a>
+          <a href="/articles/rss.xml">文章</a>
+          <a href="/events/rss.xml">活动</a>
+          <a href="/who-is-hiring/rss.xml">招聘</a>
+        </div>
       </div>
     </article>
   </section>
@@ -385,48 +388,97 @@ const liveWireTypeLabel = {
     gap: 1rem;
   }
 
-  .feed-callout {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 1rem;
-    padding: 1.42rem;
+  .feed-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 1.25rem;
+    padding: 1.05rem 1.18rem;
     background:
       radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 28%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 253, 251, 0.9));
   }
 
-  .feed-callout h2 {
-    margin: 0;
-    font-size: clamp(1.7rem, 2.5vw, 2.6rem);
-    line-height: 1.08;
-    max-width: 15ch;
-  }
-
-  .feed-links {
+  .feed-strip-copy {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
+    gap: 0.28rem;
+    max-width: 32rem;
   }
 
-  .feed-links a {
-    display: block;
-    padding: 0.9rem 1rem;
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.68);
-    border: 1px solid rgba(31, 41, 51, 0.08);
+  .feed-strip-copy p {
+    margin: 0;
+  }
+
+  .feed-strip-label {
     color: var(--accent-strong);
+    font-size: 0.9rem;
     font-weight: 800;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
+  }
+
+  .feed-strip-copy p:last-child {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.64;
+  }
+
+  .feed-strip-links {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.7rem 0.8rem;
+  }
+
+  .feed-primary-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.74rem 0.92rem;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 118, 110, 0.18);
+    background: rgba(255, 255, 255, 0.82);
+    color: var(--accent-strong);
+    font-size: 0.84rem;
+    font-weight: 800;
     letter-spacing: 0.08em;
+    text-transform: uppercase;
     transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
   }
 
-  .feed-links a:hover,
-  .feed-links a:focus-visible {
-    transform: translateY(-2px);
-    border-color: rgba(15, 118, 110, 0.18);
-    background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
+  .feed-primary-link:hover,
+  .feed-primary-link:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(15, 118, 110, 0.26);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.08);
+  }
+
+  .feed-secondary-links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .feed-secondary-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0.55rem 0.8rem;
+    border-radius: 999px;
+    color: rgba(17, 94, 89, 0.84);
+    font-size: 0.9rem;
+    font-weight: 700;
+    transition: color 180ms ease, background 180ms ease;
+  }
+
+  .feed-secondary-links a:hover,
+  .feed-secondary-links a:focus-visible {
+    color: var(--accent-strong);
+    background: rgba(255, 255, 255, 0.64);
   }
 
   .contributors-overview {
@@ -659,12 +711,14 @@ const liveWireTypeLabel = {
       grid-template-columns: 1fr;
     }
 
-    .feed-callout {
-      grid-template-columns: 1fr;
+    .feed-strip {
+      align-items: flex-start;
+      flex-direction: column;
     }
 
-    .feed-links {
-      grid-template-columns: 1fr;
+    .feed-strip-links,
+    .feed-secondary-links {
+      justify-content: flex-start;
     }
   }
 
@@ -672,10 +726,6 @@ const liveWireTypeLabel = {
     .hero-topline {
       align-items: flex-start;
       flex-direction: column;
-    }
-
-    .feed-links {
-      grid-template-columns: 1fr;
     }
 
     .contributors-cloud {
