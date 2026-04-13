@@ -5,13 +5,14 @@ import { getJobPath } from '@/lib/paths';
 
 interface Props {
   job: Job;
+  compact?: boolean;
 }
 
-const { job } = Astro.props;
+const { job, compact = false } = Astro.props;
 const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` : '长期开放';
 ---
 
-<a class="job-card card" href={getJobPath(job.slug)}>
+<a class:list={['job-card', 'card', { compact }]} href={getJobPath(job.slug)}>
   <div class="job-card-topline">
     <p class="company-name">{job.companyName}</p>
     <div class="job-card-flags">
@@ -141,6 +142,20 @@ const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` 
     margin: 0.28rem 0 0;
     font-weight: 700;
     line-height: 1.45;
+  }
+
+  .job-card.compact {
+    gap: 0.82rem;
+    padding: 1.02rem;
+  }
+
+  .job-card.compact h3 {
+    font-size: 1.24rem;
+  }
+
+  .job-card.compact .job-facts {
+    gap: 0.68rem;
+    padding-top: 0.78rem;
   }
 
   @media (max-width: 720px) {

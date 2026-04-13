@@ -91,7 +91,7 @@ const liveWireTypeLabel = {
     />
     <div class="grid-3">
       {recentGeekDaily.map((episode) => (
-        <GeekDailyCard episode={episode} />
+        <GeekDailyCard episode={episode} compact />
       ))}
     </div>
   </section>
@@ -106,7 +106,7 @@ const liveWireTypeLabel = {
     />
     <div class="grid-3">
       {feed.latestArticles.map((article) => (
-        <ArticleCard article={article} />
+        <ArticleCard article={article} compact />
       ))}
     </div>
   </section>
@@ -121,7 +121,7 @@ const liveWireTypeLabel = {
     />
     <div class="grid-3">
       {feed.latestJobs.map((job) => (
-        <JobCard job={job} />
+        <JobCard job={job} compact />
       ))}
     </div>
   </section>
@@ -136,7 +136,7 @@ const liveWireTypeLabel = {
     />
     <div class="grid-3">
       {feed.latestEvents.map((event) => (
-        <EventCard event={event} />
+        <EventCard event={event} compact />
       ))}
     </div>
   </section>
@@ -266,8 +266,8 @@ const liveWireTypeLabel = {
   .highlight-card {
     position: relative;
     display: grid;
-    gap: 0.45rem;
-    padding: 1rem;
+    gap: 0.4rem;
+    padding: 0.92rem;
     border: 1px solid rgba(15, 118, 110, 0.12);
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.76);
@@ -312,7 +312,7 @@ const liveWireTypeLabel = {
 
   .live-desk {
     display: grid;
-    gap: 1rem;
+    gap: 0.9rem;
     background:
       radial-gradient(circle at top right, rgba(245, 158, 11, 0.18), transparent 24%),
       linear-gradient(180deg, rgba(16, 37, 34, 0.97), rgba(19, 54, 49, 0.94));
@@ -350,7 +350,7 @@ const liveWireTypeLabel = {
 
   .live-wire-item a {
     display: block;
-    padding: 1rem;
+    padding: 0.92rem;
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(223, 244, 238, 0.12);
@@ -422,7 +422,7 @@ const liveWireTypeLabel = {
     display: grid;
     grid-template-columns: 1.3fr 1fr;
     gap: 1rem;
-    padding: 1.6rem;
+    padding: 1.42rem;
     background:
       radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 28%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 253, 251, 0.9));
@@ -443,7 +443,7 @@ const liveWireTypeLabel = {
 
   .feed-links a {
     display: block;
-    padding: 1rem 1.1rem;
+    padding: 0.9rem 1rem;
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.68);
     border: 1px solid rgba(31, 41, 51, 0.08);
@@ -467,9 +467,9 @@ const liveWireTypeLabel = {
     overflow: hidden;
     display: grid;
     grid-template-columns: minmax(0, 0.82fr) minmax(28rem, 1.18fr);
-    gap: 1.4rem;
+    gap: 1.25rem;
     align-items: center;
-    padding: 1.3rem 1.35rem;
+    padding: 1.18rem 1.25rem;
     background:
       radial-gradient(circle at top left, rgba(243, 196, 110, 0.22), transparent 26%),
       radial-gradient(circle at 82% 18%, rgba(15, 118, 110, 0.18), transparent 24%),
@@ -491,7 +491,7 @@ const liveWireTypeLabel = {
     position: relative;
     z-index: 1;
     display: grid;
-    gap: 0.9rem;
+    gap: 0.78rem;
     max-width: 30rem;
   }
 
