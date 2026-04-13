@@ -1,7 +1,7 @@
 ---
 import type { Event } from '@rebase/types';
 import { formatEventWindow } from '@/lib/dates';
-import { DEFAULT_EVENT_CARD_COVER_PATH, DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
+import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
 import { getEventPath } from '@/lib/paths';
 
 interface Props {
@@ -10,14 +10,13 @@ interface Props {
 }
 
 const { event, compact = false } = Astro.props;
-const fallbackCoverPath = compact ? DEFAULT_EVENT_CARD_COVER_PATH : DEFAULT_EVENT_COVER_PATH;
 ---
 
 <article class:list={['event-card', 'card', { compact }]}>
   <a class="cover-link" href={getEventPath(event.startAt, event.slug)} aria-label={event.title}>
     <img
       class:list={['cover-image', !event.coverImageUrl && 'default-cover-image']}
-      src={event.coverImageUrl ?? fallbackCoverPath}
+      src={event.coverImageUrl ?? DEFAULT_EVENT_COVER_PATH}
       alt=""
       loading="lazy"
     />
