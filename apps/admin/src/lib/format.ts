@@ -16,32 +16,6 @@ export const formatDateTime = (value?: string | null) => {
   }).format(date);
 };
 
-const padDatePart = (value: number) => String(value).padStart(2, '0');
-
-const formatTableDateParts = (date: Date) => {
-  const year = date.getFullYear();
-  const month = padDatePart(date.getMonth() + 1);
-  const day = padDatePart(date.getDate());
-
-  return `${year}-${month}-${day}`;
-};
-
-export const formatTableDateTime = (value?: string | null) => {
-  if (!value) {
-    return '—';
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  const hours = padDatePart(date.getHours());
-  const minutes = padDatePart(date.getMinutes());
-
-  return `${formatTableDateParts(date)} ${hours}:${minutes}`;
-};
-
 export const formatDate = (value?: string | null) => {
   if (!value) {
     return '—';
@@ -55,19 +29,6 @@ export const formatDate = (value?: string | null) => {
   return new Intl.DateTimeFormat('zh-CN', {
     dateStyle: 'medium',
   }).format(date);
-};
-
-export const formatTableDate = (value?: string | null) => {
-  if (!value) {
-    return '—';
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return formatTableDateParts(date);
 };
 
 export const toDateTimeInputValue = (value?: string | null) => {

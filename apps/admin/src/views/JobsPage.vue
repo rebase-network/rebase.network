@@ -12,7 +12,7 @@ import {
 
 import PaginationBar from '../components/PaginationBar.vue';
 import { adminFetchWithMeta } from '../lib/api';
-import { formatBoolean, formatContentStatus, formatTableDate, formatTableDateTime } from '../lib/format';
+import { formatBoolean, formatContentStatus, formatDate, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const rows = ref<AdminJobListItem[]>([]);
@@ -168,7 +168,16 @@ onBeforeUnmount(() => {
       </section>
 
       <div class="panel table-panel">
-        <table class="data-table dense-table admin-list-table">
+        <table class="data-table dense-table admin-list-table admin-list-table-jobs">
+          <colgroup>
+            <col />
+            <col class="admin-col-editor" />
+            <col class="admin-status-filter-column" />
+            <col class="admin-col-remote" />
+            <col class="admin-col-date" />
+            <col class="admin-col-updated" />
+            <col class="admin-col-actions" />
+          </colgroup>
           <thead>
             <tr>
               <th>团队 / 岗位</th>
@@ -208,9 +217,9 @@ onBeforeUnmount(() => {
                 </div>
               </th>
               <th class="admin-col-remote">远程</th>
-              <th class="admin-col-time">截止日期</th>
+              <th class="admin-col-date">截止日期</th>
               <th class="admin-col-updated">最后更新</th>
-              <th></th>
+              <th class="admin-col-actions"></th>
             </tr>
           </thead>
           <tbody>
@@ -227,8 +236,8 @@ onBeforeUnmount(() => {
               <td>{{ row.editorName || '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td>{{ formatBoolean(row.supportsRemote) }}</td>
-              <td class="admin-list-date-cell"><time class="admin-list-date admin-list-date-short" :datetime="row.expiresAt ?? undefined">{{ formatTableDate(row.expiresAt) }}</time></td>
-              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatTableDateTime(row.updatedAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.expiresAt ?? undefined">{{ formatDate(row.expiresAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
                 <div class="table-action-list">
                   <RouterLink class="table-link" :to="`/jobs/${row.id}/edit`">编辑</RouterLink>

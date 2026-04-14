@@ -12,7 +12,7 @@ import {
 
 import PaginationBar from '../components/PaginationBar.vue';
 import { adminFetchWithMeta } from '../lib/api';
-import { formatContentStatus, formatTableDateTime } from '../lib/format';
+import { formatContentStatus, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const rows = ref<AdminArticleListItem[]>([]);
@@ -168,7 +168,15 @@ onBeforeUnmount(() => {
       </section>
 
       <div class="panel table-panel">
-        <table class="data-table dense-table admin-list-table">
+        <table class="data-table dense-table admin-list-table admin-list-table-articles">
+          <colgroup>
+            <col />
+            <col class="admin-col-author" />
+            <col class="admin-status-filter-column" />
+            <col class="admin-col-time" />
+            <col class="admin-col-updated" />
+            <col class="admin-col-actions" />
+          </colgroup>
           <thead>
             <tr>
               <th>标题</th>
@@ -209,7 +217,7 @@ onBeforeUnmount(() => {
               </th>
               <th class="admin-col-time">发布时间</th>
               <th class="admin-col-updated">更新时间</th>
-              <th></th>
+              <th class="admin-col-actions"></th>
             </tr>
           </thead>
           <tbody>
@@ -225,8 +233,8 @@ onBeforeUnmount(() => {
               </td>
               <td>{{ row.authorNames.join('、') || '未填写作者' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
-              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.publishedAt ?? undefined">{{ formatTableDateTime(row.publishedAt) }}</time></td>
-              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatTableDateTime(row.updatedAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.publishedAt ?? undefined">{{ formatDateTime(row.publishedAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
                 <div class="table-action-list">
                   <RouterLink class="table-link" :to="`/articles/${row.id}/edit`">编辑</RouterLink>

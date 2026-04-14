@@ -962,6 +962,10 @@ code {
   overflow-x: auto;
 }
 
+.admin-list-table {
+  table-layout: fixed;
+}
+
 .data-table th,
 .data-table td {
   padding: 0.68rem 0.45rem;
@@ -1152,10 +1156,7 @@ code {
   font-weight: 800;
 }
 
-.admin-status-filter-column {
-  min-width: 154px;
-}
-
+.admin-status-filter-column,
 .admin-col-editor,
 .admin-col-author {
   width: 150px;
@@ -1164,7 +1165,11 @@ code {
 .admin-col-count,
 .admin-col-remote,
 .admin-col-city {
-  width: 88px;
+  width: 96px;
+}
+
+.admin-col-date {
+  width: 136px;
 }
 
 .admin-col-time,
@@ -1172,11 +1177,35 @@ code {
   width: 168px;
 }
 
+.admin-col-event-time {
+  width: 208px;
+}
+
+.admin-col-actions {
+  width: 96px;
+}
+
+.admin-list-table-articles,
+.admin-list-table-jobs,
+.admin-list-table-geekdaily {
+  min-width: 980px;
+}
+
+.admin-list-table-events {
+  min-width: 1080px;
+}
+
 .admin-list-table .table-action-list {
   gap: 0.42rem;
 }
 
+.admin-list-table .table-actions-cell {
+  width: 96px;
+}
+
+.admin-list-table th.admin-col-date,
 .admin-list-table th.admin-col-time,
+.admin-list-table th.admin-col-event-time,
 .admin-list-table th.admin-col-updated {
   text-align: right;
 }
@@ -1196,13 +1225,6 @@ code {
 .admin-list-date {
   display: inline-block;
   white-space: nowrap;
-  font-size: 0.8rem;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum';
-}
-
-.admin-list-date-short {
-  min-width: 9.6ch;
 }
 
 .admin-list-date-row {

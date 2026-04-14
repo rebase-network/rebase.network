@@ -12,7 +12,7 @@ import {
 
 import PaginationBar from '../components/PaginationBar.vue';
 import { adminFetchWithMeta } from '../lib/api';
-import { formatContentStatus, formatTableDateTime } from '../lib/format';
+import { formatContentStatus, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const rows = ref<AdminEventListItem[]>([]);
@@ -167,7 +167,16 @@ onBeforeUnmount(() => {
       </section>
 
       <div class="panel table-panel">
-        <table class="data-table dense-table admin-list-table">
+        <table class="data-table dense-table admin-list-table admin-list-table-events">
+          <colgroup>
+            <col />
+            <col class="admin-col-editor" />
+            <col class="admin-status-filter-column" />
+            <col class="admin-col-event-time" />
+            <col class="admin-col-city" />
+            <col class="admin-col-updated" />
+            <col class="admin-col-actions" />
+          </colgroup>
           <thead>
             <tr>
               <th>活动</th>
@@ -206,10 +215,10 @@ onBeforeUnmount(() => {
                   </div>
                 </div>
               </th>
-              <th class="admin-col-time">时间</th>
+              <th class="admin-col-event-time">时间</th>
               <th class="admin-col-city">城市</th>
               <th class="admin-col-updated">更新时间</th>
-              <th></th>
+              <th class="admin-col-actions"></th>
             </tr>
           </thead>
           <tbody>
@@ -227,15 +236,15 @@ onBeforeUnmount(() => {
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td class="admin-list-date-cell">
                 <div class="table-cell-stack">
-                  <time class="admin-list-date" :datetime="row.startAt">{{ formatTableDateTime(row.startAt) }}</time>
+                  <time class="admin-list-date" :datetime="row.startAt">{{ formatDateTime(row.startAt) }}</time>
                   <div class="muted-row admin-list-date-row">
                     <span>至</span>
-                    <time class="admin-list-date" :datetime="row.endAt">{{ formatTableDateTime(row.endAt) }}</time>
+                    <time class="admin-list-date" :datetime="row.endAt">{{ formatDateTime(row.endAt) }}</time>
                   </div>
                 </div>
               </td>
               <td>{{ row.city }}</td>
-              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatTableDateTime(row.updatedAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
                 <div class="table-action-list">
                   <RouterLink class="table-link" :to="`/events/${row.id}/edit`">编辑</RouterLink>
