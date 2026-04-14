@@ -857,13 +857,6 @@ h4 {
   letter-spacing: -0.035em;
 }
 
-.jobs-hero .hero-summary {
-  max-width: 58ch;
-  margin-top: 1.1rem;
-  font-size: 1.05rem;
-  line-height: 1.8;
-}
-
 .jobs-toolbar {
   display: flex;
   align-items: center;
