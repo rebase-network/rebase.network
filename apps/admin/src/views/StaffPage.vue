@@ -56,34 +56,6 @@ const isCreating = computed(() => activeWorkspaceMode.value === 'create');
 const selectedStaff = computed(() => rows.value.find((row) => row.id === selectedStaffId.value) ?? null);
 const hasEditableRecord = computed(() => activeWorkspaceMode.value === 'create' || Boolean(selectedStaff.value));
 const saveButtonLabel = computed(() => (saving.value ? '保存中…' : isCreating.value ? '确认创建' : '保存修改'));
-const staffStats = computed(() => [
-  {
-    label: '账号总数',
-    value: pagination.value?.totalAllItems ?? pagination.value?.totalItems ?? rows.value.length,
-    detail: '后台工作人员',
-  },
-  {
-    label: '当前页',
-    value: rows.value.length,
-    detail: `第 ${pagination.value?.page ?? 1} 页`,
-  },
-  {
-    label: '本页已启用',
-    value: rows.value.filter((row) => row.status === 'active').length,
-    detail: '可正常登录',
-  },
-  {
-    label: '本页受限',
-    value: rows.value.filter((row) => row.status === 'suspended' || row.status === 'disabled').length,
-    detail: '暂停或停用',
-  },
-]);
-const roleSummaries = computed(() =>
-  roles.value.map((role) => ({
-    ...role,
-    memberCount: rows.value.filter((row) => row.roleIds.includes(role.id)).length,
-  })),
-);
 
 const resetFeedback = () => {
   errorMessage.value = '';
@@ -272,94 +244,45 @@ const goToStaffPage = async (nextPage: number) => {
 
     <div v-else class="editor-grid editor-grid-focus">
       <div class="stacked-gap editor-main">
-        <div class="panel-grid panel-grid-2">
-          <section class="panel stacked-gap">
-            <div class="panel-toolbar">
-              <div>
-                <h3>账号概览</h3>
-                <div class="panel-meta">后台工作人员与角色权限</div>
-              </div>
-              <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 个账号</div>
-            </div>
-
-            <div class="compact-stat-grid compact-stat-grid-4">
-              <article v-for="item in staffStats" :key="item.label" class="compact-stat-card">
-                <span class="compact-stat-label">{{ item.label }}</span>
-                <strong>{{ item.value }}</strong>
-                <small>{{ item.detail }}</small>
-              </article>
-            </div>
-          </section>
-
-          <section class="panel stacked-gap">
-            <div class="panel-toolbar">
-              <div>
-                <h3>角色覆盖</h3>
-                <div class="panel-meta">查看当前页账号覆盖到的角色</div>
-              </div>
-              <div class="panel-meta">{{ roles.length }} 个角色</div>
-            </div>
-
-            <div v-if="roleSummaries.length === 0" class="empty-inline">当前还没有可分配的角色。</div>
-
-            <div v-else class="role-overview-grid">
-              <article v-for="role in roleSummaries" :key="role.id" class="role-overview-card">
-                <strong>{{ formatAdminRoleLabel(role.code, role.name) }}</strong>
-                <span class="status-pill">{{ role.memberCount }} 人</span>
-              </article>
-            </div>
-          </section>
-        </div>
-
         <section v-if="rows.length === 0" class="panel empty-state-card"><p>当前还没有工作人员账号。</p></section>
 
-        <section v-else class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <div>
-              <h3>账号列表</h3>
-              <div class="panel-meta">查看当前账号、角色与登录状态</div>
-            </div>
-            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 个账号</div>
-          </div>
-
-          <div class="table-panel">
-            <table class="data-table dense-table admin-list-table admin-list-table-secondary">
-              <colgroup>
-                <col class="admin-col-person" />
-                <col />
-                <col class="admin-col-status" />
-                <col class="admin-col-updated" />
-                <col class="admin-col-actions" />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th class="admin-col-person">工作人员</th>
-                  <th>角色</th>
-                  <th class="admin-col-status">状态</th>
-                  <th class="admin-col-updated">最后登录</th>
-                  <th class="admin-col-actions">操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="row in rows" :key="row.id" :class="{ 'is-selected': activeWorkspaceMode === 'edit' && row.id === selectedStaffId }">
-                  <td class="admin-list-primary-cell">
-                    <div class="table-cell-stack admin-list-primary">
-                      <strong class="admin-list-title">{{ row.displayName }}</strong>
-                      <div class="muted-row admin-list-subtitle">{{ row.email }}</div>
-                    </div>
-                  </td>
-                  <td>{{ formatAdminRoleList(row.roleCodes) }}</td>
-                  <td><span class="status-pill">{{ formatStaffAccountStatus(row.status) }}</span></td>
-                  <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.lastLoginAt ?? undefined">{{ formatDateTime(row.lastLoginAt) }}</time></td>
-                  <td class="table-actions-cell">
-                    <div class="table-action-list admin-list-actions">
-                      <button class="table-link table-link-button" type="button" @click="selectStaff(row.id)">编辑账号</button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <section v-else class="panel table-panel">
+          <table class="data-table dense-table admin-list-table admin-list-table-secondary">
+            <colgroup>
+              <col class="admin-col-person" />
+              <col />
+              <col class="admin-col-status" />
+              <col class="admin-col-updated" />
+              <col class="admin-col-actions" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="admin-col-person">工作人员</th>
+                <th>角色</th>
+                <th class="admin-col-status">状态</th>
+                <th class="admin-col-updated">最后登录</th>
+                <th class="admin-col-actions">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in rows" :key="row.id" :class="{ 'is-selected': activeWorkspaceMode === 'edit' && row.id === selectedStaffId }">
+                <td class="admin-list-primary-cell">
+                  <div class="table-cell-stack admin-list-primary">
+                    <strong class="admin-list-title">{{ row.displayName }}</strong>
+                    <div class="muted-row admin-list-subtitle">{{ row.email }}</div>
+                  </div>
+                </td>
+                <td>{{ formatAdminRoleList(row.roleCodes) }}</td>
+                <td><span class="status-pill">{{ formatStaffAccountStatus(row.status) }}</span></td>
+                <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.lastLoginAt ?? undefined">{{ formatDateTime(row.lastLoginAt) }}</time></td>
+                <td class="table-actions-cell">
+                  <div class="table-action-list admin-list-actions">
+                    <button class="table-link table-link-button" type="button" @click="selectStaff(row.id)">编辑账号</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
           <PaginationBar :meta="pagination" :current-count="rows.length" item-label="个账号" :loading="loading" @change-page="goToStaffPage" />
         </section>
