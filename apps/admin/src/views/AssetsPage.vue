@@ -509,7 +509,7 @@ const goToAssetPage = async (nextPage: number) => {
                   <th class="admin-col-asset-type">类型</th>
                   <th class="admin-col-asset-status">状态</th>
                   <th class="admin-col-updated">更新时间</th>
-                  <th class="admin-col-actions-wide"></th>
+                  <th class="admin-col-actions-wide">操作</th>
                 </tr>
               </thead>
               <tbody>

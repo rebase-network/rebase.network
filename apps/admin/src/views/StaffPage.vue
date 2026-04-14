@@ -337,7 +337,7 @@ const goToStaffPage = async (nextPage: number) => {
                   <th>角色</th>
                   <th class="admin-col-status">状态</th>
                   <th class="admin-col-updated">最后登录</th>
-                  <th class="admin-col-actions"></th>
+                  <th class="admin-col-actions">操作</th>
                 </tr>
               </thead>
               <tbody>

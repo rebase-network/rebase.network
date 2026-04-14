@@ -219,7 +219,7 @@ onBeforeUnmount(() => {
               <th class="admin-col-remote">远程</th>
               <th class="admin-col-date">截止日期</th>
               <th class="admin-col-updated">最后更新</th>
-              <th class="admin-col-actions"></th>
+              <th class="admin-col-actions">操作</th>
             </tr>
           </thead>
           <tbody>

@@ -218,7 +218,7 @@ onBeforeUnmount(() => {
               <th class="admin-col-event-time">时间</th>
               <th class="admin-col-city">城市</th>
               <th class="admin-col-updated">更新时间</th>
-              <th class="admin-col-actions"></th>
+              <th class="admin-col-actions">操作</th>
             </tr>
           </thead>
           <tbody>
