@@ -12,7 +12,7 @@ import {
 
 import PaginationBar from '../components/PaginationBar.vue';
 import { adminFetchWithMeta } from '../lib/api';
-import { formatContentStatus, formatDateTime } from '../lib/format';
+import { formatContentStatus, formatTableDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const rows = ref<AdminArticleListItem[]>([]);
@@ -225,8 +225,8 @@ onBeforeUnmount(() => {
               </td>
               <td>{{ row.authorNames.join('、') || '未填写作者' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
-              <td>{{ formatDateTime(row.publishedAt) }}</td>
-              <td>{{ formatDateTime(row.updatedAt) }}</td>
+              <td><time class="admin-list-date" :datetime="row.publishedAt ?? undefined">{{ formatTableDateTime(row.publishedAt) }}</time></td>
+              <td><time class="admin-list-date" :datetime="row.updatedAt">{{ formatTableDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
                 <div class="table-action-list">
                   <RouterLink class="table-link" :to="`/articles/${row.id}/edit`">编辑</RouterLink>

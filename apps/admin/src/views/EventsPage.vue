@@ -12,7 +12,7 @@ import {
 
 import PaginationBar from '../components/PaginationBar.vue';
 import { adminFetchWithMeta } from '../lib/api';
-import { formatContentStatus, formatDateTime } from '../lib/format';
+import { formatContentStatus, formatTableDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const rows = ref<AdminEventListItem[]>([]);
@@ -227,12 +227,15 @@ onBeforeUnmount(() => {
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td>
                 <div class="table-cell-stack">
-                  <strong>{{ formatDateTime(row.startAt) }}</strong>
-                  <div class="muted-row">至 {{ formatDateTime(row.endAt) }}</div>
+                  <time class="admin-list-date" :datetime="row.startAt">{{ formatTableDateTime(row.startAt) }}</time>
+                  <div class="muted-row admin-list-date-row">
+                    <span>至</span>
+                    <time class="admin-list-date" :datetime="row.endAt">{{ formatTableDateTime(row.endAt) }}</time>
+                  </div>
                 </div>
               </td>
               <td>{{ row.city }}</td>
-              <td>{{ formatDateTime(row.updatedAt) }}</td>
+              <td><time class="admin-list-date" :datetime="row.updatedAt">{{ formatTableDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
                 <div class="table-action-list">
                   <RouterLink class="table-link" :to="`/events/${row.id}/edit`">编辑</RouterLink>

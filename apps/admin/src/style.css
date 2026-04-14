@@ -1180,6 +1180,25 @@ code {
   font-size: 0.8rem;
 }
 
+.admin-list-date {
+  display: inline-block;
+  white-space: nowrap;
+  font-family: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.admin-list-date-short {
+  min-width: 10ch;
+}
+
+.admin-list-date-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .table-cell-stack {
   gap: 0.18rem;
 }
