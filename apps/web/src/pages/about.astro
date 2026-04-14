@@ -59,7 +59,7 @@ const sectionLabel = (index: number) => String(index + 1).padStart(2, '0');
   .about-hero {
     position: relative;
     overflow: hidden;
-    padding: 1.22rem 1.34rem 1.14rem;
+    padding: 1.05rem 1.18rem 0.98rem;
     background:
       radial-gradient(circle at top left, rgba(243, 196, 110, 0.28), transparent 30%),
       radial-gradient(circle at 92% 18%, rgba(15, 118, 110, 0.16), transparent 24%),
@@ -71,11 +71,11 @@ const sectionLabel = (index: number) => String(index + 1).padStart(2, '0');
   .about-hero::before {
     content: 'REBASE';
     position: absolute;
-    top: 0.95rem;
-    right: 1.15rem;
-    color: rgba(17, 94, 89, 0.065);
+    top: 0.78rem;
+    right: 0.98rem;
+    color: rgba(17, 94, 89, 0.055);
     font-family: var(--display-font);
-    font-size: clamp(3.2rem, 6vw, 5.6rem);
+    font-size: clamp(2.8rem, 5vw, 4.8rem);
     letter-spacing: 0.08em;
     line-height: 0.82;
     pointer-events: none;
@@ -87,18 +87,18 @@ const sectionLabel = (index: number) => String(index + 1).padStart(2, '0');
   }
 
   .about-hero .hero-title {
-    max-width: 14ch;
-    font-size: clamp(2.2rem, 2.8vw + 1rem, 3.45rem);
-    line-height: 1.02;
+    max-width: 16ch;
+    font-size: clamp(2rem, 2.1vw + 1rem, 3rem);
+    line-height: 1.04;
     letter-spacing: -0.035em;
     text-wrap: balance;
   }
 
   .about-hero .hero-summary {
-    max-width: 50rem;
-    margin-top: 0.8rem;
-    font-size: 0.98rem;
-    line-height: 1.68;
+    max-width: 46rem;
+    margin-top: 0.62rem;
+    font-size: 0.95rem;
+    line-height: 1.62;
   }
 
   .about-story {
@@ -206,13 +206,13 @@ const sectionLabel = (index: number) => String(index + 1).padStart(2, '0');
 
   @media (max-width: 720px) {
     .about-hero::before {
-      top: 0.8rem;
-      right: 0.9rem;
-      font-size: clamp(2.7rem, 14vw, 4.4rem);
+      top: 0.72rem;
+      right: 0.78rem;
+      font-size: clamp(2.35rem, 12vw, 3.8rem);
     }
 
     .about-hero {
-      padding: 1.05rem 1.05rem 1rem;
+      padding: 0.96rem 0.96rem 0.92rem;
     }
 
     .story-section h2,
