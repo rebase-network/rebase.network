@@ -116,7 +116,7 @@ main {
   font-family: var(--display-font);
   font-size: clamp(2.8rem, 6vw, 5.8rem);
   line-height: 0.92;
-  max-width: 12ch;
+  max-width: 16ch;
   letter-spacing: -0.04em;
 }
 
@@ -851,7 +851,7 @@ h4 {
 }
 
 .jobs-hero .hero-title {
-  max-width: 13ch;
+  max-width: 16ch;
   font-size: clamp(2.35rem, 3vw + 1rem, 3.55rem);
   line-height: 1.1;
   letter-spacing: -0.035em;
