@@ -225,7 +225,7 @@ onBeforeUnmount(() => {
               </td>
               <td>{{ row.editorName || '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
-              <td>
+              <td class="admin-list-date-cell">
                 <div class="table-cell-stack">
                   <time class="admin-list-date" :datetime="row.startAt">{{ formatTableDateTime(row.startAt) }}</time>
                   <div class="muted-row admin-list-date-row">
@@ -235,7 +235,7 @@ onBeforeUnmount(() => {
                 </div>
               </td>
               <td>{{ row.city }}</td>
-              <td><time class="admin-list-date" :datetime="row.updatedAt">{{ formatTableDateTime(row.updatedAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatTableDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
                 <div class="table-action-list">
                   <RouterLink class="table-link" :to="`/events/${row.id}/edit`">编辑</RouterLink>

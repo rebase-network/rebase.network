@@ -1169,33 +1169,46 @@ code {
 
 .admin-col-time,
 .admin-col-updated {
-  width: 152px;
+  width: 168px;
 }
 
 .admin-list-table .table-action-list {
   gap: 0.42rem;
 }
 
+.admin-list-table th.admin-col-time,
+.admin-list-table th.admin-col-updated {
+  text-align: right;
+}
+
 .admin-list-table .muted-row {
   font-size: 0.8rem;
+}
+
+.admin-list-date-cell {
+  text-align: right;
+}
+
+.admin-list-date-cell .table-cell-stack {
+  justify-items: end;
 }
 
 .admin-list-date {
   display: inline-block;
   white-space: nowrap;
-  font-family: 'IBM Plex Mono', 'SFMono-Regular', monospace;
   font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
 }
 
 .admin-list-date-short {
-  min-width: 10ch;
+  min-width: 9.6ch;
 }
 
 .admin-list-date-row {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.4rem;
 }
 

@@ -225,8 +225,8 @@ onBeforeUnmount(() => {
               <td>{{ row.editors.length > 0 ? row.editors.join('、') : '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td>{{ row.itemCount }}</td>
-              <td><time class="admin-list-date" :datetime="row.publishedAt ?? undefined">{{ formatTableDateTime(row.publishedAt) }}</time></td>
-              <td><time class="admin-list-date" :datetime="row.updatedAt">{{ formatTableDateTime(row.updatedAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.publishedAt ?? undefined">{{ formatTableDateTime(row.publishedAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatTableDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
                 <div class="table-action-list">
                   <RouterLink class="table-link" :to="`/geekdaily/${row.id}/edit`">编辑</RouterLink>

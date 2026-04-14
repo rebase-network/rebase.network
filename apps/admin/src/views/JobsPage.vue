@@ -227,8 +227,8 @@ onBeforeUnmount(() => {
               <td>{{ row.editorName || '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td>{{ formatBoolean(row.supportsRemote) }}</td>
-              <td><time class="admin-list-date admin-list-date-short" :datetime="row.expiresAt ?? undefined">{{ formatTableDate(row.expiresAt) }}</time></td>
-              <td><time class="admin-list-date" :datetime="row.updatedAt">{{ formatTableDateTime(row.updatedAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date admin-list-date-short" :datetime="row.expiresAt ?? undefined">{{ formatTableDate(row.expiresAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatTableDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
                 <div class="table-action-list">
                   <RouterLink class="table-link" :to="`/jobs/${row.id}/edit`">编辑</RouterLink>
