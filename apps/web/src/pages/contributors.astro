@@ -5,28 +5,41 @@ import { getContributorsByRole, getSiteSettings } from '@/lib/content';
 
 const [site, groups] = await Promise.all([getSiteSettings(), getContributorsByRole()]);
 const totalContributors = groups.reduce((sum, group) => sum + group.contributors.length, 0);
+const isExternalLink = (href: string) => href.startsWith('http');
 
-const contributorSignals = [
+const collaborationLink =
+  site.footerGroups
+    .flatMap((group) => group.links)
+    .find((link) => /协作文档|参与|加入/i.test(link.label))?.href ?? '/about';
+
+const contributorOverview = [
   {
-    value: String(totalContributors).padStart(2, '0'),
-    label: '已归档贡献者',
-    detail: '先把当前公开协作者明确标出来，而不是只在致谢里一笔带过。',
+    value: `${totalContributors} 位贡献者`,
+    label: '按公开角色组持续归档',
   },
   {
-    value: String(groups.length).padStart(2, '0'),
-    label: '角色组',
-    detail: '第一版按志愿者与 GeekDaily 智囊团分组，后续还能继续扩展。',
+    value: `${groups.length} 个角色组`,
+    label: '角色是协作分工，不是等级区分',
   },
   {
-    value: String(site.socialLinks.length).padStart(2, '0'),
-    label: '公开联系面',
-    detail: '让读者知道这些协作关系背后，也有真实可抵达的人和频道。',
+    value: '历史贡献者保留',
+    label: '活跃贡献者优先展示',
   },
 ];
 
-const roleNotes: Record<string, string> = {
-  volunteers: '这组更靠近执行层：活动组织、内容协调、投稿跟进和日常社区推进都在这里落地。',
-  'geekdaily-advisors': '这组更靠近信号层：持续提供选题、推荐和行业感知，让 GeekDaily 保持长期的内容密度。',
+const roleGuides: Record<string, { overview: string; joinHint: string; joinLabel: string; joinHref: string }> = {
+  volunteers: {
+    overview: '负责把社区里的内容、活动与协作真正推进下去，包括活动组织、内容整理、页面维护与公开发布。',
+    joinHint: '可以先从一次具体协作开始，持续参与后会在这里被记录和认可。',
+    joinLabel: '参与志愿协作',
+    joinHref: collaborationLink,
+  },
+  'geekdaily-advisors': {
+    overview: '持续为 GeekDaily 提供值得关注的内容线索、推荐人与推荐语，帮助日报保持长期内容密度。',
+    joinHint: '如果你愿意长期推荐内容、提供判断与信号，可以从日报推荐协作开始参与。',
+    joinLabel: '参与日报推荐',
+    joinHref: collaborationLink,
+  },
 };
 ---
 
@@ -37,28 +50,16 @@ const roleNotes: Record<string, string> = {
 >
   <section class="shell page-hero single">
     <article class="hero-panel card contributors-hero">
-      <div class="hero-topline">
-        <p class="hero-kicker">贡献者网络</p>
-      </div>
       <h1 class="hero-title">社区不是抽象概念，它总是由具体的人把内容、活动和协作推着往前走。</h1>
       <p class="hero-summary">
-        这页先把当前公开的角色组、协作关系与长期参与者整理出来，让 Rebase 的“人”也成为站点结构的一部分。
+        这里记录长期参与 Rebase 的贡献者。角色是协作分工，不是等级区分；活跃贡献者优先展示，历史贡献者继续保留在公共档案中。
       </p>
-      <p class="brand-note">
-        首页负责讲站点主张，详情页负责讲内容，而贡献者页应该回答另一个问题：到底是谁在把这些内容和协作真正维持下去。当前仍在长期参与的人会优先展示，历史贡献者也会继续保留在公共档案里。
-      </p>
-      <div class="hero-facts">
-        {contributorSignals.map((signal) => (
+      <div class="hero-overview" aria-label="贡献者页面概览">
+        {contributorOverview.map((item) => (
           <article>
-            <strong>{signal.value}</strong>
-            <span>{signal.label}</span>
-            <p>{signal.detail}</p>
+            <strong>{item.value}</strong>
+            <span>{item.label}</span>
           </article>
-        ))}
-      </div>
-      <div class="role-jump-list">
-        {groups.map((group) => (
-          <a href={`#${group.role.slug}`}>{group.role.name}</a>
         ))}
       </div>
     </article>
@@ -74,8 +75,24 @@ const roleNotes: Record<string, string> = {
           </div>
           <span class="group-count">{group.contributors.length} 位成员</span>
         </div>
-        <p class="group-description">{group.role.description}</p>
-        <p class="group-note">{roleNotes[group.role.slug] ?? '这组贡献者持续帮助 Rebase 保持内容与协作的长期连续性。'}</p>
+        <p class="group-description">
+          {roleGuides[group.role.slug]?.overview ??
+            group.role.description ??
+            '这组贡献者持续帮助 Rebase 保持内容与协作的长期连续性。'}
+        </p>
+        <div class="group-join-row">
+          <p class="group-note">
+            {roleGuides[group.role.slug]?.joinHint ?? '从一次实际协作开始，持续参与后会被公开记录在这里。'}
+          </p>
+          <a
+            class="group-join-link"
+            href={roleGuides[group.role.slug]?.joinHref ?? collaborationLink}
+            target={isExternalLink(roleGuides[group.role.slug]?.joinHref ?? collaborationLink) ? '_blank' : undefined}
+            rel={isExternalLink(roleGuides[group.role.slug]?.joinHref ?? collaborationLink) ? 'noreferrer' : undefined}
+          >
+            {roleGuides[group.role.slug]?.joinLabel ?? '了解如何参与'} <span>↗</span>
+          </a>
+        </div>
 
         {group.contributors[0] ? (
           <div class="group-grid">
@@ -125,89 +142,49 @@ const roleNotes: Record<string, string> = {
     z-index: 1;
   }
 
-  .hero-topline {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.8rem;
+  .contributors-hero .hero-title {
+    max-width: 16ch;
+    font-size: clamp(2.35rem, 3vw + 1rem, 3.55rem);
+    line-height: 1.1;
+    letter-spacing: -0.035em;
   }
 
-  .brand-note {
-    margin: 1rem 0 0;
-    max-width: 54ch;
-    color: rgba(17, 94, 89, 0.84);
-    font-size: 0.98rem;
-    line-height: 1.8;
+  .contributors-hero .hero-summary {
+    max-width: 58ch;
   }
 
-  .hero-facts {
+  .hero-overview {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.9rem;
-    margin-top: 1.4rem;
+    gap: 0.75rem;
+    margin-top: 1rem;
   }
 
-  .hero-facts article {
-    padding: 1rem;
-    border-radius: 1rem;
+  .hero-overview article {
+    padding: 0.88rem 0.95rem;
+    border-radius: 0.95rem;
     background: rgba(255, 255, 255, 0.72);
     border: 1px solid rgba(31, 41, 51, 0.08);
-    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.06);
+    box-shadow: 0 10px 22px rgba(15, 118, 110, 0.05);
   }
 
-  .hero-facts strong,
-  .hero-facts span,
-  .hero-facts p {
+  .hero-overview strong,
+  .hero-overview span {
     display: block;
     margin: 0;
   }
 
-  .hero-facts strong {
-    font-size: 1.6rem;
-    font-family: var(--display-font);
+  .hero-overview strong {
+    color: var(--text);
+    font-size: 1rem;
+    line-height: 1.3;
   }
 
-  .hero-facts span {
-    margin-top: 0.35rem;
-    color: var(--accent-strong);
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .hero-facts p {
-    margin-top: 0.55rem;
+  .hero-overview span {
+    margin-top: 0.3rem;
     color: var(--muted);
-    line-height: 1.7;
-  }
-
-  .role-jump-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.7rem;
-    margin-top: 1.25rem;
-  }
-
-  .role-jump-list a {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.68rem 0.9rem;
-    border: 1px solid rgba(15, 118, 110, 0.14);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.74);
-    color: var(--accent-strong);
-    font-weight: 700;
-    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
-  }
-
-  .role-jump-list a:hover,
-  .role-jump-list a:focus-visible {
-    transform: translateY(-2px);
-    border-color: rgba(15, 118, 110, 0.26);
-    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
-    background: rgba(255, 255, 255, 0.92);
+    font-size: 0.88rem;
+    line-height: 1.55;
   }
 
   .contributor-groups {
@@ -280,15 +257,47 @@ const roleNotes: Record<string, string> = {
   .group-description {
     margin-top: 0.75rem;
     max-width: 60ch;
-    font-size: 1.02rem;
-    line-height: 1.8;
+    font-size: 1rem;
+    line-height: 1.72;
+  }
+
+  .group-join-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.8rem;
   }
 
   .group-note {
-    margin-top: 0.55rem;
     max-width: 64ch;
     color: var(--muted);
-    line-height: 1.75;
+    font-size: 0.95rem;
+    line-height: 1.68;
+  }
+
+  .group-join-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+    padding: 0.72rem 0.94rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--accent-strong);
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  }
+
+  .group-join-link:hover,
+  .group-join-link:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(15, 118, 110, 0.24);
+    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.08);
+    background: rgba(255, 255, 255, 0.92);
   }
 
   .group-grid {
@@ -305,15 +314,19 @@ const roleNotes: Record<string, string> = {
   }
 
   @media (max-width: 960px) {
-    .hero-facts {
+    .hero-overview {
       grid-template-columns: 1fr;
+    }
+
+    .group-join-row {
+      align-items: flex-start;
+      flex-direction: column;
     }
   }
 
   @media (max-width: 720px) {
-    .hero-topline {
-      flex-direction: column;
-      align-items: flex-start;
+    .contributors-hero .hero-title {
+      font-size: clamp(2rem, 9vw, 2.7rem);
     }
   }
 </style>
