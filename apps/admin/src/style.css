@@ -1201,6 +1201,7 @@ code {
 
 .admin-list-table .table-actions-cell {
   width: 96px;
+  text-align: right;
 }
 
 .admin-list-table th.admin-col-date,
@@ -1212,6 +1213,30 @@ code {
 
 .admin-list-table .muted-row {
   font-size: 0.8rem;
+}
+
+.admin-list-primary-cell,
+.admin-list-primary {
+  min-width: 0;
+}
+
+.admin-list-title,
+.admin-list-subtitle {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.admin-list-title {
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.admin-list-subtitle {
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .admin-list-date-cell {
@@ -1232,6 +1257,17 @@ code {
   align-items: center;
   justify-content: flex-end;
   gap: 0.4rem;
+}
+
+.admin-list-actions {
+  display: grid;
+  justify-items: end;
+  gap: 0.18rem;
+}
+
+.admin-list-table .table-link {
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .table-cell-stack {

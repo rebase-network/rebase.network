@@ -227,10 +227,10 @@ onBeforeUnmount(() => {
               <td class="admin-table-empty-row" colspan="7">当前筛选条件下没有招聘信息，请调整搜索或状态筛选。</td>
             </tr>
             <tr v-for="row in rows" :key="row.id">
-              <td>
-                <div class="table-cell-stack">
-                  <strong>{{ row.companyName }}</strong>
-                  <div class="muted-row">{{ row.roleTitle }}</div>
+              <td class="admin-list-primary-cell">
+                <div class="table-cell-stack admin-list-primary">
+                  <strong class="admin-list-title">{{ row.companyName }}</strong>
+                  <div class="muted-row admin-list-subtitle">{{ row.roleTitle }}</div>
                 </div>
               </td>
               <td>{{ row.editorName || '—' }}</td>
@@ -239,7 +239,7 @@ onBeforeUnmount(() => {
               <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.expiresAt ?? undefined">{{ formatDate(row.expiresAt) }}</time></td>
               <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
-                <div class="table-action-list">
+                <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/jobs/${row.id}/edit`">编辑</RouterLink>
                   <a class="table-link" :href="getPublicSiteUrl(`/who-is-hiring/${row.slug}`)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>

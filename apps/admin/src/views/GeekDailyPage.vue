@@ -225,10 +225,10 @@ onBeforeUnmount(() => {
               <td class="admin-table-empty-row" colspan="7">当前筛选条件下没有极客日报内容，请调整搜索或状态筛选。</td>
             </tr>
             <tr v-for="row in rows" :key="row.id">
-              <td>
-                <div class="table-cell-stack">
-                  <strong>{{ row.title }}</strong>
-                  <div class="muted-row">第 {{ row.episodeNumber }} 期</div>
+              <td class="admin-list-primary-cell">
+                <div class="table-cell-stack admin-list-primary">
+                  <strong class="admin-list-title">{{ row.title }}</strong>
+                  <div class="muted-row admin-list-subtitle">第 {{ row.episodeNumber }} 期</div>
                 </div>
               </td>
               <td>{{ row.editors.length > 0 ? row.editors.join('、') : '—' }}</td>
@@ -237,7 +237,7 @@ onBeforeUnmount(() => {
               <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.publishedAt ?? undefined">{{ formatDateTime(row.publishedAt) }}</time></td>
               <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
-                <div class="table-action-list">
+                <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/geekdaily/${row.id}/edit`">编辑</RouterLink>
                   <a class="table-link" :href="getPublicSiteUrl(getGeekDailyEpisodePath(row.episodeNumber))" target="_blank" rel="noreferrer">前台预览</a>
                 </div>
