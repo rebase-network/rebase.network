@@ -962,6 +962,10 @@ code {
   overflow-x: auto;
 }
 
+.admin-list-table {
+  table-layout: fixed;
+}
+
 .data-table th,
 .data-table td {
   padding: 0.68rem 0.45rem;
@@ -1152,10 +1156,7 @@ code {
   font-weight: 800;
 }
 
-.admin-status-filter-column {
-  min-width: 154px;
-}
-
+.admin-status-filter-column,
 .admin-col-editor,
 .admin-col-author {
   width: 150px;
@@ -1164,20 +1165,150 @@ code {
 .admin-col-count,
 .admin-col-remote,
 .admin-col-city {
-  width: 88px;
+  width: 96px;
+}
+
+.admin-col-status {
+  width: 112px;
+}
+
+.admin-col-date {
+  width: 136px;
 }
 
 .admin-col-time,
 .admin-col-updated {
-  width: 152px;
+  width: 168px;
+}
+
+.admin-col-episode,
+.admin-col-person {
+  width: 220px;
+}
+
+.admin-col-event-time {
+  width: 208px;
+}
+
+.admin-col-actions {
+  width: 128px;
+}
+
+.admin-col-actions-wide {
+  width: 144px;
+}
+
+.admin-col-preview {
+  width: 86px;
+}
+
+.admin-col-asset-type,
+.admin-col-audit-action,
+.admin-col-audit-target {
+  width: 176px;
+}
+
+.admin-col-asset-status {
+  width: 140px;
+}
+
+.admin-col-audit-time {
+  width: 168px;
+}
+
+.admin-col-audit-actor {
+  width: 180px;
+}
+
+.admin-list-table-primary {
+  min-width: 980px;
+}
+
+.admin-list-table-primary-wide {
+  min-width: 1080px;
+}
+
+.admin-list-table-secondary {
+  min-width: 1020px;
+}
+
+.admin-list-table-secondary-wide {
+  min-width: 1120px;
 }
 
 .admin-list-table .table-action-list {
   gap: 0.42rem;
 }
 
+.admin-list-table .table-actions-cell {
+  width: auto;
+  text-align: right;
+}
+
 .admin-list-table .muted-row {
   font-size: 0.8rem;
+}
+
+.admin-list-primary-cell,
+.admin-list-primary {
+  min-width: 0;
+}
+
+.admin-list-title,
+.admin-list-subtitle {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.admin-list-title {
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.admin-list-subtitle {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.admin-list-date-cell {
+  text-align: left;
+}
+
+.admin-list-date-cell .table-cell-stack {
+  justify-items: start;
+}
+
+.admin-list-date {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.admin-list-date-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.admin-list-summary {
+  display: -webkit-box;
+  overflow: hidden;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.admin-list-actions {
+  display: grid;
+  justify-items: end;
+  gap: 0.18rem;
+}
+
+.admin-list-table .table-link {
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .table-cell-stack {

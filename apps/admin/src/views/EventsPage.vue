@@ -167,7 +167,16 @@ onBeforeUnmount(() => {
       </section>
 
       <div class="panel table-panel">
-        <table class="data-table dense-table admin-list-table">
+        <table class="data-table dense-table admin-list-table admin-list-table-primary admin-list-table-primary-wide">
+          <colgroup>
+            <col />
+            <col class="admin-col-editor" />
+            <col class="admin-status-filter-column" />
+            <col class="admin-col-event-time" />
+            <col class="admin-col-city" />
+            <col class="admin-col-updated" />
+            <col class="admin-col-actions" />
+          </colgroup>
           <thead>
             <tr>
               <th>活动</th>
@@ -206,10 +215,10 @@ onBeforeUnmount(() => {
                   </div>
                 </div>
               </th>
-              <th class="admin-col-time">时间</th>
+              <th class="admin-col-event-time">时间</th>
               <th class="admin-col-city">城市</th>
               <th class="admin-col-updated">更新时间</th>
-              <th></th>
+              <th class="admin-col-actions">操作</th>
             </tr>
           </thead>
           <tbody>
@@ -217,24 +226,27 @@ onBeforeUnmount(() => {
               <td class="admin-table-empty-row" colspan="7">当前筛选条件下没有活动，请调整搜索或状态筛选。</td>
             </tr>
             <tr v-for="row in rows" :key="row.id">
-              <td>
-                <div class="table-cell-stack">
-                  <strong>{{ row.title }}</strong>
-                  <div class="muted-row">/{{ row.slug }}</div>
+              <td class="admin-list-primary-cell">
+                <div class="table-cell-stack admin-list-primary">
+                  <strong class="admin-list-title">{{ row.title }}</strong>
+                  <div class="muted-row admin-list-subtitle">/{{ row.slug }}</div>
                 </div>
               </td>
               <td>{{ row.editorName || '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
-              <td>
+              <td class="admin-list-date-cell">
                 <div class="table-cell-stack">
-                  <strong>{{ formatDateTime(row.startAt) }}</strong>
-                  <div class="muted-row">至 {{ formatDateTime(row.endAt) }}</div>
+                  <time class="admin-list-date" :datetime="row.startAt">{{ formatDateTime(row.startAt) }}</time>
+                  <div class="muted-row admin-list-date-row">
+                    <span>至</span>
+                    <time class="admin-list-date" :datetime="row.endAt">{{ formatDateTime(row.endAt) }}</time>
+                  </div>
                 </div>
               </td>
               <td>{{ row.city }}</td>
-              <td>{{ formatDateTime(row.updatedAt) }}</td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
-                <div class="table-action-list">
+                <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/events/${row.id}/edit`">编辑</RouterLink>
                   <a class="table-link" :href="getEventPreviewUrl(row.startAt, row.slug)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>
