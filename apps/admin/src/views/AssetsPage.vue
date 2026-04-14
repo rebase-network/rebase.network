@@ -483,72 +483,62 @@ const goToAssetPage = async (nextPage: number) => {
 
         <section v-if="rows.length === 0" class="panel empty-state-card"><p>当前筛选条件下没有媒体记录。</p></section>
 
-        <section v-else class="panel stacked-gap">
-          <div class="panel-toolbar">
-            <div>
-              <h3>媒体记录</h3>
-              <div class="panel-meta">按文件、对象路径与状态快速查找资源</div>
-            </div>
-            <div class="panel-meta">{{ pagination?.totalItems ?? rows.length }} 条结果</div>
-          </div>
-
-          <div class="table-panel">
-            <table class="data-table dense-table admin-list-table admin-list-table-secondary asset-table">
-              <colgroup>
-                <col class="admin-col-preview" />
-                <col />
-                <col class="admin-col-asset-type" />
-                <col class="admin-col-asset-status" />
-                <col class="admin-col-updated" />
-                <col class="admin-col-actions-wide" />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th class="admin-col-preview">预览</th>
-                  <th>文件</th>
-                  <th class="admin-col-asset-type">类型</th>
-                  <th class="admin-col-asset-status">状态</th>
-                  <th class="admin-col-updated">更新时间</th>
-                  <th class="admin-col-actions-wide">操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="row in rows" :key="row.id" :class="{ 'is-selected': !isCreating && selectedAssetId === row.id }">
-                  <td>
-                    <div class="asset-thumb">
-                      <img v-if="row.publicUrl && row.mimeType.startsWith('image/')" :src="row.publicUrl" :alt="row.altText || row.originalFilename" />
-                      <span v-else>{{ row.assetType }}</span>
-                    </div>
-                  </td>
-                  <td class="admin-list-primary-cell">
-                    <div class="table-cell-stack admin-list-primary">
-                      <strong class="admin-list-title">{{ row.originalFilename }}</strong>
-                      <div class="muted-row admin-list-subtitle">{{ row.objectKey }}</div>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="table-cell-stack">
-                      <strong>{{ row.assetType }}</strong>
-                      <div class="muted-row">{{ row.mimeType }}</div>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="table-cell-stack">
-                      <span class="status-pill">{{ formatAssetStatus(row.status) }}</span>
-                      <div class="muted-row">{{ formatAssetVisibility(row.visibility) }}</div>
-                    </div>
-                  </td>
-                  <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
-                  <td class="table-actions-cell">
-                    <div class="table-action-list admin-list-actions">
-                      <button class="table-link table-link-button" type="button" @click="selectAsset(row.id)">编辑元数据</button>
-                      <button class="table-link table-link-button" type="button" @click="copyToClipboard(row.objectKey, '对象路径')">复制路径</button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <section v-else class="panel table-panel">
+          <table class="data-table dense-table admin-list-table admin-list-table-secondary asset-table">
+            <colgroup>
+              <col class="admin-col-preview" />
+              <col />
+              <col class="admin-col-asset-type" />
+              <col class="admin-col-asset-status" />
+              <col class="admin-col-updated" />
+              <col class="admin-col-actions-wide" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="admin-col-preview">预览</th>
+                <th>文件</th>
+                <th class="admin-col-asset-type">类型</th>
+                <th class="admin-col-asset-status">状态</th>
+                <th class="admin-col-updated">更新时间</th>
+                <th class="admin-col-actions-wide">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in rows" :key="row.id" :class="{ 'is-selected': !isCreating && selectedAssetId === row.id }">
+                <td>
+                  <div class="asset-thumb">
+                    <img v-if="row.publicUrl && row.mimeType.startsWith('image/')" :src="row.publicUrl" :alt="row.altText || row.originalFilename" />
+                    <span v-else>{{ row.assetType }}</span>
+                  </div>
+                </td>
+                <td class="admin-list-primary-cell">
+                  <div class="table-cell-stack admin-list-primary">
+                    <strong class="admin-list-title">{{ row.originalFilename }}</strong>
+                    <div class="muted-row admin-list-subtitle">{{ row.objectKey }}</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="table-cell-stack">
+                    <strong>{{ row.assetType }}</strong>
+                    <div class="muted-row">{{ row.mimeType }}</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="table-cell-stack">
+                    <span class="status-pill">{{ formatAssetStatus(row.status) }}</span>
+                    <div class="muted-row">{{ formatAssetVisibility(row.visibility) }}</div>
+                  </div>
+                </td>
+                <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
+                <td class="table-actions-cell">
+                  <div class="table-action-list admin-list-actions">
+                    <button class="table-link table-link-button" type="button" @click="selectAsset(row.id)">编辑元数据</button>
+                    <button class="table-link table-link-button" type="button" @click="copyToClipboard(row.objectKey, '对象路径')">复制路径</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
           <PaginationBar :meta="pagination" :current-count="rows.length" item-label="条" :loading="loading" @change-page="goToAssetPage" />
         </section>
