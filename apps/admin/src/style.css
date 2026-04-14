@@ -1204,13 +1204,6 @@ code {
   text-align: right;
 }
 
-.admin-list-table th.admin-col-date,
-.admin-list-table th.admin-col-time,
-.admin-list-table th.admin-col-event-time,
-.admin-list-table th.admin-col-updated {
-  text-align: right;
-}
-
 .admin-list-table .muted-row {
   font-size: 0.8rem;
 }
@@ -1240,11 +1233,11 @@ code {
 }
 
 .admin-list-date-cell {
-  text-align: right;
+  text-align: left;
 }
 
 .admin-list-date-cell .table-cell-stack {
-  justify-items: end;
+  justify-items: start;
 }
 
 .admin-list-date {
@@ -1255,7 +1248,6 @@ code {
 .admin-list-date-row {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 0.4rem;
 }
 
