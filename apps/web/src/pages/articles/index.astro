@@ -73,23 +73,33 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
   :global(.articles-hero::before) {
     content: 'WRITING';
     position: absolute;
-    top: 1rem;
-    right: 1.3rem;
-    color: rgba(17, 94, 89, 0.08);
+    top: 0.95rem;
+    right: 1.15rem;
+    color: rgba(17, 94, 89, 0.065);
     font-family: var(--display-font);
-    font-size: clamp(3.8rem, 8vw, 6.6rem);
+    font-size: clamp(3.2rem, 6vw, 5.6rem);
     letter-spacing: 0.08em;
     line-height: 0.82;
     pointer-events: none;
   }
 
   :global(.articles-hero .hero-title) {
-    max-width: 8ch;
+    max-width: 10ch;
+    font-size: clamp(2.2rem, 2.8vw + 1rem, 3.45rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
     text-wrap: balance;
   }
 
+  :global(.articles-hero .hero-summary) {
+    max-width: 50rem;
+    margin-top: 0.8rem;
+    font-size: 0.98rem;
+    line-height: 1.68;
+  }
+
   :global(.articles-hero) {
-    padding: 1.3rem 1.6rem 1.55rem;
+    padding: 1.22rem 1.34rem 1.14rem;
   }
 
   .article-hero-layout {
@@ -145,6 +155,18 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
   .article-spotlight-meta,
   .article-spotlight-body h2 {
     margin: 0;
+  }
+
+  @media (max-width: 720px) {
+    :global(.articles-hero::before) {
+      top: 0.8rem;
+      right: 0.9rem;
+      font-size: clamp(2.7rem, 14vw, 4.4rem);
+    }
+
+    :global(.articles-hero) {
+      padding: 1.05rem 1.05rem 1rem;
+    }
   }
 
   .article-spotlight-kicker,
