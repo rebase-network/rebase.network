@@ -4,7 +4,6 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getContributorsByRole, getSiteSettings } from '@/lib/content';
 
 const [site, groups] = await Promise.all([getSiteSettings(), getContributorsByRole()]);
-const totalContributors = groups.reduce((sum, group) => sum + group.contributors.length, 0);
 const isExternalLink = (href: string) => href.startsWith('http');
 
 const collaborationLink =
