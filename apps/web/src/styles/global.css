@@ -132,7 +132,7 @@ main {
   display: flex;
   flex-wrap: wrap;
   gap: 0.8rem;
-  margin-top: 1.4rem;
+  margin-top: 1.25rem;
 }
 
 .button-link {
