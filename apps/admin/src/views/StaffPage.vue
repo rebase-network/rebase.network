@@ -323,29 +323,36 @@ const goToStaffPage = async (nextPage: number) => {
           </div>
 
           <div class="table-panel">
-            <table class="data-table dense-table">
+            <table class="data-table dense-table admin-list-table admin-list-table-secondary">
+              <colgroup>
+                <col class="admin-col-person" />
+                <col />
+                <col class="admin-col-status" />
+                <col class="admin-col-updated" />
+                <col class="admin-col-actions" />
+              </colgroup>
               <thead>
                 <tr>
-                  <th>工作人员</th>
+                  <th class="admin-col-person">工作人员</th>
                   <th>角色</th>
-                  <th>状态</th>
-                  <th>最后登录</th>
-                  <th></th>
+                  <th class="admin-col-status">状态</th>
+                  <th class="admin-col-updated">最后登录</th>
+                  <th class="admin-col-actions"></th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="row in rows" :key="row.id" :class="{ 'is-selected': activeWorkspaceMode === 'edit' && row.id === selectedStaffId }">
-                  <td>
-                    <div class="table-cell-stack">
-                      <strong>{{ row.displayName }}</strong>
-                      <div class="muted-row">{{ row.email }}</div>
+                  <td class="admin-list-primary-cell">
+                    <div class="table-cell-stack admin-list-primary">
+                      <strong class="admin-list-title">{{ row.displayName }}</strong>
+                      <div class="muted-row admin-list-subtitle">{{ row.email }}</div>
                     </div>
                   </td>
                   <td>{{ formatAdminRoleList(row.roleCodes) }}</td>
                   <td><span class="status-pill">{{ formatStaffAccountStatus(row.status) }}</span></td>
-                  <td>{{ formatDateTime(row.lastLoginAt) }}</td>
+                  <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.lastLoginAt ?? undefined">{{ formatDateTime(row.lastLoginAt) }}</time></td>
                   <td class="table-actions-cell">
-                    <div class="table-action-list">
+                    <div class="table-action-list admin-list-actions">
                       <button class="table-link table-link-button" type="button" @click="selectStaff(row.id)">编辑账号</button>
                     </div>
                   </td>

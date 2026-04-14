@@ -493,15 +493,23 @@ const goToAssetPage = async (nextPage: number) => {
           </div>
 
           <div class="table-panel">
-            <table class="data-table dense-table asset-table">
+            <table class="data-table dense-table admin-list-table admin-list-table-secondary asset-table">
+              <colgroup>
+                <col class="admin-col-preview" />
+                <col />
+                <col class="admin-col-asset-type" />
+                <col class="admin-col-asset-status" />
+                <col class="admin-col-updated" />
+                <col class="admin-col-actions-wide" />
+              </colgroup>
               <thead>
                 <tr>
-                  <th>预览</th>
+                  <th class="admin-col-preview">预览</th>
                   <th>文件</th>
-                  <th>类型</th>
-                  <th>状态</th>
-                  <th>更新时间</th>
-                  <th></th>
+                  <th class="admin-col-asset-type">类型</th>
+                  <th class="admin-col-asset-status">状态</th>
+                  <th class="admin-col-updated">更新时间</th>
+                  <th class="admin-col-actions-wide"></th>
                 </tr>
               </thead>
               <tbody>
@@ -512,10 +520,10 @@ const goToAssetPage = async (nextPage: number) => {
                       <span v-else>{{ row.assetType }}</span>
                     </div>
                   </td>
-                  <td>
-                    <div class="table-cell-stack">
-                      <strong>{{ row.originalFilename }}</strong>
-                      <div class="muted-row">{{ row.objectKey }}</div>
+                  <td class="admin-list-primary-cell">
+                    <div class="table-cell-stack admin-list-primary">
+                      <strong class="admin-list-title">{{ row.originalFilename }}</strong>
+                      <div class="muted-row admin-list-subtitle">{{ row.objectKey }}</div>
                     </div>
                   </td>
                   <td>
@@ -530,9 +538,9 @@ const goToAssetPage = async (nextPage: number) => {
                       <div class="muted-row">{{ formatAssetVisibility(row.visibility) }}</div>
                     </div>
                   </td>
-                  <td>{{ formatDateTime(row.updatedAt) }}</td>
+                  <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
                   <td class="table-actions-cell">
-                    <div class="table-action-list">
+                    <div class="table-action-list admin-list-actions">
                       <button class="table-link table-link-button" type="button" @click="selectAsset(row.id)">编辑元数据</button>
                       <button class="table-link table-link-button" type="button" @click="copyToClipboard(row.objectKey, '对象路径')">复制路径</button>
                     </div>

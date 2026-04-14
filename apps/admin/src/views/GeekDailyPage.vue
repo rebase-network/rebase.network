@@ -166,10 +166,10 @@ onBeforeUnmount(() => {
       </section>
 
       <div class="panel table-panel">
-        <table class="data-table dense-table admin-list-table admin-list-table-geekdaily">
+        <table class="data-table dense-table admin-list-table admin-list-table-secondary">
           <colgroup>
+            <col class="admin-col-episode" />
             <col />
-            <col class="admin-col-editor" />
             <col class="admin-status-filter-column" />
             <col class="admin-col-count" />
             <col class="admin-col-time" />
@@ -178,8 +178,8 @@ onBeforeUnmount(() => {
           </colgroup>
           <thead>
             <tr>
-              <th>期数</th>
-              <th class="admin-col-editor">编辑</th>
+              <th class="admin-col-episode">期数</th>
+              <th>编辑</th>
               <th class="admin-status-filter-column">
                 <div ref="statusFilterRef" class="admin-table-filter-menu">
                   <button

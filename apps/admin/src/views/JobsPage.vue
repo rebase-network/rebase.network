@@ -168,7 +168,7 @@ onBeforeUnmount(() => {
       </section>
 
       <div class="panel table-panel">
-        <table class="data-table dense-table admin-list-table admin-list-table-jobs">
+        <table class="data-table dense-table admin-list-table admin-list-table-primary">
           <colgroup>
             <col />
             <col class="admin-col-editor" />

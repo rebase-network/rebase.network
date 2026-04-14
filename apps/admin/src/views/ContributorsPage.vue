@@ -183,12 +183,20 @@ onBeforeUnmount(() => {
         <div v-if="contributors.length === 0" class="empty-state-card"><p>暂时还没有贡献者。</p></div>
 
         <div v-else class="table-panel">
-          <table class="data-table dense-table">
+          <table class="data-table dense-table admin-list-table admin-list-table-secondary">
+            <colgroup>
+              <col class="admin-col-person" />
+              <col />
+              <col class="admin-col-status" />
+              <col class="activity-filter-column" />
+              <col class="admin-col-updated" />
+              <col class="admin-col-actions" />
+            </colgroup>
             <thead>
               <tr>
-                <th>贡献者</th>
+                <th class="admin-col-person">贡献者</th>
                 <th>角色</th>
-                <th>状态</th>
+                <th class="admin-col-status">状态</th>
                 <th class="activity-filter-column">
                   <div ref="activityFilterRef" class="table-filter-menu">
                     <button
@@ -223,24 +231,24 @@ onBeforeUnmount(() => {
                     </div>
                   </div>
                 </th>
-                <th>更新时间</th>
-                <th></th>
+                <th class="admin-col-updated">更新时间</th>
+                <th class="admin-col-actions"></th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="row in contributors" :key="row.id">
-                <td>
-                  <div class="table-cell-stack">
-                    <strong>{{ row.name }}</strong>
-                    <div class="muted-row">{{ row.headline }}</div>
+                <td class="admin-list-primary-cell">
+                  <div class="table-cell-stack admin-list-primary">
+                    <strong class="admin-list-title">{{ row.name }}</strong>
+                    <div class="muted-row admin-list-subtitle">{{ row.headline }}</div>
                   </div>
                 </td>
                 <td>{{ row.roleNames.join('、') || '未分配角色' }}</td>
                 <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
                 <td><span class="status-pill" :class="{ 'status-pill-muted': row.activityStatus === 'inactive' }">{{ formatContributorActivityStatus(row.activityStatus) }}</span></td>
-                <td>{{ formatDateTime(row.updatedAt) }}</td>
+                <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
                 <td class="table-actions-cell">
-                  <div class="table-action-list">
+                  <div class="table-action-list admin-list-actions">
                     <RouterLink class="table-link" :to="`/contributors/${row.id}/edit`">编辑</RouterLink>
                     <a class="table-link" :href="getPublicSiteUrl(`/contributors#${row.slug}`)" target="_blank" rel="noreferrer">前台定位</a>
                   </div>
@@ -393,7 +401,7 @@ onBeforeUnmount(() => {
 }
 
 .activity-filter-column {
-  min-width: 154px;
+  width: 154px;
 }
 
 .status-pill-muted {
