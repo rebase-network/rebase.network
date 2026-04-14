@@ -9,8 +9,8 @@ const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
 
 <BaseLayout site={site} title="Who-Is-Hiring | Rebase社区招聘" description="查看 Rebase 社区当前公开的招聘信息与岗位详情。">
   <ListPageHero
-    title="查看 Rebase 社区当前开放的岗位机会。"
-    summary="把薪资、工作模式、地点、远程支持和投递入口集中放在同一个公开入口里，方便快速判断和比较。"
+    title="Rebase 社区当前收到的工作机会"
+    summary="Who-Is-Hiring 是免费的招聘频道，任何团队和公司都可以通过 github issue 提交招聘信息，社区志愿者会定期将招聘信息整理并发布在Rebase社区微信公众号和网站上。志愿者只负责整理格式，并不能确保招聘信息真实性，请求职者谨慎对待，如果遇到虚假信息，可以在 github issue上提出反馈，志愿者将会删除相应信息"
     actions={[
       {
         href: 'https://github.com/rebase-network/who-is-hiring',

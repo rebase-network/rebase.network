@@ -4,283 +4,44 @@ import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getAboutContent, getSiteSettings } from '@/lib/content';
 
 const [site, about] = await Promise.all([getSiteSettings(), getAboutContent()]);
-const { intro, sections } = about;
+const { intro, sections, seoTitle, seoDescription } = about;
 
-const trimProtocol = (value: string) => value.replace(/^https?:\/\//, '').replace(/\/$/, '');
-const countLabel = (value: number) => String(value).padStart(2, '0');
-const isExternalLink = (href: string) => href.startsWith('http');
-const getFooterLinks = (slug: string) => site.footerGroups.find((group) => group.slug === slug)?.links ?? [];
-
-const communityProjects = getFooterLinks('community-projects');
-const collaborationResources = getFooterLinks('resources');
-const leadSection = sections.find((section) => /我们是谁|about|who/i.test(section.title)) ?? sections[0] ?? null;
-const projectSection = sections.find((section) => /栏目|项目|project/i.test(section.title)) ?? null;
-const contactSection = sections.find((section) => /入口|联系|渠道|contact/i.test(section.title)) ?? null;
-const supportSection = sections.find((section) => /捐赠|支持|donation/i.test(section.title)) ?? null;
-const consumedTitles = new Set(
-  [leadSection?.title, projectSection?.title, contactSection?.title, supportSection?.title].filter(
-    (title): title is string => Boolean(title),
-  ),
-);
-const additionalSections = sections.filter((section) => !consumedTitles.has(section.title));
-const donationAddresses = supportSection
-  ? [...supportSection.body.matchAll(/(?:^|\n)-\s*([^：:\n]+)[：:]\s*`([^`]+)`/g)].map((match) => ({
-      network: match[1].trim(),
-      address: match[2].trim(),
-    }))
-  : [];
-const supportIntro = supportSection?.body
-  .replace(/(?:^|\n)-\s*[^`]+`[^`]+`/g, '')
-  .replace(/\n{3,}/g, '\n\n')
-  .trim();
-
-const accessPoints = [
-  {
-    label: '主域名',
-    value: trimProtocol(site.primaryDomain),
-    href: site.primaryDomain,
-  },
-  {
-    label: '社区域名',
-    value: trimProtocol(site.secondaryDomain),
-    href: site.secondaryDomain,
-  },
-  {
-    label: 'RSS 输出',
-    value: '/rss.xml',
-    href: '/rss.xml',
-  },
-  {
-    label: '媒体域名',
-    value: trimProtocol(site.mediaDomain),
-    href: site.mediaDomain,
-  },
-];
-
-const aboutSignals = [
-  {
-    value: countLabel(communityProjects.length || 7),
-    label: '社区项目',
-    detail: 'Web3Camp、GeekDaily、Who-Is-Hiring、Event Pool 等长期协作栏目持续运转。',
-  },
-  {
-    value: countLabel(site.socialLinks.length),
-    label: '公开渠道',
-    detail: 'B 站、YouTube、Discord、Twitter、Telegram 与公众号共同承接社区对外交流。',
-  },
-  {
-    value: countLabel(donationAddresses.length || 2),
-    label: '捐赠网络',
-    detail: 'Ethereum 和 Polygon 多签地址已经开放，用于支持社区长期运转。',
-  },
-];
-
-const publicSurfaces = [
-  {
-    eyebrow: 'Longform',
-    title: 'Articles',
-    summary: '把复盘、判断和方法写成可以被再次进入的长内容。',
-    href: '/articles',
-  },
-  {
-    eyebrow: 'Signal desk',
-    title: 'GeekDaily',
-    summary: '把高频推荐、选题和历史条目组织成可搜索的连续档案。',
-    href: '/geekdaily',
-  },
-  {
-    eyebrow: 'Community flow',
-    title: 'Events',
-    summary: '让活动信息不只在社交平台里短暂出现，也能稳定归档。',
-    href: '/events',
-  },
-  {
-    eyebrow: 'Opportunities',
-    title: 'Who-Is-Hiring',
-    summary: '把招聘从短期帖子升级成可阅读、可追踪、可回看的公开页面。',
-    href: '/who-is-hiring',
-  },
-  {
-    eyebrow: 'People network',
-    title: 'Contributors',
-    summary: '把真正推动内容、活动和协作的人明确地呈现出来。',
-    href: '/contributors',
-  },
-];
+const pageTitle = seoTitle?.trim() || '关于 Rebase';
+const pageDescription = seoDescription?.trim() || intro.summary;
+const orderedSections = sections.filter((section) => section.title.trim() || section.body.trim());
+const sectionLabel = (index: number) => String(index + 1).padStart(2, '0');
 ---
 
-<BaseLayout site={site} title="关于 Rebase" description={intro.summary}>
+<BaseLayout site={site} title={pageTitle} description={pageDescription}>
   <section class="shell page-hero single">
     <article class="hero-panel card about-hero">
-      <div class="hero-topline">
-        <p class="hero-kicker">关于 Rebase</p>
-      </div>
       <h1 class="hero-title">{intro.title}</h1>
       <p class="hero-summary">{intro.summary}</p>
-      <p class="brand-note">
-        Rebase Community 不只是一个站点，而是一个由中国开发者在业余时间共同维护的公共入口；
-        社区里的内容、协作和机会都应该被更长期地保存与看见。
-      </p>
-      <div class="about-signal-grid">
-        {aboutSignals.map((signal) => (
-          <article>
-            <strong>{signal.value}</strong>
-            <span>{signal.label}</span>
-            <p>{signal.detail}</p>
-          </article>
-        ))}
-      </div>
     </article>
   </section>
 
-  <section class="shell page-section about-atlas">
-    {leadSection && (
-      <article class="card about-story-lead">
-        <div class="card-topline">
-          <span>01</span>
-          <p>{leadSection.title}</p>
-        </div>
-        <h2>Rebase 把内容、协作与机会组织成一个长期可访问的公共入口。</h2>
-        <MarkdownContent content={leadSection.body} />
-      </article>
-    )}
-
-    <div class="about-aside">
-      <article class="card access-card">
-        <p class="hero-kicker">公共入口</p>
-        <h2>社区的访问方式、订阅出口和媒体资源需要像栏目内容一样清晰可达。</h2>
-        <div class="access-grid">
-          {accessPoints.map((item) => (
-            <a class="access-item" href={item.href} target={isExternalLink(item.href) ? '_blank' : undefined} rel="noreferrer">
-              <span>{item.label}</span>
-              <strong>{item.value}</strong>
-            </a>
+  <section class="shell page-section">
+    <article class="card about-story">
+      {orderedSections.length > 0 ? (
+        <div class="story-flow">
+          {orderedSections.map((section, index) => (
+            <section class="story-section">
+              <div class="story-topline">
+                <span>{sectionLabel(index)}</span>
+              </div>
+              <h2>{section.title}</h2>
+              <MarkdownContent content={section.body} />
+            </section>
           ))}
         </div>
-      </article>
-
-      {supportSection && (
-        <article class="card support-card">
-          <div class="card-topline">
-            <span>02</span>
-            <p>{supportSection.title}</p>
-          </div>
-          <h2>社区的支持方式保持公开透明，方便长期协作与共建。</h2>
-          {supportIntro && (
-            <div class="support-copy">
-              <MarkdownContent content={supportIntro} />
-            </div>
-          )}
-          {donationAddresses.length > 0 ? (
-            <div class="donation-grid">
-              {donationAddresses.map((item) => (
-                <article>
-                  <span>{item.network}</span>
-                  <code>{item.address}</code>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <MarkdownContent content={supportSection.body} />
-          )}
-        </article>
-      )}
-    </div>
-  </section>
-
-  <section class="shell page-section about-network-grid">
-    <article class="card network-card project-card">
-      <div class="card-topline">
-        <span>03</span>
-        <p>{projectSection?.title ?? '社区栏目与项目'}</p>
-      </div>
-      <h2>长期栏目、实验项目和协作入口共同构成 Rebase 的公开结构。</h2>
-      <p class="section-note">这些入口让社区更新不只停留在即时聊天或 issue，而是沉淀成可以持续访问的公共档案。</p>
-      {communityProjects.length > 0 ? (
-        <div class="project-grid">
-          {communityProjects.map((link, index) => (
-            <a class="project-link" href={link.href} target={isExternalLink(link.href) ? '_blank' : undefined} rel="noreferrer">
-              <span>{String(index + 1).padStart(2, '0')}</span>
-              <strong>{link.label}</strong>
-              <small>{trimProtocol(link.href)}</small>
-            </a>
-          ))}
+      ) : (
+        <div class="story-empty">
+          <p class="story-kicker">社区说明</p>
+          <h2>关于页内容正在整理中。</h2>
+          <p>我们会很快补充 Rebase 的背景、理念与协作方式。</p>
         </div>
-      ) : projectSection ? (
-        <MarkdownContent content={projectSection.body} />
-      ) : null}
-    </article>
-
-    <article class="card network-card channel-card">
-      <div class="card-topline">
-        <span>04</span>
-        <p>{contactSection?.title ?? '社区入口与联系'}</p>
-      </div>
-      <h2>公开渠道负责承接内容传播、讨论反馈、协作连接与日常通知。</h2>
-      <div class="channel-groups">
-        <section>
-          <h3>社区渠道</h3>
-          <div class="channel-list">
-            {site.socialLinks.map((item) => (
-              <a class="channel-chip" href={item.href} target="_blank" rel="noreferrer">
-                <span>{item.label}</span>
-                <strong>{item.handle ?? trimProtocol(item.href)}</strong>
-              </a>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h3>协作与资源</h3>
-          <div class="channel-list resource-list">
-            {collaborationResources.map((item) => (
-              <a class="channel-chip" href={item.href} target={isExternalLink(item.href) ? '_blank' : undefined} rel="noreferrer">
-                <span>{item.label}</span>
-                <strong>{trimProtocol(item.href)}</strong>
-              </a>
-            ))}
-          </div>
-        </section>
-      </div>
-      {site.socialLinks.length === 0 && collaborationResources.length === 0 && contactSection && (
-        <MarkdownContent content={contactSection.body} />
       )}
     </article>
-  </section>
-
-  {additionalSections.length > 0 && (
-    <section class="shell page-section about-story-grid extra-sections">
-      {additionalSections.map((section, index) => (
-        <article class="card about-card">
-          <div class="card-topline">
-            <span>{String(index + 5).padStart(2, '0')}</span>
-            <p>{section.title}</p>
-          </div>
-          <h2>{section.title}</h2>
-          <MarkdownContent content={section.body} />
-        </article>
-      ))}
-    </section>
-  )}
-
-  <section class="shell page-section public-surface-shell">
-    <div class="surface-intro card">
-      <p class="hero-kicker">公共结构</p>
-      <h2>这几类页面不是孤立栏目，而是同一套社区媒体结构里的不同入口。</h2>
-      <p>
-        首页负责建立第一印象，栏目页负责持续归档，详情页负责完整阅读与后续动作，而关于页需要把这整套结构讲明白。
-      </p>
-    </div>
-
-    <div class="surface-grid">
-      {publicSurfaces.map((surface) => (
-        <a class="surface-card card" href={surface.href}>
-          <p>{surface.eyebrow}</p>
-          <h3>{surface.title}</h3>
-          <span>{surface.summary}</span>
-        </a>
-      ))}
-    </div>
   </section>
 </BaseLayout>
 
@@ -292,6 +53,7 @@ const publicSurfaces = [
   .about-hero {
     position: relative;
     overflow: hidden;
+    padding: 1.05rem 1.18rem 0.98rem;
     background:
       radial-gradient(circle at top left, rgba(243, 196, 110, 0.28), transparent 30%),
       radial-gradient(circle at 92% 18%, rgba(15, 118, 110, 0.16), transparent 24%),
@@ -303,11 +65,11 @@ const publicSurfaces = [
   .about-hero::before {
     content: 'REBASE';
     position: absolute;
-    top: 1.1rem;
-    right: 1.35rem;
-    color: rgba(17, 94, 89, 0.08);
+    top: 0.78rem;
+    right: 0.98rem;
+    color: rgba(17, 94, 89, 0.055);
     font-family: var(--display-font);
-    font-size: clamp(4.2rem, 8vw, 7rem);
+    font-size: clamp(2.8rem, 5vw, 4.8rem);
     letter-spacing: 0.08em;
     line-height: 0.82;
     pointer-events: none;
@@ -318,260 +80,59 @@ const publicSurfaces = [
     z-index: 1;
   }
 
-  .hero-topline {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.8rem;
-  }
-
   .about-hero .hero-title {
-    max-width: 11ch;
-    text-wrap: balance;
-  }
-
-  .brand-note {
-    margin: 1rem 0 0;
-    max-width: 52ch;
-    color: rgba(17, 94, 89, 0.84);
-    font-size: 0.98rem;
-    line-height: 1.8;
-  }
-
-  .about-signal-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.9rem;
-    margin-top: 1.4rem;
-  }
-
-  .about-signal-grid article {
-    padding: 1rem;
-    border: 1px solid rgba(15, 118, 110, 0.12);
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.78);
-    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.06);
-  }
-
-  .about-signal-grid strong,
-  .about-signal-grid span,
-  .about-signal-grid p {
-    display: block;
-    margin: 0;
-  }
-
-  .about-signal-grid strong {
-    font-size: 1.6rem;
-    font-family: var(--display-font);
-  }
-
-  .about-signal-grid span {
-    margin-top: 0.35rem;
-    color: var(--accent-strong);
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .about-signal-grid p {
-    margin-top: 0.55rem;
-    color: var(--muted);
-    line-height: 1.7;
-  }
-
-  .about-atlas {
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.88fr);
-    gap: 1rem;
-  }
-
-  .about-story-lead,
-  .access-card,
-  .support-card,
-  .network-card,
-  .about-card,
-  .surface-intro,
-  .surface-card {
-    padding: 1.5rem;
-  }
-
-  .about-story-lead {
-    background:
-      radial-gradient(circle at top right, rgba(243, 196, 110, 0.22), transparent 22%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 250, 242, 0.9));
-  }
-
-  .about-aside {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .access-card {
-    background:
-      radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 28%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 252, 250, 0.88));
-  }
-
-  .access-card h2,
-  .support-card h2,
-  .network-card h2,
-  .about-card h2,
-  .surface-intro h2 {
-    margin: 0;
-    font-size: clamp(1.65rem, 2.4vw, 2.5rem);
-    line-height: 1.08;
-    text-wrap: balance;
-  }
-
-  .access-card h2 {
     max-width: 16ch;
+    font-size: clamp(2.35rem, 3vw + 1rem, 3.55rem);
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
   }
 
-  .access-grid {
+  .about-story {
+    padding: clamp(1.45rem, 2.8vw, 2rem);
+    background:
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.16), transparent 22%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 252, 251, 0.9));
+  }
+
+  .story-empty {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.85rem;
-    margin-top: 1.2rem;
+    gap: 0.75rem;
+    width: min(100%, 48rem);
+    margin: 0 auto;
   }
 
-  .access-item {
-    padding: 1rem;
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(15, 118, 110, 0.12);
-    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-  }
-
-  .access-item:hover,
-  .access-item:focus-visible,
-  .project-link:hover,
-  .project-link:focus-visible,
-  .channel-chip:hover,
-  .channel-chip:focus-visible,
-  .surface-card:hover,
-  .surface-card:focus-visible {
-    transform: translateY(-3px);
-    border-color: rgba(15, 118, 110, 0.18);
-    box-shadow: var(--shadow-strong);
-  }
-
-  .access-item span,
-  .access-item strong,
-  .project-link span,
-  .project-link strong,
-  .project-link small,
-  .channel-chip span,
-  .channel-chip strong,
-  .surface-card p,
-  .surface-card h3,
-  .surface-card span {
-    display: block;
+  .story-kicker {
     margin: 0;
-  }
-
-  .access-item span,
-  .project-link span,
-  .channel-chip span,
-  .surface-card p {
     color: var(--accent-strong);
-    font-size: 0.72rem;
+    font-size: 0.76rem;
     font-weight: 800;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
   }
 
-  .access-item strong {
-    margin-top: 0.45rem;
-    font-size: 1.05rem;
-    line-height: 1.4;
+  .story-flow {
+    min-width: 0;
+    width: min(100%, 48rem);
+    margin: 0 auto;
   }
 
-  .support-card {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 252, 251, 0.88));
+  .story-section {
+    min-width: 0;
+    padding-top: 1.45rem;
   }
 
-  .support-copy {
-    margin-top: 0.95rem;
+  .story-section + .story-section {
+    margin-top: 1.45rem;
+    border-top: 1px solid var(--line);
   }
 
-  .support-card :global(.markdown),
-  .about-story-lead :global(.markdown),
-  .about-card :global(.markdown) {
-    font-size: 0.98rem;
-  }
-
-  .support-card :global(.markdown p:last-child),
-  .about-story-lead :global(.markdown p:last-child),
-  .about-story-lead :global(.markdown ul:last-child),
-  .about-card :global(.markdown p:last-child),
-  .about-card :global(.markdown ul:last-child) {
-    margin-bottom: 0;
-  }
-
-  .donation-grid {
-    display: grid;
-    gap: 0.8rem;
-    margin-top: 1rem;
-  }
-
-  .donation-grid article {
-    padding: 1rem;
-    border-radius: 1rem;
-    border: 1px solid rgba(15, 118, 110, 0.12);
-    background: rgba(255, 255, 255, 0.82);
-  }
-
-  .donation-grid span,
-  .donation-grid code {
-    display: block;
-  }
-
-  .donation-grid span {
-    color: var(--accent-strong);
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .donation-grid code {
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
-    line-height: 1.7;
-    word-break: break-all;
-  }
-
-  .about-network-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
-    gap: 1rem;
-  }
-
-  .network-card {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 252, 250, 0.86));
-  }
-
-  .card-topline {
+  .story-topline {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.8rem;
   }
 
-  .card-topline span,
-  .card-topline p,
-  .section-note,
-  .surface-intro p:last-child,
-  .surface-card span {
-    margin: 0;
-  }
-
-  .card-topline span {
+  .story-topline span {
     display: inline-grid;
     width: 2.4rem;
     height: 2.4rem;
@@ -583,159 +144,61 @@ const publicSurfaces = [
     font-weight: 800;
   }
 
-  .card-topline p {
-    color: var(--accent-strong);
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+  .story-section h2,
+  .story-empty h2 {
+    margin: 0.95rem 0 1rem;
+    font-size: clamp(1.7rem, 2.8vw, 2.55rem);
+    line-height: 1.08;
+    text-wrap: balance;
   }
 
-  .section-note {
-    margin-top: 0.85rem;
-    max-width: 58ch;
-    color: var(--muted);
-    line-height: 1.8;
+  .story-empty {
+    min-height: 16rem;
+    align-content: center;
   }
 
-  .project-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.85rem;
-    margin-top: 1.2rem;
-  }
-
-  .project-link,
-  .channel-chip {
-    padding: 1rem;
-    border-radius: 1rem;
-    border: 1px solid rgba(15, 118, 110, 0.12);
-    background: rgba(255, 255, 255, 0.8);
-    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-  }
-
-  .project-link strong,
-  .channel-chip strong {
-    margin-top: 0.45rem;
-    font-size: 1.05rem;
-    line-height: 1.4;
-  }
-
-  .project-link small,
-  .channel-chip strong,
-  .surface-card span {
-    margin-top: 0.55rem;
-    color: var(--muted);
-    line-height: 1.7;
-    word-break: break-word;
-  }
-
-  .channel-groups {
-    display: grid;
-    gap: 1.2rem;
-    margin-top: 1rem;
-  }
-
-  .channel-groups section {
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .channel-groups h3 {
+  .story-empty p:last-child {
     margin: 0;
-    font-size: 0.9rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .channel-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.8rem;
-  }
-
-  .resource-list {
-    grid-template-columns: 1fr;
-  }
-
-  .about-story-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  .about-card {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 252, 251, 0.88));
-  }
-
-  .about-card h2,
-  .surface-card h3 {
-    margin-top: 1rem;
-    font-size: clamp(1.3rem, 1.8vw, 1.8rem);
-    line-height: 1.12;
-  }
-
-  .public-surface-shell {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .surface-intro {
-    background:
-      radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 24%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 252, 250, 0.88));
-  }
-
-  .surface-intro p:last-child {
-    margin-top: 0.8rem;
-    max-width: 66ch;
+    max-width: 40rem;
     color: var(--muted);
     line-height: 1.8;
   }
 
-  .surface-grid {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.9rem;
+  .story-section :global(.markdown) {
+    font-size: 1rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
-  .surface-card {
-    display: grid;
-    gap: 0.5rem;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 252, 250, 0.86));
+  .story-section :global(.markdown p),
+  .story-section :global(.markdown li),
+  .story-section :global(.markdown a) {
+    overflow-wrap: anywhere;
   }
 
-  @media (max-width: 1100px) {
-    .about-atlas,
-    .about-network-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .surface-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  .story-section :global(.markdown code) {
+    word-break: break-all;
   }
 
-  @media (max-width: 960px) {
-    .about-signal-grid,
-    .project-grid,
-    .channel-list,
-    .about-story-grid {
-      grid-template-columns: 1fr;
-    }
+  .story-section :global(.markdown > :last-child),
+  .story-empty p:last-child {
+    margin-bottom: 0;
   }
 
   @media (max-width: 720px) {
-    .hero-topline {
-      flex-direction: column;
-      align-items: flex-start;
+    .about-hero::before {
+      top: 0.72rem;
+      right: 0.78rem;
+      font-size: clamp(2.35rem, 12vw, 3.8rem);
     }
 
-    .access-grid,
-    .surface-grid {
-      grid-template-columns: 1fr;
+    .about-hero {
+      padding: 0.96rem 0.96rem 0.92rem;
+    }
+
+    .story-section h2,
+    .story-empty h2 {
+      margin-top: 0.85rem;
     }
   }
 </style>

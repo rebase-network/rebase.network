@@ -166,11 +166,20 @@ onBeforeUnmount(() => {
       </section>
 
       <div class="panel table-panel">
-        <table class="data-table dense-table admin-list-table">
+        <table class="data-table dense-table admin-list-table admin-list-table-secondary">
+          <colgroup>
+            <col class="admin-col-episode" />
+            <col />
+            <col class="admin-status-filter-column" />
+            <col class="admin-col-count" />
+            <col class="admin-col-time" />
+            <col class="admin-col-updated" />
+            <col class="admin-col-actions" />
+          </colgroup>
           <thead>
             <tr>
-              <th>期数</th>
-              <th class="admin-col-editor">编辑</th>
+              <th class="admin-col-episode">期数</th>
+              <th>编辑</th>
               <th class="admin-status-filter-column">
                 <div ref="statusFilterRef" class="admin-table-filter-menu">
                   <button
@@ -208,7 +217,7 @@ onBeforeUnmount(() => {
               <th class="admin-col-count">条目数</th>
               <th class="admin-col-time">发布时间</th>
               <th class="admin-col-updated">更新时间</th>
-              <th></th>
+              <th class="admin-col-actions">操作</th>
             </tr>
           </thead>
           <tbody>
@@ -216,19 +225,19 @@ onBeforeUnmount(() => {
               <td class="admin-table-empty-row" colspan="7">当前筛选条件下没有极客日报内容，请调整搜索或状态筛选。</td>
             </tr>
             <tr v-for="row in rows" :key="row.id">
-              <td>
-                <div class="table-cell-stack">
-                  <strong>{{ row.title }}</strong>
-                  <div class="muted-row">第 {{ row.episodeNumber }} 期</div>
+              <td class="admin-list-primary-cell">
+                <div class="table-cell-stack admin-list-primary">
+                  <strong class="admin-list-title">{{ row.title }}</strong>
+                  <div class="muted-row admin-list-subtitle">第 {{ row.episodeNumber }} 期</div>
                 </div>
               </td>
               <td>{{ row.editors.length > 0 ? row.editors.join('、') : '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td>{{ row.itemCount }}</td>
-              <td>{{ formatDateTime(row.publishedAt) }}</td>
-              <td>{{ formatDateTime(row.updatedAt) }}</td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.publishedAt ?? undefined">{{ formatDateTime(row.publishedAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
-                <div class="table-action-list">
+                <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/geekdaily/${row.id}/edit`">编辑</RouterLink>
                   <a class="table-link" :href="getPublicSiteUrl(getGeekDailyEpisodePath(row.episodeNumber))" target="_blank" rel="noreferrer">前台预览</a>
                 </div>

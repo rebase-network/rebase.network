@@ -297,6 +297,8 @@ export const getPublicAboutPage = async () => {
       title: payload.about.title,
       summary: payload.about.summary,
     },
+    seoTitle: payload.about.seoTitle,
+    seoDescription: payload.about.seoDescription,
     sections: payload.about.sections,
   };
 };

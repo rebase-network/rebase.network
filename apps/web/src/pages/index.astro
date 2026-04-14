@@ -27,7 +27,7 @@ const liveWireTypeLabel = {
   <section class="shell page-hero home-hero">
     <article class="hero-panel card masthead-panel">
       <div class="hero-topline">
-        <p class="hero-kicker">面向建设者的社区媒体</p>
+        <p class="hero-kicker">建设面向开发者和创新者的社区</p>
       </div>
       <h1 class="hero-title">{site.heroTitle}</h1>
       <p class="hero-summary">{site.heroSummary}</p>
@@ -41,9 +41,7 @@ const liveWireTypeLabel = {
     <aside class="signal-panel card live-desk">
       <SectionHeader
         compact
-        eyebrow="社区实时线"
-        title="正在发生什么"
-        description="用一条实时更新的社区新闻线，把文章、活动、GeekDaily 和招聘放在同一个阅读入口里。"
+        title="社区正在发生什么"
       />
       <ol class="live-wire-list">
         {liveWire.map((item) => (
@@ -75,7 +73,7 @@ const liveWireTypeLabel = {
     <SectionHeader
       compact
       title="近期极客日报"
-      description="日报是 Rebase 最稳定的社区更新机制，也是搜索与 RSS 最常被消费的入口。"
+      description="日报是最稳定的社区更新机制，紧随时代变化，也是搜索与RSS最常用的入口"
       href="/geekdaily"
       hrefLabel="浏览极客日报"
     />
@@ -90,7 +88,7 @@ const liveWireTypeLabel = {
     <SectionHeader
       compact
       title="近期文章"
-      description="从产品、社区到信息架构，公开记录 Rebase 的想法与方法。"
+      description="从产品、社区、新技术、新探索到信息架构，公开记录社区内的想法"
       href="/articles"
       hrefLabel="浏览全部文章"
     />
@@ -105,7 +103,7 @@ const liveWireTypeLabel = {
     <SectionHeader
       compact
       title="新增招聘信息"
-      description="帮助读者快速理解岗位背景、工作模式和联系方式。"
+      description="由招聘方在社区github上提交的招聘信息，社区志愿者只做最简单的格式筛选，大家需要认真辨别"
       href="/who-is-hiring"
       hrefLabel="浏览全部职位"
     />
@@ -120,7 +118,7 @@ const liveWireTypeLabel = {
     <SectionHeader
       compact
       title="社区活动"
-      description="第一版先聚焦活动展示与报名入口，后续再扩展更复杂的活动能力。"
+      description="由 Rebase 主办和参与合作的活动，以及在github上提交的活动都将展示在这里"
       href="/events"
       hrefLabel="查看活动"
     />
@@ -238,7 +236,10 @@ const liveWireTypeLabel = {
   }
 
   .masthead-panel .hero-title {
-    max-width: 11ch;
+    max-width: 16ch;
+    font-size: clamp(2.35rem, 3vw + 1rem, 3.55rem);
+    line-height: 1.1;
+    letter-spacing: -0.035em;
     text-wrap: balance;
   }
 
@@ -252,7 +253,6 @@ const liveWireTypeLabel = {
 
   .masthead-panel .button-row {
     gap: 0.72rem;
-    margin-top: 1.18rem;
   }
 
   .masthead-panel .button-link {

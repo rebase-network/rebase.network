@@ -168,7 +168,16 @@ onBeforeUnmount(() => {
       </section>
 
       <div class="panel table-panel">
-        <table class="data-table dense-table admin-list-table">
+        <table class="data-table dense-table admin-list-table admin-list-table-primary">
+          <colgroup>
+            <col />
+            <col class="admin-col-editor" />
+            <col class="admin-status-filter-column" />
+            <col class="admin-col-remote" />
+            <col class="admin-col-date" />
+            <col class="admin-col-updated" />
+            <col class="admin-col-actions" />
+          </colgroup>
           <thead>
             <tr>
               <th>团队 / 岗位</th>
@@ -208,9 +217,9 @@ onBeforeUnmount(() => {
                 </div>
               </th>
               <th class="admin-col-remote">远程</th>
-              <th class="admin-col-time">截止日期</th>
+              <th class="admin-col-date">截止日期</th>
               <th class="admin-col-updated">最后更新</th>
-              <th></th>
+              <th class="admin-col-actions">操作</th>
             </tr>
           </thead>
           <tbody>
@@ -218,19 +227,19 @@ onBeforeUnmount(() => {
               <td class="admin-table-empty-row" colspan="7">当前筛选条件下没有招聘信息，请调整搜索或状态筛选。</td>
             </tr>
             <tr v-for="row in rows" :key="row.id">
-              <td>
-                <div class="table-cell-stack">
-                  <strong>{{ row.companyName }}</strong>
-                  <div class="muted-row">{{ row.roleTitle }}</div>
+              <td class="admin-list-primary-cell">
+                <div class="table-cell-stack admin-list-primary">
+                  <strong class="admin-list-title">{{ row.companyName }}</strong>
+                  <div class="muted-row admin-list-subtitle">{{ row.roleTitle }}</div>
                 </div>
               </td>
               <td>{{ row.editorName || '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td>{{ formatBoolean(row.supportsRemote) }}</td>
-              <td>{{ formatDate(row.expiresAt) }}</td>
-              <td>{{ formatDateTime(row.updatedAt) }}</td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.expiresAt ?? undefined">{{ formatDate(row.expiresAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
-                <div class="table-action-list">
+                <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/jobs/${row.id}/edit`">编辑</RouterLink>
                   <a class="table-link" :href="getPublicSiteUrl(`/who-is-hiring/${row.slug}`)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>

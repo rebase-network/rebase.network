@@ -168,7 +168,15 @@ onBeforeUnmount(() => {
       </section>
 
       <div class="panel table-panel">
-        <table class="data-table dense-table admin-list-table">
+        <table class="data-table dense-table admin-list-table admin-list-table-primary">
+          <colgroup>
+            <col />
+            <col class="admin-col-author" />
+            <col class="admin-status-filter-column" />
+            <col class="admin-col-time" />
+            <col class="admin-col-updated" />
+            <col class="admin-col-actions" />
+          </colgroup>
           <thead>
             <tr>
               <th>标题</th>
@@ -209,7 +217,7 @@ onBeforeUnmount(() => {
               </th>
               <th class="admin-col-time">发布时间</th>
               <th class="admin-col-updated">更新时间</th>
-              <th></th>
+              <th class="admin-col-actions">操作</th>
             </tr>
           </thead>
           <tbody>
@@ -217,18 +225,18 @@ onBeforeUnmount(() => {
               <td class="admin-table-empty-row" colspan="6">当前筛选条件下没有文章，请调整搜索或状态筛选。</td>
             </tr>
             <tr v-for="row in rows" :key="row.id">
-              <td>
-                <div class="table-cell-stack">
-                  <strong>{{ row.title }}</strong>
-                  <div class="muted-row">/{{ row.slug }}</div>
+              <td class="admin-list-primary-cell">
+                <div class="table-cell-stack admin-list-primary">
+                  <strong class="admin-list-title">{{ row.title }}</strong>
+                  <div class="muted-row admin-list-subtitle">/{{ row.slug }}</div>
                 </div>
               </td>
               <td>{{ row.authorNames.join('、') || '未填写作者' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
-              <td>{{ formatDateTime(row.publishedAt) }}</td>
-              <td>{{ formatDateTime(row.updatedAt) }}</td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.publishedAt ?? undefined">{{ formatDateTime(row.publishedAt) }}</time></td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
-                <div class="table-action-list">
+                <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/articles/${row.id}/edit`">编辑</RouterLink>
                   <a class="table-link" :href="getPublicSiteUrl(`/articles/${row.slug}`)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>

@@ -145,5 +145,7 @@ export interface AboutContent {
     title: string;
     summary: string;
   };
+  seoTitle?: string;
+  seoDescription?: string;
   sections: AboutSection[];
 }

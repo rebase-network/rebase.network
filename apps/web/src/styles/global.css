@@ -116,7 +116,7 @@ main {
   font-family: var(--display-font);
   font-size: clamp(2.8rem, 6vw, 5.8rem);
   line-height: 0.92;
-  max-width: 12ch;
+  max-width: 16ch;
   letter-spacing: -0.04em;
 }
 
@@ -132,7 +132,7 @@ main {
   display: flex;
   flex-wrap: wrap;
   gap: 0.8rem;
-  margin-top: 1.4rem;
+  margin-top: 1.25rem;
 }
 
 .button-link {
@@ -830,6 +830,7 @@ h4 {
 }
 
 .jobs-hero {
+  padding: 1.22rem 1.34rem 1.14rem;
   background:
     radial-gradient(circle at top left, rgba(243, 196, 110, 0.28), transparent 30%),
     radial-gradient(circle at 92% 18%, rgba(56, 189, 248, 0.16), transparent 24%),
@@ -839,23 +840,21 @@ h4 {
 .jobs-hero::before {
   content: 'HIRING';
   position: absolute;
-  top: 1rem;
-  right: 1.25rem;
-  color: rgba(17, 94, 89, 0.08);
+  top: 0.95rem;
+  right: 1.15rem;
+  color: rgba(17, 94, 89, 0.065);
   font-family: var(--display-font);
-  font-size: clamp(3.8rem, 8vw, 6.6rem);
+  font-size: clamp(3.2rem, 6vw, 5.6rem);
   letter-spacing: 0.08em;
   line-height: 0.82;
   pointer-events: none;
 }
 
 .jobs-hero .hero-title {
-  max-width: 10ch;
-  font-size: clamp(2.4rem, 4.9vw, 4.6rem);
-}
-
-.jobs-hero .hero-summary {
-  max-width: 52ch;
+  max-width: 16ch;
+  font-size: clamp(2.35rem, 3vw + 1rem, 3.55rem);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
 }
 
 .jobs-toolbar {
@@ -926,6 +925,16 @@ h4 {
   .jobs-hero .hero-topline {
     align-items: start;
     justify-content: start;
+  }
+
+  .jobs-hero::before {
+    top: 0.8rem;
+    right: 0.9rem;
+    font-size: clamp(2.7rem, 14vw, 4.4rem);
+  }
+
+  .jobs-hero {
+    padding: 1.05rem 1.05rem 1rem;
   }
 
   .jobs-toolbar {

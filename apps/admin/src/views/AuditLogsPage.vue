@@ -166,38 +166,45 @@ onMounted(() => {
       </div>
 
       <div v-else class="panel table-panel">
-        <table class="data-table dense-table">
+        <table class="data-table dense-table admin-list-table admin-list-table-secondary admin-list-table-secondary-wide">
+          <colgroup>
+            <col class="admin-col-audit-time" />
+            <col class="admin-col-audit-action" />
+            <col class="admin-col-audit-target" />
+            <col class="admin-col-audit-actor" />
+            <col />
+          </colgroup>
           <thead>
             <tr>
-              <th>时间</th>
-              <th>动作</th>
-              <th>目标</th>
-              <th>操作者</th>
+              <th class="admin-col-audit-time">时间</th>
+              <th class="admin-col-audit-action">动作</th>
+              <th class="admin-col-audit-target">目标</th>
+              <th class="admin-col-audit-actor">操作者</th>
               <th>摘要</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="row in rows" :key="row.id">
-              <td>{{ formatDateTime(row.createdAt) }}</td>
+              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.createdAt">{{ formatDateTime(row.createdAt) }}</time></td>
               <td>
-                <div class="table-cell-stack">
-                  <strong>{{ formatAuditAction(row.action) }}</strong>
-                  <div class="muted-row">{{ row.action }}</div>
+                <div class="table-cell-stack admin-list-primary">
+                  <strong class="admin-list-title">{{ formatAuditAction(row.action) }}</strong>
+                  <div class="muted-row admin-list-subtitle">{{ row.action }}</div>
                 </div>
               </td>
               <td>
-                <div class="table-cell-stack">
-                  <strong>{{ formatAuditTargetType(row.targetType) }}</strong>
-                  <div class="muted-row">{{ row.targetId ?? '未绑定目标 id' }}</div>
+                <div class="table-cell-stack admin-list-primary">
+                  <strong class="admin-list-title">{{ formatAuditTargetType(row.targetType) }}</strong>
+                  <div class="muted-row admin-list-subtitle">{{ row.targetId ?? '未绑定目标 id' }}</div>
                 </div>
               </td>
               <td>
-                <div class="table-cell-stack">
-                  <strong>{{ row.actorDisplayName ?? '系统' }}</strong>
-                  <div class="muted-row">{{ row.actorEmail ?? '—' }}</div>
+                <div class="table-cell-stack admin-list-primary">
+                  <strong class="admin-list-title">{{ row.actorDisplayName ?? '系统' }}</strong>
+                  <div class="muted-row admin-list-subtitle">{{ row.actorEmail ?? '—' }}</div>
                 </div>
               </td>
-              <td>{{ formatAuditSummary(row.summary) }}</td>
+              <td><div class="admin-list-summary">{{ formatAuditSummary(row.summary) }}</div></td>
             </tr>
           </tbody>
         </table>
