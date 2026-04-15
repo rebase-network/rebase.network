@@ -164,6 +164,14 @@ db_download_remote() {
   rsync -az --human-readable "${REMOTE_HOST}:${resolved_remote}" "$local_path"
 }
 
+db_list_remote() {
+  local target_dir="$1"
+  local resolved_dir
+
+  resolved_dir="$(resolve_remote_abs_path "$target_dir")"
+  remote_exec "if [ -d $(quote "$resolved_dir") ]; then cd $(quote "$resolved_dir") && ls -lh; else echo '[manage] no files under $(quote "$resolved_dir")'; fi"
+}
+
 db_export_table_remote() {
   local table_name="$1"
   local export_path="$2"
@@ -177,6 +185,22 @@ db_export_table_remote() {
   copy_sql="COPY ${table_name} TO STDOUT WITH CSV HEADER"
   remote_repo_exec "mkdir -p $(quote "$(dirname "$export_target")") && docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote "export PGPASSWORD=\"\$POSTGRES_PASSWORD\"; exec psql -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\" -v ON_ERROR_STOP=1 -P pager=off -c $(quote "$copy_sql")") > $(quote "$export_target") && ls -lh $(quote "$export_target")"
   log "table export written to ${resolved_target}"
+}
+
+db_export_query_remote() {
+  local query_sql="$1"
+  local export_path="$2"
+  local export_target="$export_path"
+  local resolved_target="$export_path"
+  local copy_sql
+
+  query_sql="${query_sql%;}"
+  [[ -n "$query_sql" ]] || die "db export-query requires a non-empty SELECT"
+  [[ "$export_path" = /* ]] || resolved_target="${REMOTE_DIR}/${export_path}"
+
+  copy_sql="COPY (${query_sql}) TO STDOUT WITH CSV HEADER"
+  remote_repo_exec "mkdir -p $(quote "$(dirname "$export_target")") && docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote "export PGPASSWORD=\"\$POSTGRES_PASSWORD\"; exec psql -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\" -v ON_ERROR_STOP=1 -P pager=off -c $(quote "$copy_sql")") > $(quote "$export_target") && ls -lh $(quote "$export_target")"
+  log "query export written to ${resolved_target}"
 }
 
 sync_repo() {
@@ -223,7 +247,7 @@ Usage:
   ./ops/manage.sh health
   ./ops/manage.sh ready
   ./ops/manage.sh exec <service> -- <command...>
-  ./ops/manage.sh db <shell|query|logs|restart|backup|download|export|migrate>
+  ./ops/manage.sh db <shell|query|logs|restart|backup|download|list-backups|list-exports|export|export-query|migrate>
   ./ops/manage.sh bootstrap-admin
   ./ops/manage.sh seed
   ./ops/manage.sh ssh
@@ -242,7 +266,9 @@ Examples:
   ./ops/manage.sh logs api 200
   ./ops/manage.sh db query "select count(*) from geekdaily_episodes;"
   ./ops/manage.sh db backup
+  ./ops/manage.sh db list-backups
   ./ops/manage.sh db download backups/rebase-20260415-120000.sql.gz ./rebase.sql.gz
+  ./ops/manage.sh db export-query "select id, email from staff_accounts" exports/staff_accounts.csv
   ./ops/manage.sh exec api -- pnpm --filter @rebase/api bootstrap-admin
 EOF
 }
@@ -366,7 +392,10 @@ Database commands:
   ./ops/manage.sh db restart
   ./ops/manage.sh db backup [remote-path]
   ./ops/manage.sh db download <remote-path> [local-path]
+  ./ops/manage.sh db list-backups
+  ./ops/manage.sh db list-exports
   ./ops/manage.sh db export <table> [remote-path]
+  ./ops/manage.sh db export-query "<select ...>" [remote-path]
   ./ops/manage.sh db migrate
 EOF
         ;;
@@ -408,12 +437,30 @@ EOF
         db_download_remote "$remote_path" "$local_path"
         ;;
 
+      list-backups)
+        assert_remote_layout
+        db_list_remote "backups"
+        ;;
+
+      list-exports)
+        assert_remote_layout
+        db_list_remote "exports"
+        ;;
+
       export)
         assert_remote_layout
         table_name="${1:-}"
         export_path="${2:-exports/${1:-table}-$(date +%Y%m%d-%H%M%S).csv}"
         [[ -n "$table_name" ]] || die "db export requires a table name"
         db_export_table_remote "$table_name" "$export_path"
+        ;;
+
+      export-query)
+        assert_remote_layout
+        query_sql="${1:-}"
+        export_path="${2:-exports/query-$(date +%Y%m%d-%H%M%S).csv}"
+        [[ -n "$query_sql" ]] || die "db export-query requires an SQL query"
+        db_export_query_remote "$query_sql" "$export_path"
         ;;
 
       migrate)

@@ -13,6 +13,7 @@
 ./ops/manage.sh ready
 ./ops/manage.sh db query "select count(*) from geekdaily_episodes;"
 ./ops/manage.sh db backup
+./ops/manage.sh db list-backups
 ./ops/manage.sh db export articles
 ./ops/manage.sh bootstrap-admin
 ```

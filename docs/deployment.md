@@ -113,6 +113,7 @@ git rev-parse --short HEAD
 ./ops/manage.sh ready
 ./ops/manage.sh db query "select count(*) from geekdaily_episodes;"
 ./ops/manage.sh db backup
+./ops/manage.sh db list-backups
 ./ops/manage.sh db export articles
 ```
 
@@ -127,7 +128,10 @@ git rev-parse --short HEAD
 | `./ops/manage.sh ready` | verify API readiness from the server side |
 | `./ops/manage.sh db backup` | create a remote PostgreSQL backup |
 | `./ops/manage.sh db download <remote-path> [local-path]` | download a remote backup or export to the local machine |
+| `./ops/manage.sh db list-backups` | list remote PostgreSQL backup files |
+| `./ops/manage.sh db list-exports` | list remote CSV export files |
 | `./ops/manage.sh db export <table> [remote-path]` | export a PostgreSQL table to a remote CSV file |
+| `./ops/manage.sh db export-query "<select ...>" [remote-path]` | export a query result to a remote CSV file |
 
 ### Local verification commands
 
