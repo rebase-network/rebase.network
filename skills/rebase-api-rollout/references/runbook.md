@@ -39,6 +39,22 @@ Use only when the task explicitly requires them:
 4. use `./ops/manage.sh db export <table>` or `./ops/manage.sh db export-query "<select ...>"` for review and reporting
 5. verify export output with `./ops/manage.sh db list-exports`
 
+## Common Export Examples
+
+```bash
+./ops/manage.sh db export-query \
+  "select id, display_name, status, created_at from staff_accounts order by created_at desc" \
+  exports/staff_accounts.csv
+
+./ops/manage.sh db export-query \
+  "select slug, title, status, published_at from articles order by published_at desc nulls last" \
+  exports/articles-latest.csv
+
+./ops/manage.sh db export-query \
+  "select episode_number, slug, status, published_at from geekdaily_episodes order by episode_number desc limit 100" \
+  exports/geekdaily-latest.csv
+```
+
 ## What `check` Should Confirm
 
 `./ops/manage.sh check` should validate:

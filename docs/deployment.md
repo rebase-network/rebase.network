@@ -145,6 +145,22 @@ For routine operations, follow this order:
 
 Treat server-side backups and exports as read-only operational artifacts. Do not overwrite production data through ad-hoc restore steps.
 
+### Common export-query examples
+
+```bash
+./ops/manage.sh db export-query \
+  "select id, display_name, status, created_at from staff_accounts order by created_at desc" \
+  exports/staff_accounts.csv
+
+./ops/manage.sh db export-query \
+  "select slug, title, status, published_at from articles order by published_at desc nulls last" \
+  exports/articles-latest.csv
+
+./ops/manage.sh db export-query \
+  "select episode_number, slug, status, published_at from geekdaily_episodes order by episode_number desc limit 100" \
+  exports/geekdaily-latest.csv
+```
+
 ### Local verification commands
 
 ```bash
