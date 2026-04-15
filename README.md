@@ -1,19 +1,11 @@
 # Rebase Community Website
 
-This repository contains the new Rebase community website.
+This repository contains the Rebase community website and internal admin workspace.
 
-The project is now converging on two parallel deliverables:
+The repository covers two parallel deliverables:
 
 - a public Rebase website for readers
 - a custom Rebase admin workspace for community operators
-
-## Project Status
-
-The legacy implementation has been removed from the working tree.
-
-Git history is preserved, and the repo is being rebuilt around a Rebase-specific architecture.
-
-The target architecture is no longer a headless CMS workflow.
 
 ## Target V1 Architecture
 
@@ -57,11 +49,11 @@ The target architecture is no longer a headless CMS workflow.
 - `docs/admin-data-model.md`: backend tables, relations, constraints, and workflow states
 - `docs/implementation-plan.md`: development phases and milestone plan
 - `docs/acceptance-criteria.md`: module-level acceptance criteria for product, content, and operations
-- `docs/quality-assurance.md`: browser checks, automated checks, sample content, and release validation flow
-- `docs/local-development.md`: current local setup, service commands, and archive import notes
-- `docs/deployment.md`: Worker, Docker Compose, Tunnel, and rollout commands for production
-- `docs/production-config.md`: production inventory, hostnames, Workers, server paths, and config ownership
-- `docs/launch-checklist.md`: launch-critical routes, domain preparation, health checks, and observability baseline
+- `docs/quality-assurance.md`: development validation standards and smoke checks
+- `docs/local-development.md`: local setup, daily commands, and archive import notes
+- `docs/deployment.md`: operator handbook
+- `docs/production-config.md`: production settings index
+- `docs/launch-checklist.md`: release verification checklist
 
 ## Local Development
 
@@ -99,7 +91,7 @@ Useful current commands:
 - `pnpm typecheck:api`: typecheck the API app
 - `pnpm db:up`: start PostgreSQL only
 - `pnpm db:migrate`: apply Drizzle migrations
-- `pnpm db:seed`: seed baseline content and the GeekDaily archive
+- `pnpm db:seed`: seed baseline content and load the GeekDaily archive when `geekdaily.csv` is available
 - `pnpm admin:bootstrap`: create or refresh the default local operator account
 - `pnpm test:smoke`: run Playwright smoke checks against the current build flow
 
@@ -115,28 +107,19 @@ Default local operator account after `pnpm local:bootstrap`:
 - email: `admin@rebase.local`
 - password: `RebaseAdmin123456!`
 
-If you receive a refreshed `geekdaily.csv`, regenerate the committed archive SQL with:
+If you have an archived or refreshed `geekdaily.csv`, re-run the seed step to reload GeekDaily history into the local database:
 
 ```bash
-pnpm cms:generate:geekdaily
+pnpm db:seed
 ```
 
-## Deployment Note
+## Production Docs
 
-The agreed V1 production split is:
+Use these docs as the entry points:
 
-- `apps/web` on Cloudflare Workers for `rebase.network` and `rebase.community`
-- `apps/admin` on a separate Cloudflare Worker for `admin.rebase.network`
-- `apps/api`, PostgreSQL, and `cloudflared` on `rebase@101.33.75.240` via Docker Compose
-- `media.rebase.network` on top of the Cloudflare R2 public bucket once the custom domain is attached
-
-Release policy:
-
-- ongoing work continues on `dev`
-- merge `dev` into `main` only when the release candidate is validated
-- production deployment should track `main`, not `dev`
-
-Remote API and service operations can be run through `ops/manage.sh`.
+- `docs/deployment.md`: operator handbook
+- `docs/production-config.md`: production settings index
+- `docs/launch-checklist.md`: release verification checklist
 
 ## Repository Conventions
 

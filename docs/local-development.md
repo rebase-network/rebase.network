@@ -1,6 +1,6 @@
 # Local Development
 
-This repository now treats the custom Rebase stack as the default local workflow.
+This document covers the default local workflow only. Production operations live in `docs/deployment.md`, `docs/production-config.md`, and `docs/launch-checklist.md`.
 
 ## Local Stack
 
@@ -15,7 +15,7 @@ The active local stack is:
 
 The public site now runs in Astro server mode, so published content changes should appear on the next request instead of waiting for a full static rebuild.
 
-For local `astro dev`, the repo intentionally skips the Cloudflare adapter and uses Astro's normal dev server to avoid Miniflare-specific startup issues. Production builds still use the Cloudflare adapter.
+For local `astro dev`, the repo intentionally skips the Cloudflare adapter and uses Astro's normal dev server to avoid Miniflare-specific startup issues. Production Worker settings live in `docs/production-config.md`.
 
 ## One-Time Setup
 
@@ -146,7 +146,7 @@ Run individual services:
 - `pnpm db:down`: stop PostgreSQL
 - `pnpm db:logs`: inspect PostgreSQL logs
 - `pnpm db:migrate`: apply Drizzle migrations
-- `pnpm db:seed`: reseed baseline content and GeekDaily archive
+- `pnpm db:seed`: reseed baseline content and load the GeekDaily archive when `geekdaily.csv` is available
 - `pnpm admin:bootstrap`: recreate or refresh the default local operator account
 - `pnpm build:api`: build the API bundle
 - `pnpm build:admin`: build the admin workspace
@@ -156,16 +156,12 @@ Run individual services:
 
 ## GeekDaily Archive Import Input
 
-The committed GeekDaily archive still depends on `geekdaily.csv`.
+`geekdaily.csv` is an archived backup used to initialize GeekDaily history when needed.
 
-If the CSV is refreshed, regenerate the migration SQL with:
+If you have an archived or refreshed `geekdaily.csv`, re-run the seed step to reload GeekDaily history into the local database:
 
 ```bash
-pnpm cms:generate:geekdaily
+pnpm db:seed
 ```
 
-The generated file remains:
-
-- `infra/directus/sql/003_geekdaily_archive.sql`
-
-The path still lives under `infra/directus/` because the historical archive generator has not been renamed yet, but the active runtime stack is the custom Rebase admin + API system.
+If the file is absent, `pnpm db:seed` still completes and skips the GeekDaily archive import.

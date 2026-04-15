@@ -2,7 +2,7 @@
 
 ## Overview
 
-The new Rebase website is now designed around a custom community publishing stack.
+The Rebase website is designed around a custom community publishing stack.
 
 It separates:
 
@@ -125,7 +125,7 @@ api service (`apps/api`)
 1. A reader requests a public page on `rebase.network` or `rebase.community`.
 2. The Astro app runs on the public Cloudflare Worker.
 3. The worker fetches published content from `api.rebase.network`.
-4. Cloudflare routes that hostname through `cloudflared` to the API service on `rebase@101.33.75.240`.
+4. Cloudflare routes that hostname through `cloudflared` to the API service on the private backend host.
 5. The API reads structured content from PostgreSQL and media metadata from the assets table.
 6. Media assets are served from R2-backed URLs.
 7. Cloudflare cache is applied to improve repeat access performance.
@@ -135,7 +135,7 @@ api service (`apps/api`)
 1. A staff member opens `admin.rebase.network`.
 2. The admin UI is served by a dedicated Cloudflare Worker for `apps/admin`.
 3. The admin app calls authenticated routes on `api.rebase.network`.
-4. Cloudflare routes API traffic through `cloudflared` to the API service on `rebase@101.33.75.240`.
+4. Cloudflare routes API traffic through `cloudflared` to the API service on the private backend host.
 5. The API validates the request, checks permissions, and applies business rules.
 6. Structured data is written to PostgreSQL.
 7. Uploaded media is stored in R2 and referenced by metadata records.
@@ -144,14 +144,16 @@ api service (`apps/api`)
 
 ## Deployment Targets
 
-Agreed production deployment for V1:
+Steady-state production target for V1:
 
 - `apps/web` on a Cloudflare Worker bound to `rebase.network` and `rebase.community`
 - `apps/admin` on a separate Cloudflare Worker bound to `admin.rebase.network`
-- `apps/api` in Docker Compose on `rebase@101.33.75.240`
-- PostgreSQL in the same Docker Compose stack on `rebase@101.33.75.240`
+- `apps/api` in Docker Compose on the private backend host
+- PostgreSQL in the same Docker Compose stack on the private backend host
 - `cloudflared` in the same Docker Compose stack to expose `api.rebase.network` through Cloudflare Tunnel
-- public media served from Cloudflare R2, later attached to `media.rebase.network`
+- public media served from Cloudflare R2 on `media.rebase.network`
+
+For the production settings index and operator handbook, see `docs/production-config.md` and `docs/deployment.md`.
 
 ### Why Cloudflare Tunnel for the API
 
@@ -205,9 +207,9 @@ Fallback behavior:
 ## Release Strategy
 
 - daily development continues on `dev`
-- deployment documentation, infrastructure changes, and release validation can land on `dev` first
 - merge `dev` into `main` only when the release candidate is ready
 - production deployments should run from `main`, not directly from `dev`
+- release procedures and operator rules live in `docs/deployment.md`
 
 ## API Boundary
 

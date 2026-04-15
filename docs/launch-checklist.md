@@ -1,102 +1,69 @@
 # Launch Checklist
 
-This document captures the minimum launch and post-launch baseline for the first Rebase website release.
+Release verification checklist paired with `docs/deployment.md`.
 
-It is intentionally practical rather than exhaustive.
+## Initial Launch Only
 
-## Public Runtime Routes
+Before the first production launch, confirm:
 
-Before production rollout, verify that these routes return successfully:
+- `rebase.network` and `admin.rebase.network` are published by the GitHub-connected Cloudflare Workers
+- `api.rebase.network` is routed through Cloudflare Tunnel to the private backend stack
+- `media.rebase.network` is attached to the R2 bucket
+- the initial backend deployment scenario in `docs/deployment.md` has been completed
+- the first admin account can sign in
 
-- `/`
-- `/about`
-- `/who-is-hiring`
-- `/geekdaily`
-- `/articles`
-- `/events`
-- `/contributors`
-- `/rss.xml`
-- `/geekdaily/rss.xml`
-- `/articles/rss.xml`
-- `/events/rss.xml`
-- `/who-is-hiring/rss.xml`
-- `/robots.txt`
-- `/sitemap.xml`
-- `/healthz`
+## Every Production Release
 
-## Admin and API Routes
+Before a release, confirm:
 
-Before production rollout, verify these internal or operational routes:
+- the operator is following the matching scenario in `docs/deployment.md`
+- the release candidate moved from `dev` to `main` through the normal pull request flow
+- frontend changes, if any, were published by the GitHub-connected Cloudflare flow
+- backend changes, if any, were deployed from the intended `main` commit with `./ops/manage.sh`
+- production secrets and runtime settings are still the intended ones
 
-- admin login page
-- admin dashboard
-- API liveness endpoint such as `/health`
-- API readiness endpoint such as `/ready`
-- API version endpoint such as `/version`
+## Route Checks
 
-## Domain Preparation
+Verify these public routes:
 
-Primary public domain:
+- landing pages: `https://rebase.network/`, `https://rebase.network/about`
+- content hubs: `https://rebase.network/who-is-hiring`, `https://rebase.network/geekdaily`, `https://rebase.network/articles`, `https://rebase.network/events`, `https://rebase.network/contributors`
+- feeds: `https://rebase.network/rss.xml`, `https://rebase.network/geekdaily/rss.xml`, `https://rebase.network/articles/rss.xml`, `https://rebase.network/events/rss.xml`, `https://rebase.network/who-is-hiring/rss.xml`
+- discovery and health: `https://rebase.network/robots.txt`, `https://rebase.network/sitemap.xml`, `https://rebase.network/healthz`
 
-- `rebase.network`
+Verify these admin and API routes:
 
-Secondary public domain:
+- `https://admin.rebase.network`, admin login, admin dashboard
+- `https://api.rebase.network/health`, `https://api.rebase.network/ready`, `https://api.rebase.network/version`
 
-- preferred: `rebase.community` serves the same site directly
-- fallback: `rebase.community` returns a `301` redirect to `rebase.network`
+If `rebase.community` is part of the active public routing policy for the release, verify that domain too.
 
-Media domain:
+## Functional Checks
 
-- `media.rebase.network` should point to the Cloudflare R2 public bucket after the bucket is created
-- until then, use the default R2 public URL for testing and local integration
+Verify at least one real operator flow when the related area changed:
 
-Operational domains for V1:
+- content edit round trip
+- media upload round trip
+- affected public detail page or list page refresh
 
-- `admin.rebase.network` should point to the dedicated admin Worker
-- `api.rebase.network` should route through Cloudflare Tunnel to `apps/api` on `rebase@101.33.75.240`
+## Domain And SEO Checks
 
-## Health and Operations Baseline
-
-Recommended baseline:
-
-- `/healthz` verifies the public site runtime
-- `/health` verifies API liveness
-- `/ready` verifies API readiness and key dependencies
-- `cloudflared` stays connected and serving the `api.rebase.network` route
-- PostgreSQL remains private to the server and is not exposed on a public interface
-- external monitoring should probe the public site and API regularly
-
-Recommended production follow-up:
-
-- monitor `/healthz` from an external GitHub Actions workflow or another uptime tool
-- monitor the API readiness endpoint
-- alert on repeated failures rather than single transient failures
-
-## Deployment Flow Baseline
-
-Before the production rollout, verify:
-
-- production deployments are wired to `main` only
-- `dev` remains the integration branch for ongoing work
-- the `dev` to `main` merge happens only after release validation is complete
-- both Workers and the server stack are using the intended production secrets
-
-## SEO and Discovery Baseline
-
-Verify before launch:
+Verify:
 
 - canonical URLs point to `https://rebase.network`
 - Open Graph and Twitter metadata are present
 - fallback social image resolves correctly
 - `robots.txt` advertises the sitemap
-- `sitemap.xml` includes key public routes and content detail pages
+- `sitemap.xml` includes key public routes and content pages
+- at least one real uploaded asset resolves from `https://media.rebase.network`
 
-## Analytics and Observability Notes
+## Post-Release Monitoring
 
-V1 does not require a finalized frontend analytics stack before launch.
+Confirm after release:
 
-Current agreement:
-
-- frontend analytics can be added later
-- backend observability starts with health checks, audit logs, and external periodic probing
-- deeper metrics, dashboards, and alerts can evolve after the first release
+- `/healthz` stays healthy
+- `/ready` stays healthy
+- `cloudflared` remains connected
+- PostgreSQL is still private to the server
+- external monitoring is probing the public site and API
+- repeated failures alert the team instead of being silently ignored

@@ -1,15 +1,12 @@
 # Quality Assurance
 
-## Purpose
-
-This document defines how Rebase website work should be validated during development.
+Use this document for development-time validation. Use `docs/launch-checklist.md` for production release verification.
 
 The goal is to combine:
 
 - browser-based review
 - automated checks
 - realistic sample content
-- release-oriented verification
 
 ## Validation Layers
 
@@ -61,18 +58,11 @@ Recommended baseline sample set:
 - 4 contributors across at least 2 roles
 - a complete footer setup
 
-The provided `geekdaily.csv` should be used as a reference source for episode-level structure.
+An archived `geekdaily.csv`, when available, can be used as a reference source for episode-level structure.
 
-### 4. Release Validation
+### 4. Production Release
 
-Before a release, verify:
-
-- critical route accessibility
-- feed validity
-- metadata completeness
-- mobile behavior
-- domain readiness
-- media loading behavior
+Use `docs/launch-checklist.md` for domain, health, SEO, and post-release checks.
 
 ## Browser Review Checklist
 
@@ -118,9 +108,9 @@ Purpose:
 - confirm route generation or runtime wiring
 - catch feed generation failures
 
-### Route Smoke Tests
+### Local Route Smoke Tests
 
-Use browser automation to verify that critical routes load correctly.
+Use browser automation to verify that critical routes load correctly during development and CI. Production route verification stays in `docs/launch-checklist.md`.
 
 Recommended initial route set:
 

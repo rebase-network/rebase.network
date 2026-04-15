@@ -4,11 +4,11 @@
 
 Inspect these in order:
 
-1. SSH access to `rebase@101.33.75.240`
-2. remote repo dir exists: `/home/rebase/rebase.network`
+1. SSH access to the current server host in `docs/production-config.md`
+2. the remote project dir in `docs/production-config.md` exists
 3. remote `infra/production/server.env` exists
 4. Docker Engine and Docker Compose plugin are installed remotely
-5. compose file path still matches `infra/production/docker-compose.yml`
+5. the compose file path in `docs/production-config.md` still matches the server layout
 
 ## API Health Or Ready Fails
 
