@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-REMOTE_HOST="${REBASE_REMOTE_HOST:-rebase@101.33.75.240}"
+REMOTE_HOST="${REBASE_REMOTE_HOST:-rebase@rebase.network}"
 REMOTE_DIR="${REBASE_REMOTE_DIR:-/home/rebase/rebase.network}"
 COMPOSE_FILE="${REBASE_COMPOSE_FILE:-infra/production/docker-compose.yml}"
 ENV_FILE="${REBASE_SERVER_ENV:-infra/production/server.env}"

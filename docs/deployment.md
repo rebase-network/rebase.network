@@ -1,278 +1,155 @@
-# Deployment Guide
+# Deployment Manual
 
-## Goal
+This is the production operator handbook.
 
-Deploy the first Rebase release with the agreed split:
+Use `docs/production-config.md` for settings lookup and `docs/launch-checklist.md` for release verification.
 
-- `apps/web` on a Cloudflare Worker
-- `apps/admin` on a separate Cloudflare Worker
-- `apps/api`, PostgreSQL, and `cloudflared` on `rebase@101.33.75.240`
-- media on Cloudflare R2
+## Deployment Model
 
-This keeps the frontends at the edge while the writable backend stays on the server.
+| Surface | Runtime | Standard path |
+| --- | --- | --- |
+| Public site | Cloudflare Worker `rebase-web` | GitHub-connected Cloudflare auto-deploy from `main` |
+| Admin site | Cloudflare Worker `rebase-admin` | GitHub-connected Cloudflare auto-deploy from `main` |
+| API | Docker Compose on `rebase@rebase.network` | `./ops/manage.sh deploy api` |
+| Full backend stack | Docker Compose on `rebase@rebase.network` | `./ops/manage.sh deploy stack` |
+| Media | Cloudflare R2 `rebase-media` | Cloudflare-managed bucket and domain settings |
 
-For the current production inventory and ownership map, also see `docs/production-config.md`.
+Release rules:
 
-## Release Branch Rule
+- daily work stays on `dev`
+- release candidates move from `dev` to `main` through a pull request
+- frontend production publishes after Cloudflare detects updates on `main`
+- backend production is manual and must be deployed from the intended `main` commit
+- local `wrangler deploy` is not the normal production path
+- SSH examples use `rebase@rebase.network`; operator machines must resolve `rebase.network` to the backend server through local hosts or internal DNS
 
-- continue day-to-day work on `dev`
-- push validated work to `origin/dev`
-- create a pull request from `dev` to `main`
-- merge `dev` into `main` only after release validation passes
-- if the current operator cannot merge the pull request, stop and hand the PR to a maintainer instead of merging locally
-- production deployments should run from `main`
-- `apps/web` and `apps/admin` production must be deployed by Cloudflare Workers Builds from `main`
-- local `wrangler deploy` to the production Workers is not part of the normal release flow
+## Scenario 1: Initial Deployment
 
-## Production Release Policy
+### 1. Configure Cloudflare frontend projects
 
-For Rebase, production frontend releases now follow a single source of truth:
+Keep these settings aligned:
 
-1. finish work on `dev`
-2. validate locally and with preview builds
-3. push the validated branch to `origin/dev`
-4. create a pull request from `dev` to `main`
-5. merge the release candidate into `main` through the GitHub pull request
-6. let Cloudflare Workers Builds publish production from `main`
+| Worker | Domains | Branch | Root | Install | Build | Deploy |
+| --- | --- | --- | --- | --- | --- | --- |
+| `rebase-web` | `rebase.network`, `rebase.community` | `main` | `/` | `pnpm install --frozen-lockfile` | `pnpm build:web:prod` | `pnpm exec wrangler deploy --config apps/web/dist/server/wrangler.production.json` |
+| `rebase-admin` | `admin.rebase.network` | `main` | `/` | `pnpm install --frozen-lockfile` | `pnpm build:admin:prod` | `pnpm exec wrangler deploy --config apps/admin/wrangler.production.jsonc` |
 
-This avoids a mismatch where production is newer than GitHub.
+Required Cloudflare values:
 
-Practical guardrails in this repo:
+- `rebase-web`: `SESSION_KV_NAMESPACE_ID`
+- `rebase-web`: `SESSION_KV_NAMESPACE_PREVIEW_ID` when preview deploys need an explicit value
+- `rebase-admin`: no extra dashboard build variables are currently required
 
-- `pnpm deploy:web` is intentionally blocked for production
-- `pnpm deploy:admin` is intentionally blocked for production
-- local verification should use `pnpm deploy:web:dry-run` and `pnpm deploy:admin:dry-run`
-- if an emergency manual production deploy ever happens outside this policy, the matching code must be pushed and merged back immediately before the next release
+### 2. Prepare the backend server
 
-## Prerequisites
-
-Local machine:
-
-- `wrangler login` already completed
-- Docker and Docker Compose available for local and server validation
-- access to the Cloudflare account that owns `rebase.network`
-
-Server:
-
-- SSH access to `rebase@101.33.75.240`
-- Docker Engine and Docker Compose plugin installed
-- this repository checked out on the server
-
-Cloudflare resources:
-
-- Worker route for `rebase.network`
-- Worker route for `rebase.community`
-- Worker route for `admin.rebase.network`
-- remotely managed Cloudflare Tunnel for `api.rebase.network`
-- R2 bucket for media assets
-
-## Cloudflare Git Builds
-
-Cloudflare Workers Builds supports direct GitHub integration, production branch selection, non-production branch builds, monorepo root directories, custom build and deploy commands, and build watch paths.
-
-For Rebase, the recommended Git strategy is:
-
-- connect both Workers to the same GitHub repository
-- set the production branch to `main` for both Workers
-- enable non-production branch builds for both Workers
-- keep ongoing work on `dev` and let Cloudflare create preview builds for `dev` pushes
-- push release candidates to `origin/dev` before opening the production PR
-- use a pull request from `dev` to `main` as the only normal path into production
-- merge `dev` into `main` only when the release candidate is ready
-
-This means we do not need to merge `dev` into `main` just to enable Git-based auto builds. We only merge when we want the current release candidate to become production.
-
-### `rebase-web` Worker Build Settings
-
-Use these settings in Workers > `rebase-web` > Settings > Build:
-
-- Git repository: this repository
-- production branch: `main`
-- non-production branch builds: enabled
-- root directory: `/`
-- install command: `pnpm install --frozen-lockfile`
-- build command: `pnpm build:web:prod`
-- deploy command: `pnpm exec wrangler deploy --config apps/web/dist/server/wrangler.production.json`
-- non-production branch deploy command: `pnpm exec wrangler versions upload --config apps/web/dist/server/wrangler.production.json`
-
-Recommended build watch paths for `rebase-web`:
-
-- include: `apps/web/**, packages/**, scripts/deploy/**, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.base.json`
-- exclude: `docs/**, infra/**, refcode/**, apps/admin/**, apps/api/**`
-
-Required environment variables for `rebase-web` build settings:
-
-- `SESSION_KV_NAMESPACE_ID`: the existing KV namespace id for `rebase-web-session`
-- `SESSION_KV_NAMESPACE_PREVIEW_ID`: optional; use the same value as `SESSION_KV_NAMESPACE_ID` unless you want a dedicated preview namespace
-
-This avoids Wrangler trying to auto-provision a duplicate `SESSION` KV namespace during deploy.
-
-Cloudflare-specific note:
-
-- do not wrap the install or build command in `corepack` unless Workers Builds stops recognizing `pnpm` correctly
-- the normal dashboard setup should keep `pnpm install --frozen-lockfile` as the install command
-- `SESSION_KV_NAMESPACE_ID` and `SESSION_KV_NAMESPACE_PREVIEW_ID` should be configured as plain environment values in Workers Builds, not secrets
-
-### `rebase-admin` Worker Build Settings
-
-Use these settings in Workers > `rebase-admin` > Settings > Build:
-
-- Git repository: this repository
-- production branch: `main`
-- non-production branch builds: enabled
-- root directory: `/`
-- install command: `pnpm install --frozen-lockfile`
-- build command: `pnpm build:admin:prod`
-- deploy command: `pnpm exec wrangler deploy --config apps/admin/wrangler.production.jsonc`
-- non-production branch deploy command: `pnpm exec wrangler versions upload --config apps/admin/wrangler.production.jsonc`
-
-Recommended build watch paths for `rebase-admin`:
-
-- include: `apps/admin/**, packages/shared/**, scripts/deploy/**, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.base.json`
-- exclude: `docs/**, infra/**, refcode/**, apps/web/**`
-
-Required environment variables for `rebase-admin` build settings:
-
-- `VITE_API_BASE_URL=https://api.rebase.network`
-- `VITE_PUBLIC_SITE_BASE_URL=https://rebase.network`
-
-Cloudflare-specific note:
-
-- keep the install command as `pnpm install --frozen-lockfile`
-- do not add `corepack` unless the Workers Build image stops exposing the expected `pnpm` version
-- `VITE_API_BASE_URL` and `VITE_PUBLIC_SITE_BASE_URL` should be configured as plain environment values, not secrets
-- use recursive `**` glob patterns for build watch paths; single-level `*` patterns do not cover nested files such as `apps/admin/src/**`
-
-### Root Directory Choice
-
-Although Cloudflare supports setting the root directory to a project subdirectory in monorepos, Rebase should keep the root directory at `/` for both Workers because:
-
-- the build scripts live in the workspace root `package.json`
-- `pnpm-lock.yaml` and `pnpm-workspace.yaml` are at the repository root
-- the public Worker build needs to merge Astro's generated config with the root-level deployment script
-
-### Important Cloudflare Limitation
-
-Workers Builds does not honor custom build configuration declared inside Wrangler config files. Build, deploy, preview deploy, branch control, and watch paths should therefore be configured in the Cloudflare Dashboard for each Worker.
-
-## Recommended Workers Builds Template
-
-Use this exact pattern for both `rebase-web` and `rebase-admin` unless Cloudflare changes its build image behavior:
-
-- install command: `pnpm install --frozen-lockfile`
-- build command: worker-specific build command from the sections above
-- deploy command: worker-specific deploy command from the sections above
-- package manager handling: rely on Workers Builds detecting `pnpm`
-- `corepack`: keep out of the dashboard commands by default; add it only as a fallback when Cloudflare no longer exposes the expected `pnpm` version
-
-## Worker Deployment Files
-
-Public website:
-
-- config: `apps/web/wrangler.template.jsonc`
-- build output: `apps/web/dist`
-- deploy config output: `apps/web/dist/server/wrangler.production.json`
-
-Admin workspace:
-
-- config: `apps/admin/wrangler.production.jsonc`
-- build output: `apps/admin/dist`
-- SPA fallback: `assets.not_found_handling = "single-page-application"`
-
-## Server Deployment Files
-
-- compose stack: `infra/production/docker-compose.yml`
-- server environment template: `infra/production/server.env.example`
-- API image build: `apps/api/Dockerfile`
-
-## Environment Files
-
-Server-side deployment expects a real env file copied from:
-
-- `infra/production/server.env.example`
-
-Recommended server setup:
+Sync the repo to the server:
 
 ```bash
+./ops/manage.sh sync
+```
+
+Create the production env file on the server:
+
+```bash
+ssh rebase@rebase.network
+cd /home/rebase/rebase.network
 cp infra/production/server.env.example infra/production/server.env
 ```
 
-Then fill in:
+Fill in at least:
 
-- PostgreSQL password
-- Better Auth secret
-- R2 credentials and public base URL, or a Wrangler profile mount for CLI-backed uploads
+- `POSTGRES_PASSWORD`
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL`
+- `CORS_ALLOWED_ORIGINS`
+- `APP_VERSION`
 - `CLOUDFLARED_TUNNEL_TOKEN`
-- initial admin email and password
+- `R2_ACCOUNT_ID`
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_BUCKET`
+- `R2_PUBLIC_BASE_URL`
+- `DEV_ADMIN_EMAIL`
+- `DEV_ADMIN_PASSWORD`
+- `DEV_ADMIN_NAME`
 
-## Deploy Order
+Production R2 mode should use S3-compatible credentials with `R2_DEV_USE_WRANGLER=false`.
 
-Recommended first production rollout order:
-
-1. prepare the server env file
-2. bring up PostgreSQL, API, and `cloudflared`
-3. verify `https://api.rebase.network/health` and `https://api.rebase.network/ready`
-4. seed baseline content only if this is the first deployment
-5. bootstrap the first admin account
-6. deploy `apps/web`
-7. deploy `apps/admin`
-8. verify public routes and admin login
-
-## Cloudflare Tunnel Setup
-
-Use a remotely managed tunnel.
-
-Recommended dashboard flow:
-
-1. create a tunnel in Cloudflare Zero Trust
-2. choose Docker as the connector environment
-3. create the public hostname `api.rebase.network`
-4. point that hostname to `http://api:8788` inside the tunnel configuration
-5. copy the tunnel token into `infra/production/server.env`
-
-The compose stack runs:
+### 3. Deploy the backend stack
 
 ```bash
-cloudflared tunnel --no-autoupdate run --token <token>
+./ops/manage.sh deploy stack
 ```
 
-## Local Worker Deploy Commands
-
-Public website:
+For the first production database only:
 
 ```bash
-pnpm deploy:web:dry-run
+./ops/manage.sh seed
+./ops/manage.sh bootstrap-admin
 ```
 
-Admin workspace:
+### 4. Verify the initial rollout
+
+Verify:
+
+- `https://rebase.network/healthz`
+- `https://admin.rebase.network`
+- `https://api.rebase.network/health`
+- `https://api.rebase.network/ready`
+- `https://api.rebase.network/version`
+- one admin login
+- one content edit round trip
+- one media upload round trip
+
+Also verify `https://rebase.community` when that domain is part of the active public routing policy.
+
+## Scenario 2: Upgrade Release
+
+Choose the smallest release path that matches the change set.
+
+### Frontend-only release
+
+1. validate the change on `dev`
+2. push `dev`
+3. open and merge the `dev` -> `main` pull request
+4. wait for Cloudflare to deploy `rebase-web` and/or `rebase-admin`
+5. verify the affected public and admin routes
+
+### Backend-only release
+
+1. merge the backend change to `main`
+2. update the deploy machine to the matching `main` commit
+3. confirm the working tree is clean
+4. run `./ops/manage.sh deploy api` or `./ops/manage.sh deploy stack`
+5. verify API health and affected workflows
+
+Recommended local checks before backend deploys:
 
 ```bash
-pnpm deploy:admin:dry-run
+git checkout main
+git pull --ff-only
+git status --short
+git rev-parse --short HEAD
 ```
 
-`pnpm deploy:web` and `pnpm deploy:admin` are intentionally blocked so local work cannot overwrite the production Workers directly.
+### Full-stack release
 
-These commands build with production URLs:
+1. validate on `dev`
+2. push `dev` and open the `dev` -> `main` pull request
+3. merge to `main`
+4. wait for Cloudflare frontend deploys to finish
+5. update the deploy machine to the matching `main` commit
+6. run `./ops/manage.sh deploy api` or `./ops/manage.sh deploy stack`
+7. verify frontend, admin, API, and one real edit or upload flow
 
-- public site API base: `https://api.rebase.network`
-- public site canonical base: `https://rebase.network`
-- admin API base: `https://api.rebase.network`
+## Scenario 3: Maintenance Operations
 
-The public web build merges Astro's generated Worker config with `apps/web/wrangler.template.jsonc` and writes `apps/web/dist/server/wrangler.production.json` for deployment.
-
-## Server Rollout Commands
-
-Validate the compose file locally:
-
-```bash
-pnpm deploy:server:config
-```
-
-For common remote API and service operations, prefer the repo-managed helper:
+### Routine commands
 
 ```bash
 ./ops/manage.sh check
 ./ops/manage.sh deploy api
+./ops/manage.sh deploy stack
 ./ops/manage.sh ps
 ./ops/manage.sh logs api 200
 ./ops/manage.sh ready
@@ -280,101 +157,37 @@ For common remote API and service operations, prefer the repo-managed helper:
 ./ops/manage.sh db backup
 ```
 
-Bring up the production stack on the server:
+### Command guide
+
+| Command | Use |
+| --- | --- |
+| `./ops/manage.sh check` | verify host, compose file, env file, and running services |
+| `./ops/manage.sh deploy api` | deploy API and shared-package changes |
+| `./ops/manage.sh deploy stack` | deploy compose-level or full-stack changes |
+| `./ops/manage.sh logs api 200` | inspect API logs |
+| `./ops/manage.sh ready` | verify API readiness from the server side |
+| `./ops/manage.sh db backup` | create a remote PostgreSQL backup |
+
+### Local verification commands
 
 ```bash
-docker compose --env-file infra/production/server.env -f infra/production/docker-compose.yml up -d --build
+pnpm deploy:web:dry-run
+pnpm deploy:admin:dry-run
+pnpm deploy:server:config
 ```
 
-Inspect service status:
+### Failure handling
 
-```bash
-docker compose --env-file infra/production/server.env -f infra/production/docker-compose.yml ps
-docker compose --env-file infra/production/server.env -f infra/production/docker-compose.yml logs --tail=120 api
-```
+Frontend failure:
 
-## First-Time Content Bootstrap
+1. inspect the Cloudflare build logs
+2. reproduce locally with `pnpm build:web:prod`, `pnpm build:admin:prod`, or the matching `*:dry-run` command
+3. check Cloudflare values and KV bindings
+4. only use manual `wrangler deploy` as an explicit emergency action, and record it in the release notes
 
-Run these commands only for the first deployment of a fresh database.
+Backend failure:
 
-Seed baseline content and the GeekDaily archive:
-
-```bash
-docker compose --env-file infra/production/server.env -f infra/production/docker-compose.yml exec api pnpm --filter @rebase/db seed
-```
-
-Bootstrap the first admin account:
-
-```bash
-docker compose --env-file infra/production/server.env -f infra/production/docker-compose.yml exec api pnpm --filter @rebase/api bootstrap-admin
-```
-
-Warning:
-
-- `pnpm --filter @rebase/db seed` resets baseline content tables and should not be rerun on a live production database without intent
-
-## Production R2 Options
-
-Rebase currently supports two production paths for media uploads:
-
-1. current production path: set `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`
-2. fallback-only path: mount a logged-in Wrangler profile and set `R2_DEV_USE_WRANGLER=true`
-
-Production now runs on the first path. The API has been verified in `r2-s3` mode against bucket `rebase-media` with a successful `HeadBucket`, `PutObject`, and `DeleteObject` round trip.
-
-Canonical public media host:
-
-- `https://media.rebase.network`
-- alternate public host: `https://media.rebase.community`
-
-Recommended production env:
-
-```env
-R2_ACCOUNT_ID=7e327cb72b95b88c927c7122db11baa6
-R2_ACCESS_KEY_ID=...
-R2_SECRET_ACCESS_KEY=...
-R2_BUCKET=rebase-media
-R2_PUBLIC_BASE_URL=https://media.rebase.network
-R2_DEV_USE_WRANGLER=false
-```
-
-The fallback path is useful when the bucket already exists but dedicated S3 credentials have not been issued yet. In that mode:
-
-- keep `R2_ACCOUNT_ID`, `R2_BUCKET`, and `R2_PUBLIC_BASE_URL` set
-- leave `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` empty
-- copy the local Wrangler profile to the server, for example:
-
-```bash
-mkdir -p /home/rebase/.config/.wrangler/config
-scp ~/Library/Preferences/.wrangler/config/default.toml rebase@101.33.75.240:/home/rebase/.config/.wrangler/config/default.toml
-```
-
-- keep `WRANGLER_CONFIG_DIR=/home/rebase/.config/.wrangler`
-
-Wrangler can then refresh the OAuth session as needed while the API shells out for uploads.
-
-Troubleshooting notes from production rollout:
-
-- if upload requests return `500` while the API is in `wrangler-cli` mode, verify the container can resolve the `wrangler` executable
-- if upload requests return `401` while the API is in `r2-s3` mode, verify `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and the bucket-scoped `Object Read & Write` permissions
-- if the API image build fails on `COPY geekdaily.csv`, remove that dependency from the Docker image build because `geekdaily.csv` is ignored by git and is not part of the release artifact set
-
-## Verification Checklist
-
-After deployment, verify:
-
-- `https://rebase.network/healthz`
-- `https://rebase.community/healthz`
-- `https://api.rebase.network/health`
-- `https://api.rebase.network/ready`
-- `https://admin.rebase.network`
-- homepage, GeekDaily list, article list, events list, and hiring list
-- admin login and one content edit round trip
-- one admin media upload round trip
-
-## Operational Notes
-
-- PostgreSQL binds to `127.0.0.1` on the server and is not exposed publicly
-- the API also binds to `127.0.0.1` on the server, with public access only through Cloudflare Tunnel
-- media stays outside git and should use R2-backed public URLs
-- tunnel token rotation can happen later without changing the deployment model
+1. run `./ops/manage.sh logs api 200`
+2. run `./ops/manage.sh ready`
+3. confirm the deploy machine is on the intended `main` commit
+4. redeploy from the correct commit if the synced code was wrong

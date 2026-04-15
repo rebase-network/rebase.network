@@ -6,7 +6,7 @@ const message = [
   'production releases must follow this path:',
   '1. push commits to github',
   '2. merge the release candidate into main',
-  '3. let cloudflare workers builds deploy production from main',
+  '3. let cloudflare deploy the frontend Workers from the connected repository',
   '',
   'local verification is still allowed with:',
   '- pnpm deploy:web:dry-run',

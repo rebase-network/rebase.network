@@ -230,16 +230,24 @@ Recommended runtime probes:
 
 ## Deployment Model
 
-Recommended production split:
+Steady-state production split:
 
 - `apps/web` on a Cloudflare Worker for `rebase.network` and `rebase.community`
 - `apps/admin` on a separate Cloudflare Worker for `admin.rebase.network`
-- `apps/api` on `rebase@101.33.75.240` inside Docker Compose
-- PostgreSQL on `rebase@101.33.75.240` inside the same Docker Compose stack
-- `cloudflared` on `rebase@101.33.75.240` to publish `api.rebase.network` through Cloudflare Tunnel
-- R2 for media, with `media.rebase.network` attached after bucket setup
+- `apps/api` on `rebase@rebase.network` inside Docker Compose
+- PostgreSQL on `rebase@rebase.network` inside the same Docker Compose stack
+- `cloudflared` on `rebase@rebase.network` to publish `api.rebase.network` through Cloudflare Tunnel
+- R2 for media on `media.rebase.network`
 
 This keeps the public and admin frontends at the edge while the writable backend stays on the server without exposing PostgreSQL publicly.
+
+Current rollout note, verified on 2026-04-15:
+
+- `admin.rebase.network` is deployed through the dedicated GitHub-connected admin Worker
+- the backend stack is already live on `rebase@rebase.network`
+- the public site is deployed through the GitHub-connected public Worker
+
+See `docs/production-config.md` for the verified live routing and `docs/deployment.md` for the current hybrid deployment runbook.
 
 ## Non-Goals for the First Admin Release
 

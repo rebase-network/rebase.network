@@ -1,198 +1,112 @@
-# Production Configuration Registry
+# Production Configuration Index
 
-This document is the human-readable registry for the Rebase production environment.
+This file is the production settings index.
 
-Use it to answer:
+Use `docs/deployment.md` for procedures and `docs/launch-checklist.md` for verification. Use this file to find the current production configuration and where each setting lives.
 
-- what is running in production
-- where each production setting lives
-- which values are committed in the repo
-- which values only exist in Cloudflare or on the server
-
-This file is not a secret store. Secret values should stay in Cloudflare dashboard secrets or in the remote server env file.
-
-## Source of Truth Split
-
-Production configuration is intentionally split across three places:
-
-1. repository-tracked config for topology, scripts, defaults, and non-secret runtime settings
-2. Cloudflare dashboard for Workers Builds wiring, custom domains, KV bindings, secrets, and tunnel hostnames
-3. remote server files for API, PostgreSQL, and `cloudflared` runtime secrets
-
-If a production setting changes, update this file together with the real config location.
+This file is not a secret store.
 
 ## Production Topology
 
-| Surface | Runtime | Current target | Deploy path | Source of truth |
-| --- | --- | --- | --- | --- |
-| Public site | Cloudflare Worker | `rebase-web` | Cloudflare Workers Builds from `main` | `apps/web/wrangler.template.jsonc`, `docs/deployment.md`, Cloudflare dashboard |
-| Community alias | Cloudflare Worker | `rebase-web` | same as public site | same as above |
-| Admin site | Cloudflare Worker | `rebase-admin` | Cloudflare Workers Builds from `main` | `apps/admin/wrangler.production.jsonc`, `docs/deployment.md`, Cloudflare dashboard |
-| Public API | Docker Compose on server + Cloudflare Tunnel | `api.rebase.network` -> `api:8788` | `./ops/manage.sh deploy api` | `infra/production/docker-compose.yml`, remote `infra/production/server.env`, Cloudflare Zero Trust |
-| Database | Docker Compose on server | PostgreSQL 16 | managed together with API stack | `infra/production/docker-compose.yml`, remote `infra/production/server.env` |
-| Tunnel connector | Docker Compose on server | `cloudflared` | managed together with API stack | `infra/production/docker-compose.yml`, remote `infra/production/server.env`, Cloudflare Zero Trust |
-| Media assets | Cloudflare R2 | bucket `rebase-media` | bucket-level operations in Cloudflare | remote `infra/production/server.env`, Cloudflare R2 settings |
-
-## Domain and Hostname Inventory
-
-| Domain | Purpose | Current routing | Source of truth |
+| Surface | Runtime | Current target | Standard path |
 | --- | --- | --- | --- |
-| `https://rebase.network` | main public site | custom domain on `rebase-web` | Cloudflare dashboard + `apps/web/wrangler.template.jsonc` |
-| `https://rebase.community` | secondary public entry | custom domain on `rebase-web` | Cloudflare dashboard + `apps/web/wrangler.template.jsonc` |
-| `https://admin.rebase.network` | operator admin | custom domain on `rebase-admin` | Cloudflare dashboard + `apps/admin/wrangler.production.jsonc` |
-| `https://api.rebase.network` | API origin | Cloudflare Tunnel to `http://api:8788` | Cloudflare Zero Trust + `infra/production/docker-compose.yml` |
-| `https://media.rebase.network` | public media domain | target custom domain for R2 bucket | Cloudflare R2 custom domain settings |
+| Public site | Cloudflare Worker | `rebase-web` | GitHub-connected Cloudflare deploy from `main` |
+| Community alias | Cloudflare Worker | `rebase-web` | same Worker as the public site |
+| Admin site | Cloudflare Worker | `rebase-admin` | GitHub-connected Cloudflare deploy from `main` |
+| Public API | Docker Compose + Cloudflare Tunnel | `api.rebase.network` -> `api:8788` | `./ops/manage.sh deploy api` |
+| Database | Docker Compose | PostgreSQL 16 | managed with the backend stack |
+| Tunnel connector | Docker Compose | `cloudflared` | managed with the backend stack |
+| Media | Cloudflare R2 | bucket `rebase-media` | Cloudflare-managed bucket and custom domain |
 
-## Cloudflare Workers Inventory
+## Cloudflare Index
 
-### `rebase-web`
+### Workers
 
-- Worker name: `rebase-web`
-- Canonical public site URL: `https://rebase.network`
-- Alternate public site URL: `https://rebase.community`
-- Production branch: `main`
-- Non-production branch builds: enabled
-- Root directory: `/`
-- Install command: `pnpm install --frozen-lockfile`
-- Build command: `pnpm build:web:prod`
-- Deploy command: `pnpm exec wrangler deploy --config apps/web/dist/server/wrangler.production.json`
-- Non-production deploy command: `pnpm exec wrangler versions upload --config apps/web/dist/server/wrangler.production.json`
-- Committed config source: `apps/web/wrangler.template.jsonc`
-- Generated deploy config: `apps/web/dist/server/wrangler.production.json`
+| Worker | Domains | Branch | Root | Install | Build | Deploy | Config source |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `rebase-web` | `rebase.network`, `rebase.community` | `main` | `/` | `pnpm install --frozen-lockfile` | `pnpm build:web:prod` | `pnpm exec wrangler deploy --config apps/web/dist/server/wrangler.production.json` | `apps/web/wrangler.template.jsonc` |
+| `rebase-admin` | `admin.rebase.network` | `main` | `/` | `pnpm install --frozen-lockfile` | `pnpm build:admin:prod` | `pnpm exec wrangler deploy --config apps/admin/wrangler.production.jsonc` | `apps/admin/wrangler.production.jsonc` |
 
-Runtime vars and bindings:
+### Cloudflare-managed values
 
-- `SITE_URL=https://rebase.network`
-- `API_BASE_URL=https://api.rebase.network`
-- `SESSION` KV binding backed by namespace title `rebase-web-session`
-- `SESSION_KV_NAMESPACE_ID` is configured in Cloudflare Workers Builds environment settings
-- `SESSION_KV_NAMESPACE_PREVIEW_ID` should normally match the production namespace id unless a dedicated preview namespace is introduced
-- `corepack` is not required in the dashboard commands while Workers Builds already detects `pnpm@10.6.5`
-
-### `rebase-admin`
-
-- Worker name: `rebase-admin`
-- Production domain: `https://admin.rebase.network`
-- Production branch: `main`
-- Non-production branch builds: enabled
-- Root directory: `/`
-- Install command: `pnpm install --frozen-lockfile`
-- Build command: `pnpm build:admin:prod`
-- Deploy command: `pnpm exec wrangler deploy --config apps/admin/wrangler.production.jsonc`
-- Non-production deploy command: `pnpm exec wrangler versions upload --config apps/admin/wrangler.production.jsonc`
-- Committed config source: `apps/admin/wrangler.production.jsonc`
-
-Build-time targets:
-
-- `VITE_API_BASE_URL=https://api.rebase.network`
-- `VITE_PUBLIC_SITE_BASE_URL=https://rebase.network`
-- `corepack` is not required in the dashboard commands while Workers Builds already detects `pnpm@10.6.5`
-
-## Server Inventory
-
-| Item | Current value | Source of truth |
+| Target | Setting | Location |
 | --- | --- | --- |
-| Server host | `rebase@101.33.75.240` | `docs/deployment.md`, `ops/manage.sh` |
-| Remote project directory | `/home/rebase/rebase.network` | `ops/manage.sh` |
+| `rebase-web` | `SESSION_KV_NAMESPACE_ID` | Cloudflare dashboard |
+| `rebase-web` | `SESSION_KV_NAMESPACE_PREVIEW_ID` | Cloudflare dashboard when needed |
+| `rebase-web` | custom domains for `rebase.network`, `rebase.community` | Cloudflare dashboard |
+| `rebase-admin` | custom domain for `admin.rebase.network` | Cloudflare dashboard |
+| Tunnel | hostname `api.rebase.network` | Cloudflare Tunnel |
+| R2 | custom domain `media.rebase.network` | Cloudflare R2 settings |
+
+## Backend Index
+
+| Item | Current value | Source |
+| --- | --- | --- |
+| Server host | `rebase@rebase.network` | `ops/manage.sh` |
+| Remote project dir | `/home/rebase/rebase.network` | `ops/manage.sh` |
+| Remote directory type | rsynced working tree, not a git checkout | server layout + `ops/manage.sh` |
 | Compose file | `infra/production/docker-compose.yml` | repo |
-| Remote env file | `infra/production/server.env` | remote server only |
-| API service name | `api` | `infra/production/docker-compose.yml` |
-| PostgreSQL service name | `postgres` | `infra/production/docker-compose.yml` |
-| Tunnel service name | `cloudflared` | `infra/production/docker-compose.yml` |
-| API port inside compose | `8788` | `infra/production/docker-compose.yml` |
-| API host bind | `127.0.0.1:8788` | remote `infra/production/server.env` |
-| PostgreSQL host bind | `127.0.0.1:55433` | remote `infra/production/server.env` |
-| Wrangler profile mount | `/home/rebase/.config/.wrangler` | remote `infra/production/server.env`, compose mount |
+| Remote env file | `infra/production/server.env` | server only |
+| Main helper | `ops/manage.sh` | repo |
+| API service | `api` | `infra/production/docker-compose.yml` |
+| PostgreSQL service | `postgres` | `infra/production/docker-compose.yml` |
+| Tunnel service | `cloudflared` | `infra/production/docker-compose.yml` |
+| API bind | `127.0.0.1:8788` | remote env |
+| PostgreSQL bind | `127.0.0.1:55433` | remote env |
 
-## Remote Server Environment Registry
+SSH hostname resolution for `rebase@rebase.network` is handled outside this public repository.
 
-The actual values live only in remote `infra/production/server.env`.
+## Server Env Index
 
-Use `infra/production/server.env.example` as the committed template.
+Use `infra/production/server.env.example` as the template for remote `infra/production/server.env`.
 
-### Required production values
+### Required backend values
 
 | Variable | Purpose | Secret | Location |
 | --- | --- | --- | --- |
 | `POSTGRES_DB` | database name | no | remote env |
 | `POSTGRES_USER` | database user | no | remote env |
 | `POSTGRES_PASSWORD` | database password | yes | remote env |
-| `BETTER_AUTH_SECRET` | Better Auth signing secret | yes | remote env |
+| `BETTER_AUTH_SECRET` | auth signing secret | yes | remote env |
 | `BETTER_AUTH_URL` | external auth base URL | no | remote env |
-| `CORS_ALLOWED_ORIGINS` | allowed browser origins | no | remote env |
-| `DEV_ADMIN_EMAIL` | initial operator account email | sensitive | remote env |
-| `DEV_ADMIN_PASSWORD` | initial operator account password | yes | remote env |
-| `DEV_ADMIN_NAME` | initial operator display name | no | remote env |
-| `CLOUDFLARED_TUNNEL_TOKEN` | Cloudflare Tunnel connector token | yes | remote env |
+| `CORS_ALLOWED_ORIGINS` | browser origins | no | remote env |
+| `DEV_ADMIN_EMAIL` | initial admin email | sensitive | remote env |
+| `DEV_ADMIN_PASSWORD` | initial admin password | yes | remote env |
+| `DEV_ADMIN_NAME` | initial admin name | no | remote env |
+| `CLOUDFLARED_TUNNEL_TOKEN` | Tunnel token | yes | remote env |
 
-### R2-related values
-
-Current production state:
-
-- media uploads use `r2-s3`
-- bucket: `rebase-media`
-- canonical public base URL: `https://media.rebase.network`
-- alternate public media host: `https://media.rebase.community`
-- Wrangler-backed upload is retained only as an emergency fallback, not the normal production path
+### R2 values
 
 | Variable | Purpose | Secret | Location |
 | --- | --- | --- | --- |
-| `R2_ACCOUNT_ID` | Cloudflare account target for R2 | no | remote env |
-| `R2_ACCESS_KEY_ID` | direct S3-style access key | yes | remote env |
-| `R2_SECRET_ACCESS_KEY` | direct S3-style secret key | yes | remote env |
-| `R2_BUCKET` | media bucket name, currently `rebase-media` | no | remote env |
+| `R2_ACCOUNT_ID` | Cloudflare account id | no | remote env |
+| `R2_ACCESS_KEY_ID` | S3-style access key | yes | remote env |
+| `R2_SECRET_ACCESS_KEY` | S3-style secret key | yes | remote env |
+| `R2_BUCKET` | bucket name | no | remote env |
 | `R2_PUBLIC_BASE_URL` | public media base URL | no | remote env |
-| `R2_DEV_USE_WRANGLER` | fallback Wrangler-based upload mode, keep `false` in normal production | no | remote env |
-| `CLOUDFLARE_API_TOKEN` | optional fallback CLI-based upload token | yes | remote env |
-| `WRANGLER_CONFIG_DIR` | optional mounted Wrangler profile path for fallback mode | no | remote env |
+| `R2_DEV_USE_WRANGLER` | fallback upload mode, keep `false` in production | no | remote env |
+| `CLOUDFLARE_API_TOKEN` | optional fallback token | yes | remote env |
+| `WRANGLER_CONFIG_DIR` | optional mounted Wrangler profile path | no | remote env |
 
-## Operations Entry Points
-
-### Git and release policy
-
-- day-to-day work continues on `dev`
-- validated work should be pushed to `origin/dev`
-- releases should move from `dev` to `main` through a pull request
-- if the current operator cannot merge the pull request, they must stop at the PR step and wait for a maintainer
-- production Workers Builds track `main`
-- API server deployment should use release-ready code, not unreviewed local changes
-
-### Primary commands
-
-Use `ops/manage.sh` for routine server operations:
-
-```bash
-./ops/manage.sh check
-./ops/manage.sh deploy api
-./ops/manage.sh deploy stack
-./ops/manage.sh ps
-./ops/manage.sh logs api 200
-./ops/manage.sh ready
-./ops/manage.sh db query "select count(*) from geekdaily_episodes;"
-./ops/manage.sh db backup
-```
-
-## Repo Files That Define Production
+## Production Files
 
 | File | Role |
 | --- | --- |
-| `docs/production-config.md` | production inventory and configuration registry |
-| `docs/deployment.md` | rollout steps, build settings, and runbooks |
-| `docs/architecture.md` | production topology and runtime boundaries |
-| `infra/production/docker-compose.yml` | server-side production services |
-| `infra/production/server.env.example` | server-side env template |
-| `apps/web/wrangler.template.jsonc` | public Worker production template |
-| `apps/admin/wrangler.production.jsonc` | admin Worker production config |
-| `ops/manage.sh` | remote server management entry point |
+| `docs/deployment.md` | operator handbook |
+| `docs/production-config.md` | production settings index |
+| `docs/launch-checklist.md` | release verification checklist |
+| `infra/production/docker-compose.yml` | backend services |
+| `infra/production/server.env.example` | backend env template |
+| `apps/web/wrangler.template.jsonc` | public Worker config template |
+| `apps/admin/wrangler.production.jsonc` | admin Worker config |
+| `scripts/deploy/prepare-web-assets.mjs` | public Worker deploy config generation |
+| `ops/manage.sh` | backend deploy and maintenance helper |
 
-## Update Checklist
+## Update Rule
 
-When any production setting changes, update this registry if the change affects:
+Update this file when any of the following changes:
 
-- a domain, route, or worker name
-- a deployment branch or build command
-- a server host, directory, or service name
-- an env variable name, owner, or storage location
-- an R2 bucket, KV namespace, or Tunnel hostname
-
-If the real value is a secret, update only the location and ownership here, not the secret itself.
+- Worker name, domain, branch, build command, or deploy command
+- server host, remote directory, service name, or backend deploy path
+- env variable name, owner, or storage location
+- KV namespace, Tunnel hostname, R2 bucket, or media domain

@@ -59,9 +59,9 @@ The target architecture is no longer a headless CMS workflow.
 - `docs/acceptance-criteria.md`: module-level acceptance criteria for product, content, and operations
 - `docs/quality-assurance.md`: browser checks, automated checks, sample content, and release validation flow
 - `docs/local-development.md`: current local setup, service commands, and archive import notes
-- `docs/deployment.md`: Worker, Docker Compose, Tunnel, and rollout commands for production
-- `docs/production-config.md`: production inventory, hostnames, Workers, server paths, and config ownership
-- `docs/launch-checklist.md`: launch-critical routes, domain preparation, health checks, and observability baseline
+- `docs/deployment.md`: operator handbook for initial deploy, upgrade release, and maintenance scenarios
+- `docs/production-config.md`: production settings index and configuration ownership map
+- `docs/launch-checklist.md`: release verification and post-release monitoring checklist
 
 ## Local Development
 
@@ -121,22 +121,19 @@ If you receive a refreshed `geekdaily.csv`, regenerate the committed archive SQL
 pnpm cms:generate:geekdaily
 ```
 
-## Deployment Note
+## Production Docs
 
-The agreed V1 production split is:
+Current production model:
 
-- `apps/web` on Cloudflare Workers for `rebase.network` and `rebase.community`
-- `apps/admin` on a separate Cloudflare Worker for `admin.rebase.network`
-- `apps/api`, PostgreSQL, and `cloudflared` on `rebase@101.33.75.240` via Docker Compose
-- `media.rebase.network` on top of the Cloudflare R2 public bucket once the custom domain is attached
+- frontend: GitHub-connected Cloudflare Workers for `rebase-web` and `rebase-admin`
+- backend: Docker Compose on `rebase@rebase.network` deployed through `ops/manage.sh`
+- media: Cloudflare R2 on `media.rebase.network`
 
-Release policy:
+Use these docs as the entry points:
 
-- ongoing work continues on `dev`
-- merge `dev` into `main` only when the release candidate is validated
-- production deployment should track `main`, not `dev`
-
-Remote API and service operations can be run through `ops/manage.sh`.
+- `docs/deployment.md`: procedures by scenario
+- `docs/production-config.md`: current production settings index
+- `docs/launch-checklist.md`: release and launch verification
 
 ## Repository Conventions
 
