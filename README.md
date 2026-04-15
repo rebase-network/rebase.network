@@ -57,8 +57,8 @@ The target architecture is no longer a headless CMS workflow.
 - `docs/admin-data-model.md`: backend tables, relations, constraints, and workflow states
 - `docs/implementation-plan.md`: development phases and milestone plan
 - `docs/acceptance-criteria.md`: module-level acceptance criteria for product, content, and operations
-- `docs/quality-assurance.md`: browser checks, automated checks, sample content, and release validation flow
-- `docs/local-development.md`: current local setup, service commands, and archive import notes
+- `docs/quality-assurance.md`: development validation standards and smoke checks
+- `docs/local-development.md`: local setup, daily commands, and archive import notes
 - `docs/deployment.md`: operator handbook
 - `docs/production-config.md`: production settings index
 - `docs/launch-checklist.md`: release verification checklist
