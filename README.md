@@ -115,10 +115,10 @@ Default local operator account after `pnpm local:bootstrap`:
 - email: `admin@rebase.local`
 - password: `RebaseAdmin123456!`
 
-If you receive a refreshed `geekdaily.csv`, regenerate the committed archive SQL with:
+If you receive a refreshed `geekdaily.csv`, re-run the seed step to reload the archive into the local database:
 
 ```bash
-pnpm cms:generate:geekdaily
+pnpm db:seed
 ```
 
 ## Production Docs

@@ -157,7 +157,7 @@ interface BaselineData {
 }
 
 const loadBaselineData = async (): Promise<BaselineData> => {
-  const moduleUrl = new URL('../../../scripts/directus/baseline-data.mjs', import.meta.url).href;
+  const moduleUrl = new URL('../../../scripts/seed/baseline-data.mjs', import.meta.url).href;
   return (await import(moduleUrl)) as unknown as BaselineData;
 };
 

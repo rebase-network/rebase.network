@@ -1,4 +1,4 @@
-declare module '../../../scripts/directus/baseline-data.mjs' {
+declare module '../../../scripts/seed/baseline-data.mjs' {
   export interface BaselineLinkItem {
     label: string;
     href: string;

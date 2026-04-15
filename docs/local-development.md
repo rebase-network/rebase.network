@@ -156,16 +156,10 @@ Run individual services:
 
 ## GeekDaily Archive Import Input
 
-The committed GeekDaily archive still depends on `geekdaily.csv`.
+GeekDaily archive imports still depend on `geekdaily.csv`.
 
-If the CSV is refreshed, regenerate the migration SQL with:
+If `geekdaily.csv` is refreshed, re-run the seed step to reload the archive into the local database:
 
 ```bash
-pnpm cms:generate:geekdaily
+pnpm db:seed
 ```
-
-The generated file remains:
-
-- `infra/directus/sql/003_geekdaily_archive.sql`
-
-The path still lives under `infra/directus/` because the historical archive generator has not been renamed yet, but the active runtime stack is the custom Rebase admin + API system.
