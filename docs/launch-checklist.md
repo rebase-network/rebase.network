@@ -1,6 +1,6 @@
 # Launch Checklist
 
-Use this checklist with `docs/deployment.md`. Keep it focused on launch and release verification.
+Release verification checklist paired with `docs/deployment.md`.
 
 ## Initial Launch Only
 

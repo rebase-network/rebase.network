@@ -7,7 +7,7 @@ description: Deploy and troubleshoot the Rebase Cloudflare Workers frontend stac
 
 ## Overview
 
-Use this skill for the Rebase public and admin Workers release path. Keep the release flow anchored to the repo's `dev -> PR -> main -> Cloudflare Builds` policy and use the runbooks in `references/` before changing dashboard settings or patching build configuration.
+Use this skill for the Rebase public and admin Workers release path. Keep the release flow anchored to the repo's `dev -> PR -> main -> Cloudflare Builds` policy and use the reference notes in `references/` before changing dashboard settings or patching build configuration.
 
 ## Release Workflow
 
@@ -31,7 +31,7 @@ Use this skill for the Rebase public and admin Workers release path. Keep the re
 - Admin domain: `admin.rebase.network`
 - Public API origin used by Workers: `https://api.rebase.network`
 
-Use `docs/production-config.md` as the exact dashboard settings source and `references/build-settings.md` as the short release reminder.
+Use `docs/production-config.md` as the production settings index and `references/build-settings.md` as the short release reminder.
 
 ## When To Read References
 

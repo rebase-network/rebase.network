@@ -241,7 +241,7 @@ Steady-state production split:
 
 This keeps the public and admin frontends at the edge while the writable backend stays on the server without exposing PostgreSQL publicly.
 
-See `docs/production-config.md` for the current production routing and `docs/deployment.md` for the operator runbook.
+See `docs/production-config.md` for the production settings index and `docs/deployment.md` for the operator handbook.
 
 ## Non-Goals for the First Admin Release
 

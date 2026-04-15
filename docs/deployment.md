@@ -1,6 +1,6 @@
 # Deployment Manual
 
-This is the production operator handbook. Use `docs/production-config.md` for settings lookup and `docs/launch-checklist.md` for release verification.
+This is the production operator handbook. Use `docs/production-config.md` for settings and `docs/launch-checklist.md` for release checks.
 
 ## Core Rules
 

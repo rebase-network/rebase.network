@@ -59,9 +59,9 @@ The target architecture is no longer a headless CMS workflow.
 - `docs/acceptance-criteria.md`: module-level acceptance criteria for product, content, and operations
 - `docs/quality-assurance.md`: browser checks, automated checks, sample content, and release validation flow
 - `docs/local-development.md`: current local setup, service commands, and archive import notes
-- `docs/deployment.md`: operator handbook for initial deploy, upgrade release, and maintenance scenarios
-- `docs/production-config.md`: production settings index and configuration ownership map
-- `docs/launch-checklist.md`: release verification and post-release monitoring checklist
+- `docs/deployment.md`: operator handbook
+- `docs/production-config.md`: production settings index
+- `docs/launch-checklist.md`: release verification checklist
 
 ## Local Development
 
@@ -131,9 +131,9 @@ Current production model:
 
 Use these docs as the entry points:
 
-- `docs/deployment.md`: procedures by scenario
-- `docs/production-config.md`: current production settings index
-- `docs/launch-checklist.md`: release and launch verification
+- `docs/deployment.md`: operator handbook
+- `docs/production-config.md`: production settings index
+- `docs/launch-checklist.md`: release verification checklist
 
 ## Repository Conventions
 

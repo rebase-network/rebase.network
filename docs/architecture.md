@@ -153,7 +153,7 @@ Steady-state production target for V1:
 - `cloudflared` in the same Docker Compose stack to expose `api.rebase.network` through Cloudflare Tunnel
 - public media served from Cloudflare R2 on `media.rebase.network`
 
-For current production wiring and deployment operations, see `docs/production-config.md` and `docs/deployment.md`.
+For the production settings index and operator handbook, see `docs/production-config.md` and `docs/deployment.md`.
 
 ### Why Cloudflare Tunnel for the API
 
