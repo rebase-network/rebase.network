@@ -1,22 +1,20 @@
 # Production Configuration Index
 
-This file is the production settings index.
+Current production settings index.
 
-Use `docs/deployment.md` for procedures and `docs/launch-checklist.md` for verification. Use this file to find the current production configuration and where each setting lives.
+Use `docs/deployment.md` for procedures and `docs/launch-checklist.md` for verification. This file records live production values and ownership. It is not a secret store.
 
-This file is not a secret store.
+## Runtime Map
 
-## Production Topology
-
-| Surface | Runtime | Current target | Standard path |
-| --- | --- | --- | --- |
-| Public site | Cloudflare Worker | `rebase-web` | GitHub-connected Cloudflare deploy from `main` |
-| Community alias | Cloudflare Worker | `rebase-web` | same Worker as the public site |
-| Admin site | Cloudflare Worker | `rebase-admin` | GitHub-connected Cloudflare deploy from `main` |
-| Public API | Docker Compose + Cloudflare Tunnel | `api.rebase.network` -> `api:8788` | `./ops/manage.sh deploy api` |
-| Database | Docker Compose | PostgreSQL 16 | managed with the backend stack |
-| Tunnel connector | Docker Compose | `cloudflared` | managed with the backend stack |
-| Media | Cloudflare R2 | bucket `rebase-media` | Cloudflare-managed bucket and custom domain |
+| Surface | Runtime | Current target |
+| --- | --- | --- |
+| Public site | Cloudflare Worker | `rebase-web` |
+| Community alias | Cloudflare Worker | `rebase-web` |
+| Admin site | Cloudflare Worker | `rebase-admin` |
+| Public API | Docker Compose + Cloudflare Tunnel | `api.rebase.network` -> `api:8788` |
+| Database | Docker Compose | PostgreSQL 16 |
+| Tunnel connector | Docker Compose | `cloudflared` |
+| Media | Cloudflare R2 | bucket `rebase-media` |
 
 ## Cloudflare Index
 
@@ -89,7 +87,7 @@ Use `infra/production/server.env.example` as the template for remote `infra/prod
 | `CLOUDFLARE_API_TOKEN` | optional fallback token | yes | remote env |
 | `WRANGLER_CONFIG_DIR` | optional mounted Wrangler profile path | no | remote env |
 
-## Production Files
+## Config Sources
 
 | File | Role |
 | --- | --- |
@@ -105,9 +103,4 @@ Use `infra/production/server.env.example` as the template for remote `infra/prod
 
 ## Update Rule
 
-Update this file when any of the following changes:
-
-- Worker name, domain, branch, build command, or deploy command
-- server host, remote directory, service name, or backend deploy path
-- env variable name, owner, or storage location
-- KV namespace, Tunnel hostname, R2 bucket, or media domain
+Update this file whenever production routing, host aliases, service names, env variable names, or dashboard-managed bindings change.

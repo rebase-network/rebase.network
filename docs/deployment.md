@@ -1,20 +1,8 @@
 # Deployment Manual
 
-This is the production operator handbook.
+This is the production operator handbook. Use `docs/production-config.md` for settings lookup and `docs/launch-checklist.md` for release verification.
 
-Use `docs/production-config.md` for settings lookup and `docs/launch-checklist.md` for release verification.
-
-## Deployment Model
-
-| Surface | Runtime | Standard path |
-| --- | --- | --- |
-| Public site | Cloudflare Worker `rebase-web` | GitHub-connected Cloudflare auto-deploy from `main` |
-| Admin site | Cloudflare Worker `rebase-admin` | GitHub-connected Cloudflare auto-deploy from `main` |
-| API | Docker Compose on `rebase@rebase.host` | `./ops/manage.sh deploy api` |
-| Full backend stack | Docker Compose on `rebase@rebase.host` | `./ops/manage.sh deploy stack` |
-| Media | Cloudflare R2 `rebase-media` | Cloudflare-managed bucket and domain settings |
-
-Release rules:
+## Core Rules
 
 - daily work stays on `dev`
 - release candidates move from `dev` to `main` through a pull request
@@ -23,7 +11,7 @@ Release rules:
 - local `wrangler deploy` is not the normal production path
 - SSH examples use `rebase@rebase.host`; operator machines must resolve `rebase.host` to the backend server through local hosts or internal DNS
 
-## Scenario 1: Initial Deployment
+## Scenario 1: Initial Setup
 
 ### 1. Configure Cloudflare frontend projects
 
@@ -73,7 +61,7 @@ For the first production database only:
 
 Run the `Initial Launch Only`, `Route Checks`, and relevant `Functional Checks` sections in `docs/launch-checklist.md`.
 
-## Scenario 2: Upgrade Release
+## Scenario 2: Release
 
 Choose the smallest release path that matches the change set.
 
@@ -112,7 +100,7 @@ git rev-parse --short HEAD
 6. run `./ops/manage.sh deploy api` or `./ops/manage.sh deploy stack`
 7. run the relevant checks in `docs/launch-checklist.md`
 
-## Scenario 3: Maintenance Operations
+## Scenario 3: Maintenance
 
 ### Routine commands
 
@@ -152,7 +140,7 @@ Frontend failure:
 
 1. inspect the Cloudflare build logs
 2. reproduce locally with `pnpm build:web:prod`, `pnpm build:admin:prod`, or the matching `*:dry-run` command
-3. check Cloudflare values and KV bindings
+3. check the Cloudflare settings in `docs/production-config.md`
 4. only use manual `wrangler deploy` as an explicit emergency action, and record it in the release notes
 
 Backend failure:

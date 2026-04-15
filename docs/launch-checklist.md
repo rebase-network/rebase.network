@@ -1,8 +1,6 @@
 # Launch Checklist
 
-Use this checklist with `docs/deployment.md`.
-
-Keep it focused on launch and release verification. Do not repeat deployment procedures here.
+Use this checklist with `docs/deployment.md`. Keep it focused on launch and release verification.
 
 ## Initial Launch Only
 
@@ -28,30 +26,15 @@ Before a release, confirm:
 
 Verify these public routes:
 
-- `https://rebase.network/`
-- `https://rebase.network/about`
-- `https://rebase.network/who-is-hiring`
-- `https://rebase.network/geekdaily`
-- `https://rebase.network/articles`
-- `https://rebase.network/events`
-- `https://rebase.network/contributors`
-- `https://rebase.network/rss.xml`
-- `https://rebase.network/geekdaily/rss.xml`
-- `https://rebase.network/articles/rss.xml`
-- `https://rebase.network/events/rss.xml`
-- `https://rebase.network/who-is-hiring/rss.xml`
-- `https://rebase.network/robots.txt`
-- `https://rebase.network/sitemap.xml`
-- `https://rebase.network/healthz`
+- landing pages: `https://rebase.network/`, `https://rebase.network/about`
+- content hubs: `https://rebase.network/who-is-hiring`, `https://rebase.network/geekdaily`, `https://rebase.network/articles`, `https://rebase.network/events`, `https://rebase.network/contributors`
+- feeds: `https://rebase.network/rss.xml`, `https://rebase.network/geekdaily/rss.xml`, `https://rebase.network/articles/rss.xml`, `https://rebase.network/events/rss.xml`, `https://rebase.network/who-is-hiring/rss.xml`
+- discovery and health: `https://rebase.network/robots.txt`, `https://rebase.network/sitemap.xml`, `https://rebase.network/healthz`
 
 Verify these admin and API routes:
 
-- `https://admin.rebase.network`
-- admin login
-- admin dashboard
-- `https://api.rebase.network/health`
-- `https://api.rebase.network/ready`
-- `https://api.rebase.network/version`
+- `https://admin.rebase.network`, admin login, admin dashboard
+- `https://api.rebase.network/health`, `https://api.rebase.network/ready`, `https://api.rebase.network/version`
 
 If `rebase.community` is part of the active public routing policy for the release, verify that domain too.
 
