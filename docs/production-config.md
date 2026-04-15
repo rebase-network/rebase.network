@@ -51,6 +51,8 @@ Use `docs/deployment.md` for procedures and `docs/launch-checklist.md` for verif
 | Tunnel service | `cloudflared` | `infra/production/docker-compose.yml` |
 | API bind | `127.0.0.1:8788` | remote env |
 | PostgreSQL bind | `127.0.0.1:55433` | remote env |
+| Backup directory | `/home/rebase/rebase.network/backups` | `ops/manage.sh` default |
+| Export directory | `/home/rebase/rebase.network/exports` | `ops/manage.sh` convention |
 
 SSH hostname resolution for `rebase@rebase.host` is handled outside this public repository.
 

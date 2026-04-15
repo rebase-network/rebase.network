@@ -123,6 +123,105 @@ assert_remote_layout() {
   remote_repo_exec "[ -f $(quote "$COMPOSE_FILE") ] || { echo missing $(quote "$COMPOSE_FILE") >&2; exit 1; }; [ -f $(quote "$ENV_FILE") ] || { echo missing $(quote "$ENV_FILE") >&2; exit 1; }"
 }
 
+resolve_remote_abs_path() {
+  local target="$1"
+
+  if [[ "$target" = /* ]]; then
+    printf '%s\n' "$target"
+    return
+  fi
+
+  printf '%s/%s\n' "$REMOTE_DIR" "$target"
+}
+
+db_backup_remote() {
+  local backup_path="$1"
+  local backup_target="$backup_path"
+  local resolved_target="$backup_path"
+
+  [[ "$backup_path" = /* ]] || resolved_target="${REMOTE_DIR}/${backup_path}"
+
+  remote_repo_exec "mkdir -p $(quote "$(dirname "$backup_target")") && docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote 'export PGPASSWORD=\"$POSTGRES_PASSWORD\"; exec pg_dump -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"') | gzip -c > $(quote "$backup_target") && ls -lh $(quote "$backup_target")"
+  log "database backup written to ${resolved_target}"
+}
+
+db_download_remote() {
+  local remote_path="$1"
+  local local_path="${2:-}"
+  local resolved_remote
+
+  require_local rsync
+
+  resolved_remote="$(resolve_remote_abs_path "$remote_path")"
+  remote_exec "[ -f $(quote "$resolved_remote") ] || { echo missing $(quote "$resolved_remote") >&2; exit 1; }"
+
+  if [[ -z "$local_path" ]]; then
+    local_path="$(basename "$resolved_remote")"
+  fi
+
+  mkdir -p "$(dirname "$local_path")"
+  log "downloading ${resolved_remote} to ${local_path}"
+  rsync -az --human-readable "${REMOTE_HOST}:${resolved_remote}" "$local_path"
+}
+
+db_export_table_remote() {
+  local table_name="$1"
+  local export_path="$2"
+  local export_target="$export_path"
+  local resolved_target="$export_path"
+  local copy_sql
+
+  [[ "$table_name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || die "db export requires a simple table name"
+  [[ "$export_path" = /* ]] || resolved_target="${REMOTE_DIR}/${export_path}"
+
+  copy_sql="COPY ${table_name} TO STDOUT WITH CSV HEADER"
+  remote_repo_exec "mkdir -p $(quote "$(dirname "$export_target")") && docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote "export PGPASSWORD=\"\$POSTGRES_PASSWORD\"; exec psql -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\" -v ON_ERROR_STOP=1 -P pager=off -c $(quote "$copy_sql")") > $(quote "$export_target") && ls -lh $(quote "$export_target")"
+  log "table export written to ${resolved_target}"
+}
+
+db_restore_remote() {
+  local backup_path="$1"
+  local skip_pre_backup="${2:-false}"
+  local resolved_source
+  local source_reader
+  local admin_script
+  local restore_script
+  local pre_backup_path
+
+  resolved_source="$(resolve_remote_abs_path "$backup_path")"
+  remote_exec "[ -f $(quote "$resolved_source") ] || { echo missing $(quote "$resolved_source") >&2; exit 1; }"
+
+  if [[ "$skip_pre_backup" != true ]]; then
+    pre_backup_path="backups/pre-restore-$(date +%Y%m%d-%H%M%S).sql.gz"
+    log "creating safety backup before restore"
+    db_backup_remote "$pre_backup_path"
+  fi
+
+  log "stopping api and cloudflared before restore"
+  compose_exec "stop api cloudflared"
+
+  admin_script='export PGPASSWORD="$POSTGRES_PASSWORD"; db_name="$POSTGRES_DB"; psql -U "$POSTGRES_USER" -d postgres -v ON_ERROR_STOP=1 -P pager=off -c "select pg_terminate_backend(pid) from pg_stat_activity where datname = '\'''"$db_name"'\'\'' and pid <> pg_backend_pid();" && dropdb -U "$POSTGRES_USER" --if-exists "$db_name" && createdb -U "$POSTGRES_USER" "$db_name"'
+  if ! remote_repo_exec "docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote "$admin_script")"; then
+    die "database reset failed; api and cloudflared remain stopped for manual recovery"
+  fi
+
+  source_reader="cat"
+  case "$resolved_source" in
+    *.gz)
+      source_reader="gzip -dc"
+      ;;
+  esac
+
+  restore_script='export PGPASSWORD="$POSTGRES_PASSWORD"; exec psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 -P pager=off'
+  if ! remote_repo_exec "${source_reader} $(quote "$backup_path") | docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote "$restore_script")"; then
+    die "database restore failed; api and cloudflared remain stopped for manual recovery"
+  fi
+
+  compose_exec "up -d api cloudflared"
+  compose_exec "ps"
+  log "database restore completed from ${resolved_source}"
+}
+
 sync_repo() {
   require_local rsync
   ensure_remote_dir
@@ -167,7 +266,7 @@ Usage:
   ./ops/manage.sh health
   ./ops/manage.sh ready
   ./ops/manage.sh exec <service> -- <command...>
-  ./ops/manage.sh db <shell|query|logs|restart|backup|migrate>
+  ./ops/manage.sh db <shell|query|logs|restart|backup|download|export|restore|migrate>
   ./ops/manage.sh bootstrap-admin
   ./ops/manage.sh seed
   ./ops/manage.sh ssh
@@ -186,6 +285,7 @@ Examples:
   ./ops/manage.sh logs api 200
   ./ops/manage.sh db query "select count(*) from geekdaily_episodes;"
   ./ops/manage.sh db backup
+  ./ops/manage.sh db download backups/rebase-20260415-120000.sql.gz ./rebase.sql.gz
   ./ops/manage.sh exec api -- pnpm --filter @rebase/api bootstrap-admin
 EOF
 }
@@ -298,7 +398,6 @@ case "$command" in
     if [[ $# -gt 0 ]]; then
       shift
     fi
-    assert_remote_layout
 
     case "$subcommand" in
       help)
@@ -309,40 +408,87 @@ Database commands:
   ./ops/manage.sh db logs [tail]
   ./ops/manage.sh db restart
   ./ops/manage.sh db backup [remote-path]
+  ./ops/manage.sh db download <remote-path> [local-path]
+  ./ops/manage.sh db export <table> [remote-path]
+  ./ops/manage.sh db restore <remote-path> --yes [--skip-pre-backup]
   ./ops/manage.sh db migrate
 EOF
         ;;
 
       shell | psql)
+        assert_remote_layout
         compose_exec_postgres_shell true 'export PGPASSWORD="$POSTGRES_PASSWORD"; exec psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
         ;;
 
       query)
+        assert_remote_layout
         sql="${1:-}"
         [[ -n "$sql" ]] || die "db query requires an SQL string"
         compose_exec_postgres_shell false "export PGPASSWORD=\"\$POSTGRES_PASSWORD\"; exec psql -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\" -v ON_ERROR_STOP=1 -P pager=off -c $(quote "$sql")"
         ;;
 
       logs)
+        assert_remote_layout
         tail_lines="${1:-$DEFAULT_LOG_TAIL}"
         [[ "$tail_lines" =~ ^[0-9]+$ ]] || die "tail must be a positive integer"
         compose_exec "logs --tail $tail_lines postgres"
         ;;
 
       restart)
+        assert_remote_layout
         compose_exec "restart postgres"
         ;;
 
       backup | dump)
+        assert_remote_layout
         backup_path="${1:-backups/rebase-$(date +%Y%m%d-%H%M%S).sql.gz}"
-        backup_target="$backup_path"
-        resolved_target="$backup_path"
-        [[ "$backup_path" = /* ]] || resolved_target="${REMOTE_DIR}/${backup_path}"
-        remote_repo_exec "mkdir -p $(quote "$(dirname "$backup_target")") && docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote 'export PGPASSWORD="$POSTGRES_PASSWORD"; exec pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"') | gzip -c > $(quote "$backup_target") && ls -lh $(quote "$backup_target")"
-        log "database backup written to ${resolved_target}"
+        db_backup_remote "$backup_path"
+        ;;
+
+      download | fetch)
+        remote_path="${1:-}"
+        local_path="${2:-}"
+        [[ -n "$remote_path" ]] || die "db download requires a remote path"
+        db_download_remote "$remote_path" "$local_path"
+        ;;
+
+      export)
+        assert_remote_layout
+        table_name="${1:-}"
+        export_path="${2:-exports/${1:-table}-$(date +%Y%m%d-%H%M%S).csv}"
+        [[ -n "$table_name" ]] || die "db export requires a table name"
+        db_export_table_remote "$table_name" "$export_path"
+        ;;
+
+      restore)
+        assert_remote_layout
+        backup_path="${1:-}"
+        [[ -n "$backup_path" ]] || die "db restore requires a remote backup path"
+        shift || true
+        confirmed=false
+        skip_pre_backup=false
+
+        while [[ $# -gt 0 ]]; do
+          case "$1" in
+            --yes)
+              confirmed=true
+              ;;
+            --skip-pre-backup)
+              skip_pre_backup=true
+              ;;
+            *)
+              die "unknown option for db restore: $1"
+              ;;
+          esac
+          shift
+        done
+
+        [[ "$confirmed" == true ]] || die "db restore is destructive; rerun with --yes after confirming the backup path"
+        db_restore_remote "$backup_path" "$skip_pre_backup"
         ;;
 
       migrate)
+        assert_remote_layout
         compose_exec "exec -T api pnpm --filter @rebase/db migrate"
         ;;
 

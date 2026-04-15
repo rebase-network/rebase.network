@@ -13,6 +13,7 @@
 ./ops/manage.sh ready
 ./ops/manage.sh db query "select count(*) from geekdaily_episodes;"
 ./ops/manage.sh db backup
+./ops/manage.sh db export articles
 ./ops/manage.sh bootstrap-admin
 ```
 
@@ -28,6 +29,7 @@ Use only when the task explicitly requires them:
 - bootstrap first admin account
 - seed baseline content
 - DB backup before risky migrations or cleanup
+- DB restore only from a verified backup path and only with explicit operator confirmation
 
 ## What `check` Should Confirm
 
