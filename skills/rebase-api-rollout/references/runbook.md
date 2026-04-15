@@ -31,6 +31,14 @@ Use only when the task explicitly requires them:
 - seed baseline content
 - DB backup before risky migrations or cleanup
 
+## Recommended Backup And Export Flow
+
+1. run `./ops/manage.sh db backup`
+2. confirm the file with `./ops/manage.sh db list-backups`
+3. pull it locally with `./ops/manage.sh db download <remote-path> [local-path]` when off-server retention is needed
+4. use `./ops/manage.sh db export <table>` or `./ops/manage.sh db export-query "<select ...>"` for review and reporting
+5. verify export output with `./ops/manage.sh db list-exports`
+
 ## What `check` Should Confirm
 
 `./ops/manage.sh check` should validate:

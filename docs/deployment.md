@@ -133,6 +133,18 @@ git rev-parse --short HEAD
 | `./ops/manage.sh db export <table> [remote-path]` | export a PostgreSQL table to a remote CSV file |
 | `./ops/manage.sh db export-query "<select ...>" [remote-path]` | export a query result to a remote CSV file |
 
+### Recommended backup and export flow
+
+For routine operations, follow this order:
+
+1. before risky schema or data work, run `./ops/manage.sh db backup`
+2. confirm the new backup with `./ops/manage.sh db list-backups`
+3. if the backup should be retained outside the server, pull it locally with `./ops/manage.sh db download <remote-path> [local-path]`
+4. use `./ops/manage.sh db export <table>` for table-level exports and `./ops/manage.sh db export-query "<select ...>"` for one-off reporting or review
+5. after any export, use `./ops/manage.sh db list-exports` and `./ops/manage.sh db download <remote-path> [local-path]` when a local copy is needed
+
+Treat server-side backups and exports as read-only operational artifacts. Do not overwrite production data through ad-hoc restore steps.
+
 ### Local verification commands
 
 ```bash
