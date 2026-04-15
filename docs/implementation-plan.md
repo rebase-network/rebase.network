@@ -20,9 +20,7 @@ packages/
 docs/
 ```
 
-The Rebase admin is now in scope for this repository.
-
-The repository should converge on a custom admin and API stack rather than a separately managed headless CMS.
+The repository targets a custom admin and API stack rather than a separately managed headless CMS.
 
 Planned deployment target:
 
@@ -36,7 +34,7 @@ Deliverables:
 
 - freeze the custom-admin architecture and data model
 - update docs and implementation assumptions
-- preserve the current public frontend baseline while aligning it with the new custom stack
+- preserve the current public frontend baseline while aligning it with the target stack
 
 Definition of done:
 
@@ -86,13 +84,13 @@ Deliverables:
 - dedicated episode and item editor UX
 - CSV-informed migration strategy
 - search index output for frontend search
-- SQL or import workflow for historical GeekDaily archive
+- CSV import workflow for historical GeekDaily archive
 
 Definition of done:
 
 - GeekDaily list and detail pages work with episode-level URLs
 - staff can edit episodes through a dedicated workflow rather than generic JSON editing
-- historical CSV import output remains reproducible
+- historical CSV import remains reproducible
 
 ## Phase 5: Public Site Data Transition
 
@@ -106,7 +104,7 @@ Deliverables:
 Definition of done:
 
 - pages render published content through Rebase-owned public APIs
-- the public site no longer depends on legacy delivery assumptions
+- the public site depends on Rebase-owned public APIs for published content
 
 ## Phase 6: Hardening and Launch Preparation
 

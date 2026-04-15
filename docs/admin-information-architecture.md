@@ -95,7 +95,7 @@ Operator affordances:
 - validate unique episode number before publish
 - show final public URL
 - markdown preview for intro/body
-- import historical data from CSV-generated SQL or later import tools
+- import historical data from CSV tools when needed
 
 ## Who-Is-Hiring Module
 

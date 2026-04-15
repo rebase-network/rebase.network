@@ -1,19 +1,11 @@
 # Rebase Community Website
 
-This repository contains the new Rebase community website.
+This repository contains the Rebase community website and internal admin workspace.
 
-The project is now converging on two parallel deliverables:
+The repository covers two parallel deliverables:
 
 - a public Rebase website for readers
 - a custom Rebase admin workspace for community operators
-
-## Project Status
-
-The legacy implementation has been removed from the working tree.
-
-Git history is preserved, and the repo is being rebuilt around a Rebase-specific architecture.
-
-The target architecture is no longer a headless CMS workflow.
 
 ## Target V1 Architecture
 

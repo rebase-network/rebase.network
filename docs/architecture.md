@@ -2,7 +2,7 @@
 
 ## Overview
 
-The new Rebase website is now designed around a custom community publishing stack.
+The Rebase website is designed around a custom community publishing stack.
 
 It separates:
 
