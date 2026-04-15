@@ -91,7 +91,7 @@ Useful current commands:
 - `pnpm typecheck:api`: typecheck the API app
 - `pnpm db:up`: start PostgreSQL only
 - `pnpm db:migrate`: apply Drizzle migrations
-- `pnpm db:seed`: seed baseline content and the GeekDaily archive
+- `pnpm db:seed`: seed baseline content and load the GeekDaily archive when `geekdaily.csv` is available
 - `pnpm admin:bootstrap`: create or refresh the default local operator account
 - `pnpm test:smoke`: run Playwright smoke checks against the current build flow
 
@@ -107,19 +107,13 @@ Default local operator account after `pnpm local:bootstrap`:
 - email: `admin@rebase.local`
 - password: `RebaseAdmin123456!`
 
-If you receive a refreshed `geekdaily.csv`, re-run the seed step to reload the archive into the local database:
+If you have an archived or refreshed `geekdaily.csv`, re-run the seed step to reload GeekDaily history into the local database:
 
 ```bash
 pnpm db:seed
 ```
 
 ## Production Docs
-
-Current production model:
-
-- frontend: GitHub-connected Cloudflare Workers for `rebase-web` and `rebase-admin`
-- backend: Docker Compose on the private backend host operated through `ops/manage.sh`
-- media: Cloudflare R2 on `media.rebase.network`
 
 Use these docs as the entry points:
 

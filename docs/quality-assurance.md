@@ -58,7 +58,7 @@ Recommended baseline sample set:
 - 4 contributors across at least 2 roles
 - a complete footer setup
 
-The provided `geekdaily.csv` should be used as a reference source for episode-level structure.
+An archived `geekdaily.csv`, when available, can be used as a reference source for episode-level structure.
 
 ### 4. Production Release
 

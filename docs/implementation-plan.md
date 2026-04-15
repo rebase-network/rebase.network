@@ -117,8 +117,8 @@ Deliverables:
 - domain configuration checklist
 - analytics and observability basics
 - simple backend health-check baseline
-- Cloudflare Worker deployment runbooks for web and admin
-- Docker Compose and Cloudflare Tunnel runbooks for API and database
+- deployment docs for web and admin
+- deployment docs for API and database
 
 Definition of done:
 

@@ -146,7 +146,7 @@ Run individual services:
 - `pnpm db:down`: stop PostgreSQL
 - `pnpm db:logs`: inspect PostgreSQL logs
 - `pnpm db:migrate`: apply Drizzle migrations
-- `pnpm db:seed`: reseed baseline content and GeekDaily archive
+- `pnpm db:seed`: reseed baseline content and load the GeekDaily archive when `geekdaily.csv` is available
 - `pnpm admin:bootstrap`: recreate or refresh the default local operator account
 - `pnpm build:api`: build the API bundle
 - `pnpm build:admin`: build the admin workspace
@@ -156,10 +156,12 @@ Run individual services:
 
 ## GeekDaily Archive Import Input
 
-GeekDaily archive imports still depend on `geekdaily.csv`.
+`geekdaily.csv` is an archived backup used to initialize GeekDaily history when needed.
 
-If `geekdaily.csv` is refreshed, re-run the seed step to reload the archive into the local database:
+If you have an archived or refreshed `geekdaily.csv`, re-run the seed step to reload GeekDaily history into the local database:
 
 ```bash
 pnpm db:seed
 ```
+
+If the file is absent, `pnpm db:seed` still completes and skips the GeekDaily archive import.
