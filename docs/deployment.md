@@ -27,18 +27,14 @@ Release rules:
 
 ### 1. Configure Cloudflare frontend projects
 
-Keep these settings aligned:
+Configure the frontend Workers using the current values in `docs/production-config.md`.
 
-| Worker | Domains | Branch | Root | Install | Build | Deploy |
-| --- | --- | --- | --- | --- | --- | --- |
-| `rebase-web` | `rebase.network`, `rebase.community` | `main` | `/` | `pnpm install --frozen-lockfile` | `pnpm build:web:prod` | `pnpm exec wrangler deploy --config apps/web/dist/server/wrangler.production.json` |
-| `rebase-admin` | `admin.rebase.network` | `main` | `/` | `pnpm install --frozen-lockfile` | `pnpm build:admin:prod` | `pnpm exec wrangler deploy --config apps/admin/wrangler.production.jsonc` |
+For the first rollout, confirm at least:
 
-Required Cloudflare values:
-
-- `rebase-web`: `SESSION_KV_NAMESPACE_ID`
-- `rebase-web`: `SESSION_KV_NAMESPACE_PREVIEW_ID` when preview deploys need an explicit value
-- `rebase-admin`: no extra dashboard build variables are currently required
+- `rebase-web` and `rebase-admin` are connected to the GitHub repository
+- production branch is `main`
+- custom domains are attached
+- required Cloudflare-managed values are present
 
 ### 2. Prepare the backend server
 
@@ -56,22 +52,7 @@ cd /home/rebase/rebase.network
 cp infra/production/server.env.example infra/production/server.env
 ```
 
-Fill in at least:
-
-- `POSTGRES_PASSWORD`
-- `BETTER_AUTH_SECRET`
-- `BETTER_AUTH_URL`
-- `CORS_ALLOWED_ORIGINS`
-- `APP_VERSION`
-- `CLOUDFLARED_TUNNEL_TOKEN`
-- `R2_ACCOUNT_ID`
-- `R2_ACCESS_KEY_ID`
-- `R2_SECRET_ACCESS_KEY`
-- `R2_BUCKET`
-- `R2_PUBLIC_BASE_URL`
-- `DEV_ADMIN_EMAIL`
-- `DEV_ADMIN_PASSWORD`
-- `DEV_ADMIN_NAME`
+Fill the required backend and R2 values listed in `docs/production-config.md`.
 
 Production R2 mode should use S3-compatible credentials with `R2_DEV_USE_WRANGLER=false`.
 
@@ -90,18 +71,7 @@ For the first production database only:
 
 ### 4. Verify the initial rollout
 
-Verify:
-
-- `https://rebase.network/healthz`
-- `https://admin.rebase.network`
-- `https://api.rebase.network/health`
-- `https://api.rebase.network/ready`
-- `https://api.rebase.network/version`
-- one admin login
-- one content edit round trip
-- one media upload round trip
-
-Also verify `https://rebase.community` when that domain is part of the active public routing policy.
+Run the `Initial Launch Only`, `Route Checks`, and relevant `Functional Checks` sections in `docs/launch-checklist.md`.
 
 ## Scenario 2: Upgrade Release
 
@@ -113,7 +83,7 @@ Choose the smallest release path that matches the change set.
 2. push `dev`
 3. open and merge the `dev` -> `main` pull request
 4. wait for Cloudflare to deploy `rebase-web` and/or `rebase-admin`
-5. verify the affected public and admin routes
+5. run the relevant checks in `docs/launch-checklist.md`
 
 ### Backend-only release
 
@@ -121,7 +91,7 @@ Choose the smallest release path that matches the change set.
 2. update the deploy machine to the matching `main` commit
 3. confirm the working tree is clean
 4. run `./ops/manage.sh deploy api` or `./ops/manage.sh deploy stack`
-5. verify API health and affected workflows
+5. run the relevant checks in `docs/launch-checklist.md`
 
 Recommended local checks before backend deploys:
 
@@ -140,7 +110,7 @@ git rev-parse --short HEAD
 4. wait for Cloudflare frontend deploys to finish
 5. update the deploy machine to the matching `main` commit
 6. run `./ops/manage.sh deploy api` or `./ops/manage.sh deploy stack`
-7. verify frontend, admin, API, and one real edit or upload flow
+7. run the relevant checks in `docs/launch-checklist.md`
 
 ## Scenario 3: Maintenance Operations
 

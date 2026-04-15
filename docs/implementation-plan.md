@@ -28,7 +28,7 @@ Planned deployment target:
 
 - `apps/web` on Cloudflare Workers
 - `apps/admin` on a separate Cloudflare Worker
-- `apps/api`, PostgreSQL, and `cloudflared` on `rebase@rebase.host`
+- `apps/api`, PostgreSQL, and `cloudflared` on a private backend host
 
 ## Phase 1: Foundation and Direction Reset
 

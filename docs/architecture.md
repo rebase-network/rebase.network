@@ -125,7 +125,7 @@ api service (`apps/api`)
 1. A reader requests a public page on `rebase.network` or `rebase.community`.
 2. The Astro app runs on the public Cloudflare Worker.
 3. The worker fetches published content from `api.rebase.network`.
-4. Cloudflare routes that hostname through `cloudflared` to the API service on `rebase@rebase.host`.
+4. Cloudflare routes that hostname through `cloudflared` to the API service on the private backend host.
 5. The API reads structured content from PostgreSQL and media metadata from the assets table.
 6. Media assets are served from R2-backed URLs.
 7. Cloudflare cache is applied to improve repeat access performance.
@@ -135,7 +135,7 @@ api service (`apps/api`)
 1. A staff member opens `admin.rebase.network`.
 2. The admin UI is served by a dedicated Cloudflare Worker for `apps/admin`.
 3. The admin app calls authenticated routes on `api.rebase.network`.
-4. Cloudflare routes API traffic through `cloudflared` to the API service on `rebase@rebase.host`.
+4. Cloudflare routes API traffic through `cloudflared` to the API service on the private backend host.
 5. The API validates the request, checks permissions, and applies business rules.
 6. Structured data is written to PostgreSQL.
 7. Uploaded media is stored in R2 and referenced by metadata records.
@@ -148,18 +148,12 @@ Steady-state production target for V1:
 
 - `apps/web` on a Cloudflare Worker bound to `rebase.network` and `rebase.community`
 - `apps/admin` on a separate Cloudflare Worker bound to `admin.rebase.network`
-- `apps/api` in Docker Compose on `rebase@rebase.host`
-- PostgreSQL in the same Docker Compose stack on `rebase@rebase.host`
+- `apps/api` in Docker Compose on the private backend host
+- PostgreSQL in the same Docker Compose stack on the private backend host
 - `cloudflared` in the same Docker Compose stack to expose `api.rebase.network` through Cloudflare Tunnel
 - public media served from Cloudflare R2 on `media.rebase.network`
 
-Current rollout note, verified on 2026-04-15:
-
-- `rebase.network` and `admin.rebase.network` are deployed through GitHub-connected Cloudflare Workers
-- `api.rebase.network` is deployed through the server-side Compose stack and Cloudflare Tunnel
-- `media.rebase.network` is attached as the R2 custom domain
-
-For the verified live state and the current hybrid deployment flow, see `docs/production-config.md` and `docs/deployment.md`.
+For current production wiring and deployment operations, see `docs/production-config.md` and `docs/deployment.md`.
 
 ### Why Cloudflare Tunnel for the API
 
@@ -213,11 +207,9 @@ Fallback behavior:
 ## Release Strategy
 
 - daily development continues on `dev`
-- deployment documentation, infrastructure changes, and release validation can land on `dev` first
 - merge `dev` into `main` only when the release candidate is ready
 - production deployments should run from `main`, not directly from `dev`
-- current production deploys are hybrid: Git-connected Cloudflare Worker deploys for the frontend and `ops/manage.sh` for the backend stack
-- because the backend deploy path syncs the local checkout to the server, deploy from a clean `main` working tree
+- release procedures and operator rules live in `docs/deployment.md`
 
 ## API Boundary
 

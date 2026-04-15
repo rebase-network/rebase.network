@@ -8,13 +8,11 @@ Keep it focused on launch and release verification. Do not repeat deployment pro
 
 Before the first production launch, confirm:
 
-- Cloudflare frontend projects are configured as documented in `docs/deployment.md`
 - `rebase.network` and `admin.rebase.network` are published by the GitHub-connected Cloudflare Workers
-- `api.rebase.network` is routed through Cloudflare Tunnel to the backend stack on `rebase@rebase.host`
+- `api.rebase.network` is routed through Cloudflare Tunnel to the private backend stack
 - `media.rebase.network` is attached to the R2 bucket
-- remote `infra/production/server.env` is complete
-- the first backend deploy has been completed
-- `./ops/manage.sh seed` and `./ops/manage.sh bootstrap-admin` have been run for the fresh production database
+- the initial backend deployment scenario in `docs/deployment.md` has been completed
+- the first admin account can sign in
 
 ## Every Production Release
 

@@ -1,6 +1,6 @@
 ---
 name: rebase-api-rollout
-description: Deploy and operate the Rebase backend server stack on `rebase@rebase.host`. Use when releasing or debugging `apps/api`, PostgreSQL, `cloudflared`, server env files, Docker Compose rollout, readiness checks, admin bootstrap, database backups, or the end-to-end server side of the Rebase production release.
+description: Deploy and operate the Rebase backend server stack on the private backend host via `ops/manage.sh`. Use when releasing or debugging `apps/api`, PostgreSQL, `cloudflared`, server env files, Docker Compose rollout, readiness checks, admin bootstrap, database backups, or the end-to-end server side of the Rebase production release.
 ---
 
 # Rebase API Rollout
@@ -25,18 +25,11 @@ Use this skill for the server-managed half of the Rebase production stack. It ce
    - `./ops/manage.sh logs api 200`
 7. Run targeted DB or bootstrap commands only when the task requires them.
 
-## Current Production Topology
+## Current Production Index
 
-- host: `rebase@rebase.host`
-- repo dir: `/home/rebase/rebase.network`
-- compose file: `infra/production/docker-compose.yml`
-- env file: `infra/production/server.env`
-- API service: `api`
-- DB service: `postgres`
-- tunnel service: `cloudflared`
-- public API hostname: `https://api.rebase.network`
+Use `docs/production-config.md` for the exact host alias, remote project dir, compose file, env file, service names, and public API hostname.
 
-Use `references/runbook.md` for the exact command set and `references/troubleshooting.md` for the known failure modes.
+Use `references/runbook.md` for the command set and `references/troubleshooting.md` for the known failure modes.
 
 ## When To Read References
 

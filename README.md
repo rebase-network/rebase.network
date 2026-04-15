@@ -126,7 +126,7 @@ pnpm cms:generate:geekdaily
 Current production model:
 
 - frontend: GitHub-connected Cloudflare Workers for `rebase-web` and `rebase-admin`
-- backend: Docker Compose on `rebase@rebase.host` deployed through `ops/manage.sh`
+- backend: Docker Compose on the private backend host operated through `ops/manage.sh`
 - media: Cloudflare R2 on `media.rebase.network`
 
 Use these docs as the entry points:

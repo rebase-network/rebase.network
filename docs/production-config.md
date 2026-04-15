@@ -64,6 +64,7 @@ Use `infra/production/server.env.example` as the template for remote `infra/prod
 
 | Variable | Purpose | Secret | Location |
 | --- | --- | --- | --- |
+| `APP_VERSION` | release version surfaced by the API | no | remote env |
 | `POSTGRES_DB` | database name | no | remote env |
 | `POSTGRES_USER` | database user | no | remote env |
 | `POSTGRES_PASSWORD` | database password | yes | remote env |
