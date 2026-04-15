@@ -128,7 +128,6 @@ git rev-parse --short HEAD
 | `./ops/manage.sh db backup` | create a remote PostgreSQL backup |
 | `./ops/manage.sh db download <remote-path> [local-path]` | download a remote backup or export to the local machine |
 | `./ops/manage.sh db export <table> [remote-path]` | export a PostgreSQL table to a remote CSV file |
-| `./ops/manage.sh db restore <remote-path> --yes` | restore PostgreSQL from a remote SQL or SQL.gz backup |
 
 ### Local verification commands
 

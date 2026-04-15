@@ -29,7 +29,6 @@ Use only when the task explicitly requires them:
 - bootstrap first admin account
 - seed baseline content
 - DB backup before risky migrations or cleanup
-- DB restore only from a verified backup path and only with explicit operator confirmation
 
 ## What `check` Should Confirm
 

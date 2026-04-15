@@ -179,49 +179,6 @@ db_export_table_remote() {
   log "table export written to ${resolved_target}"
 }
 
-db_restore_remote() {
-  local backup_path="$1"
-  local skip_pre_backup="${2:-false}"
-  local resolved_source
-  local source_reader
-  local admin_script
-  local restore_script
-  local pre_backup_path
-
-  resolved_source="$(resolve_remote_abs_path "$backup_path")"
-  remote_exec "[ -f $(quote "$resolved_source") ] || { echo missing $(quote "$resolved_source") >&2; exit 1; }"
-
-  if [[ "$skip_pre_backup" != true ]]; then
-    pre_backup_path="backups/pre-restore-$(date +%Y%m%d-%H%M%S).sql.gz"
-    log "creating safety backup before restore"
-    db_backup_remote "$pre_backup_path"
-  fi
-
-  log "stopping api and cloudflared before restore"
-  compose_exec "stop api cloudflared"
-
-  admin_script='export PGPASSWORD="$POSTGRES_PASSWORD"; db_name="$POSTGRES_DB"; psql -U "$POSTGRES_USER" -d postgres -v ON_ERROR_STOP=1 -P pager=off -c "select pg_terminate_backend(pid) from pg_stat_activity where datname = '\'''"$db_name"'\'\'' and pid <> pg_backend_pid();" && dropdb -U "$POSTGRES_USER" --if-exists "$db_name" && createdb -U "$POSTGRES_USER" "$db_name"'
-  if ! remote_repo_exec "docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote "$admin_script")"; then
-    die "database reset failed; api and cloudflared remain stopped for manual recovery"
-  fi
-
-  source_reader="cat"
-  case "$resolved_source" in
-    *.gz)
-      source_reader="gzip -dc"
-      ;;
-  esac
-
-  restore_script='export PGPASSWORD="$POSTGRES_PASSWORD"; exec psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 -P pager=off'
-  if ! remote_repo_exec "${source_reader} $(quote "$backup_path") | docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote "$restore_script")"; then
-    die "database restore failed; api and cloudflared remain stopped for manual recovery"
-  fi
-
-  compose_exec "up -d api cloudflared"
-  compose_exec "ps"
-  log "database restore completed from ${resolved_source}"
-}
-
 sync_repo() {
   require_local rsync
   ensure_remote_dir
@@ -266,7 +223,7 @@ Usage:
   ./ops/manage.sh health
   ./ops/manage.sh ready
   ./ops/manage.sh exec <service> -- <command...>
-  ./ops/manage.sh db <shell|query|logs|restart|backup|download|export|restore|migrate>
+  ./ops/manage.sh db <shell|query|logs|restart|backup|download|export|migrate>
   ./ops/manage.sh bootstrap-admin
   ./ops/manage.sh seed
   ./ops/manage.sh ssh
@@ -410,7 +367,6 @@ Database commands:
   ./ops/manage.sh db backup [remote-path]
   ./ops/manage.sh db download <remote-path> [local-path]
   ./ops/manage.sh db export <table> [remote-path]
-  ./ops/manage.sh db restore <remote-path> --yes [--skip-pre-backup]
   ./ops/manage.sh db migrate
 EOF
         ;;
@@ -458,33 +414,6 @@ EOF
         export_path="${2:-exports/${1:-table}-$(date +%Y%m%d-%H%M%S).csv}"
         [[ -n "$table_name" ]] || die "db export requires a table name"
         db_export_table_remote "$table_name" "$export_path"
-        ;;
-
-      restore)
-        assert_remote_layout
-        backup_path="${1:-}"
-        [[ -n "$backup_path" ]] || die "db restore requires a remote backup path"
-        shift || true
-        confirmed=false
-        skip_pre_backup=false
-
-        while [[ $# -gt 0 ]]; do
-          case "$1" in
-            --yes)
-              confirmed=true
-              ;;
-            --skip-pre-backup)
-              skip_pre_backup=true
-              ;;
-            *)
-              die "unknown option for db restore: $1"
-              ;;
-          esac
-          shift
-        done
-
-        [[ "$confirmed" == true ]] || die "db restore is destructive; rerun with --yes after confirming the backup path"
-        db_restore_remote "$backup_path" "$skip_pre_backup"
         ;;
 
       migrate)
