@@ -1,6 +1,6 @@
 ---
 name: rebase-api-rollout
-description: Deploy and operate the Rebase backend server stack on `rebase@rebase.network`. Use when releasing or debugging `apps/api`, PostgreSQL, `cloudflared`, server env files, Docker Compose rollout, readiness checks, admin bootstrap, database backups, or the end-to-end server side of the Rebase production release.
+description: Deploy and operate the Rebase backend server stack on `rebase@rebase.host`. Use when releasing or debugging `apps/api`, PostgreSQL, `cloudflared`, server env files, Docker Compose rollout, readiness checks, admin bootstrap, database backups, or the end-to-end server side of the Rebase production release.
 ---
 
 # Rebase API Rollout
@@ -27,7 +27,7 @@ Use this skill for the server-managed half of the Rebase production stack. It ce
 
 ## Current Production Topology
 
-- host: `rebase@rebase.network`
+- host: `rebase@rebase.host`
 - repo dir: `/home/rebase/rebase.network`
 - compose file: `infra/production/docker-compose.yml`
 - env file: `infra/production/server.env`

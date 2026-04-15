@@ -125,7 +125,7 @@ api service (`apps/api`)
 1. A reader requests a public page on `rebase.network` or `rebase.community`.
 2. The Astro app runs on the public Cloudflare Worker.
 3. The worker fetches published content from `api.rebase.network`.
-4. Cloudflare routes that hostname through `cloudflared` to the API service on `rebase@rebase.network`.
+4. Cloudflare routes that hostname through `cloudflared` to the API service on `rebase@rebase.host`.
 5. The API reads structured content from PostgreSQL and media metadata from the assets table.
 6. Media assets are served from R2-backed URLs.
 7. Cloudflare cache is applied to improve repeat access performance.
@@ -135,7 +135,7 @@ api service (`apps/api`)
 1. A staff member opens `admin.rebase.network`.
 2. The admin UI is served by a dedicated Cloudflare Worker for `apps/admin`.
 3. The admin app calls authenticated routes on `api.rebase.network`.
-4. Cloudflare routes API traffic through `cloudflared` to the API service on `rebase@rebase.network`.
+4. Cloudflare routes API traffic through `cloudflared` to the API service on `rebase@rebase.host`.
 5. The API validates the request, checks permissions, and applies business rules.
 6. Structured data is written to PostgreSQL.
 7. Uploaded media is stored in R2 and referenced by metadata records.
@@ -148,8 +148,8 @@ Steady-state production target for V1:
 
 - `apps/web` on a Cloudflare Worker bound to `rebase.network` and `rebase.community`
 - `apps/admin` on a separate Cloudflare Worker bound to `admin.rebase.network`
-- `apps/api` in Docker Compose on `rebase@rebase.network`
-- PostgreSQL in the same Docker Compose stack on `rebase@rebase.network`
+- `apps/api` in Docker Compose on `rebase@rebase.host`
+- PostgreSQL in the same Docker Compose stack on `rebase@rebase.host`
 - `cloudflared` in the same Docker Compose stack to expose `api.rebase.network` through Cloudflare Tunnel
 - public media served from Cloudflare R2 on `media.rebase.network`
 

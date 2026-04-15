@@ -10,8 +10,8 @@ Use `docs/production-config.md` for settings lookup and `docs/launch-checklist.m
 | --- | --- | --- |
 | Public site | Cloudflare Worker `rebase-web` | GitHub-connected Cloudflare auto-deploy from `main` |
 | Admin site | Cloudflare Worker `rebase-admin` | GitHub-connected Cloudflare auto-deploy from `main` |
-| API | Docker Compose on `rebase@rebase.network` | `./ops/manage.sh deploy api` |
-| Full backend stack | Docker Compose on `rebase@rebase.network` | `./ops/manage.sh deploy stack` |
+| API | Docker Compose on `rebase@rebase.host` | `./ops/manage.sh deploy api` |
+| Full backend stack | Docker Compose on `rebase@rebase.host` | `./ops/manage.sh deploy stack` |
 | Media | Cloudflare R2 `rebase-media` | Cloudflare-managed bucket and domain settings |
 
 Release rules:
@@ -21,7 +21,7 @@ Release rules:
 - frontend production publishes after Cloudflare detects updates on `main`
 - backend production is manual and must be deployed from the intended `main` commit
 - local `wrangler deploy` is not the normal production path
-- SSH examples use `rebase@rebase.network`; operator machines must resolve `rebase.network` to the backend server through local hosts or internal DNS
+- SSH examples use `rebase@rebase.host`; operator machines must resolve `rebase.host` to the backend server through local hosts or internal DNS
 
 ## Scenario 1: Initial Deployment
 
@@ -51,7 +51,7 @@ Sync the repo to the server:
 Create the production env file on the server:
 
 ```bash
-ssh rebase@rebase.network
+ssh rebase@rebase.host
 cd /home/rebase/rebase.network
 cp infra/production/server.env.example infra/production/server.env
 ```

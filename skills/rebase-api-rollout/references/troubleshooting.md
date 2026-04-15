@@ -4,7 +4,7 @@
 
 Inspect these in order:
 
-1. SSH access to `rebase@rebase.network`
+1. SSH access to `rebase@rebase.host`
 2. remote repo dir exists: `/home/rebase/rebase.network`
 3. remote `infra/production/server.env` exists
 4. Docker Engine and Docker Compose plugin are installed remotely

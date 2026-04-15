@@ -42,7 +42,7 @@ This file is not a secret store.
 
 | Item | Current value | Source |
 | --- | --- | --- |
-| Server host | `rebase@rebase.network` | `ops/manage.sh` |
+| Server host | `rebase@rebase.host` | `ops/manage.sh` |
 | Remote project dir | `/home/rebase/rebase.network` | `ops/manage.sh` |
 | Remote directory type | rsynced working tree, not a git checkout | server layout + `ops/manage.sh` |
 | Compose file | `infra/production/docker-compose.yml` | repo |
@@ -54,7 +54,7 @@ This file is not a secret store.
 | API bind | `127.0.0.1:8788` | remote env |
 | PostgreSQL bind | `127.0.0.1:55433` | remote env |
 
-SSH hostname resolution for `rebase@rebase.network` is handled outside this public repository.
+SSH hostname resolution for `rebase@rebase.host` is handled outside this public repository.
 
 ## Server Env Index
 

@@ -10,7 +10,7 @@ Before the first production launch, confirm:
 
 - Cloudflare frontend projects are configured as documented in `docs/deployment.md`
 - `rebase.network` and `admin.rebase.network` are published by the GitHub-connected Cloudflare Workers
-- `api.rebase.network` is routed through Cloudflare Tunnel to the backend stack on `rebase@rebase.network`
+- `api.rebase.network` is routed through Cloudflare Tunnel to the backend stack on `rebase@rebase.host`
 - `media.rebase.network` is attached to the R2 bucket
 - remote `infra/production/server.env` is complete
 - the first backend deploy has been completed
