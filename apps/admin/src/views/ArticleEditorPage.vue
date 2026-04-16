@@ -11,7 +11,6 @@ import AuthorsField from '../components/AuthorsField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
-import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface ArticleFormState {
   slug: string;
@@ -60,9 +59,9 @@ const slugTouched = ref(false);
 
 const articleId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => articleId.value.length === 0);
-const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/articles/${form.slug}`) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新建文章' : `编辑文章：${article.value?.title ?? ''}`));
 const statusLabel = computed(() => formatContentStatus(form.status));
+const updatedMetaLabel = computed(() => (article.value ? formatDateTime(article.value.updatedAt) : '创建后生成'));
 const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft') ? '保存草稿' : '保存修改'));
 const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'button-primary'].filter(Boolean).join(' '));
 const canPublish = computed(() => form.status !== 'published');
@@ -212,6 +211,10 @@ onMounted(() => void loadArticle());
     <header class="page-header page-header-row">
       <div>
         <h2>{{ pageTitle }}</h2>
+        <div class="article-header-meta">
+          <span class="status-pill">{{ statusLabel }}</span>
+          <span class="panel-meta">最后更新 {{ updatedMetaLabel }}</span>
+        </div>
         <p>优先完成正文，其余字段保持精简。</p>
         <small class="panel-meta">{{ workflowHint }}</small>
       </div>
@@ -274,24 +277,6 @@ onMounted(() => void loadArticle());
       <aside class="stacked-gap editor-sidebar sticky-stack">
         <section class="panel stacked-gap article-sidebar-card">
           <div class="panel-toolbar">
-            <h3>发布设置</h3>
-            <span class="status-pill">{{ statusLabel }}</span>
-          </div>
-
-          <dl class="summary-grid summary-grid-1 article-meta-grid">
-            <div class="summary-item">
-              <dt>公开地址</dt>
-              <dd>{{ publicUrl }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>最后更新</dt>
-              <dd class="muted">{{ article ? formatDateTime(article.updatedAt) : '创建后生成' }}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section class="panel stacked-gap article-sidebar-card">
-          <div class="panel-toolbar">
             <h3>封面</h3>
             <div class="panel-meta">{{ form.coverAssetId ? '已设置' : '未设置' }}</div>
           </div>
@@ -326,6 +311,14 @@ onMounted(() => void loadArticle());
   gap: 0.75rem;
 }
 
+.article-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.7rem;
+  margin-top: 0.38rem;
+}
+
 .article-leading-fields {
   gap: 0.65rem;
 }
@@ -337,10 +330,6 @@ onMounted(() => void loadArticle());
 
 .article-sidebar-card {
   gap: 0.7rem;
-}
-
-.article-meta-grid {
-  gap: 0.55rem;
 }
 
 @media (max-width: 1280px) {
