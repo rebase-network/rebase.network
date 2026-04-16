@@ -237,6 +237,8 @@ const persist = async (nextStatus: JobFormState['status'], mode: 'save' | 'publi
       summary,
       status: nextStatus,
       applyUrl: applyMode.value === 'external_url' ? form.applyUrl || null : null,
+      contactLabel: applyMode.value === 'direct_contact' ? form.contactLabel : '',
+      contactValue: applyMode.value === 'direct_contact' ? form.contactValue : '',
       expiresAt: fromDateInputValue(form.expiresAt),
     };
 
@@ -285,6 +287,16 @@ const runAction = async (action: 'archive') => {
 };
 
 watch(() => [form.companyName, form.roleTitle], () => onTitleInput());
+watch(applyMode, (mode) => {
+  if (mode === 'external_url') {
+    const { contactValue: _contactValue, ...restIssues } = fieldIssues.value;
+    fieldIssues.value = restIssues;
+    return;
+  }
+
+  const { applyUrl: _applyUrl, ...restIssues } = fieldIssues.value;
+  fieldIssues.value = restIssues;
+});
 watch(() => route.fullPath, () => void loadRecord());
 onMounted(() => void loadRecord());
 </script>
@@ -404,23 +416,17 @@ onMounted(() => void loadRecord());
             </select>
           </label>
 
-          <label class="field">
+          <label v-if="applyMode === 'external_url'" class="field">
             <span>投递链接</span>
-            <input v-model="form.applyUrl" :disabled="applyMode !== 'external_url'" type="url" placeholder="https://example.com/jobs/frontend-engineer" />
+            <input v-model="form.applyUrl" type="url" placeholder="https://example.com/jobs/frontend-engineer" />
             <small v-if="fieldIssues.applyUrl" class="field-error">{{ fieldIssues.applyUrl }}</small>
           </label>
 
-          <div class="field-grid field-grid-2 field-grid-compact">
-            <label class="field">
-              <span>联系渠道</span>
-              <input v-model="form.contactLabel" type="text" placeholder="telegram / 微信 / 邮箱" />
-            </label>
-            <label class="field">
-              <span>联系方式</span>
-              <input v-model="form.contactValue" type="text" placeholder="@rebase_hiring" />
-              <small v-if="fieldIssues.contactValue" class="field-error">{{ fieldIssues.contactValue }}</small>
-            </label>
-          </div>
+          <label v-else class="field">
+            <span>联系方式</span>
+            <input v-model="form.contactValue" type="text" placeholder="@rebase_hiring / hello@rebase.network" />
+            <small v-if="fieldIssues.contactValue" class="field-error">{{ fieldIssues.contactValue }}</small>
+          </label>
         </section>
       </aside>
     </div>
