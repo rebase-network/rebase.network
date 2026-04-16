@@ -206,7 +206,7 @@ export type JobInput = z.infer<typeof jobSchema>;
 
 export const eventSchema = z
   .object({
-    slug: requiredTrimmedString('slug is required'),
+    slug: trimmedString.optional().default(''),
     title: requiredTrimmedString('title is required'),
     summary: requiredTrimmedString('summary is required'),
     bodyMarkdown: requiredTrimmedString('body is required'),
@@ -226,6 +226,14 @@ export const eventSchema = z
   })
   .superRefine((value, ctx) => {
     const requiresPublishReadyDetails = value.status === 'published';
+
+    if (requiresPublishReadyDetails && !value.slug) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['slug'],
+        message: 'slug is required',
+      });
+    }
 
     if (requiresPublishReadyDetails && !value.startAt) {
       ctx.addIssue({

@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { asc, count, desc, eq, ilike, or } from 'drizzle-orm';
 
 import { events, staffAccounts } from '@rebase/db';
@@ -15,10 +17,23 @@ const draftEventDatePlaceholders = {
   startAt: '1900-01-01T00:00:00.000Z',
   endAt: '1900-01-01T01:00:00.000Z',
 } as const;
+const internalDraftSlugPrefix = 'draft-event-';
 
 type EventDateField = keyof typeof draftEventDatePlaceholders;
 
 const toStoredEventDate = (value: string | null, field: EventDateField) => new Date(value ?? draftEventDatePlaceholders[field]);
+const isInternalDraftSlug = (value: string) => value.startsWith(internalDraftSlugPrefix);
+const toStoredEventSlug = (value: string) => {
+  const normalizedValue = value.trim();
+  return normalizedValue || `${internalDraftSlugPrefix}${randomUUID()}`;
+};
+const toAdminEventSlug = (value: string | null | undefined) => {
+  if (!value || isInternalDraftSlug(value)) {
+    return '';
+  }
+
+  return value;
+};
 
 const toAdminEventDate = (value: Date | string | null | undefined, field: EventDateField) => {
   const iso = toIsoString(value);
@@ -42,7 +57,7 @@ const assertPublishableEvent = (input: EventInput) => {
 
 const mapEventListItem = (row: any): AdminEventListItem => ({
   id: row.event.id,
-  slug: row.event.slug,
+  slug: toAdminEventSlug(row.event.slug),
   title: row.event.title,
   editorName: row.editorName ?? null,
   status: row.event.status,
@@ -55,7 +70,7 @@ const mapEventListItem = (row: any): AdminEventListItem => ({
 
 const mapEventDetail = (row: any) => ({
   id: row.id,
-  slug: row.slug,
+  slug: toAdminEventSlug(row.slug),
   title: row.title,
   summary: row.summary,
   bodyMarkdown: row.bodyMarkdown,
@@ -141,12 +156,15 @@ export const getAdminEvent = async (id: string) => {
 
 export const createAdminEvent = async (input: EventInput, actor: AuditActor) => {
   const db = getDb();
-  await ensureUniqueSlug(input.slug);
+  const storedSlug = toStoredEventSlug(input.slug);
+  if (!isInternalDraftSlug(storedSlug)) {
+    await ensureUniqueSlug(storedSlug);
+  }
 
   const [created] = await db
     .insert(events)
     .values({
-      slug: input.slug,
+      slug: storedSlug,
       title: input.title,
       summary: input.summary,
       bodyMarkdown: input.bodyMarkdown,
@@ -185,12 +203,15 @@ export const updateAdminEvent = async (id: string, input: EventInput, actor: Aud
     throw notFound('event not found');
   }
 
-  await ensureUniqueSlug(input.slug, id);
+  const storedSlug = toStoredEventSlug(input.slug);
+  if (!isInternalDraftSlug(storedSlug)) {
+    await ensureUniqueSlug(storedSlug, id);
+  }
 
   const [updated] = await db
     .update(events)
     .set({
-      slug: input.slug,
+      slug: storedSlug,
       title: input.title,
       summary: input.summary,
       bodyMarkdown: input.bodyMarkdown,
