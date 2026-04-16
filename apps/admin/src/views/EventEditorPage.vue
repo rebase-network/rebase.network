@@ -212,26 +212,30 @@ onMounted(() => void loadRecord());
 
 <template>
   <section class="stacked-gap">
-    <header class="page-header page-header-row">
-      <div>
-        <h2>{{ pageTitle }}</h2>
-        <div class="event-header-support">
-          <p class="event-header-note">{{ headerNote }}</p>
-          <div class="event-header-meta">
-            <span class="panel-meta">最后更新 {{ updatedMetaLabel }}</span>
-            <span class="status-pill">{{ statusLabel }}</span>
-          </div>
+    <header class="page-header event-page-header">
+      <div class="page-header-row">
+        <div>
+          <h2>{{ pageTitle }}</h2>
+        </div>
+
+        <div class="page-actions">
+          <RouterLink class="button-link" to="/events">返回列表</RouterLink>
+          <button :class="saveButtonClass" type="button" :disabled="loading || saving || actioning" @click="save">
+            {{ saving ? '保存中…' : saveButtonLabel }}
+          </button>
+          <button v-if="canPublish" class="button-link button-primary" type="button" :disabled="loading || saving || actioning" @click="publish">
+            {{ actioning ? '发布中…' : '发布' }}
+          </button>
+          <button v-if="canArchive" class="button-link button-danger" type="button" :disabled="saving || actioning" @click="runAction('archive')">归档</button>
         </div>
       </div>
-      <div class="page-actions">
-        <RouterLink class="button-link" to="/events">返回列表</RouterLink>
-        <button :class="saveButtonClass" type="button" :disabled="loading || saving || actioning" @click="save">
-          {{ saving ? '保存中…' : saveButtonLabel }}
-        </button>
-        <button v-if="canPublish" class="button-link button-primary" type="button" :disabled="loading || saving || actioning" @click="publish">
-          {{ actioning ? '发布中…' : '发布' }}
-        </button>
-        <button v-if="canArchive" class="button-link button-danger" type="button" :disabled="saving || actioning" @click="runAction('archive')">归档</button>
+
+      <div class="event-header-support">
+        <p class="event-header-note">{{ headerNote }}</p>
+        <div class="event-header-meta">
+          <span class="panel-meta">最后更新 {{ updatedMetaLabel }}</span>
+          <span class="status-pill">{{ statusLabel }}</span>
+        </div>
       </div>
     </header>
 
