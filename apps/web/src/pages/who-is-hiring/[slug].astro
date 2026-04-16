@@ -10,7 +10,7 @@ const jobPublicNumber = getJobPublicNumberFromRouteParam(routeParam);
 const [site, job, jobs] = await Promise.all([getSiteSettings(), getJobByPublicNumber(jobPublicNumber), getJobs()]);
 const related = job ? jobs.filter((item) => item.publicNumber !== job.publicNumber).slice(0, 3) : [];
 const remoteLabel = job ? (job.supportsRemote ? '支持远程' : '线下优先') : '';
-const deadlineLabel = job ? (job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` : '长期开放') : '';
+const updateLabel = job ? `最后更新 ${formatDate(job.updatedAt)}` : '';
 const formatWorkMode = (value: string) => {
   switch (value) {
     case 'full-time':
@@ -26,7 +26,7 @@ const applyCopy = job
   : '';
 const contactValue = job?.contactValue?.trim() ?? '';
 const contactLabel = job?.contactLabel?.trim() || '联系方式';
-const metaItems = job ? [job.salary, formatWorkMode(job.workMode), job.location, remoteLabel, deadlineLabel].filter(Boolean) : [];
+const metaItems = job ? [job.salary, formatWorkMode(job.workMode), job.location, remoteLabel, updateLabel].filter(Boolean) : [];
 
 if (!job) {
   Astro.response.status = 404;

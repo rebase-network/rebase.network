@@ -82,6 +82,7 @@ export interface Job {
   contactLabel: string;
   contactValue: string;
   publishedAt: string;
+  updatedAt: string;
   expiresAt: string | null;
   tags: string[];
 }

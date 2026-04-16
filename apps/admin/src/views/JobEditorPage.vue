@@ -392,11 +392,6 @@ onMounted(() => void loadRecord());
             </label>
           </div>
 
-          <label class="field">
-            <span>截止日期</span>
-            <input v-model="form.expiresAt" type="date" />
-          </label>
-
           <label class="field checkbox-field job-remote-field">
             <span>支持远程</span>
             <input v-model="form.supportsRemote" type="checkbox" />

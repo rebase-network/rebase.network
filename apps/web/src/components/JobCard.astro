@@ -9,7 +9,7 @@ interface Props {
 }
 
 const { job, compact = false } = Astro.props;
-const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` : '长期开放';
+const freshnessLabel = `更新 ${formatDate(job.updatedAt)}`;
 const formatWorkMode = (value: string) => {
   switch (value) {
     case 'full-time':
@@ -26,7 +26,7 @@ const formatWorkMode = (value: string) => {
   <div class="job-card-topline">
     <p class="company-name">{job.companyName}</p>
     <div class="job-card-flags">
-      <span>{availabilityLabel}</span>
+      <span>{freshnessLabel}</span>
       {job.supportsRemote && <strong class="remote-flag">远程</strong>}
     </div>
   </div>

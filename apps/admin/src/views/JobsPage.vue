@@ -12,7 +12,7 @@ import {
 
 import PaginationBar from '../components/PaginationBar.vue';
 import { adminFetchWithMeta } from '../lib/api';
-import { formatBoolean, formatContentStatus, formatDate, formatDateTime } from '../lib/format';
+import { formatBoolean, formatContentStatus, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
 const getJobPreviewUrl = (publicNumber: number, slug: string) =>
@@ -177,7 +177,6 @@ onBeforeUnmount(() => {
             <col class="admin-col-editor" />
             <col class="admin-status-filter-column" />
             <col class="admin-col-remote" />
-            <col class="admin-col-date" />
             <col class="admin-col-updated" />
             <col class="admin-col-actions" />
           </colgroup>
@@ -220,14 +219,13 @@ onBeforeUnmount(() => {
                 </div>
               </th>
               <th class="admin-col-remote">远程</th>
-              <th class="admin-col-date">截止日期</th>
               <th class="admin-col-updated">最后更新</th>
               <th class="admin-col-actions">操作</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="rows.length === 0">
-              <td class="admin-table-empty-row" colspan="7">当前筛选条件下没有招聘信息，请调整搜索或状态筛选。</td>
+              <td class="admin-table-empty-row" colspan="6">当前筛选条件下没有招聘信息，请调整搜索或状态筛选。</td>
             </tr>
             <tr v-for="row in rows" :key="row.id">
               <td class="admin-list-primary-cell">
@@ -239,7 +237,6 @@ onBeforeUnmount(() => {
               <td>{{ row.editorName || '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td>{{ formatBoolean(row.supportsRemote) }}</td>
-              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.expiresAt ?? undefined">{{ formatDate(row.expiresAt) }}</time></td>
               <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
                 <div class="table-action-list admin-list-actions">
