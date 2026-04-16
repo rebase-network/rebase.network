@@ -2,15 +2,15 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import DetailHero from '@/components/DetailHero.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
-import { getArticleById, getArticles, getSiteSettings } from '@/lib/content';
+import { getArticleByPublicNumber, getArticles, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
-import { getArticleIdFromRouteParam, getArticlePath } from '@/lib/paths';
+import { getArticlePath, getArticlePublicNumberFromRouteParam } from '@/lib/paths';
 import { DEFAULT_ARTICLE_COVER_PATH } from '@/lib/placeholders';
 
 const routeParam = Astro.params.slug ?? '';
-const articleId = getArticleIdFromRouteParam(routeParam);
-const [site, article, articles] = await Promise.all([getSiteSettings(), getArticleById(articleId), getArticles()]);
-const related = article ? articles.filter((item) => item.id !== article.id).slice(0, 3) : [];
+const articlePublicNumber = getArticlePublicNumberFromRouteParam(routeParam);
+const [site, article, articles] = await Promise.all([getSiteSettings(), getArticleByPublicNumber(articlePublicNumber), getArticles()]);
+const related = article ? articles.filter((item) => item.publicNumber !== article.publicNumber).slice(0, 3) : [];
 const articleAuthors = article?.authors.map((author) => author.name).join(' · ') ?? '';
 const articleHeroMeta = article ? [formatDate(article.publishedAt), article.readingTime, articleAuthors].filter(Boolean) : [];
 const articleHeroActions = [
@@ -86,7 +86,7 @@ if (!article) {
               <h2>延伸阅读</h2>
               <ul class="related-list">
                 {related.map((item) => (
-                  <li><a href={getArticlePath(item.id, item.slug)}>{item.title}</a></li>
+                  <li><a href={getArticlePath(item.publicNumber, item.slug)}>{item.title}</a></li>
                 ))}
               </ul>
             </section>

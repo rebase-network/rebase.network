@@ -8,7 +8,7 @@ export async function GET({ request }: { request: Request }) {
     title: `${job.roleTitle} · ${job.companyName}`,
     description: `<p>${job.summary}</p>`,
     pubDate: new Date(job.publishedAt),
-    link: withBaseUrl(site.primaryDomain, getJobPath(job.id, job.slug)),
+    link: withBaseUrl(site.primaryDomain, getJobPath(job.publicNumber, job.slug)),
   }));
 
   return rssResponse(

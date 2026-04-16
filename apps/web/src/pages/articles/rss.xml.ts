@@ -8,7 +8,7 @@ export async function GET({ request }: { request: Request }) {
     title: article.title,
     description: `<p>${article.summary}</p>`,
     pubDate: new Date(article.publishedAt),
-    link: withBaseUrl(site.primaryDomain, getArticlePath(article.id, article.slug)),
+    link: withBaseUrl(site.primaryDomain, getArticlePath(article.publicNumber, article.slug)),
   }));
 
   return rssResponse(

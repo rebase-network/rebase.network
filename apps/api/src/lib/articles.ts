@@ -9,10 +9,11 @@ import { getDb } from './db.js';
 import { notFound } from './errors.js';
 import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
 import { combineFilters, toContainsPattern } from './query-filters.js';
-import { ensurePublishedAt, toIsoString } from './utils.js';
+import { ensurePublishedAt, parsePublicNumber, toIsoString } from './utils.js';
 
 const mapArticleListItem = (row: any): AdminArticleListItem => ({
   id: row.id,
+  publicNumber: row.publicNumber,
   slug: row.slug,
   title: row.title,
   status: row.status,
@@ -24,6 +25,7 @@ const mapArticleListItem = (row: any): AdminArticleListItem => ({
 
 const mapArticleDetail = (row: any) => ({
   id: row.id,
+  publicNumber: row.publicNumber,
   slug: row.slug,
   title: row.title,
   summary: row.summary,
@@ -226,7 +228,7 @@ export const listPublicArticles = async () => {
   const assetUrls = await listPublicAssetUrlsById(rows.map((row) => row.coverAssetId));
 
   return rows.map((row) => ({
-    id: row.id,
+    publicNumber: row.publicNumber,
     slug: row.slug,
     title: row.title,
     summary: row.summary,
@@ -240,8 +242,10 @@ export const listPublicArticles = async () => {
   }));
 };
 
-export const getPublicArticleById = async (id: string) => {
-  if (!/^[0-9a-f-]{36}$/i.test(id)) {
+export const getPublicArticleByPublicNumber = async (value: string | number) => {
+  const publicNumber = parsePublicNumber(value);
+
+  if (!publicNumber) {
     return null;
   }
 
@@ -249,7 +253,7 @@ export const getPublicArticleById = async (id: string) => {
   const rows = await db
     .select()
     .from(articles)
-    .where(eq(articles.id, id))
+    .where(eq(articles.publicNumber, publicNumber))
     .limit(1);
   const row = rows[0] ?? null;
 
@@ -260,7 +264,7 @@ export const getPublicArticleById = async (id: string) => {
   const assetUrls = await listPublicAssetUrlsById([row.coverAssetId]);
 
   return {
-    id: row.id,
+    publicNumber: row.publicNumber,
     slug: row.slug,
     title: row.title,
     summary: row.summary,

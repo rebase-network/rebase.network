@@ -35,7 +35,8 @@ const takeLatestRssItems = (rows: Array<RssItem & { pubDate?: string | null }>, 
 const withBaseUrl = (baseUrl: string, pathname: string) => new URL(pathname, baseUrl).toString();
 
 const toSummaryDescription = (summary: string) => `<p>${summary}</p>`;
-const buildContentHref = (basePath: string, id: string, slug: string) => `/${basePath}/${slug ? `${id}-${slug}` : id}`;
+const buildContentHref = (basePath: string, publicNumber: number, slug: string) =>
+  `/${basePath}/${slug ? `${publicNumber}-${slug}` : publicNumber}`;
 
 rootRoutes.get('/', async (c) => {
   const site = await getPublicSiteConfig();
@@ -111,19 +112,19 @@ rootRoutes.get('/rss.xml', async (c) => {
     [
       ...articles.map((item) => ({
         title: item.title,
-        link: withBaseUrl(site.primaryDomain, buildContentHref('articles', item.id, item.slug)),
+        link: withBaseUrl(site.primaryDomain, buildContentHref('articles', item.publicNumber, item.slug)),
         description: toSummaryDescription(item.summary),
         pubDate: item.publishedAt,
       })),
       ...jobs.map((item) => ({
         title: `${item.companyName} - ${item.roleTitle}`,
-        link: withBaseUrl(site.primaryDomain, buildContentHref('who-is-hiring', item.id, item.slug)),
+        link: withBaseUrl(site.primaryDomain, buildContentHref('who-is-hiring', item.publicNumber, item.slug)),
         description: toSummaryDescription(item.summary),
         pubDate: item.publishedAt,
       })),
       ...events.map((item) => ({
         title: item.title,
-        link: withBaseUrl(site.primaryDomain, buildContentHref('events', item.id, item.slug)),
+        link: withBaseUrl(site.primaryDomain, buildContentHref('events', item.publicNumber, item.slug)),
         description: toSummaryDescription(item.summary),
         pubDate: item.startAt,
       })),
@@ -152,7 +153,7 @@ rootRoutes.get('/rss/articles.xml', async (c) => {
   const site = await getPublicSiteConfig();
   const items = takeLatest(await listPublicArticles()).map((item) => ({
     title: item.title,
-    link: withBaseUrl(site.primaryDomain, buildContentHref('articles', item.id, item.slug)),
+    link: withBaseUrl(site.primaryDomain, buildContentHref('articles', item.publicNumber, item.slug)),
     description: toSummaryDescription(item.summary),
     pubDate: item.publishedAt,
   }));
@@ -172,7 +173,7 @@ rootRoutes.get('/rss/jobs.xml', async (c) => {
   const site = await getPublicSiteConfig();
   const items = takeLatest(await listPublicJobs()).map((item) => ({
     title: `${item.companyName} - ${item.roleTitle}`,
-    link: withBaseUrl(site.primaryDomain, buildContentHref('who-is-hiring', item.id, item.slug)),
+    link: withBaseUrl(site.primaryDomain, buildContentHref('who-is-hiring', item.publicNumber, item.slug)),
     description: toSummaryDescription(item.summary),
     pubDate: item.publishedAt,
   }));
@@ -195,7 +196,7 @@ rootRoutes.get('/rss/events.xml', async (c) => {
     .slice(0, 3)
     .map((item) => ({
       title: item.title,
-      link: withBaseUrl(site.primaryDomain, buildContentHref('events', item.id, item.slug)),
+      link: withBaseUrl(site.primaryDomain, buildContentHref('events', item.publicNumber, item.slug)),
       description: toSummaryDescription(item.summary),
       pubDate: item.startAt,
     }));

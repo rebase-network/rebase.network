@@ -11,7 +11,7 @@ export async function GET({ request }: { request: Request }) {
       title: event.title,
       description: `<p>${event.summary}</p>`,
       pubDate: new Date(event.startAt),
-      link: withBaseUrl(site.primaryDomain, getEventPath(event.id, event.slug)),
+      link: withBaseUrl(site.primaryDomain, getEventPath(event.publicNumber, event.slug)),
     }));
 
   return rssResponse(

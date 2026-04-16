@@ -53,7 +53,7 @@ export interface ArticleAuthor {
 }
 
 export interface Article {
-  id: string;
+  publicNumber: number;
   slug: string;
   title: string;
   summary: string;
@@ -67,7 +67,7 @@ export interface Article {
 }
 
 export interface Job {
-  id: string;
+  publicNumber: number;
   slug: string;
   companyName: string;
   roleTitle: string;
@@ -87,7 +87,7 @@ export interface Job {
 }
 
 export interface Event {
-  id: string;
+  publicNumber: number;
   slug: string;
   title: string;
   summary: string;

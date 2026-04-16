@@ -15,8 +15,8 @@ import { adminFetchWithMeta } from '../lib/api';
 import { formatContentStatus, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
-const getArticlePreviewUrl = (id: string, slug: string) =>
-  getPublicSiteUrl(`/articles/${slug ? `${id}-${slug}` : id}`);
+const getArticlePreviewUrl = (publicNumber: number, slug: string) =>
+  getPublicSiteUrl(`/articles/${slug ? `${publicNumber}-${slug}` : publicNumber}`);
 
 const rows = ref<AdminArticleListItem[]>([]);
 const pagination = ref<PaginatedMeta | null>(null);
@@ -241,7 +241,7 @@ onBeforeUnmount(() => {
               <td class="table-actions-cell">
                 <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/articles/${row.id}/edit`">编辑</RouterLink>
-                  <a class="table-link" :href="getArticlePreviewUrl(row.id, row.slug)" target="_blank" rel="noreferrer">前台预览</a>
+                  <a class="table-link" :href="getArticlePreviewUrl(row.publicNumber, row.slug)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>
               </td>
             </tr>

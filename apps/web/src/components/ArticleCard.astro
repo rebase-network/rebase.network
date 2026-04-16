@@ -15,7 +15,7 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
 ---
 
 <article class:list={['article-card', 'card', { featured, compact }] }>
-  <a class="cover-link" href={getArticlePath(article.id, article.slug)} aria-label={article.title}>
+  <a class="cover-link" href={getArticlePath(article.publicNumber, article.slug)} aria-label={article.title}>
     <img
       class:list={['cover-image', !article.coverImageUrl && 'default-cover-image']}
       src={article.coverImageUrl ?? DEFAULT_ARTICLE_COVER_PATH}
@@ -26,7 +26,7 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
   <div class="content">
     <p class="meta">{formatDate(article.publishedAt)} · {article.readingTime}</p>
     <h3>
-      <a href={getArticlePath(article.id, article.slug)}>{article.title}</a>
+      <a href={getArticlePath(article.publicNumber, article.slug)}>{article.title}</a>
     </h3>
     <p class="summary">{article.summary}</p>
     {authorLine && <p class="author-line">{authorLine}</p>}

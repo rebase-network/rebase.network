@@ -27,8 +27,8 @@ type EventStatusFilterValue = 'all' | ContentStatus;
 
 const filters = reactive<{ query: string; status: EventStatusFilterValue }>({ query: '', status: 'all' });
 
-const getEventPreviewUrl = (id: string, slug: string) =>
-  slug ? getPublicSiteUrl(`/events/${id}-${slug}`) : '';
+const getEventPreviewUrl = (publicNumber: number, slug: string) =>
+  slug ? getPublicSiteUrl(`/events/${publicNumber}-${slug}`) : '';
 
 const buildRequestPath = () => {
   const params = new URLSearchParams({
@@ -250,7 +250,7 @@ onBeforeUnmount(() => {
               <td class="table-actions-cell">
                 <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/events/${row.id}/edit`">编辑</RouterLink>
-                  <a v-if="row.slug" class="table-link" :href="getEventPreviewUrl(row.id, row.slug)" target="_blank" rel="noreferrer">前台预览</a>
+                  <a v-if="row.slug" class="table-link" :href="getEventPreviewUrl(row.publicNumber, row.slug)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>
               </td>
             </tr>

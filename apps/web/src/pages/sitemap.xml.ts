@@ -49,15 +49,15 @@ export async function GET() {
 
   const contentEntries: SitemapEntry[] = [
     ...articles.map((article) => ({
-      path: getArticlePath(article.id, article.slug),
+      path: getArticlePath(article.publicNumber, article.slug),
       lastmod: article.publishedAt,
     })),
     ...jobs.map((job) => ({
-      path: getJobPath(job.id, job.slug),
+      path: getJobPath(job.publicNumber, job.slug),
       lastmod: job.publishedAt,
     })),
     ...events.map((event) => ({
-      path: getEventPath(event.id, event.slug),
+      path: getEventPath(event.publicNumber, event.slug),
       lastmod: event.startAt,
     })),
     ...episodes.map((episode) => ({

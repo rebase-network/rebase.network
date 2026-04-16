@@ -15,8 +15,8 @@ import { adminFetchWithMeta } from '../lib/api';
 import { formatBoolean, formatContentStatus, formatDate, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
-const getJobPreviewUrl = (id: string, slug: string) =>
-  getPublicSiteUrl(`/who-is-hiring/${slug ? `${id}-${slug}` : id}`);
+const getJobPreviewUrl = (publicNumber: number, slug: string) =>
+  getPublicSiteUrl(`/who-is-hiring/${slug ? `${publicNumber}-${slug}` : publicNumber}`);
 
 const rows = ref<AdminJobListItem[]>([]);
 const pagination = ref<PaginatedMeta | null>(null);
@@ -244,7 +244,7 @@ onBeforeUnmount(() => {
               <td class="table-actions-cell">
                 <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/jobs/${row.id}/edit`">编辑</RouterLink>
-                  <a v-if="row.slug" class="table-link" :href="getJobPreviewUrl(row.id, row.slug)" target="_blank" rel="noreferrer">前台预览</a>
+                  <a v-if="row.slug" class="table-link" :href="getJobPreviewUrl(row.publicNumber, row.slug)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>
               </td>
             </tr>

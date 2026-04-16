@@ -1,14 +1,14 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
-import { getJobById, getJobs, getSiteSettings } from '@/lib/content';
+import { getJobByPublicNumber, getJobs, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
-import { getJobIdFromRouteParam, getJobPath } from '@/lib/paths';
+import { getJobPath, getJobPublicNumberFromRouteParam } from '@/lib/paths';
 
 const routeParam = Astro.params.slug ?? '';
-const jobId = getJobIdFromRouteParam(routeParam);
-const [site, job, jobs] = await Promise.all([getSiteSettings(), getJobById(jobId), getJobs()]);
-const related = job ? jobs.filter((item) => item.id !== job.id).slice(0, 3) : [];
+const jobPublicNumber = getJobPublicNumberFromRouteParam(routeParam);
+const [site, job, jobs] = await Promise.all([getSiteSettings(), getJobByPublicNumber(jobPublicNumber), getJobs()]);
+const related = job ? jobs.filter((item) => item.publicNumber !== job.publicNumber).slice(0, 3) : [];
 const remoteLabel = job ? (job.supportsRemote ? '支持远程' : '线下优先') : '';
 const deadlineLabel = job ? (job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` : '长期开放') : '';
 const formatWorkMode = (value: string) => {
@@ -93,7 +93,7 @@ if (!job) {
               <h2>更多岗位</h2>
               <ul class="related-list">
                 {related.map((item) => (
-                  <li><a href={getJobPath(item.id, item.slug)}>{item.roleTitle}</a></li>
+                  <li><a href={getJobPath(item.publicNumber, item.slug)}>{item.roleTitle}</a></li>
                 ))}
               </ul>
             </section>

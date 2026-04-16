@@ -148,13 +148,13 @@ export async function getArticles(): Promise<Article[]> {
   return fetchPublicApi<Article[]>('/api/public/v1/articles');
 }
 
-export async function getArticleById(id: string) {
-  if (!id) {
+export async function getArticleByPublicNumber(publicNumber: number | undefined) {
+  if (!publicNumber) {
     return undefined;
   }
 
   try {
-    return await fetchPublicApi<Article>(`/api/public/v1/articles/${id}`);
+    return await fetchPublicApi<Article>(`/api/public/v1/articles/${publicNumber}`);
   } catch {
     return undefined;
   }
@@ -164,13 +164,13 @@ export async function getJobs(): Promise<Job[]> {
   return fetchPublicApi<Job[]>('/api/public/v1/jobs');
 }
 
-export async function getJobById(id: string) {
-  if (!id) {
+export async function getJobByPublicNumber(publicNumber: number | undefined) {
+  if (!publicNumber) {
     return undefined;
   }
 
   try {
-    return await fetchPublicApi<Job>(`/api/public/v1/jobs/${id}`);
+    return await fetchPublicApi<Job>(`/api/public/v1/jobs/${publicNumber}`);
   } catch {
     return undefined;
   }
@@ -180,13 +180,13 @@ export async function getEvents(): Promise<Event[]> {
   return fetchPublicApi<Event[]>('/api/public/v1/events');
 }
 
-export async function getEventById(id: string) {
-  if (!id) {
+export async function getEventByPublicNumber(publicNumber: number | undefined) {
+  if (!publicNumber) {
     return undefined;
   }
 
   try {
-    return await fetchPublicApi<Event>(`/api/public/v1/events/${id}`);
+    return await fetchPublicApi<Event>(`/api/public/v1/events/${publicNumber}`);
   } catch {
     return undefined;
   }

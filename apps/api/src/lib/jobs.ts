@@ -10,7 +10,7 @@ import { getDb } from './db.js';
 import { ApiError, notFound } from './errors.js';
 import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
 import { combineFilters, toContainsPattern } from './query-filters.js';
-import { ensurePublishedAt, toIsoString } from './utils.js';
+import { ensurePublishedAt, parsePublicNumber, toIsoString } from './utils.js';
 
 const internalDraftSlugPrefix = 'draft-job-';
 
@@ -44,6 +44,7 @@ const assertPublishableJob = (input: JobInput) => {
 
 const mapJobListItem = (row: any): AdminJobListItem => ({
   id: row.job.id,
+  publicNumber: row.job.publicNumber,
   slug: toAdminJobSlug(row.job.slug),
   companyName: row.job.companyName,
   roleTitle: row.job.roleTitle,
@@ -57,6 +58,7 @@ const mapJobListItem = (row: any): AdminJobListItem => ({
 
 const mapJobDetail = (row: any) => ({
   id: row.id,
+  publicNumber: row.publicNumber,
   slug: toAdminJobSlug(row.slug),
   companyName: row.companyName,
   roleTitle: row.roleTitle,
@@ -295,7 +297,7 @@ export const listPublicJobs = async () => {
   const rows = await db.select().from(jobs).where(eq(jobs.status, 'published')).orderBy(desc(jobs.publishedAt));
 
   return rows.map((row) => ({
-    id: row.id,
+    publicNumber: row.publicNumber,
     slug: row.slug,
     companyName: row.companyName,
     roleTitle: row.roleTitle,
@@ -315,20 +317,22 @@ export const listPublicJobs = async () => {
   }));
 };
 
-export const getPublicJobById = async (id: string) => {
-  if (!/^[0-9a-f-]{36}$/i.test(id)) {
+export const getPublicJobByPublicNumber = async (value: string | number) => {
+  const publicNumber = parsePublicNumber(value);
+
+  if (!publicNumber) {
     return null;
   }
 
   const db = getDb();
-  const rows = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
+  const rows = await db.select().from(jobs).where(eq(jobs.publicNumber, publicNumber)).limit(1);
   const row = rows[0] ?? null;
   if (!row || row.status !== 'published') {
     return null;
   }
 
   return {
-    id: row.id,
+    publicNumber: row.publicNumber,
     slug: row.slug,
     companyName: row.companyName,
     roleTitle: row.roleTitle,

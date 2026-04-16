@@ -11,7 +11,7 @@ import { getDb } from './db.js';
 import { ApiError, notFound } from './errors.js';
 import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
 import { combineFilters, toContainsPattern } from './query-filters.js';
-import { ensurePublishedAt, toIsoString } from './utils.js';
+import { ensurePublishedAt, parsePublicNumber, toIsoString } from './utils.js';
 
 const draftEventDatePlaceholders = {
   startAt: '1900-01-01T00:00:00.000Z',
@@ -57,6 +57,7 @@ const assertPublishableEvent = (input: EventInput) => {
 
 const mapEventListItem = (row: any): AdminEventListItem => ({
   id: row.event.id,
+  publicNumber: row.event.publicNumber,
   slug: toAdminEventSlug(row.event.slug),
   title: row.event.title,
   editorName: row.editorName ?? null,
@@ -70,6 +71,7 @@ const mapEventListItem = (row: any): AdminEventListItem => ({
 
 const mapEventDetail = (row: any) => ({
   id: row.id,
+  publicNumber: row.publicNumber,
   slug: toAdminEventSlug(row.slug),
   title: row.title,
   summary: row.summary,
@@ -296,7 +298,7 @@ export const listPublicEvents = async () => {
   const assetUrls = await listPublicAssetUrlsById(rows.map((row) => row.coverAssetId));
 
   return rows.map((row) => ({
-    id: row.id,
+    publicNumber: row.publicNumber,
     slug: row.slug,
     title: row.title,
     summary: row.summary,
@@ -313,13 +315,15 @@ export const listPublicEvents = async () => {
   }));
 };
 
-export const getPublicEventById = async (id: string) => {
-  if (!/^[0-9a-f-]{36}$/i.test(id)) {
+export const getPublicEventByPublicNumber = async (value: string | number) => {
+  const publicNumber = parsePublicNumber(value);
+
+  if (!publicNumber) {
     return null;
   }
 
   const db = getDb();
-  const rows = await db.select().from(events).where(eq(events.id, id)).limit(1);
+  const rows = await db.select().from(events).where(eq(events.publicNumber, publicNumber)).limit(1);
   const row = rows[0] ?? null;
   if (!row || row.status !== 'published') {
     return null;
@@ -328,7 +332,7 @@ export const getPublicEventById = async (id: string) => {
   const now = Date.now();
   const assetUrls = await listPublicAssetUrlsById([row.coverAssetId]);
   return {
-    id: row.id,
+    publicNumber: row.publicNumber,
     slug: row.slug,
     title: row.title,
     summary: row.summary,

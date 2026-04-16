@@ -581,6 +581,7 @@ export interface AdminDashboardStats {
 
 export interface AdminArticleListItem {
   id: string;
+  publicNumber: number;
   slug: string;
   title: string;
   status: ContentStatus;
@@ -592,12 +593,14 @@ export interface AdminArticleListItem {
 
 export interface AdminArticleRecord extends ArticleInput {
   id: string;
+  publicNumber: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface AdminJobListItem {
   id: string;
+  publicNumber: number;
   slug: string;
   companyName: string;
   roleTitle: string;
@@ -611,12 +614,14 @@ export interface AdminJobListItem {
 
 export interface AdminJobRecord extends JobInput {
   id: string;
+  publicNumber: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface AdminEventListItem {
   id: string;
+  publicNumber: number;
   slug: string;
   title: string;
   editorName: string | null;
@@ -630,6 +635,7 @@ export interface AdminEventListItem {
 
 export interface AdminEventRecord extends EventInput {
   id: string;
+  publicNumber: number;
   createdAt: string;
   updatedAt: string;
 }
