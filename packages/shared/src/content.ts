@@ -78,8 +78,8 @@ const safeParse = <TSchema extends z.ZodTypeAny>(
 };
 
 export const linkItemSchema = z.object({
-  label: requiredTrimmedString('label is required'),
-  href: requiredTrimmedString('href is required'),
+  label: requiredTrimmedString('标签不能为空'),
+  href: requiredTrimmedString('链接不能为空'),
 });
 
 export const socialLinkSchema = linkItemSchema.extend({
@@ -87,64 +87,64 @@ export const socialLinkSchema = linkItemSchema.extend({
 });
 
 export const footerGroupSchema = z.object({
-  title: requiredTrimmedString('title is required'),
-  slug: requiredTrimmedString('slug is required'),
+  title: requiredTrimmedString('标题不能为空'),
+  slug: requiredTrimmedString('URL 标识不能为空'),
   links: z.array(linkItemSchema).default([]),
 });
 
 export const homeStatSchema = z.object({
-  value: requiredTrimmedString('value is required'),
-  label: requiredTrimmedString('label is required'),
+  value: requiredTrimmedString('内容不能为空'),
+  label: requiredTrimmedString('标签不能为空'),
 });
 
 export const aboutSectionSchema = z.object({
-  title: requiredTrimmedString('title is required'),
-  body: requiredTrimmedString('body is required'),
+  title: requiredTrimmedString('标题不能为空'),
+  body: requiredTrimmedString('正文不能为空'),
 });
 
 export const articleAuthorSchema = z.object({
-  name: requiredTrimmedString('author name is required'),
+  name: requiredTrimmedString('作者姓名不能为空'),
   role: trimmedString.optional().default(''),
 });
 
 export const geekdailyItemSchema = z.object({
-  title: requiredTrimmedString('title is required'),
-  authorName: requiredTrimmedString('author name is required'),
-  sourceUrl: requiredTrimmedString('source url is required'),
-  summary: requiredTrimmedString('recommendation note is required'),
+  title: requiredTrimmedString('标题不能为空'),
+  authorName: requiredTrimmedString('作者姓名不能为空'),
+  sourceUrl: requiredTrimmedString('来源链接不能为空'),
+  summary: requiredTrimmedString('推荐语不能为空'),
 });
 
-export const geekdailyEditorSchema = requiredTrimmedString('editor name is required');
+export const geekdailyEditorSchema = requiredTrimmedString('编辑姓名不能为空');
 
 export const siteSettingsSchema = z.object({
-  siteName: requiredTrimmedString('site name is required'),
-  tagline: requiredTrimmedString('tagline is required'),
-  description: requiredTrimmedString('description is required'),
-  primaryDomain: requiredTrimmedString('primary domain is required'),
-  secondaryDomain: requiredTrimmedString('secondary domain is required'),
-  mediaDomain: requiredTrimmedString('media domain is required'),
+  siteName: requiredTrimmedString('站点名称不能为空'),
+  tagline: requiredTrimmedString('站点副标题不能为空'),
+  description: requiredTrimmedString('描述不能为空'),
+  primaryDomain: requiredTrimmedString('主域名不能为空'),
+  secondaryDomain: requiredTrimmedString('备用域名不能为空'),
+  mediaDomain: requiredTrimmedString('媒体域名不能为空'),
   socialLinks: z.array(socialLinkSchema).default([]),
   footerGroups: z.array(footerGroupSchema).default([]),
-  copyrightText: requiredTrimmedString('copyright is required'),
+  copyrightText: requiredTrimmedString('版权文案不能为空'),
 });
 
 export type SiteSettingsInput = z.infer<typeof siteSettingsSchema>;
 
 export const homePageSchema = z.object({
-  heroTitle: requiredTrimmedString('hero title is required'),
-  heroSummary: requiredTrimmedString('hero summary is required'),
-  heroPrimaryCtaLabel: requiredTrimmedString('primary cta label is required'),
-  heroPrimaryCtaUrl: requiredTrimmedString('primary cta url is required'),
-  heroSecondaryCtaLabel: requiredTrimmedString('secondary cta label is required'),
-  heroSecondaryCtaUrl: requiredTrimmedString('secondary cta url is required'),
+  heroTitle: requiredTrimmedString('首页主标题不能为空'),
+  heroSummary: requiredTrimmedString('首页摘要不能为空'),
+  heroPrimaryCtaLabel: requiredTrimmedString('主按钮文案不能为空'),
+  heroPrimaryCtaUrl: requiredTrimmedString('主按钮链接不能为空'),
+  heroSecondaryCtaLabel: requiredTrimmedString('次按钮文案不能为空'),
+  heroSecondaryCtaUrl: requiredTrimmedString('次按钮链接不能为空'),
   homeStats: z.array(homeStatSchema).default([]),
 });
 
 export type HomePageInput = z.infer<typeof homePageSchema>;
 
 export const aboutPageSchema = z.object({
-  title: requiredTrimmedString('title is required'),
-  summary: requiredTrimmedString('summary is required'),
+  title: requiredTrimmedString('标题不能为空'),
+  summary: requiredTrimmedString('摘要不能为空'),
   sections: z.array(aboutSectionSchema).default([]),
   seoTitle: trimmedString.optional().default(''),
   seoDescription: trimmedString.optional().default(''),
@@ -153,14 +153,14 @@ export const aboutPageSchema = z.object({
 export type AboutPageInput = z.infer<typeof aboutPageSchema>;
 
 export const articleSchema = z.object({
-  slug: requiredTrimmedString('slug is required'),
-  title: requiredTrimmedString('title is required'),
-  summary: requiredTrimmedString('summary is required'),
-  bodyMarkdown: requiredTrimmedString('body is required'),
-  readingTime: requiredTrimmedString('reading time is required'),
+  slug: requiredTrimmedString('URL 标识不能为空'),
+  title: requiredTrimmedString('标题不能为空'),
+  summary: requiredTrimmedString('摘要不能为空'),
+  bodyMarkdown: requiredTrimmedString('正文不能为空'),
+  readingTime: requiredTrimmedString('阅读时长不能为空'),
   coverAssetId: z.string().uuid().optional().nullable().default(null),
-  coverAccent: requiredTrimmedString('cover accent is required'),
-  authors: z.array(articleAuthorSchema).min(1, 'at least one author is required'),
+  coverAccent: requiredTrimmedString('封面配色不能为空'),
+  authors: z.array(articleAuthorSchema).min(1, '至少添加一位作者'),
   tags: z.array(trimmedString).default([]),
   seoTitle: trimmedString.optional().default(''),
   seoDescription: trimmedString.optional().default(''),
@@ -200,7 +200,7 @@ export const jobSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['slug'],
-        message: 'slug is required',
+        message: 'URL 标识不能为空',
       });
     }
 
@@ -208,7 +208,7 @@ export const jobSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['companyName'],
-        message: 'company name is required',
+        message: '团队 / 公司不能为空',
       });
     }
 
@@ -216,7 +216,7 @@ export const jobSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['roleTitle'],
-        message: 'role title is required',
+        message: '岗位名称不能为空',
       });
     }
 
@@ -224,7 +224,7 @@ export const jobSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['salary'],
-        message: 'salary is required',
+        message: '薪资范围不能为空',
       });
     }
 
@@ -232,7 +232,7 @@ export const jobSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['workMode'],
-        message: 'work mode is required',
+        message: '工作模式不能为空',
       });
     }
 
@@ -240,7 +240,7 @@ export const jobSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['location'],
-        message: 'location is required',
+        message: '地点不能为空',
       });
     }
 
@@ -248,7 +248,7 @@ export const jobSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['summary'],
-        message: 'summary is required',
+        message: '摘要不能为空',
       });
     }
 
@@ -256,7 +256,7 @@ export const jobSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['descriptionMarkdown'],
-        message: 'description is required',
+        message: '描述不能为空',
       });
     }
 
@@ -264,7 +264,7 @@ export const jobSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['applyUrl'],
-        message: 'either apply url or contact value is required',
+        message: '请填写投递链接或联系方式',
       });
     }
   });
@@ -274,9 +274,9 @@ export type JobInput = z.infer<typeof jobSchema>;
 export const eventSchema = z
   .object({
     slug: trimmedString.optional().default(''),
-    title: requiredTrimmedString('title is required'),
-    summary: requiredTrimmedString('summary is required'),
-    bodyMarkdown: requiredTrimmedString('body is required'),
+    title: requiredTrimmedString('标题不能为空'),
+    summary: requiredTrimmedString('摘要不能为空'),
+    bodyMarkdown: requiredTrimmedString('正文不能为空'),
     startAt: optionalTrimmedString,
     endAt: optionalTrimmedString,
     city: trimmedString.optional().default(''),
@@ -298,7 +298,7 @@ export const eventSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['slug'],
-        message: 'slug is required',
+        message: 'URL 标识不能为空',
       });
     }
 
@@ -306,7 +306,7 @@ export const eventSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['startAt'],
-        message: 'start time is required',
+        message: '开始时间不能为空',
       });
     }
 
@@ -314,7 +314,7 @@ export const eventSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['endAt'],
-        message: 'end time is required',
+        message: '结束时间不能为空',
       });
     }
 
@@ -322,7 +322,7 @@ export const eventSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['city'],
-        message: 'city is required',
+        message: '城市不能为空',
       });
     }
 
@@ -330,7 +330,7 @@ export const eventSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['location'],
-        message: 'location is required',
+        message: '地点不能为空',
       });
     }
 
@@ -338,7 +338,7 @@ export const eventSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['venue'],
-        message: 'venue is required',
+        message: '场地名称不能为空',
       });
     }
 
@@ -346,7 +346,7 @@ export const eventSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['registrationUrl'],
-        message: 'registration url is required for external registrations',
+        message: '选择外部链接报名时，报名链接不能为空',
       });
     }
 
@@ -357,7 +357,7 @@ export const eventSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['startAt'],
-        message: 'start time is invalid',
+        message: '开始时间格式不正确',
       });
     }
 
@@ -365,7 +365,7 @@ export const eventSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['endAt'],
-        message: 'end time is invalid',
+        message: '结束时间格式不正确',
       });
     }
 
@@ -373,7 +373,7 @@ export const eventSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['endAt'],
-        message: 'end time must be after start time',
+        message: '结束时间必须晚于开始时间',
       });
     }
   });
@@ -381,9 +381,9 @@ export const eventSchema = z
 export type EventInput = z.infer<typeof eventSchema>;
 
 export const contributorRoleSchema = z.object({
-  slug: requiredTrimmedString('slug is required'),
-  name: requiredTrimmedString('name is required'),
-  description: requiredTrimmedString('description is required'),
+  slug: requiredTrimmedString('URL 标识不能为空'),
+  name: requiredTrimmedString('名称不能为空'),
+  description: requiredTrimmedString('描述不能为空'),
   sortOrder: z.number().int().default(0),
   status: z.enum(contentStatusValues).default('draft'),
 });
@@ -391,17 +391,17 @@ export const contributorRoleSchema = z.object({
 export type ContributorRoleInput = z.infer<typeof contributorRoleSchema>;
 
 export const contributorSchema = z.object({
-  slug: requiredTrimmedString('slug is required'),
-  name: requiredTrimmedString('name is required'),
-  headline: requiredTrimmedString('headline is required'),
-  bio: requiredTrimmedString('bio is required'),
+  slug: requiredTrimmedString('URL 标识不能为空'),
+  name: requiredTrimmedString('名称不能为空'),
+  headline: requiredTrimmedString('头衔不能为空'),
+  bio: requiredTrimmedString('简介不能为空'),
   avatarAssetId: z.string().uuid().optional().nullable().default(null),
-  avatarSeed: requiredTrimmedString('avatar seed is required'),
+  avatarSeed: requiredTrimmedString('头像种子不能为空'),
   twitterUrl: trimmedString.optional().default(''),
   wechat: trimmedString.optional().default(''),
   telegram: trimmedString.optional().default(''),
   sortOrder: z.number().int().default(0),
-  roleIds: z.array(z.string().uuid()).min(1, 'at least one contributor role is required'),
+  roleIds: z.array(z.string().uuid()).min(1, '至少选择一个贡献者角色'),
   status: z.enum(contentStatusValues).default('draft'),
   activityStatus: z.enum(contributorActivityStatusValues).default('active'),
 });
@@ -410,14 +410,14 @@ export type ContributorInput = z.infer<typeof contributorSchema>;
 
 export const geekdailyEpisodeSchema = z.object({
   episodeNumber: z.number().int().positive(),
-  title: requiredTrimmedString('title is required'),
+  title: requiredTrimmedString('标题不能为空'),
   summary: trimmedString.default(''),
   bodyMarkdown: trimmedString.default(''),
   editors: z.array(geekdailyEditorSchema).default([]),
   tags: z.array(trimmedString).default([]),
   status: z.enum(contentStatusValues).default('draft'),
   publishedAt: trimmedString.default(''),
-  items: z.array(geekdailyItemSchema).min(1, 'at least one item is required'),
+  items: z.array(geekdailyItemSchema).min(1, '至少添加一条内容'),
 });
 
 export type GeekDailyEpisodeInput = z.infer<typeof geekdailyEpisodeSchema>;
@@ -508,18 +508,18 @@ export function extractGeekDailyBodyNote(bodyMarkdown: string) {
 }
 
 export const assetSchema = z.object({
-  storageProvider: requiredTrimmedString('storage provider is required'),
-  bucket: requiredTrimmedString('bucket is required'),
-  objectKey: requiredTrimmedString('object key is required'),
+  storageProvider: requiredTrimmedString('存储服务不能为空'),
+  bucket: requiredTrimmedString('存储桶不能为空'),
+  objectKey: requiredTrimmedString('对象键不能为空'),
   publicUrl: trimmedString.optional().default(''),
   visibility: z.enum(['public', 'private']).default('public'),
-  assetType: requiredTrimmedString('asset type is required'),
-  mimeType: requiredTrimmedString('mime type is required'),
+  assetType: requiredTrimmedString('资源类型不能为空'),
+  mimeType: requiredTrimmedString('MIME 类型不能为空'),
   byteSize: z.number().int().nonnegative(),
   width: z.number().int().nonnegative().nullable().optional().default(null),
   height: z.number().int().nonnegative().nullable().optional().default(null),
   checksum: trimmedString.optional().default(''),
-  originalFilename: requiredTrimmedString('original filename is required'),
+  originalFilename: requiredTrimmedString('原始文件名不能为空'),
   altText: trimmedString.optional().default(''),
   status: z.enum(assetStatusValues).default('active'),
 });
@@ -528,19 +528,19 @@ export type AssetInput = z.infer<typeof assetSchema>;
 
 export const staffCreateSchema = z.object({
   email: z.string().email(),
-  name: requiredTrimmedString('name is required'),
-  password: z.string().min(8, 'password must be at least 8 characters'),
-  displayName: requiredTrimmedString('display name is required'),
-  roleIds: z.array(z.string().uuid()).min(1, 'at least one role is required'),
+  name: requiredTrimmedString('名称不能为空'),
+  password: z.string().min(8, '密码至少需要 8 个字符'),
+  displayName: requiredTrimmedString('显示名称不能为空'),
+  roleIds: z.array(z.string().uuid()).min(1, '至少选择一个角色'),
   notes: trimmedString.optional().default(''),
 });
 
 export type StaffCreateInput = z.infer<typeof staffCreateSchema>;
 
 export const staffUpdateSchema = z.object({
-  displayName: requiredTrimmedString('display name is required'),
+  displayName: requiredTrimmedString('显示名称不能为空'),
   status: z.enum(staffAccountStatusValues),
-  roleIds: z.array(z.string().uuid()).min(1, 'at least one role is required'),
+  roleIds: z.array(z.string().uuid()).min(1, '至少选择一个角色'),
   notes: trimmedString.optional().default(''),
 });
 

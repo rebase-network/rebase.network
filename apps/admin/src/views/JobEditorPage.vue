@@ -136,6 +136,17 @@ const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft')
 const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'button-primary'].filter(Boolean).join(' '));
 const canPublish = computed(() => form.status !== 'published');
 const canArchive = computed(() => Boolean(record.value) && form.status !== 'archived');
+const hasIssue = (...paths: string[]) =>
+  paths.some((path) => {
+    if (fieldIssues.value[path]) {
+      return true;
+    }
+
+    const nestedPrefix = `${path}.`;
+    return Object.keys(fieldIssues.value).some((key) => key.startsWith(nestedPrefix));
+  });
+const jobDetailsHasIssues = computed(() => hasIssue('slug', 'salary', 'workMode', 'location'));
+const jobApplyHasIssues = computed(() => hasIssue('applyUrl', 'contactValue'));
 const headerNote = computed(() => {
   if (isNew.value) {
     return '先把岗位详情写清楚，尽量精简。可先保存草稿，也可直接发布。';
@@ -338,12 +349,12 @@ onMounted(() => void loadRecord());
       <section class="panel stacked-gap editor-main job-editor-main">
         <div class="field-shell stacked-gap job-leading-fields">
           <div class="field-grid field-grid-2 field-grid-compact">
-            <label class="field">
+            <label class="field" :class="{ 'has-error': hasIssue('roleTitle') }">
               <span>岗位名称</span>
               <input v-model="form.roleTitle" class="job-title-input" type="text" placeholder="前端工程师" />
               <small v-if="fieldIssues.roleTitle" class="field-error">{{ fieldIssues.roleTitle }}</small>
             </label>
-            <label class="field">
+            <label class="field" :class="{ 'has-error': hasIssue('companyName') }">
               <span>团队 / 公司</span>
               <input v-model="form.companyName" class="job-title-input" type="text" placeholder="Rebase Studio" />
               <small v-if="fieldIssues.companyName" class="field-error">{{ fieldIssues.companyName }}</small>
@@ -361,26 +372,26 @@ onMounted(() => void loadRecord());
       </section>
 
       <aside class="stacked-gap editor-sidebar sticky-stack">
-        <section class="panel stacked-gap job-sidebar-card">
+        <section class="panel stacked-gap job-sidebar-card" :class="{ 'has-errors': jobDetailsHasIssues }">
           <div class="panel-toolbar">
             <h3>岗位信息</h3>
-            <div class="panel-meta">基础配置</div>
+            <div class="panel-meta">{{ jobDetailsHasIssues ? '有待补充项' : '基础配置' }}</div>
           </div>
 
-          <label class="field">
+          <label class="field" :class="{ 'has-error': hasIssue('slug') }">
             <span>URL 标识</span>
             <input v-model="form.slug" type="text" placeholder="frontend-engineer-community-platform" @input="slugTouched = true" />
             <small v-if="fieldIssues.slug" class="field-error">{{ fieldIssues.slug }}</small>
           </label>
 
-          <label class="field">
+          <label class="field" :class="{ 'has-error': hasIssue('salary') }">
             <span>薪资范围</span>
             <input v-model="form.salary" type="text" placeholder="$5,000 - $8,500 / month" />
             <small v-if="fieldIssues.salary" class="field-error">{{ fieldIssues.salary }}</small>
           </label>
 
           <div class="field-grid field-grid-2 field-grid-compact">
-            <label class="field">
+            <label class="field" :class="{ 'has-error': hasIssue('workMode') }">
               <span>工作模式</span>
               <select v-model="form.workMode">
                 <option value="">请选择</option>
@@ -388,7 +399,7 @@ onMounted(() => void loadRecord());
               </select>
               <small v-if="fieldIssues.workMode" class="field-error">{{ fieldIssues.workMode }}</small>
             </label>
-            <label class="field">
+            <label class="field" :class="{ 'has-error': hasIssue('location') }">
               <span>地点</span>
               <input v-model="form.location" type="text" placeholder="远程 / 中国时区优先" />
               <small v-if="fieldIssues.location" class="field-error">{{ fieldIssues.location }}</small>
@@ -408,10 +419,10 @@ onMounted(() => void loadRecord());
           </div>
         </section>
 
-        <section class="panel stacked-gap job-sidebar-card">
+        <section class="panel stacked-gap job-sidebar-card" :class="{ 'has-errors': jobApplyHasIssues }">
           <div class="panel-toolbar">
             <h3>投递方式</h3>
-            <div class="panel-meta">简历入口</div>
+            <div class="panel-meta">{{ jobApplyHasIssues ? '有待补充项' : '简历入口' }}</div>
           </div>
 
           <label class="field">
@@ -421,7 +432,7 @@ onMounted(() => void loadRecord());
             </select>
           </label>
 
-          <label v-if="applyMode === 'external_url'" class="field">
+          <label v-if="applyMode === 'external_url'" class="field" :class="{ 'has-error': hasIssue('applyUrl') }">
             <span>投递链接</span>
             <input v-model="form.applyUrl" type="url" placeholder="https://example.com/jobs/frontend-engineer" />
             <small v-if="fieldIssues.applyUrl" class="field-error">{{ fieldIssues.applyUrl }}</small>
@@ -432,7 +443,7 @@ onMounted(() => void loadRecord());
               <span>联系渠道</span>
               <input v-model="form.contactLabel" type="text" placeholder="telegram / 微信 / 邮箱" />
             </label>
-            <label class="field">
+            <label class="field" :class="{ 'has-error': hasIssue('contactValue') }">
               <span>联系方式</span>
               <input v-model="form.contactValue" type="text" placeholder="@rebase_hiring / hello@rebase.network" />
               <small v-if="fieldIssues.contactValue" class="field-error">{{ fieldIssues.contactValue }}</small>

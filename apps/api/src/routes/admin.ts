@@ -52,7 +52,7 @@ const expectValid = <T>(c: any, result: { valid: boolean; data?: T; issues?: { p
   throw new Error(JSON.stringify({
     error: {
       code: 'VALIDATION_ERROR',
-      message: 'one or more fields failed validation',
+      message: '有字段校验未通过，请检查标红项。',
       details: { issues: result.issues ?? [] },
     },
   }));

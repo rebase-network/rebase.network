@@ -66,6 +66,16 @@ const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft')
 const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'button-primary'].filter(Boolean).join(' '));
 const canPublish = computed(() => form.status !== 'published');
 const canArchive = computed(() => Boolean(article.value) && form.status !== 'archived');
+const hasIssue = (...paths: string[]) =>
+  paths.some((path) => {
+    if (fieldIssues.value[path]) {
+      return true;
+    }
+
+    const nestedPrefix = `${path}.`;
+    return Object.keys(fieldIssues.value).some((key) => key.startsWith(nestedPrefix));
+  });
+const articleMetaHasIssues = computed(() => hasIssue('slug', 'authors'));
 const headerNote = computed(() => {
   if (isNew.value) {
     return '先把正文写清楚，尽量精简。可先保存草稿，也可直接发布。';
@@ -239,7 +249,7 @@ onMounted(() => void loadArticle());
     <div v-else class="editor-grid editor-grid-focus article-editor-layout">
       <section class="panel stacked-gap editor-main article-editor-main">
         <div class="field-shell stacked-gap article-leading-fields">
-          <div class="field-inline-row field-inline-row-compact">
+          <div class="field-inline-row field-inline-row-compact" :class="{ 'has-error': hasIssue('title') }">
             <div class="field-inline-label">
               <span>标题</span>
             </div>
@@ -255,7 +265,7 @@ onMounted(() => void loadArticle());
             </div>
           </div>
 
-          <div class="field-inline-row field-inline-row-compact">
+          <div class="field-inline-row field-inline-row-compact" :class="{ 'has-error': hasIssue('summary') }">
             <div class="field-inline-label">
               <span>摘要</span>
             </div>
@@ -284,19 +294,19 @@ onMounted(() => void loadArticle());
           <AssetPickerField v-model="form.coverAssetId" label="封面资源" empty-label="当前未选择封面资源。" />
         </section>
 
-        <section class="panel stacked-gap article-sidebar-card">
+        <section class="panel stacked-gap article-sidebar-card" :class="{ 'has-errors': articleMetaHasIssues }">
           <div class="panel-toolbar">
             <h3>链接与作者</h3>
-            <div class="panel-meta">基础信息</div>
+            <div class="panel-meta">{{ articleMetaHasIssues ? '有待补充项' : '基础信息' }}</div>
           </div>
 
-          <label class="field">
+          <label class="field" :class="{ 'has-error': hasIssue('slug') }">
             <span>URL 标识</span>
             <input v-model="form.slug" type="text" placeholder="building-rebase-in-public" @input="onSlugInput" />
             <small v-if="fieldIssues.slug" class="field-error">{{ fieldIssues.slug }}</small>
           </label>
 
-          <AuthorsField v-model="form.authors" :show-role="false" compact />
+          <AuthorsField v-model="form.authors" :show-role="false" compact :issues="fieldIssues" />
         </section>
       </aside>
     </div>

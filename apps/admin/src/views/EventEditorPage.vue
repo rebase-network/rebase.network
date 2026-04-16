@@ -74,6 +74,17 @@ const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft')
 const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'button-primary'].filter(Boolean).join(' '));
 const canPublish = computed(() => form.status !== 'published');
 const canArchive = computed(() => Boolean(record.value) && form.status !== 'archived');
+const hasIssue = (...paths: string[]) =>
+  paths.some((path) => {
+    if (fieldIssues.value[path]) {
+      return true;
+    }
+
+    const nestedPrefix = `${path}.`;
+    return Object.keys(fieldIssues.value).some((key) => key.startsWith(nestedPrefix));
+  });
+const eventBasicsHasIssues = computed(() => hasIssue('slug', 'startAt', 'endAt', 'city', 'location', 'venue'));
+const registrationHasIssues = computed(() => hasIssue('registrationUrl'));
 const headerNote = computed(() => {
   if (isNew.value) {
     return '先把活动详情写清楚，尽量精简。可先保存草稿，也可直接发布。';
@@ -243,7 +254,7 @@ onMounted(() => void loadRecord());
     <div v-else class="editor-grid editor-grid-focus event-editor-layout">
       <section class="panel stacked-gap editor-main event-editor-main">
         <div class="field-shell stacked-gap event-leading-fields">
-          <div class="field-inline-row field-inline-row-compact">
+          <div class="field-inline-row field-inline-row-compact" :class="{ 'has-error': hasIssue('title') }">
             <div class="field-inline-label">
               <span>标题</span>
             </div>
@@ -253,7 +264,7 @@ onMounted(() => void loadRecord());
             </div>
           </div>
 
-          <div class="field-inline-row field-inline-row-compact">
+          <div class="field-inline-row field-inline-row-compact" :class="{ 'has-error': hasIssue('summary') }">
             <div class="field-inline-label">
               <span>摘要</span>
             </div>
@@ -282,25 +293,25 @@ onMounted(() => void loadRecord());
           <AssetPickerField v-model="form.coverAssetId" label="封面资源" empty-label="当前未选择封面资源。" />
         </section>
 
-        <section class="panel stacked-gap event-sidebar-card">
+        <section class="panel stacked-gap event-sidebar-card" :class="{ 'has-errors': eventBasicsHasIssues }">
           <div class="panel-toolbar">
             <h3>时间与地点</h3>
-            <div class="panel-meta">活动基础信息</div>
+            <div class="panel-meta">{{ eventBasicsHasIssues ? '有待补充项' : '活动基础信息' }}</div>
           </div>
 
-          <label class="field">
+          <label class="field" :class="{ 'has-error': hasIssue('slug') }">
             <span>URL 标识</span>
             <input v-model="form.slug" type="text" placeholder="rebase-shanghai-builder-night" @input="slugTouched = true" />
             <small v-if="fieldIssues.slug" class="field-error">{{ fieldIssues.slug }}</small>
           </label>
 
           <div class="field-grid field-grid-compact event-datetime-grid">
-            <label class="field">
+            <label class="field" :class="{ 'has-error': hasIssue('startAt') }">
               <span>开始时间</span>
               <input v-model="form.startAt" type="datetime-local" />
               <small v-if="fieldIssues.startAt" class="field-error">{{ fieldIssues.startAt }}</small>
             </label>
-            <label class="field">
+            <label class="field" :class="{ 'has-error': hasIssue('endAt') }">
               <span>结束时间</span>
               <input v-model="form.endAt" type="datetime-local" />
               <small v-if="fieldIssues.endAt" class="field-error">{{ fieldIssues.endAt }}</small>
@@ -308,17 +319,17 @@ onMounted(() => void loadRecord());
           </div>
 
           <div class="field-grid field-grid-2 field-grid-compact event-location-grid">
-            <label class="field">
+            <label class="field" :class="{ 'has-error': hasIssue('city') }">
               <span>城市</span>
               <input v-model="form.city" type="text" placeholder="上海" />
               <small v-if="fieldIssues.city" class="field-error">{{ fieldIssues.city }}</small>
             </label>
-            <label class="field">
+            <label class="field" :class="{ 'has-error': hasIssue('location') }">
               <span>地点</span>
               <input v-model="form.location" type="text" placeholder="上海市静安区 / 线下空间" />
               <small v-if="fieldIssues.location" class="field-error">{{ fieldIssues.location }}</small>
             </label>
-            <label class="field event-location-wide">
+            <label class="field event-location-wide" :class="{ 'has-error': hasIssue('venue') }">
               <span>场地名称</span>
               <input v-model="form.venue" type="text" placeholder="Rebase 社区空间 / 张江科学会堂" />
               <small v-if="fieldIssues.venue" class="field-error">{{ fieldIssues.venue }}</small>
@@ -326,10 +337,10 @@ onMounted(() => void loadRecord());
           </div>
         </section>
 
-        <section class="panel stacked-gap event-sidebar-card">
+        <section class="panel stacked-gap event-sidebar-card" :class="{ 'has-errors': registrationHasIssues }">
           <div class="panel-toolbar">
             <h3>报名设置</h3>
-            <div class="panel-meta">{{ formatRegistrationMode(form.registrationMode) }}</div>
+            <div class="panel-meta">{{ registrationHasIssues ? '有待补充项' : formatRegistrationMode(form.registrationMode) }}</div>
           </div>
 
           <label class="field">
@@ -339,7 +350,7 @@ onMounted(() => void loadRecord());
             </select>
           </label>
 
-          <label class="field">
+          <label class="field" :class="{ 'has-error': hasIssue('registrationUrl') }">
             <span>报名链接</span>
             <input v-model="form.registrationUrl" :disabled="form.registrationMode !== 'external_url'" type="url" placeholder="https://lu.ma/..." />
             <small v-if="fieldIssues.registrationUrl" class="field-error">{{ fieldIssues.registrationUrl }}</small>
