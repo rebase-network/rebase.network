@@ -138,10 +138,12 @@ db_backup_remote() {
   local backup_path="$1"
   local backup_target="$backup_path"
   local resolved_target="$backup_path"
+  local dump_script
 
   [[ "$backup_path" = /* ]] || resolved_target="${REMOTE_DIR}/${backup_path}"
+  dump_script='export PGPASSWORD="$POSTGRES_PASSWORD"; exec pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 
-  remote_repo_exec "mkdir -p $(quote "$(dirname "$backup_target")") && docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote 'export PGPASSWORD=\"$POSTGRES_PASSWORD\"; exec pg_dump -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"') | gzip -c > $(quote "$backup_target") && ls -lh $(quote "$backup_target")"
+  remote_repo_exec "mkdir -p $(quote "$(dirname "$backup_target")") && docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote "$dump_script") | gzip -c > $(quote "$backup_target") && ls -lh $(quote "$backup_target")"
   log "database backup written to ${resolved_target}"
 }
 
