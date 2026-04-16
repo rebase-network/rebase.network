@@ -666,6 +666,63 @@ code {
   gap: 0.35rem;
 }
 
+.field.has-error,
+.field-inline-row.has-error,
+.field-grid.has-error {
+  padding: 0.72rem;
+  border: 1px solid rgba(167, 52, 32, 0.24);
+  border-radius: 12px;
+  background: color-mix(in srgb, rgba(255, 255, 255, 0.9) 78%, var(--surface-danger));
+}
+
+.field-shell.has-error,
+.panel.has-errors {
+  border-color: rgba(167, 52, 32, 0.24);
+  background: color-mix(in srgb, var(--surface) 78%, var(--surface-danger));
+}
+
+.panel.has-errors .panel-meta,
+.panel.has-errors h3,
+.field.has-error > span,
+.field-inline-row.has-error .field-inline-label span,
+.field-shell.has-error .field-row > span,
+.field-shell.has-error .markdown-editor-label span {
+  color: var(--danger);
+}
+
+.field.has-error input,
+.field.has-error textarea,
+.field.has-error select,
+.field-inline-row.has-error input,
+.field-inline-row.has-error textarea,
+.field-inline-row.has-error select,
+.field-grid.has-error input,
+.field-grid.has-error textarea,
+.field-grid.has-error select,
+.field-shell.has-error input,
+.field-shell.has-error textarea,
+.field-shell.has-error select {
+  border-color: rgba(167, 52, 32, 0.34);
+  background: rgba(255, 247, 245, 0.96);
+}
+
+.field.has-error input:focus,
+.field.has-error textarea:focus,
+.field.has-error select:focus,
+.field-inline-row.has-error input:focus,
+.field-inline-row.has-error textarea:focus,
+.field-inline-row.has-error select:focus,
+.field-grid.has-error input:focus,
+.field-grid.has-error textarea:focus,
+.field-grid.has-error select:focus,
+.field-shell.has-error input:focus,
+.field-shell.has-error textarea:focus,
+.field-shell.has-error select:focus {
+  border-color: rgba(167, 52, 32, 0.46);
+  box-shadow: 0 0 0 4px rgba(167, 52, 32, 0.12);
+  background: #fff;
+}
+
 .field-label-row {
   display: flex;
   align-items: baseline;
@@ -942,6 +999,9 @@ code {
 
 .field-error {
   color: var(--danger);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 .filter-panel {

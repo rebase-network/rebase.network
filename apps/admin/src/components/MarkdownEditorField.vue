@@ -30,7 +30,7 @@ const previewHtml = computed(() => renderMarkdownToHtml(props.modelValue || ''))
 </script>
 
 <template>
-  <div v-if="inline" class="field-shell markdown-editor-inline">
+  <div v-if="inline" class="field-shell markdown-editor-inline" :class="{ 'has-error': Boolean(error) }">
     <div class="markdown-editor-label">
       <span>{{ label }}</span>
       <small v-if="error" class="field-error">{{ error }}</small>
@@ -61,7 +61,7 @@ const previewHtml = computed(() => renderMarkdownToHtml(props.modelValue || ''))
     </div>
   </div>
 
-  <div v-else class="field stacked-gap field-shell">
+  <div v-else class="field stacked-gap field-shell" :class="{ 'has-error': Boolean(error) }">
     <div class="field-row field-row-spread">
       <span>{{ label }}</span>
       <div class="tab-strip">

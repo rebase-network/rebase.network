@@ -115,6 +115,10 @@ compose_exec_postgres_shell() {
   compose_exec "exec -T postgres sh -lc $(quote "$script")"
 }
 
+ready_check_remote() {
+  remote_exec "curl -fsS http://127.0.0.1:${API_PORT}/ready"
+}
+
 ensure_remote_dir() {
   remote_exec "mkdir -p $(quote "$REMOTE_DIR")"
 }
@@ -138,10 +142,12 @@ db_backup_remote() {
   local backup_path="$1"
   local backup_target="$backup_path"
   local resolved_target="$backup_path"
+  local dump_script
 
   [[ "$backup_path" = /* ]] || resolved_target="${REMOTE_DIR}/${backup_path}"
+  dump_script='export PGPASSWORD="$POSTGRES_PASSWORD"; exec pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 
-  remote_repo_exec "mkdir -p $(quote "$(dirname "$backup_target")") && docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote 'export PGPASSWORD=\"$POSTGRES_PASSWORD\"; exec pg_dump -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"') | gzip -c > $(quote "$backup_target") && ls -lh $(quote "$backup_target")"
+  remote_repo_exec "mkdir -p $(quote "$(dirname "$backup_target")") && docker compose --env-file $(quote "$ENV_FILE") -f $(quote "$COMPOSE_FILE") exec -T postgres sh -lc $(quote "$dump_script") | gzip -c > $(quote "$backup_target") && ls -lh $(quote "$backup_target")"
   log "database backup written to ${resolved_target}"
 }
 
@@ -232,6 +238,52 @@ sync_repo() {
     "${REMOTE_HOST}:${REMOTE_DIR}/"
 }
 
+deploy_target() {
+  local target="${1:-api}"
+  local no_sync="${2:-false}"
+  local services
+
+  services="$(expand_target "$target")"
+  if [[ "$no_sync" != true ]]; then
+    sync_repo
+  fi
+  assert_remote_layout
+  log "deploying $target on $REMOTE_HOST"
+  compose_exec "up -d --build $services"
+  compose_exec "ps"
+}
+
+db_migrate_remote() {
+  assert_remote_layout
+  log "running database migrations on $REMOTE_HOST"
+  compose_exec "exec -T api pnpm --filter @rebase/db migrate"
+}
+
+rollout_target() {
+  local target="${1:-api}"
+  local no_sync="${2:-false}"
+  local backup_path
+
+  case "$target" in
+    api | stack | all)
+      ;;
+    *)
+      die "rollout only supports api or stack targets"
+      ;;
+  esac
+
+  assert_remote_layout
+  backup_path="backups/rebase-${target}-$(date +%Y%m%d-%H%M%S).sql.gz"
+  log "creating pre-rollout database backup"
+  db_backup_remote "$backup_path"
+  deploy_target "$target" "$no_sync"
+  db_migrate_remote
+  log "verifying API readiness"
+  ready_check_remote
+  compose_exec "ps"
+  log "rollout complete; backup stored at $(resolve_remote_abs_path "$backup_path")"
+}
+
 usage() {
   cat <<EOF
 Usage:
@@ -239,6 +291,7 @@ Usage:
   ./ops/manage.sh check
   ./ops/manage.sh sync
   ./ops/manage.sh deploy [api|stack] [--no-sync]
+  ./ops/manage.sh rollout [api|stack] [--no-sync]
   ./ops/manage.sh up [api|postgres|cloudflared|stack]
   ./ops/manage.sh restart <api|postgres|cloudflared|stack>
   ./ops/manage.sh stop <api|postgres|cloudflared|stack>
@@ -262,6 +315,7 @@ Environment overrides:
 
 Examples:
   ./ops/manage.sh deploy api
+  ./ops/manage.sh rollout api
   ./ops/manage.sh deploy stack --no-sync
   ./ops/manage.sh logs api 200
   ./ops/manage.sh db query "select count(*) from geekdaily_episodes;"
@@ -311,14 +365,27 @@ case "$command" in
       shift
     done
 
-    services="$(expand_target "$target")"
-    if [[ "$no_sync" != true ]]; then
-      sync_repo
-    fi
-    assert_remote_layout
-    log "deploying $target on $REMOTE_HOST"
-    compose_exec "up -d --build $services"
-    compose_exec "ps"
+    deploy_target "$target" "$no_sync"
+    ;;
+
+  rollout)
+    target="${1:-api}"
+    [[ $# -gt 0 ]] && shift
+    no_sync=false
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --no-sync)
+          no_sync=true
+          ;;
+        *)
+          die "unknown option for rollout: $1"
+          ;;
+      esac
+      shift
+    done
+
+    rollout_target "$target" "$no_sync"
     ;;
 
   up)
@@ -361,7 +428,7 @@ case "$command" in
     ;;
 
   ready)
-    remote_exec "curl -fsS http://127.0.0.1:${API_PORT}/ready"
+    ready_check_remote
     ;;
 
   exec)
@@ -464,8 +531,7 @@ EOF
         ;;
 
       migrate)
-        assert_remote_layout
-        compose_exec "exec -T api pnpm --filter @rebase/db migrate"
+        db_migrate_remote
         ;;
 
       *)

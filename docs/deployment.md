@@ -78,7 +78,7 @@ Choose the smallest release path that matches the change set.
 1. merge the backend change to `main`
 2. update the deploy machine to the matching `main` commit
 3. confirm the working tree is clean
-4. run `./ops/manage.sh deploy api` or `./ops/manage.sh deploy stack`
+4. for API or schema changes, prefer `./ops/manage.sh rollout api`; use `./ops/manage.sh deploy api` only when you intentionally do not want the backup + migrate flow
 5. run the relevant checks in `docs/launch-checklist.md`
 
 Recommended local checks before backend deploys:
@@ -97,7 +97,7 @@ git rev-parse --short HEAD
 3. merge to `main`
 4. wait for Cloudflare frontend deploys to finish
 5. update the deploy machine to the matching `main` commit
-6. run `./ops/manage.sh deploy api` or `./ops/manage.sh deploy stack`
+6. for backend changes that include the API or schema, prefer `./ops/manage.sh rollout api`; use `./ops/manage.sh deploy stack` when compose-level services also changed
 7. run the relevant checks in `docs/launch-checklist.md`
 
 ## Scenario 3: Maintenance
@@ -106,6 +106,7 @@ git rev-parse --short HEAD
 
 ```bash
 ./ops/manage.sh check
+./ops/manage.sh rollout api
 ./ops/manage.sh deploy api
 ./ops/manage.sh deploy stack
 ./ops/manage.sh ps
@@ -122,6 +123,7 @@ git rev-parse --short HEAD
 | Command | Use |
 | --- | --- |
 | `./ops/manage.sh check` | verify host, compose file, env file, and running services |
+| `./ops/manage.sh rollout api` | create a DB backup, deploy the API, run DB migrations, and verify readiness |
 | `./ops/manage.sh deploy api` | deploy API and shared-package changes |
 | `./ops/manage.sh deploy stack` | deploy compose-level or full-stack changes |
 | `./ops/manage.sh logs api 200` | inspect API logs |
@@ -144,6 +146,21 @@ For routine operations, follow this order:
 5. after any export, use `./ops/manage.sh db list-exports` and `./ops/manage.sh db download <remote-path> [local-path]` when a local copy is needed
 
 Treat server-side backups and exports as read-only operational artifacts. Do not overwrite production data through ad-hoc restore steps.
+
+### Recommended API rollout
+
+For most backend releases that touch runtime code or Drizzle migrations, use:
+
+```bash
+./ops/manage.sh rollout api
+```
+
+This performs the production-safe default sequence:
+
+1. create a remote PostgreSQL backup
+2. deploy the API container
+3. run database migrations inside the API container
+4. verify `/ready`
 
 ### Common export-query examples
 
