@@ -215,6 +215,13 @@ onMounted(() => void loadRecord());
     <header class="page-header event-page-header">
       <div class="event-page-header-main">
         <h2>{{ pageTitle }}</h2>
+        <div class="event-header-support">
+          <p class="event-header-note">{{ headerNote }}</p>
+          <div class="event-header-meta">
+            <span class="panel-meta">最后更新 {{ updatedMetaLabel }}</span>
+            <span class="status-pill">{{ statusLabel }}</span>
+          </div>
+        </div>
       </div>
 
       <div class="page-actions event-page-header-actions">
@@ -226,14 +233,6 @@ onMounted(() => void loadRecord());
           {{ actioning ? '发布中…' : '发布' }}
         </button>
         <button v-if="canArchive" class="button-link button-danger" type="button" :disabled="saving || actioning" @click="runAction('archive')">归档</button>
-      </div>
-
-      <div class="event-header-support">
-        <p class="event-header-note">{{ headerNote }}</p>
-        <div class="event-header-meta">
-          <span class="panel-meta">最后更新 {{ updatedMetaLabel }}</span>
-          <span class="status-pill">{{ statusLabel }}</span>
-        </div>
       </div>
     </header>
 
@@ -354,16 +353,19 @@ onMounted(() => void loadRecord());
 <style scoped>
 .event-page-header {
   grid-template-columns: minmax(0, 2.48fr) minmax(260px, 0.9fr);
-  gap: 0.38rem 0.8rem;
-  align-items: start;
+  gap: 0.8rem;
+  align-items: center;
 }
 
 .event-page-header-main {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .event-page-header-actions {
-  grid-column: 2;
+  align-self: center;
 }
 
 .event-editor-layout {
@@ -379,7 +381,7 @@ onMounted(() => void loadRecord());
   flex-wrap: nowrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.45rem 0.8rem;
+  gap: 0.32rem 0.8rem;
   min-width: 0;
 }
 
@@ -431,10 +433,11 @@ onMounted(() => void loadRecord());
 @media (max-width: 980px) {
   .event-page-header {
     grid-template-columns: 1fr;
+    align-items: start;
   }
 
   .event-page-header-actions {
-    grid-column: auto;
+    align-self: start;
     justify-content: flex-start;
   }
 
