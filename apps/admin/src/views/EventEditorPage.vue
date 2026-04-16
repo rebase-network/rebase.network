@@ -69,6 +69,7 @@ const eventId = computed(() => (typeof route.params.id === 'string' ? route.para
 const isNew = computed(() => eventId.value.length === 0);
 const pageTitle = computed(() => (isNew.value ? '新增活动' : `编辑活动：${record.value?.title ?? ''}`));
 const statusLabel = computed(() => formatContentStatus(form.status));
+const updatedMetaLabel = computed(() => (record.value ? formatDateTime(record.value.updatedAt) : '创建后生成'));
 const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft') ? '保存草稿' : '保存修改'));
 const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'button-primary'].filter(Boolean).join(' '));
 const canPublish = computed(() => form.status !== 'published');
@@ -214,6 +215,10 @@ onMounted(() => void loadRecord());
     <header class="page-header page-header-row">
       <div>
         <h2>{{ pageTitle }}</h2>
+        <div class="event-header-meta">
+          <span class="status-pill">{{ statusLabel }}</span>
+          <span class="panel-meta">最后更新 {{ updatedMetaLabel }}</span>
+        </div>
         <p class="event-header-note">
           <span>先把活动详情写清楚，其余字段尽量精简。</span>
           <span class="panel-meta">{{ workflowHint }}</span>
@@ -269,20 +274,6 @@ onMounted(() => void loadRecord());
       </section>
 
       <aside class="stacked-gap editor-sidebar sticky-stack">
-        <section class="panel stacked-gap event-sidebar-card">
-          <div class="panel-toolbar">
-            <h3>发布设置</h3>
-            <span class="status-pill">{{ statusLabel }}</span>
-          </div>
-
-          <dl class="summary-grid summary-grid-1 event-meta-grid">
-            <div class="summary-item">
-              <dt>最后更新</dt>
-              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '创建后生成' }}</dd>
-            </div>
-          </dl>
-        </section>
-
         <section class="panel stacked-gap event-sidebar-card">
           <div class="panel-toolbar">
             <h3>封面</h3>
@@ -368,11 +359,20 @@ onMounted(() => void loadRecord());
   gap: 0.75rem;
 }
 
+.event-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.7rem;
+  margin-top: 0.38rem;
+}
+
 .event-header-note {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem 0.55rem;
   align-items: baseline;
+  margin-top: 0.35rem;
 }
 
 .event-leading-fields {
@@ -386,10 +386,6 @@ onMounted(() => void loadRecord());
 
 .event-sidebar-card {
   gap: 0.7rem;
-}
-
-.event-meta-grid {
-  gap: 0.55rem;
 }
 
 .event-datetime-grid {
