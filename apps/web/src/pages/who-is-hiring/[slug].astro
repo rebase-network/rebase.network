@@ -10,12 +10,22 @@ const [site, job, jobs] = await Promise.all([getSiteSettings(), getJobBySlug(slu
 const related = job ? jobs.filter((item) => item.slug !== job.slug).slice(0, 3) : [];
 const remoteLabel = job ? (job.supportsRemote ? '支持远程' : '线下优先') : '';
 const deadlineLabel = job ? (job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` : '长期开放') : '';
+const formatWorkMode = (value: string) => {
+  switch (value) {
+    case 'full-time':
+      return '全职';
+    case 'part-time':
+      return '兼职';
+    default:
+      return value;
+  }
+};
 const applyCopy = job
   ? job.applyNote || (job.applyUrl ? '请通过下方报名表单或公开链接投递。' : '请通过下方联系方式投递。')
   : '';
 const contactValue = job?.contactValue?.trim() ?? '';
 const contactLabel = job?.contactLabel?.trim() || '联系方式';
-const metaItems = job ? [job.salary, job.workMode, job.location, remoteLabel, deadlineLabel].filter(Boolean) : [];
+const metaItems = job ? [job.salary, formatWorkMode(job.workMode), job.location, remoteLabel, deadlineLabel].filter(Boolean) : [];
 
 if (!job) {
   Astro.response.status = 404;

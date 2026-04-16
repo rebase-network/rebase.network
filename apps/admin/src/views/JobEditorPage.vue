@@ -29,8 +29,69 @@ interface JobFormState {
   expiresAt: string;
 }
 
+type JobApplyMode = 'external_url' | 'direct_contact';
+
 const route = useRoute();
 const router = useRouter();
+
+const jobWorkModeOptions = [
+  { value: 'full-time', label: '全职' },
+  { value: 'part-time', label: '兼职' },
+] as const;
+
+const jobApplyModeOptions = [
+  { value: 'external_url', label: '外部链接' },
+  { value: 'direct_contact', label: '直接联系' },
+] as const;
+
+const normalizeJobWorkMode = (value: string) => {
+  const normalizedValue = value.trim().toLowerCase();
+
+  if (normalizedValue === '全职' || normalizedValue === 'full-time') {
+    return 'full-time';
+  }
+
+  if (normalizedValue === '兼职' || normalizedValue === 'part-time') {
+    return 'part-time';
+  }
+
+  return value.trim();
+};
+
+const deriveJobApplyMode = (applyUrl?: string | null, contactValue?: string | null): JobApplyMode => {
+  if ((applyUrl ?? '').trim()) {
+    return 'external_url';
+  }
+
+  if ((contactValue ?? '').trim()) {
+    return 'direct_contact';
+  }
+
+  return 'external_url';
+};
+
+const stripMarkdown = (value: string) =>
+  value
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`([^`]*)`/g, '$1')
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/[*_>#-]+/g, ' ')
+    .replace(/\r/g, ' ')
+    .replace(/\n+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const buildJobSummary = (descriptionMarkdown: string, roleTitle: string, companyName: string, fallback = '') => {
+  const descriptionText = stripMarkdown(descriptionMarkdown);
+  const summarySource = descriptionText || fallback.trim() || [roleTitle.trim(), companyName.trim()].filter(Boolean).join(' · ');
+
+  if (!summarySource) {
+    return '';
+  }
+
+  return summarySource.length > 92 ? `${summarySource.slice(0, 89).trimEnd()}...` : summarySource;
+};
 
 const createBlankForm = (): JobFormState => ({
   slug: '',
@@ -38,7 +99,7 @@ const createBlankForm = (): JobFormState => ({
   roleTitle: '',
   salary: '',
   supportsRemote: false,
-  workMode: 'full-time',
+  workMode: '',
   location: '',
   summary: '',
   descriptionMarkdown: '',
@@ -62,6 +123,7 @@ const errorMessage = ref('');
 const successMessage = ref('');
 const fieldIssues = ref<Record<string, string>>({});
 const slugTouched = ref(false);
+const applyMode = ref<JobApplyMode>('external_url');
 
 const jobId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => jobId.value.length === 0);
@@ -102,7 +164,7 @@ const applyRecord = (payload: AdminJobRecord) => {
     roleTitle: payload.roleTitle,
     salary: payload.salary,
     supportsRemote: payload.supportsRemote,
-    workMode: payload.workMode,
+    workMode: normalizeJobWorkMode(payload.workMode),
     location: payload.location,
     summary: payload.summary,
     descriptionMarkdown: payload.descriptionMarkdown,
@@ -116,6 +178,7 @@ const applyRecord = (payload: AdminJobRecord) => {
     status: payload.status,
     expiresAt: toDateInputValue(payload.expiresAt),
   });
+  applyMode.value = deriveJobApplyMode(payload.applyUrl, payload.contactValue);
   slugTouched.value = true;
 };
 
@@ -126,6 +189,7 @@ const loadRecord = async () => {
     if (isNew.value) {
       record.value = null;
       slugTouched.value = false;
+      applyMode.value = 'external_url';
       Object.assign(form, createBlankForm());
       return;
     }
@@ -152,10 +216,27 @@ const persist = async (nextStatus: JobFormState['status'], mode: 'save' | 'publi
     saving.value = true;
   }
   try {
+    const summary = buildJobSummary(form.descriptionMarkdown, form.roleTitle, form.companyName, form.summary);
+    const normalizedWorkMode = normalizeJobWorkMode(form.workMode);
+
+    if (mode === 'publish' && applyMode.value === 'external_url' && !form.applyUrl.trim()) {
+      fieldIssues.value = { applyUrl: '选择外部链接时，投递链接必填。' };
+      errorMessage.value = '请补充投递链接后再发布。';
+      return;
+    }
+
+    if (mode === 'publish' && applyMode.value === 'direct_contact' && !form.contactValue.trim()) {
+      fieldIssues.value = { contactValue: '选择直接联系时，请填写联系方式。' };
+      errorMessage.value = '请补充联系方式后再发布。';
+      return;
+    }
+
     const payload = {
       ...form,
+      workMode: normalizedWorkMode,
+      summary,
       status: nextStatus,
-      applyUrl: form.applyUrl || null,
+      applyUrl: applyMode.value === 'external_url' ? form.applyUrl || null : null,
       expiresAt: fromDateInputValue(form.expiresAt),
     };
 
@@ -243,22 +324,15 @@ onMounted(() => void loadRecord());
         <div class="field-shell stacked-gap job-leading-fields">
           <div class="field-grid field-grid-2 field-grid-compact">
             <label class="field">
-              <span>团队 / 公司</span>
-              <input v-model="form.companyName" class="job-title-input" type="text" placeholder="Rebase Studio" />
-            </label>
-            <label class="field">
               <span>岗位名称</span>
               <input v-model="form.roleTitle" class="job-title-input" type="text" placeholder="前端工程师" />
+              <small v-if="fieldIssues.roleTitle" class="field-error">{{ fieldIssues.roleTitle }}</small>
             </label>
-          </div>
-
-          <div class="field-inline-row field-inline-row-compact">
-            <div class="field-inline-label">
-              <span>摘要</span>
-            </div>
-            <div class="field-inline-control">
-              <textarea v-model="form.summary" rows="2" placeholder="用一句话概括岗位和团队亮点。" />
-            </div>
+            <label class="field">
+              <span>团队 / 公司</span>
+              <input v-model="form.companyName" class="job-title-input" type="text" placeholder="Rebase Studio" />
+              <small v-if="fieldIssues.companyName" class="field-error">{{ fieldIssues.companyName }}</small>
+            </label>
           </div>
         </div>
 
@@ -266,6 +340,7 @@ onMounted(() => void loadRecord());
           v-model="form.descriptionMarkdown"
           label="岗位详情"
           placeholder="使用 Markdown 描述岗位职责、任职要求、团队背景和投递说明。"
+          :error="fieldIssues.descriptionMarkdown"
           :rows="24"
         />
       </section>
@@ -286,16 +361,22 @@ onMounted(() => void loadRecord());
           <label class="field">
             <span>薪资范围</span>
             <input v-model="form.salary" type="text" placeholder="$5,000 - $8,500 / month" />
+            <small v-if="fieldIssues.salary" class="field-error">{{ fieldIssues.salary }}</small>
           </label>
 
           <div class="field-grid field-grid-2 field-grid-compact">
             <label class="field">
               <span>工作模式</span>
-              <input v-model="form.workMode" type="text" placeholder="全职" />
+              <select v-model="form.workMode">
+                <option value="">请选择</option>
+                <option v-for="option in jobWorkModeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+              </select>
+              <small v-if="fieldIssues.workMode" class="field-error">{{ fieldIssues.workMode }}</small>
             </label>
             <label class="field">
               <span>地点</span>
               <input v-model="form.location" type="text" placeholder="远程 / 中国时区优先" />
+              <small v-if="fieldIssues.location" class="field-error">{{ fieldIssues.location }}</small>
             </label>
           </div>
 
@@ -317,13 +398,16 @@ onMounted(() => void loadRecord());
           </div>
 
           <label class="field">
-            <span>投递链接</span>
-            <input v-model="form.applyUrl" type="url" placeholder="https://example.com/jobs/frontend-engineer" />
+            <span>投递模式</span>
+            <select v-model="applyMode">
+              <option v-for="option in jobApplyModeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+            </select>
           </label>
 
           <label class="field">
-            <span>投递说明</span>
-            <input v-model="form.applyNote" type="text" placeholder="欢迎附上项目作品或写作样本。" />
+            <span>投递链接</span>
+            <input v-model="form.applyUrl" :disabled="applyMode !== 'external_url'" type="url" placeholder="https://example.com/jobs/frontend-engineer" />
+            <small v-if="fieldIssues.applyUrl" class="field-error">{{ fieldIssues.applyUrl }}</small>
           </label>
 
           <div class="field-grid field-grid-2 field-grid-compact">
@@ -334,6 +418,7 @@ onMounted(() => void loadRecord());
             <label class="field">
               <span>联系方式</span>
               <input v-model="form.contactValue" type="text" placeholder="@rebase_hiring" />
+              <small v-if="fieldIssues.contactValue" class="field-error">{{ fieldIssues.contactValue }}</small>
             </label>
           </div>
         </section>

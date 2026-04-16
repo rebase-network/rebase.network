@@ -10,6 +10,16 @@ interface Props {
 
 const { job, compact = false } = Astro.props;
 const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` : '长期开放';
+const formatWorkMode = (value: string) => {
+  switch (value) {
+    case 'full-time':
+      return '全职';
+    case 'part-time':
+      return '兼职';
+    default:
+      return value;
+  }
+};
 ---
 
 <a class:list={['job-card', 'card', { compact }]} href={getJobPath(job.slug)}>
@@ -29,7 +39,7 @@ const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` 
     </div>
     <div>
       <dt>模式</dt>
-      <dd>{job.workMode}</dd>
+      <dd>{formatWorkMode(job.workMode)}</dd>
     </div>
     <div>
       <dt>地点</dt>
