@@ -22,7 +22,7 @@ const formatWorkMode = (value: string) => {
 };
 ---
 
-<a class:list={['job-card', 'card', { compact }]} href={getJobPath(job.slug)}>
+<a class:list={['job-card', 'card', { compact }]} href={getJobPath(job.id, job.slug)}>
   <div class="job-card-topline">
     <p class="company-name">{job.companyName}</p>
     <div class="job-card-flags">

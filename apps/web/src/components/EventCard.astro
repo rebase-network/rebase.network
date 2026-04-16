@@ -13,7 +13,7 @@ const { event, compact = false } = Astro.props;
 ---
 
 <article class:list={['event-card', 'card', { compact }]}>
-  <a class="cover-link" href={getEventPath(event.startAt, event.slug)} aria-label={event.title}>
+  <a class="cover-link" href={getEventPath(event.id, event.slug)} aria-label={event.title}>
     <img
       class:list={['cover-image', !event.coverImageUrl && 'default-cover-image']}
       src={event.coverImageUrl ?? DEFAULT_EVENT_COVER_PATH}
@@ -27,7 +27,7 @@ const { event, compact = false } = Astro.props;
       {event.registrationUrl && <span class="chip">立即报名</span>}
     </div>
     <h3>
-      <a href={getEventPath(event.startAt, event.slug)}>{event.title}</a>
+      <a href={getEventPath(event.id, event.slug)}>{event.title}</a>
     </h3>
     <p class="summary">{event.summary}</p>
     <ul class="meta-list">

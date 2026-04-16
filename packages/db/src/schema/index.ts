@@ -208,7 +208,7 @@ export const aboutPage = pgTable('about_page', {
 
 export const articles = pgTable('articles', {
   id: uuid('id').defaultRandom().primaryKey(),
-  slug: text('slug').notNull().unique(),
+  slug: text('slug').notNull(),
   title: text('title').notNull(),
   summary: text('summary').notNull(),
   bodyMarkdown: text('body_markdown').notNull(),
@@ -228,7 +228,7 @@ export const articles = pgTable('articles', {
 
 export const jobs = pgTable('jobs', {
   id: uuid('id').defaultRandom().primaryKey(),
-  slug: text('slug').notNull().unique(),
+  slug: text('slug').notNull(),
   companyName: text('company_name').notNull(),
   roleTitle: text('role_title').notNull(),
   salary: text('salary').notNull(),
@@ -254,7 +254,7 @@ export const jobs = pgTable('jobs', {
 
 export const events = pgTable('events', {
   id: uuid('id').defaultRandom().primaryKey(),
-  slug: text('slug').notNull().unique(),
+  slug: text('slug').notNull(),
   title: text('title').notNull(),
   summary: text('summary').notNull(),
   bodyMarkdown: text('body_markdown').notNull(),

@@ -43,6 +43,13 @@
       "when": 1776367642260,
       "tag": "0005_blue_overlord",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1776372951803,
+      "tag": "0006_rainy_harrier",
+      "breakpoints": true
     }
   ]
 }

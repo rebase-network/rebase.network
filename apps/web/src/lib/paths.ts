@@ -1,24 +1,39 @@
-export function getArticlePath(slug: string) {
-  return `/articles/${slug}`;
-}
+const CONTENT_ROUTE_ID_PATTERN = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:-(.+))?$/i;
 
-export function getEventRouteParam(startAt: string, slug: string) {
-  return `${startAt.slice(0, 10)}-${slug}`;
-}
+const buildContentRouteParam = (id: string, slug?: string) => {
+  const normalizedSlug = slug?.trim() ?? '';
+  return normalizedSlug ? `${id}-${normalizedSlug}` : id;
+};
 
-export function getEventSlugFromRouteParam(routeParam: string) {
-  const match = routeParam.match(/^\d{4}-\d{2}-\d{2}-(.+)$/);
+const getContentIdFromRouteParam = (routeParam: string) => {
+  const match = routeParam.match(CONTENT_ROUTE_ID_PATTERN);
   return match ? match[1] : routeParam;
+};
+
+export function getArticlePath(id: string, slug: string) {
+  return `/articles/${buildContentRouteParam(id, slug)}`;
 }
 
-export function getEventPath(startAt: string, slug: string) {
-  return `/events/${getEventRouteParam(startAt, slug)}`;
+export function getArticleIdFromRouteParam(routeParam: string) {
+  return getContentIdFromRouteParam(routeParam);
+}
+
+export function getEventPath(id: string, slug: string) {
+  return `/events/${buildContentRouteParam(id, slug)}`;
+}
+
+export function getEventIdFromRouteParam(routeParam: string) {
+  return getContentIdFromRouteParam(routeParam);
 }
 
 export function getGeekDailyPath(episodeNumber: number) {
   return `/geekdaily/geekdaily-${episodeNumber}`;
 }
 
-export function getJobPath(slug: string) {
-  return `/who-is-hiring/${slug}`;
+export function getJobPath(id: string, slug: string) {
+  return `/who-is-hiring/${buildContentRouteParam(id, slug)}`;
+}
+
+export function getJobIdFromRouteParam(routeParam: string) {
+  return getContentIdFromRouteParam(routeParam);
 }

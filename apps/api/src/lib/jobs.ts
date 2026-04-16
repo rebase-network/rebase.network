@@ -7,7 +7,7 @@ import { validateJobInput, type AdminJobListItem, type ContentStatus, type JobIn
 
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { getDb } from './db.js';
-import { ApiError, badRequest, notFound } from './errors.js';
+import { ApiError, notFound } from './errors.js';
 import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
 import { combineFilters, toContainsPattern } from './query-filters.js';
 import { ensurePublishedAt, toIsoString } from './utils.js';
@@ -88,15 +88,6 @@ const resolveJobPublishedAt = (status: ContentStatus, currentPublishedAt?: strin
   return status === 'published' ? new Date() : null;
 };
 
-const ensureUniqueSlug = async (slug: string, currentId?: string) => {
-  const db = getDb();
-  const rows = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.slug, slug)).limit(1);
-  const existing = rows[0] ?? null;
-  if (existing && existing.id !== currentId) {
-    throw badRequest('job slug already exists', { field: 'slug' });
-  }
-};
-
 interface ListAdminJobsInput extends PaginationInput {
   query?: string;
   status?: ContentStatus;
@@ -154,9 +145,6 @@ export const getAdminJob = async (id: string) => {
 export const createAdminJob = async (input: JobInput, actor: AuditActor) => {
   const db = getDb();
   const storedSlug = toStoredJobSlug(input.slug);
-  if (!isInternalDraftSlug(storedSlug)) {
-    await ensureUniqueSlug(storedSlug);
-  }
 
   const [created] = await db
     .insert(jobs)
@@ -203,9 +191,6 @@ export const updateAdminJob = async (id: string, input: JobInput, actor: AuditAc
   }
 
   const storedSlug = toStoredJobSlug(input.slug);
-  if (!isInternalDraftSlug(storedSlug)) {
-    await ensureUniqueSlug(storedSlug, id);
-  }
 
   const [updated] = await db
     .update(jobs)
@@ -310,6 +295,7 @@ export const listPublicJobs = async () => {
   const rows = await db.select().from(jobs).where(eq(jobs.status, 'published')).orderBy(desc(jobs.publishedAt));
 
   return rows.map((row) => ({
+    id: row.id,
     slug: row.slug,
     companyName: row.companyName,
     roleTitle: row.roleTitle,
@@ -329,15 +315,20 @@ export const listPublicJobs = async () => {
   }));
 };
 
-export const getPublicJobBySlug = async (slug: string) => {
+export const getPublicJobById = async (id: string) => {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) {
+    return null;
+  }
+
   const db = getDb();
-  const rows = await db.select().from(jobs).where(eq(jobs.slug, slug)).limit(1);
+  const rows = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
   const row = rows[0] ?? null;
   if (!row || row.status !== 'published') {
     return null;
   }
 
   return {
+    id: row.id,
     slug: row.slug,
     companyName: row.companyName,
     roleTitle: row.roleTitle,

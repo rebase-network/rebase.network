@@ -2,14 +2,15 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import DetailHero from '@/components/DetailHero.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
-import { getEventBySlug, getEvents, getSiteSettings } from '@/lib/content';
+import { getEventById, getEvents, getSiteSettings } from '@/lib/content';
 import { formatEventWindow } from '@/lib/dates';
-import { getEventPath, getEventSlugFromRouteParam } from '@/lib/paths';
+import { getEventIdFromRouteParam, getEventPath } from '@/lib/paths';
 import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
 
-const eventSlug = getEventSlugFromRouteParam(Astro.params.slug ?? '');
-const [site, event, events] = await Promise.all([getSiteSettings(), getEventBySlug(eventSlug), getEvents()]);
-const related = event ? events.filter((item) => item.slug !== event.slug).slice(0, 3) : [];
+const routeParam = Astro.params.slug ?? '';
+const eventId = getEventIdFromRouteParam(routeParam);
+const [site, event, events] = await Promise.all([getSiteSettings(), getEventById(eventId), getEvents()]);
+const related = event ? events.filter((item) => item.id !== event.id).slice(0, 3) : [];
 const eventStatusLabel = event ? (event.status === 'upcoming' ? '即将举办' : '活动归档') : '';
 const eventLocationLine = event ? [event.location, event.venue].filter(Boolean).join(' · ') : '';
 const eventHeroMeta = event ? [formatEventWindow(event.startAt, event.endAt), eventLocationLine].filter(Boolean) : [];
@@ -112,7 +113,7 @@ if (!event) {
               <h2>相关活动</h2>
               <ul class="related-list">
                 {related.map((item) => (
-                  <li><a href={getEventPath(item.startAt, item.slug)}>{item.title}</a></li>
+                  <li><a href={getEventPath(item.id, item.slug)}>{item.title}</a></li>
                 ))}
               </ul>
             </section>

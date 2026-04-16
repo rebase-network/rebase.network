@@ -8,7 +8,7 @@ import { validateEventInput, type AdminEventListItem, type ContentStatus, type E
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { listPublicAssetUrlsById } from './assets.js';
 import { getDb } from './db.js';
-import { ApiError, badRequest, notFound } from './errors.js';
+import { ApiError, notFound } from './errors.js';
 import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
 import { combineFilters, toContainsPattern } from './query-filters.js';
 import { ensurePublishedAt, toIsoString } from './utils.js';
@@ -91,15 +91,6 @@ const mapEventDetail = (row: any) => ({
   updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
 });
 
-const ensureUniqueSlug = async (slug: string, currentId?: string) => {
-  const db = getDb();
-  const rows = await db.select({ id: events.id }).from(events).where(eq(events.slug, slug)).limit(1);
-  const existing = rows[0] ?? null;
-  if (existing && existing.id !== currentId) {
-    throw badRequest('event slug already exists', { field: 'slug' });
-  }
-};
-
 interface ListAdminEventsInput extends PaginationInput {
   query?: string;
   status?: ContentStatus;
@@ -157,9 +148,6 @@ export const getAdminEvent = async (id: string) => {
 export const createAdminEvent = async (input: EventInput, actor: AuditActor) => {
   const db = getDb();
   const storedSlug = toStoredEventSlug(input.slug);
-  if (!isInternalDraftSlug(storedSlug)) {
-    await ensureUniqueSlug(storedSlug);
-  }
 
   const [created] = await db
     .insert(events)
@@ -204,9 +192,6 @@ export const updateAdminEvent = async (id: string, input: EventInput, actor: Aud
   }
 
   const storedSlug = toStoredEventSlug(input.slug);
-  if (!isInternalDraftSlug(storedSlug)) {
-    await ensureUniqueSlug(storedSlug, id);
-  }
 
   const [updated] = await db
     .update(events)
@@ -311,6 +296,7 @@ export const listPublicEvents = async () => {
   const assetUrls = await listPublicAssetUrlsById(rows.map((row) => row.coverAssetId));
 
   return rows.map((row) => ({
+    id: row.id,
     slug: row.slug,
     title: row.title,
     summary: row.summary,
@@ -327,9 +313,13 @@ export const listPublicEvents = async () => {
   }));
 };
 
-export const getPublicEventBySlug = async (slug: string) => {
+export const getPublicEventById = async (id: string) => {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) {
+    return null;
+  }
+
   const db = getDb();
-  const rows = await db.select().from(events).where(eq(events.slug, slug)).limit(1);
+  const rows = await db.select().from(events).where(eq(events.id, id)).limit(1);
   const row = rows[0] ?? null;
   if (!row || row.status !== 'published') {
     return null;
@@ -338,6 +328,7 @@ export const getPublicEventBySlug = async (slug: string) => {
   const now = Date.now();
   const assetUrls = await listPublicAssetUrlsById([row.coverAssetId]);
   return {
+    id: row.id,
     slug: row.slug,
     title: row.title,
     summary: row.summary,
