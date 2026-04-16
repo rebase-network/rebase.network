@@ -172,15 +172,15 @@ export type ArticleInput = z.infer<typeof articleSchema>;
 
 export const jobSchema = z
   .object({
-    slug: requiredTrimmedString('slug is required'),
-    companyName: requiredTrimmedString('company name is required'),
-    roleTitle: requiredTrimmedString('role title is required'),
-    salary: requiredTrimmedString('salary is required'),
+    slug: trimmedString.optional().default(''),
+    companyName: trimmedString.optional().default(''),
+    roleTitle: trimmedString.optional().default(''),
+    salary: trimmedString.optional().default(''),
     supportsRemote: z.boolean().default(false),
-    workMode: requiredTrimmedString('work mode is required'),
-    location: requiredTrimmedString('location is required'),
-    summary: requiredTrimmedString('summary is required'),
-    descriptionMarkdown: requiredTrimmedString('description is required'),
+    workMode: trimmedString.optional().default(''),
+    location: trimmedString.optional().default(''),
+    summary: trimmedString.optional().default(''),
+    descriptionMarkdown: trimmedString.optional().default(''),
     applyUrl: optionalTrimmedString,
     applyNote: trimmedString.optional().default(''),
     contactLabel: trimmedString.optional().default(''),
@@ -193,7 +193,73 @@ export const jobSchema = z
     publishedAt: optionalTrimmedString,
   })
   .superRefine((value, ctx) => {
-    if (!value.applyUrl && !value.contactValue) {
+    const requiresPublishReadyDetails = value.status === 'published';
+
+    if (requiresPublishReadyDetails && !value.slug) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['slug'],
+        message: 'slug is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.companyName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['companyName'],
+        message: 'company name is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.roleTitle) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['roleTitle'],
+        message: 'role title is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.salary) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['salary'],
+        message: 'salary is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.workMode) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['workMode'],
+        message: 'work mode is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.location) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['location'],
+        message: 'location is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.summary) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['summary'],
+        message: 'summary is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.descriptionMarkdown) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['descriptionMarkdown'],
+        message: 'description is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.applyUrl && !value.contactValue) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['applyUrl'],

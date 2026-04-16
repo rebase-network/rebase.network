@@ -241,7 +241,7 @@ onBeforeUnmount(() => {
               <td class="table-actions-cell">
                 <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/jobs/${row.id}/edit`">编辑</RouterLink>
-                  <a class="table-link" :href="getPublicSiteUrl(`/who-is-hiring/${row.slug}`)" target="_blank" rel="noreferrer">前台预览</a>
+                  <a v-if="row.slug" class="table-link" :href="getPublicSiteUrl(`/who-is-hiring/${row.slug}`)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>
               </td>
             </tr>

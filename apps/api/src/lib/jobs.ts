@@ -1,18 +1,50 @@
+import { randomUUID } from 'node:crypto';
+
 import { count, desc, eq, ilike, or } from 'drizzle-orm';
 
 import { jobs, staffAccounts } from '@rebase/db';
-import type { AdminJobListItem, ContentStatus, JobInput, PaginatedResult } from '@rebase/shared';
+import { validateJobInput, type AdminJobListItem, type ContentStatus, type JobInput, type PaginatedResult } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { getDb } from './db.js';
-import { badRequest, notFound } from './errors.js';
+import { ApiError, badRequest, notFound } from './errors.js';
 import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
 import { combineFilters, toContainsPattern } from './query-filters.js';
 import { ensurePublishedAt, toIsoString } from './utils.js';
 
+const internalDraftSlugPrefix = 'draft-job-';
+
+const isInternalDraftSlug = (value: string) => value.startsWith(internalDraftSlugPrefix);
+const toStoredJobSlug = (value: string) => {
+  const normalizedValue = value.trim();
+  return normalizedValue || `${internalDraftSlugPrefix}${randomUUID()}`;
+};
+const toAdminJobSlug = (value: string | null | undefined) => {
+  if (!value || isInternalDraftSlug(value)) {
+    return '';
+  }
+
+  return value;
+};
+
+const assertPublishableJob = (input: JobInput) => {
+  const result = validateJobInput({
+    ...input,
+    status: 'published',
+  });
+
+  if (result.valid && result.data) {
+    return result.data;
+  }
+
+  throw new ApiError(400, 'VALIDATION_ERROR', 'one or more fields failed validation', {
+    issues: result.issues ?? [],
+  });
+};
+
 const mapJobListItem = (row: any): AdminJobListItem => ({
   id: row.job.id,
-  slug: row.job.slug,
+  slug: toAdminJobSlug(row.job.slug),
   companyName: row.job.companyName,
   roleTitle: row.job.roleTitle,
   editorName: row.editorName ?? null,
@@ -25,7 +57,7 @@ const mapJobListItem = (row: any): AdminJobListItem => ({
 
 const mapJobDetail = (row: any) => ({
   id: row.id,
-  slug: row.slug,
+  slug: toAdminJobSlug(row.slug),
   companyName: row.companyName,
   roleTitle: row.roleTitle,
   salary: row.salary,
@@ -121,12 +153,15 @@ export const getAdminJob = async (id: string) => {
 
 export const createAdminJob = async (input: JobInput, actor: AuditActor) => {
   const db = getDb();
-  await ensureUniqueSlug(input.slug);
+  const storedSlug = toStoredJobSlug(input.slug);
+  if (!isInternalDraftSlug(storedSlug)) {
+    await ensureUniqueSlug(storedSlug);
+  }
 
   const [created] = await db
     .insert(jobs)
     .values({
-      slug: input.slug,
+      slug: storedSlug,
       companyName: input.companyName,
       roleTitle: input.roleTitle,
       salary: input.salary,
@@ -167,12 +202,15 @@ export const updateAdminJob = async (id: string, input: JobInput, actor: AuditAc
     throw notFound('job not found');
   }
 
-  await ensureUniqueSlug(input.slug, id);
+  const storedSlug = toStoredJobSlug(input.slug);
+  if (!isInternalDraftSlug(storedSlug)) {
+    await ensureUniqueSlug(storedSlug, id);
+  }
 
   const [updated] = await db
     .update(jobs)
     .set({
-      slug: input.slug,
+      slug: storedSlug,
       companyName: input.companyName,
       roleTitle: input.roleTitle,
       salary: input.salary,
@@ -214,6 +252,8 @@ export const publishAdminJob = async (id: string, actor: AuditActor) => {
   if (!current) {
     throw notFound('job not found');
   }
+
+  assertPublishableJob(current);
 
   const [updated] = await db
     .update(jobs)
