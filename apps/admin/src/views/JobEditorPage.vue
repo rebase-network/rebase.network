@@ -7,7 +7,6 @@ import { type AdminJobRecord } from '@rebase/shared';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime, fromDateInputValue, slugify, toDateInputValue } from '../lib/format';
-import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface JobFormState {
   slug: string;
@@ -66,10 +65,8 @@ const slugTouched = ref(false);
 
 const jobId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => jobId.value.length === 0);
-const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/who-is-hiring/${form.slug}`) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新增招聘' : `编辑招聘：${record.value?.roleTitle ?? ''}`));
 const statusLabel = computed(() => formatContentStatus(form.status));
-const publishedMetaLabel = computed(() => (record.value?.publishedAt ? formatDateTime(record.value.publishedAt) : '首次发布后生成'));
 const updatedMetaLabel = computed(() => (record.value?.updatedAt ? formatDateTime(record.value.updatedAt) : '-'));
 const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft') ? '保存草稿' : '保存修改'));
 const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'button-primary'].filter(Boolean).join(' '));
@@ -276,33 +273,6 @@ onMounted(() => void loadRecord());
       <aside class="stacked-gap editor-sidebar sticky-stack">
         <section class="panel stacked-gap job-sidebar-card">
           <div class="panel-toolbar">
-            <h3>发布设置</h3>
-            <span class="status-pill">{{ statusLabel }}</span>
-          </div>
-
-          <dl class="summary-grid summary-grid-1 job-meta-grid">
-            <div class="summary-item">
-              <dt>公开地址</dt>
-              <dd>{{ publicUrl }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>首次发布</dt>
-              <dd class="muted">{{ publishedMetaLabel }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>最后更新</dt>
-              <dd class="muted">{{ updatedMetaLabel }}</dd>
-            </div>
-          </dl>
-
-          <label class="field">
-            <span>截止日期</span>
-            <input v-model="form.expiresAt" type="date" />
-          </label>
-        </section>
-
-        <section class="panel stacked-gap job-sidebar-card">
-          <div class="panel-toolbar">
             <h3>岗位信息</h3>
             <div class="panel-meta">基础配置</div>
           </div>
@@ -329,6 +299,11 @@ onMounted(() => void loadRecord());
             </label>
           </div>
 
+          <label class="field">
+            <span>截止日期</span>
+            <input v-model="form.expiresAt" type="date" />
+          </label>
+
           <label class="field checkbox-field job-remote-field">
             <span>支持远程</span>
             <input v-model="form.supportsRemote" type="checkbox" />
@@ -353,11 +328,11 @@ onMounted(() => void loadRecord());
 
           <div class="field-grid field-grid-2 field-grid-compact">
             <label class="field">
-              <span>联系方式标签</span>
+              <span>联系渠道</span>
               <input v-model="form.contactLabel" type="text" placeholder="telegram / 微信 / 邮箱" />
             </label>
             <label class="field">
-              <span>联系方式值</span>
+              <span>联系方式</span>
               <input v-model="form.contactValue" type="text" placeholder="@rebase_hiring" />
             </label>
           </div>
@@ -426,10 +401,6 @@ onMounted(() => void loadRecord());
 
 .job-sidebar-card {
   gap: 0.7rem;
-}
-
-.job-meta-grid {
-  gap: 0.55rem;
 }
 
 .job-remote-field {
