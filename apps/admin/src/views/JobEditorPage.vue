@@ -422,11 +422,17 @@ onMounted(() => void loadRecord());
             <small v-if="fieldIssues.applyUrl" class="field-error">{{ fieldIssues.applyUrl }}</small>
           </label>
 
-          <label v-else class="field">
-            <span>联系方式</span>
-            <input v-model="form.contactValue" type="text" placeholder="@rebase_hiring / hello@rebase.network" />
-            <small v-if="fieldIssues.contactValue" class="field-error">{{ fieldIssues.contactValue }}</small>
-          </label>
+          <div v-else class="field-grid field-grid-2 field-grid-compact">
+            <label class="field">
+              <span>联系渠道</span>
+              <input v-model="form.contactLabel" type="text" placeholder="telegram / 微信 / 邮箱" />
+            </label>
+            <label class="field">
+              <span>联系方式</span>
+              <input v-model="form.contactValue" type="text" placeholder="@rebase_hiring / hello@rebase.network" />
+              <small v-if="fieldIssues.contactValue" class="field-error">{{ fieldIssues.contactValue }}</small>
+            </label>
+          </div>
         </section>
       </aside>
     </div>
