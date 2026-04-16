@@ -73,6 +73,7 @@ export interface Job {
   roleTitle: string;
   salary: string;
   supportsRemote: boolean;
+  isExpired: boolean;
   workMode: string;
   location: string;
   summary: string;

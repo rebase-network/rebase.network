@@ -230,8 +230,10 @@ onBeforeUnmount(() => {
             <tr v-for="row in rows" :key="row.id">
               <td class="admin-list-primary-cell">
                 <div class="table-cell-stack admin-list-primary">
-                  <strong class="admin-list-title">{{ row.companyName }}</strong>
-                  <div class="muted-row admin-list-subtitle">{{ row.roleTitle }}</div>
+                  <strong class="admin-list-title">{{ row.roleTitle }}</strong>
+                  <div class="muted-row admin-list-subtitle">
+                    {{ row.companyName }}<span v-if="row.isExpired"> · 已过期</span>
+                  </div>
                 </div>
               </td>
               <td>{{ row.editorName || '—' }}</td>

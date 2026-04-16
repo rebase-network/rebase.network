@@ -116,7 +116,8 @@ publicRoutes.get('/articles/:publicNumber', async (c) => {
 
 publicRoutes.get('/jobs', async (c) => {
   const limit = getPositiveLimit(c.req.query('limit'), 0);
-  const rows = await listPublicJobs();
+  const includeExpired = c.req.query('includeExpired') === '1';
+  const rows = await listPublicJobs({ includeExpired });
   return c.json(ok(limit > 0 ? rows.slice(0, limit) : rows));
 });
 

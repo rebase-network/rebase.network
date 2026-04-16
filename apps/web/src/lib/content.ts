@@ -161,7 +161,7 @@ export async function getArticleByPublicNumber(publicNumber: number | undefined)
 }
 
 export async function getJobs(): Promise<Job[]> {
-  return fetchPublicApi<Job[]>('/api/public/v1/jobs');
+  return fetchPublicApi<Job[]>('/api/public/v1/jobs?includeExpired=1');
 }
 
 export async function getJobByPublicNumber(publicNumber: number | undefined) {

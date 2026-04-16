@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { count, desc, eq, ilike, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, or } from 'drizzle-orm';
 
 import { jobs, staffAccounts } from '@rebase/db';
 import { validateJobInput, type AdminJobListItem, type ContentStatus, type JobInput, type PaginatedResult } from '@rebase/shared';
@@ -50,6 +50,7 @@ const mapJobListItem = (row: any): AdminJobListItem => ({
   roleTitle: row.job.roleTitle,
   editorName: row.editorName ?? null,
   status: row.job.status,
+  isExpired: row.job.isExpired,
   publishedAt: toIsoString(row.job.publishedAt),
   expiresAt: toIsoString(row.job.expiresAt),
   updatedAt: toIsoString(row.job.updatedAt) ?? new Date().toISOString(),
@@ -64,6 +65,7 @@ const mapJobDetail = (row: any) => ({
   roleTitle: row.roleTitle,
   salary: row.salary,
   supportsRemote: row.supportsRemote,
+  isExpired: row.isExpired,
   workMode: row.workMode,
   location: row.location,
   summary: row.summary,
@@ -156,6 +158,7 @@ export const createAdminJob = async (input: JobInput, actor: AuditActor) => {
       roleTitle: input.roleTitle,
       salary: input.salary,
       supportsRemote: input.supportsRemote,
+      isExpired: input.isExpired,
       workMode: input.workMode,
       location: input.location,
       summary: input.summary,
@@ -202,6 +205,7 @@ export const updateAdminJob = async (id: string, input: JobInput, actor: AuditAc
       roleTitle: input.roleTitle,
       salary: input.salary,
       supportsRemote: input.supportsRemote,
+      isExpired: input.isExpired,
       workMode: input.workMode,
       location: input.location,
       summary: input.summary,
@@ -292,9 +296,17 @@ export const archiveAdminJob = async (id: string, actor: AuditActor) => {
   return mapJobDetail(updated);
 };
 
-export const listPublicJobs = async () => {
+interface ListPublicJobsInput {
+  includeExpired?: boolean;
+}
+
+export const listPublicJobs = async (input: ListPublicJobsInput = {}) => {
   const db = getDb();
-  const rows = await db.select().from(jobs).where(eq(jobs.status, 'published')).orderBy(desc(jobs.publishedAt));
+  const rows = await db
+    .select()
+    .from(jobs)
+    .where(input.includeExpired ? eq(jobs.status, 'published') : and(eq(jobs.status, 'published'), eq(jobs.isExpired, false)))
+    .orderBy(asc(jobs.isExpired), desc(jobs.publishedAt));
 
   return rows.map((row) => ({
     publicNumber: row.publicNumber,
@@ -303,6 +315,7 @@ export const listPublicJobs = async () => {
     roleTitle: row.roleTitle,
     salary: row.salary,
     supportsRemote: row.supportsRemote,
+    isExpired: row.isExpired,
     workMode: row.workMode,
     location: row.location,
     summary: row.summary,
@@ -339,6 +352,7 @@ export const getPublicJobByPublicNumber = async (value: string | number) => {
     roleTitle: row.roleTitle,
     salary: row.salary,
     supportsRemote: row.supportsRemote,
+    isExpired: row.isExpired,
     workMode: row.workMode,
     location: row.location,
     summary: row.summary,

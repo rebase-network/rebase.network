@@ -5,6 +5,8 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getJobs, getSiteSettings } from '@/lib/content';
 
 const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
+const activeJobs = jobs.filter((job) => !job.isExpired);
+const expiredJobs = jobs.filter((job) => job.isExpired);
 ---
 
 <BaseLayout site={site} title="Who-Is-Hiring | Rebase社区招聘" description="查看 Rebase 社区当前公开的招聘信息与岗位详情。">
@@ -31,19 +33,34 @@ const [site, jobs] = await Promise.all([getSiteSettings(), getJobs()]);
     <div class="jobs-toolbar">
       <p class="jobs-toolbar-copy">
         <strong>开放岗位</strong>
-        <span>{jobs.length} 个岗位</span>
+        <span>{activeJobs.length} 个岗位</span>
+        {expiredJobs.length > 0 && <span>{expiredJobs.length} 个已过期岗位</span>}
       </p>
     </div>
-    {jobs.length > 0 ? (
+    {activeJobs.length > 0 ? (
       <div class="grid-3">
-        {jobs.map((job) => <JobCard job={job} />)}
+        {activeJobs.map((job) => <JobCard job={job} />)}
       </div>
     ) : (
       <article class="card jobs-empty-state">
         <p class="hero-kicker">持续补充</p>
-        <h2>更多岗位正在整理中。</h2>
-        <p>当前暂时还没有新的公开岗位，后续新增机会会继续通过这个页面和 RSS 一起发布。</p>
+        <h2>当前暂时没有开放岗位。</h2>
+        <p>新的公开岗位会继续通过这个页面和 RSS 一起发布，已过期岗位会保留在下方归档中。</p>
       </article>
+    )}
+
+    {expiredJobs.length > 0 && (
+      <>
+        <div class="jobs-toolbar">
+          <p class="jobs-toolbar-copy">
+            <strong>已过期岗位</strong>
+            <span>{expiredJobs.length} 个岗位</span>
+          </p>
+        </div>
+        <div class="grid-3">
+          {expiredJobs.map((job) => <JobCard job={job} />)}
+        </div>
+      </>
     )}
   </section>
 </BaseLayout>

@@ -9,7 +9,7 @@ interface Props {
 }
 
 const { job, compact = false } = Astro.props;
-const freshnessLabel = `更新 ${formatDate(job.updatedAt)}`;
+const freshnessLabel = job.isExpired ? '已过期' : `更新 ${formatDate(job.updatedAt)}`;
 const formatWorkMode = (value: string) => {
   switch (value) {
     case 'full-time':
@@ -26,7 +26,7 @@ const formatWorkMode = (value: string) => {
   <div class="job-card-topline">
     <p class="company-name">{job.companyName}</p>
     <div class="job-card-flags">
-      <span>{freshnessLabel}</span>
+      <span class:list={['job-state-flag', job.isExpired && 'is-expired']}>{freshnessLabel}</span>
       {job.supportsRemote && <strong class="remote-flag">远程</strong>}
     </div>
   </div>
@@ -82,7 +82,7 @@ const formatWorkMode = (value: string) => {
     gap: 0.45rem;
   }
 
-  .job-card .job-card-flags span,
+  .job-card .job-state-flag,
   .job-card .remote-flag {
     display: inline-flex;
     align-items: center;
@@ -93,9 +93,14 @@ const formatWorkMode = (value: string) => {
     line-height: 1;
   }
 
-  .job-card .job-card-flags span {
+  .job-card .job-state-flag {
     background: rgba(31, 41, 51, 0.05);
     color: var(--muted);
+  }
+
+  .job-card .job-state-flag.is-expired {
+    background: rgba(185, 28, 28, 0.1);
+    color: #991b1b;
   }
 
   .job-card .remote-flag {

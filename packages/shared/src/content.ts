@@ -177,6 +177,7 @@ export const jobSchema = z
     roleTitle: trimmedString.optional().default(''),
     salary: trimmedString.optional().default(''),
     supportsRemote: z.boolean().default(false),
+    isExpired: z.boolean().default(false),
     workMode: trimmedString.optional().default(''),
     location: trimmedString.optional().default(''),
     summary: trimmedString.optional().default(''),
@@ -606,6 +607,7 @@ export interface AdminJobListItem {
   roleTitle: string;
   editorName: string | null;
   status: ContentStatus;
+  isExpired: boolean;
   publishedAt: string | null;
   expiresAt: string | null;
   updatedAt: string;

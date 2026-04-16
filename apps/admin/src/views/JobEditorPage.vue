@@ -14,6 +14,7 @@ interface JobFormState {
   roleTitle: string;
   salary: string;
   supportsRemote: boolean;
+  isExpired: boolean;
   workMode: string;
   location: string;
   summary: string;
@@ -99,6 +100,7 @@ const createBlankForm = (): JobFormState => ({
   roleTitle: '',
   salary: '',
   supportsRemote: false,
+  isExpired: false,
   workMode: '',
   location: '',
   summary: '',
@@ -164,6 +166,7 @@ const applyRecord = (payload: AdminJobRecord) => {
     roleTitle: payload.roleTitle,
     salary: payload.salary,
     supportsRemote: payload.supportsRemote,
+    isExpired: payload.isExpired,
     workMode: normalizeJobWorkMode(payload.workMode),
     location: payload.location,
     summary: payload.summary,
@@ -392,10 +395,17 @@ onMounted(() => void loadRecord());
             </label>
           </div>
 
-          <label class="field checkbox-field job-remote-field">
-            <span>支持远程</span>
-            <input v-model="form.supportsRemote" type="checkbox" />
-          </label>
+          <div class="field-grid field-grid-2 field-grid-compact">
+            <label class="field checkbox-field job-remote-field">
+              <span>支持远程</span>
+              <input v-model="form.supportsRemote" type="checkbox" />
+            </label>
+
+            <label class="field checkbox-field job-remote-field">
+              <span>已过期</span>
+              <input v-model="form.isExpired" type="checkbox" />
+            </label>
+          </div>
         </section>
 
         <section class="panel stacked-gap job-sidebar-card">

@@ -242,6 +242,7 @@ export const jobs = pgTable(
     roleTitle: text('role_title').notNull(),
     salary: text('salary').notNull(),
     supportsRemote: boolean('supports_remote').default(false).notNull(),
+    isExpired: boolean('is_expired').default(false).notNull(),
     workMode: text('work_mode').notNull(),
     location: text('location').notNull(),
     summary: text('summary').notNull(),
