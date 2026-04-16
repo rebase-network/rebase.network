@@ -70,25 +70,25 @@ const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/who-is-hiring/$
 const pageTitle = computed(() => (isNew.value ? '新增招聘' : `编辑招聘：${record.value?.roleTitle ?? ''}`));
 const statusLabel = computed(() => formatContentStatus(form.status));
 const publishedMetaLabel = computed(() => (record.value?.publishedAt ? formatDateTime(record.value.publishedAt) : '首次发布后生成'));
-const updatedMetaLabel = computed(() => (record.value ? formatDateTime(record.value.updatedAt) : '创建后生成'));
+const updatedMetaLabel = computed(() => (record.value?.updatedAt ? formatDateTime(record.value.updatedAt) : '-'));
 const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft') ? '保存草稿' : '保存修改'));
 const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'button-primary'].filter(Boolean).join(' '));
 const canPublish = computed(() => form.status !== 'published');
 const canArchive = computed(() => Boolean(record.value) && form.status !== 'archived');
-const workflowHint = computed(() => {
+const headerNote = computed(() => {
   if (isNew.value) {
-    return '可先保存草稿，也可直接发布。';
+    return '先把岗位详情写清楚，尽量精简。可先保存草稿，也可直接发布。';
   }
 
   if (form.status === 'published') {
-    return '已发布内容保存后会直接更新前台。';
+    return '先把岗位详情写清楚，尽量精简。已发布内容保存后会直接更新前台。';
   }
 
   if (form.status === 'archived') {
-    return '已归档内容仅后台可见，点击“发布”可重新上线。';
+    return '先把岗位详情写清楚，尽量精简。已归档内容仅后台可见，点击“发布”可重新上线。';
   }
 
-  return '草稿内容仅后台可见，可继续修改后再发布。';
+  return '先把岗位详情写清楚，尽量精简。草稿仅后台可见，可继续修改后再发布。';
 });
 
 const resetFeedback = () => {
@@ -213,14 +213,19 @@ onMounted(() => void loadRecord());
 
 <template>
   <section class="stacked-gap">
-    <header class="page-header page-header-row">
-      <div>
+    <header class="page-header job-page-header">
+      <div class="job-page-header-main">
         <h2>{{ pageTitle }}</h2>
-        <p>招聘信息与投递方式</p>
-        <small class="panel-meta">{{ workflowHint }}</small>
+        <div class="job-header-support">
+          <p class="job-header-note">{{ headerNote }}</p>
+          <div class="job-header-meta">
+            <span class="panel-meta">最后更新 {{ updatedMetaLabel }}</span>
+            <span class="status-pill">{{ statusLabel }}</span>
+          </div>
+        </div>
       </div>
 
-      <div class="page-actions">
+      <div class="page-actions job-page-header-actions">
         <RouterLink class="button-link" to="/jobs">返回列表</RouterLink>
         <button :class="saveButtonClass" type="button" :disabled="loading || saving || actioning" @click="save">
           {{ saving ? '保存中…' : saveButtonLabel }}
@@ -363,12 +368,51 @@ onMounted(() => void loadRecord());
 </template>
 
 <style scoped>
+.job-page-header {
+  grid-template-columns: minmax(0, 2.44fr) minmax(270px, 0.92fr);
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.job-page-header-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.job-page-header-actions {
+  align-self: center;
+}
+
 .job-editor-layout {
   grid-template-columns: minmax(0, 2.44fr) minmax(270px, 0.92fr);
 }
 
 .job-editor-main {
   gap: 0.75rem;
+}
+
+.job-header-support {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.32rem 0.8rem;
+  min-width: 0;
+}
+
+.job-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.7rem;
+  justify-content: flex-end;
+}
+
+.job-header-note {
+  margin: 0;
+  flex: 1 1 420px;
 }
 
 .job-leading-fields {
@@ -393,8 +437,25 @@ onMounted(() => void loadRecord());
 }
 
 @media (max-width: 1280px) {
+  .job-page-header,
   .job-editor-layout {
     grid-template-columns: minmax(0, 2.12fr) minmax(248px, 0.96fr);
+  }
+}
+
+@media (max-width: 980px) {
+  .job-page-header {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .job-page-header-actions {
+    align-self: start;
+    justify-content: flex-start;
+  }
+
+  .job-header-support {
+    flex-wrap: wrap;
   }
 }
 </style>
