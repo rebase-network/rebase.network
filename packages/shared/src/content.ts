@@ -172,15 +172,16 @@ export type ArticleInput = z.infer<typeof articleSchema>;
 
 export const jobSchema = z
   .object({
-    slug: requiredTrimmedString('slug is required'),
-    companyName: requiredTrimmedString('company name is required'),
-    roleTitle: requiredTrimmedString('role title is required'),
-    salary: requiredTrimmedString('salary is required'),
+    slug: trimmedString.optional().default(''),
+    companyName: trimmedString.optional().default(''),
+    roleTitle: trimmedString.optional().default(''),
+    salary: trimmedString.optional().default(''),
     supportsRemote: z.boolean().default(false),
-    workMode: requiredTrimmedString('work mode is required'),
-    location: requiredTrimmedString('location is required'),
-    summary: requiredTrimmedString('summary is required'),
-    descriptionMarkdown: requiredTrimmedString('description is required'),
+    isExpired: z.boolean().default(false),
+    workMode: trimmedString.optional().default(''),
+    location: trimmedString.optional().default(''),
+    summary: trimmedString.optional().default(''),
+    descriptionMarkdown: trimmedString.optional().default(''),
     applyUrl: optionalTrimmedString,
     applyNote: trimmedString.optional().default(''),
     contactLabel: trimmedString.optional().default(''),
@@ -193,7 +194,73 @@ export const jobSchema = z
     publishedAt: optionalTrimmedString,
   })
   .superRefine((value, ctx) => {
-    if (!value.applyUrl && !value.contactValue) {
+    const requiresPublishReadyDetails = value.status === 'published';
+
+    if (requiresPublishReadyDetails && !value.slug) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['slug'],
+        message: 'slug is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.companyName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['companyName'],
+        message: 'company name is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.roleTitle) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['roleTitle'],
+        message: 'role title is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.salary) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['salary'],
+        message: 'salary is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.workMode) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['workMode'],
+        message: 'work mode is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.location) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['location'],
+        message: 'location is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.summary) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['summary'],
+        message: 'summary is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.descriptionMarkdown) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['descriptionMarkdown'],
+        message: 'description is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.applyUrl && !value.contactValue) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['applyUrl'],
@@ -206,19 +273,18 @@ export type JobInput = z.infer<typeof jobSchema>;
 
 export const eventSchema = z
   .object({
-    slug: requiredTrimmedString('slug is required'),
+    slug: trimmedString.optional().default(''),
     title: requiredTrimmedString('title is required'),
     summary: requiredTrimmedString('summary is required'),
     bodyMarkdown: requiredTrimmedString('body is required'),
-    startAt: requiredTrimmedString('start time is required'),
-    endAt: requiredTrimmedString('end time is required'),
-    city: requiredTrimmedString('city is required'),
-    location: requiredTrimmedString('location is required'),
-    venue: requiredTrimmedString('venue is required'),
+    startAt: optionalTrimmedString,
+    endAt: optionalTrimmedString,
+    city: trimmedString.optional().default(''),
+    location: trimmedString.optional().default(''),
+    venue: trimmedString.optional().default(''),
     coverAssetId: z.string().uuid().optional().nullable().default(null),
     registrationMode: z.enum(registrationModeValues).default('external_url'),
     registrationUrl: optionalTrimmedString,
-    registrationNote: trimmedString.optional().default(''),
     tags: z.array(trimmedString).default([]),
     seoTitle: trimmedString.optional().default(''),
     seoDescription: trimmedString.optional().default(''),
@@ -226,7 +292,57 @@ export const eventSchema = z
     publishedAt: optionalTrimmedString,
   })
   .superRefine((value, ctx) => {
-    if (value.registrationMode === 'external_url' && !value.registrationUrl) {
+    const requiresPublishReadyDetails = value.status === 'published';
+
+    if (requiresPublishReadyDetails && !value.slug) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['slug'],
+        message: 'slug is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.startAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['startAt'],
+        message: 'start time is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.endAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['endAt'],
+        message: 'end time is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.city) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['city'],
+        message: 'city is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.location) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['location'],
+        message: 'location is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.venue) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['venue'],
+        message: 'venue is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && value.registrationMode === 'external_url' && !value.registrationUrl) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['registrationUrl'],
@@ -234,7 +350,26 @@ export const eventSchema = z
       });
     }
 
-    if (Date.parse(value.startAt) >= Date.parse(value.endAt)) {
+    const startAtTimestamp = value.startAt ? Date.parse(value.startAt) : Number.NaN;
+    const endAtTimestamp = value.endAt ? Date.parse(value.endAt) : Number.NaN;
+
+    if (value.startAt && Number.isNaN(startAtTimestamp)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['startAt'],
+        message: 'start time is invalid',
+      });
+    }
+
+    if (value.endAt && Number.isNaN(endAtTimestamp)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['endAt'],
+        message: 'end time is invalid',
+      });
+    }
+
+    if (!Number.isNaN(startAtTimestamp) && !Number.isNaN(endAtTimestamp) && startAtTimestamp >= endAtTimestamp) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['endAt'],
@@ -447,6 +582,7 @@ export interface AdminDashboardStats {
 
 export interface AdminArticleListItem {
   id: string;
+  publicNumber: number;
   slug: string;
   title: string;
   status: ContentStatus;
@@ -458,17 +594,20 @@ export interface AdminArticleListItem {
 
 export interface AdminArticleRecord extends ArticleInput {
   id: string;
+  publicNumber: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface AdminJobListItem {
   id: string;
+  publicNumber: number;
   slug: string;
   companyName: string;
   roleTitle: string;
   editorName: string | null;
   status: ContentStatus;
+  isExpired: boolean;
   publishedAt: string | null;
   expiresAt: string | null;
   updatedAt: string;
@@ -477,18 +616,20 @@ export interface AdminJobListItem {
 
 export interface AdminJobRecord extends JobInput {
   id: string;
+  publicNumber: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface AdminEventListItem {
   id: string;
+  publicNumber: number;
   slug: string;
   title: string;
   editorName: string | null;
   status: ContentStatus;
-  startAt: string;
-  endAt: string;
+  startAt: string | null;
+  endAt: string | null;
   city: string;
   registrationMode: RegistrationMode;
   updatedAt: string;
@@ -496,6 +637,7 @@ export interface AdminEventListItem {
 
 export interface AdminEventRecord extends EventInput {
   id: string;
+  publicNumber: number;
   createdAt: string;
   updatedAt: string;
 }

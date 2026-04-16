@@ -196,7 +196,6 @@ Editor needs:
 - cover image
 - registration mode
 - external registration URL
-- registration note
 - status
 
 Validation affordances:

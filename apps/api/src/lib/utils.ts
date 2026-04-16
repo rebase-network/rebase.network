@@ -27,4 +27,17 @@ export const ensurePublishedAt = (status: string, value?: string | null) => {
   return value ? new Date(value) : new Date();
 };
 
+export const parsePublicNumber = (value: number | string | null | undefined) => {
+  if (typeof value === 'number') {
+    return Number.isSafeInteger(value) && value > 0 ? value : null;
+  }
+
+  if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value)) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
+};
+
 export const latestFirst = <T extends { updatedAt: Date | string }>(field: T['updatedAt']) => desc(field as never);

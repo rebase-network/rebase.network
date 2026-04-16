@@ -28,19 +28,19 @@ export async function GET({ request }: { request: Request }) {
       title: article.title,
       description: `<p>${article.summary}</p>`,
       pubDate: new Date(article.publishedAt),
-      link: withBaseUrl(site.primaryDomain, getArticlePath(article.slug)),
+      link: withBaseUrl(site.primaryDomain, getArticlePath(article.publicNumber, article.slug)),
     })),
     ...events.map((event) => ({
       title: event.title,
       description: `<p>${event.summary}</p>`,
       pubDate: new Date(event.startAt),
-      link: withBaseUrl(site.primaryDomain, getEventPath(event.startAt, event.slug)),
+      link: withBaseUrl(site.primaryDomain, getEventPath(event.publicNumber, event.slug)),
     })),
     ...jobs.map((job) => ({
       title: `${job.roleTitle} · ${job.companyName}`,
       description: `<p>${job.summary}</p>`,
       pubDate: new Date(job.publishedAt),
-      link: withBaseUrl(site.primaryDomain, getJobPath(job.slug)),
+      link: withBaseUrl(site.primaryDomain, getJobPath(job.publicNumber, job.slug)),
     })),
   ]
     .sort((a, b) => +b.pubDate - +a.pubDate)

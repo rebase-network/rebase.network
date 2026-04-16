@@ -9,14 +9,24 @@ interface Props {
 }
 
 const { job, compact = false } = Astro.props;
-const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` : '长期开放';
+const freshnessLabel = job.isExpired ? '已过期' : `更新 ${formatDate(job.updatedAt)}`;
+const formatWorkMode = (value: string) => {
+  switch (value) {
+    case 'full-time':
+      return '全职';
+    case 'part-time':
+      return '兼职';
+    default:
+      return value;
+  }
+};
 ---
 
-<a class:list={['job-card', 'card', { compact }]} href={getJobPath(job.slug)}>
+<a class:list={['job-card', 'card', { compact }]} href={getJobPath(job.publicNumber, job.slug)}>
   <div class="job-card-topline">
     <p class="company-name">{job.companyName}</p>
     <div class="job-card-flags">
-      <span>{availabilityLabel}</span>
+      <span class:list={['job-state-flag', job.isExpired && 'is-expired']}>{freshnessLabel}</span>
       {job.supportsRemote && <strong class="remote-flag">远程</strong>}
     </div>
   </div>
@@ -29,7 +39,7 @@ const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` 
     </div>
     <div>
       <dt>模式</dt>
-      <dd>{job.workMode}</dd>
+      <dd>{formatWorkMode(job.workMode)}</dd>
     </div>
     <div>
       <dt>地点</dt>
@@ -72,7 +82,7 @@ const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` 
     gap: 0.45rem;
   }
 
-  .job-card .job-card-flags span,
+  .job-card .job-state-flag,
   .job-card .remote-flag {
     display: inline-flex;
     align-items: center;
@@ -83,9 +93,14 @@ const availabilityLabel = job.expiresAt ? `截止 ${formatDate(job.expiresAt)}` 
     line-height: 1;
   }
 
-  .job-card .job-card-flags span {
+  .job-card .job-state-flag {
     background: rgba(31, 41, 51, 0.05);
     color: var(--muted);
+  }
+
+  .job-card .job-state-flag.is-expired {
+    background: rgba(185, 28, 28, 0.1);
+    color: #991b1b;
   }
 
   .job-card .remote-flag {

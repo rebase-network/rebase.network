@@ -11,7 +11,6 @@ import AssetPickerField from '../components/AssetPickerField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime, formatRegistrationMode, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
-import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface EventFormState {
   slug: string;
@@ -26,7 +25,6 @@ interface EventFormState {
   coverAssetId: string;
   registrationMode: 'external_url' | 'announcement_only';
   registrationUrl: string;
-  registrationNote: string;
   tags: string[];
   seoTitle: string;
   seoDescription: string;
@@ -50,7 +48,6 @@ const createBlankForm = (): EventFormState => ({
   coverAssetId: '',
   registrationMode: 'external_url',
   registrationUrl: '',
-  registrationNote: '',
   tags: [],
   seoTitle: '',
   seoDescription: '',
@@ -70,34 +67,27 @@ const slugTouched = ref(false);
 
 const eventId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => eventId.value.length === 0);
-const publicUrl = computed(() => {
-  if (!form.slug) {
-    return '待生成';
-  }
-
-  const routeParam = form.startAt ? `${form.startAt.slice(0, 10)}-${form.slug}` : form.slug;
-  return getPublicSiteUrl(`/events/${routeParam}`);
-});
 const pageTitle = computed(() => (isNew.value ? '新增活动' : `编辑活动：${record.value?.title ?? ''}`));
 const statusLabel = computed(() => formatContentStatus(form.status));
+const updatedMetaLabel = computed(() => (record.value?.updatedAt ? formatDateTime(record.value.updatedAt) : '-'));
 const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft') ? '保存草稿' : '保存修改'));
 const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'button-primary'].filter(Boolean).join(' '));
 const canPublish = computed(() => form.status !== 'published');
 const canArchive = computed(() => Boolean(record.value) && form.status !== 'archived');
-const workflowHint = computed(() => {
+const headerNote = computed(() => {
   if (isNew.value) {
-    return '可先保存草稿，也可直接发布。';
+    return '先把活动详情写清楚，尽量精简。可先保存草稿，也可直接发布。';
   }
 
   if (form.status === 'published') {
-    return '已发布内容保存后会直接更新前台。';
+    return '先把活动详情写清楚，尽量精简。已发布内容保存后会直接更新前台。';
   }
 
   if (form.status === 'archived') {
-    return '已归档内容仅后台可见，点击“发布”可重新上线。';
+    return '先把活动详情写清楚，尽量精简。已归档内容仅后台可见，点击“发布”可重新上线。';
   }
 
-  return '草稿内容仅后台可见，可继续修改后再发布。';
+  return '先把活动详情写清楚，尽量精简。草稿仅后台可见，可继续修改后再发布。';
 });
 
 const resetFeedback = () => {
@@ -121,7 +111,6 @@ const applyRecord = (payload: AdminEventRecord) => {
     coverAssetId: payload.coverAssetId ?? '',
     registrationMode: payload.registrationMode,
     registrationUrl: payload.registrationUrl ?? '',
-    registrationNote: payload.registrationNote ?? '',
     tags: payload.tags,
     seoTitle: payload.seoTitle,
     seoDescription: payload.seoDescription,
@@ -223,13 +212,19 @@ onMounted(() => void loadRecord());
 
 <template>
   <section class="stacked-gap">
-    <header class="page-header page-header-row">
-      <div>
+    <header class="page-header event-page-header">
+      <div class="event-page-header-main">
         <h2>{{ pageTitle }}</h2>
-        <p>先把活动详情写清楚，其余字段尽量精简。</p>
-        <small class="panel-meta">{{ workflowHint }}</small>
+        <div class="event-header-support">
+          <p class="event-header-note">{{ headerNote }}</p>
+          <div class="event-header-meta">
+            <span class="panel-meta">最后更新 {{ updatedMetaLabel }}</span>
+            <span class="status-pill">{{ statusLabel }}</span>
+          </div>
+        </div>
       </div>
-      <div class="page-actions">
+
+      <div class="page-actions event-page-header-actions">
         <RouterLink class="button-link" to="/events">返回列表</RouterLink>
         <button :class="saveButtonClass" type="button" :disabled="loading || saving || actioning" @click="save">
           {{ saving ? '保存中…' : saveButtonLabel }}
@@ -273,29 +268,12 @@ onMounted(() => void loadRecord());
           v-model="form.bodyMarkdown"
           label="活动详情"
           placeholder="使用 Markdown 描述活动流程、议题和参与说明。"
+          :error="fieldIssues.bodyMarkdown"
           :rows="26"
         />
       </section>
 
       <aside class="stacked-gap editor-sidebar sticky-stack">
-        <section class="panel stacked-gap event-sidebar-card">
-          <div class="panel-toolbar">
-            <h3>发布设置</h3>
-            <span class="status-pill">{{ statusLabel }}</span>
-          </div>
-
-          <dl class="summary-grid summary-grid-1 event-meta-grid">
-            <div class="summary-item">
-              <dt>公开地址</dt>
-              <dd>{{ publicUrl }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>最后更新</dt>
-              <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '创建后生成' }}</dd>
-            </div>
-          </dl>
-        </section>
-
         <section class="panel stacked-gap event-sidebar-card">
           <div class="panel-toolbar">
             <h3>封面</h3>
@@ -316,25 +294,34 @@ onMounted(() => void loadRecord());
             <small v-if="fieldIssues.slug" class="field-error">{{ fieldIssues.slug }}</small>
           </label>
 
-          <div class="field-grid field-grid-2 field-grid-compact">
+          <div class="field-grid field-grid-compact event-datetime-grid">
             <label class="field">
               <span>开始时间</span>
               <input v-model="form.startAt" type="datetime-local" />
+              <small v-if="fieldIssues.startAt" class="field-error">{{ fieldIssues.startAt }}</small>
             </label>
             <label class="field">
               <span>结束时间</span>
               <input v-model="form.endAt" type="datetime-local" />
+              <small v-if="fieldIssues.endAt" class="field-error">{{ fieldIssues.endAt }}</small>
             </label>
           </div>
 
-          <div class="field-grid field-grid-2 field-grid-compact">
+          <div class="field-grid field-grid-2 field-grid-compact event-location-grid">
             <label class="field">
               <span>城市</span>
               <input v-model="form.city" type="text" placeholder="上海" />
+              <small v-if="fieldIssues.city" class="field-error">{{ fieldIssues.city }}</small>
             </label>
             <label class="field">
-              <span>地点描述</span>
+              <span>地点</span>
               <input v-model="form.location" type="text" placeholder="上海市静安区 / 线下空间" />
+              <small v-if="fieldIssues.location" class="field-error">{{ fieldIssues.location }}</small>
+            </label>
+            <label class="field event-location-wide">
+              <span>场地名称</span>
+              <input v-model="form.venue" type="text" placeholder="Rebase 社区空间 / 张江科学会堂" />
+              <small v-if="fieldIssues.venue" class="field-error">{{ fieldIssues.venue }}</small>
             </label>
           </div>
         </section>
@@ -355,6 +342,7 @@ onMounted(() => void loadRecord());
           <label class="field">
             <span>报名链接</span>
             <input v-model="form.registrationUrl" :disabled="form.registrationMode !== 'external_url'" type="url" placeholder="https://lu.ma/..." />
+            <small v-if="fieldIssues.registrationUrl" class="field-error">{{ fieldIssues.registrationUrl }}</small>
           </label>
         </section>
       </aside>
@@ -363,12 +351,51 @@ onMounted(() => void loadRecord());
 </template>
 
 <style scoped>
+.event-page-header {
+  grid-template-columns: minmax(0, 2.48fr) minmax(260px, 0.9fr);
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.event-page-header-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.event-page-header-actions {
+  align-self: center;
+}
+
 .event-editor-layout {
   grid-template-columns: minmax(0, 2.48fr) minmax(260px, 0.9fr);
 }
 
 .event-editor-main {
   gap: 0.75rem;
+}
+
+.event-header-support {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.32rem 0.8rem;
+  min-width: 0;
+}
+
+.event-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.7rem;
+  justify-content: flex-end;
+}
+
+.event-header-note {
+  margin: 0;
+  flex: 1 1 420px;
 }
 
 .event-leading-fields {
@@ -384,13 +411,48 @@ onMounted(() => void loadRecord());
   gap: 0.7rem;
 }
 
-.event-meta-grid {
-  gap: 0.55rem;
+.event-datetime-grid {
+  grid-template-columns: 1fr;
+}
+
+.event-location-grid {
+  grid-template-columns: minmax(112px, 0.72fr) minmax(0, 1.28fr);
+}
+
+.event-location-wide {
+  grid-column: 1 / -1;
 }
 
 @media (max-width: 1280px) {
+  .event-page-header,
   .event-editor-layout {
     grid-template-columns: minmax(0, 2.18fr) minmax(240px, 0.92fr);
+  }
+}
+
+@media (max-width: 980px) {
+  .event-page-header {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .event-page-header-actions {
+    align-self: start;
+    justify-content: flex-start;
+  }
+
+  .event-header-support {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 720px) {
+  .event-location-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-location-wide {
+    grid-column: auto;
   }
 }
 </style>

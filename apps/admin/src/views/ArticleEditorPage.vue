@@ -11,7 +11,6 @@ import AuthorsField from '../components/AuthorsField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
-import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface ArticleFormState {
   slug: string;
@@ -60,27 +59,27 @@ const slugTouched = ref(false);
 
 const articleId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => articleId.value.length === 0);
-const publicUrl = computed(() => (form.slug ? getPublicSiteUrl(`/articles/${form.slug}`) : '待生成'));
 const pageTitle = computed(() => (isNew.value ? '新建文章' : `编辑文章：${article.value?.title ?? ''}`));
 const statusLabel = computed(() => formatContentStatus(form.status));
+const updatedMetaLabel = computed(() => (article.value?.updatedAt ? formatDateTime(article.value.updatedAt) : '-'));
 const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft') ? '保存草稿' : '保存修改'));
 const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'button-primary'].filter(Boolean).join(' '));
 const canPublish = computed(() => form.status !== 'published');
 const canArchive = computed(() => Boolean(article.value) && form.status !== 'archived');
-const workflowHint = computed(() => {
+const headerNote = computed(() => {
   if (isNew.value) {
-    return '可先保存草稿，也可直接发布。';
+    return '先把正文写清楚，尽量精简。可先保存草稿，也可直接发布。';
   }
 
   if (form.status === 'published') {
-    return '已发布内容保存后会直接更新前台。';
+    return '先把正文写清楚，尽量精简。已发布内容保存后会直接更新前台。';
   }
 
   if (form.status === 'archived') {
-    return '已归档内容仅后台可见，点击“发布”可重新上线。';
+    return '先把正文写清楚，尽量精简。已归档内容仅后台可见，点击“发布”可重新上线。';
   }
 
-  return '草稿内容仅后台可见，可继续修改后再发布。';
+  return '先把正文写清楚，尽量精简。草稿仅后台可见，可继续修改后再发布。';
 });
 
 const resetFeedback = () => {
@@ -209,14 +208,19 @@ onMounted(() => void loadArticle());
 
 <template>
   <section class="stacked-gap">
-    <header class="page-header page-header-row">
-      <div>
+    <header class="page-header article-page-header">
+      <div class="article-page-header-main">
         <h2>{{ pageTitle }}</h2>
-        <p>优先完成正文，其余字段保持精简。</p>
-        <small class="panel-meta">{{ workflowHint }}</small>
+        <div class="article-header-support">
+          <p class="article-header-note">{{ headerNote }}</p>
+          <div class="article-header-meta">
+            <span class="panel-meta">最后更新 {{ updatedMetaLabel }}</span>
+            <span class="status-pill">{{ statusLabel }}</span>
+          </div>
+        </div>
       </div>
 
-      <div class="page-actions">
+      <div class="page-actions article-page-header-actions">
         <RouterLink class="button-link" to="/articles">返回列表</RouterLink>
         <button :class="saveButtonClass" type="button" :disabled="loading || saving || actioning" @click="save">
           {{ saving ? '保存中…' : saveButtonLabel }}
@@ -274,24 +278,6 @@ onMounted(() => void loadArticle());
       <aside class="stacked-gap editor-sidebar sticky-stack">
         <section class="panel stacked-gap article-sidebar-card">
           <div class="panel-toolbar">
-            <h3>发布设置</h3>
-            <span class="status-pill">{{ statusLabel }}</span>
-          </div>
-
-          <dl class="summary-grid summary-grid-1 article-meta-grid">
-            <div class="summary-item">
-              <dt>公开地址</dt>
-              <dd>{{ publicUrl }}</dd>
-            </div>
-            <div class="summary-item">
-              <dt>最后更新</dt>
-              <dd class="muted">{{ article ? formatDateTime(article.updatedAt) : '创建后生成' }}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section class="panel stacked-gap article-sidebar-card">
-          <div class="panel-toolbar">
             <h3>封面</h3>
             <div class="panel-meta">{{ form.coverAssetId ? '已设置' : '未设置' }}</div>
           </div>
@@ -318,12 +304,51 @@ onMounted(() => void loadArticle());
 </template>
 
 <style scoped>
+.article-page-header {
+  grid-template-columns: minmax(0, 2.55fr) minmax(260px, 0.86fr);
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.article-page-header-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.article-page-header-actions {
+  align-self: center;
+}
+
 .article-editor-layout {
   grid-template-columns: minmax(0, 2.55fr) minmax(260px, 0.86fr);
 }
 
 .article-editor-main {
   gap: 0.75rem;
+}
+
+.article-header-support {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.32rem 0.8rem;
+  min-width: 0;
+}
+
+.article-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.7rem;
+  justify-content: flex-end;
+}
+
+.article-header-note {
+  margin: 0;
+  flex: 1 1 420px;
 }
 
 .article-leading-fields {
@@ -339,13 +364,26 @@ onMounted(() => void loadArticle());
   gap: 0.7rem;
 }
 
-.article-meta-grid {
-  gap: 0.55rem;
-}
-
 @media (max-width: 1280px) {
+  .article-page-header,
   .article-editor-layout {
     grid-template-columns: minmax(0, 2.2fr) minmax(240px, 0.9fr);
+  }
+}
+
+@media (max-width: 980px) {
+  .article-page-header {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .article-page-header-actions {
+    align-self: start;
+    justify-content: flex-start;
+  }
+
+  .article-header-support {
+    flex-wrap: wrap;
   }
 }
 </style>

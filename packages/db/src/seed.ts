@@ -129,7 +129,6 @@ interface BaselineEvent {
   location: string;
   venue: string;
   registration_url: string | null;
-  registration_note: string | null;
   tags: string[];
 }
 
@@ -498,7 +497,6 @@ const seedContent = async (database: Database, baselineData: BaselineData) => {
       coverAssetId: eventCoverAssetIdBySlug.get(event.slug) ?? null,
       registrationMode: event.registration_url ? 'external_url' : 'announcement_only',
       registrationUrl: event.registration_url,
-      registrationNote: event.registration_note,
       tagsJson: event.tags,
       status: event.status,
       publishedAt: new Date(event.start_at),

@@ -1,0 +1,1 @@
+ALTER TABLE "jobs" ADD COLUMN "is_expired" boolean DEFAULT false NOT NULL;

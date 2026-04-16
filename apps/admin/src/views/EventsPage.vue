@@ -27,7 +27,8 @@ type EventStatusFilterValue = 'all' | ContentStatus;
 
 const filters = reactive<{ query: string; status: EventStatusFilterValue }>({ query: '', status: 'all' });
 
-const getEventPreviewUrl = (startAt: string, slug: string) => getPublicSiteUrl(`/events/${startAt.slice(0, 10)}-${slug}`);
+const getEventPreviewUrl = (publicNumber: number, slug: string) =>
+  slug ? getPublicSiteUrl(`/events/${publicNumber}-${slug}`) : '';
 
 const buildRequestPath = () => {
   const params = new URLSearchParams({
@@ -229,26 +230,27 @@ onBeforeUnmount(() => {
               <td class="admin-list-primary-cell">
                 <div class="table-cell-stack admin-list-primary">
                   <strong class="admin-list-title">{{ row.title }}</strong>
-                  <div class="muted-row admin-list-subtitle">/{{ row.slug }}</div>
+                  <div class="muted-row admin-list-subtitle">{{ row.slug ? `/${row.slug}` : 'URL 标识待补充' }}</div>
                 </div>
               </td>
               <td>{{ row.editorName || '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td class="admin-list-date-cell">
-                <div class="table-cell-stack">
-                  <time class="admin-list-date" :datetime="row.startAt">{{ formatDateTime(row.startAt) }}</time>
+                <div v-if="row.startAt || row.endAt" class="table-cell-stack">
+                  <time class="admin-list-date" :datetime="row.startAt ?? undefined">{{ formatDateTime(row.startAt) }}</time>
                   <div class="muted-row admin-list-date-row">
                     <span>至</span>
-                    <time class="admin-list-date" :datetime="row.endAt">{{ formatDateTime(row.endAt) }}</time>
+                    <time class="admin-list-date" :datetime="row.endAt ?? undefined">{{ formatDateTime(row.endAt) }}</time>
                   </div>
                 </div>
+                <span v-else class="muted">待补充</span>
               </td>
               <td>{{ row.city }}</td>
               <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
                 <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/events/${row.id}/edit`">编辑</RouterLink>
-                  <a class="table-link" :href="getEventPreviewUrl(row.startAt, row.slug)" target="_blank" rel="noreferrer">前台预览</a>
+                  <a v-if="row.slug" class="table-link" :href="getEventPreviewUrl(row.publicNumber, row.slug)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>
               </td>
             </tr>

@@ -175,7 +175,7 @@ The event detail page is accepted when:
 
 - the URL matches `/events/{slug}`
 - date, time, location, and content render correctly
-- external registration links or registration notes are clearly visible
+- external registration links are clearly visible when configured
 - the page remains useful without an in-site registration form
 
 ### Contributors Page

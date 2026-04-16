@@ -6,13 +6,14 @@ import type { AdminArticleListItem, ArticleInput, ContentStatus, PaginatedResult
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { listPublicAssetUrlsById } from './assets.js';
 import { getDb } from './db.js';
-import { badRequest, notFound } from './errors.js';
+import { notFound } from './errors.js';
 import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
 import { combineFilters, toContainsPattern } from './query-filters.js';
-import { ensurePublishedAt, toIsoString } from './utils.js';
+import { ensurePublishedAt, parsePublicNumber, toIsoString } from './utils.js';
 
 const mapArticleListItem = (row: any): AdminArticleListItem => ({
   id: row.id,
+  publicNumber: row.publicNumber,
   slug: row.slug,
   title: row.title,
   status: row.status,
@@ -24,6 +25,7 @@ const mapArticleListItem = (row: any): AdminArticleListItem => ({
 
 const mapArticleDetail = (row: any) => ({
   id: row.id,
+  publicNumber: row.publicNumber,
   slug: row.slug,
   title: row.title,
   summary: row.summary,
@@ -40,16 +42,6 @@ const mapArticleDetail = (row: any) => ({
   createdAt: toIsoString(row.createdAt) ?? new Date().toISOString(),
   updatedAt: toIsoString(row.updatedAt) ?? new Date().toISOString(),
 });
-
-const ensureUniqueSlug = async (slug: string, currentId?: string) => {
-  const db = getDb();
-  const rows = await db.select({ id: articles.id }).from(articles).where(eq(articles.slug, slug)).limit(1);
-  const existing = rows[0] ?? null;
-
-  if (existing && existing.id !== currentId) {
-    throw badRequest('article slug already exists', { field: 'slug' });
-  }
-};
 
 interface ListAdminArticlesInput extends PaginationInput {
   query?: string;
@@ -97,7 +89,6 @@ export const getAdminArticle = async (id: string) => {
 
 export const createAdminArticle = async (input: ArticleInput, actor: AuditActor) => {
   const db = getDb();
-  await ensureUniqueSlug(input.slug);
 
   const [created] = await db
     .insert(articles)
@@ -136,8 +127,6 @@ export const updateAdminArticle = async (id: string, input: ArticleInput, actor:
   if (!current) {
     throw notFound('article not found');
   }
-
-  await ensureUniqueSlug(input.slug, id);
 
   const [updated] = await db
     .update(articles)
@@ -239,6 +228,7 @@ export const listPublicArticles = async () => {
   const assetUrls = await listPublicAssetUrlsById(rows.map((row) => row.coverAssetId));
 
   return rows.map((row) => ({
+    publicNumber: row.publicNumber,
     slug: row.slug,
     title: row.title,
     summary: row.summary,
@@ -252,12 +242,18 @@ export const listPublicArticles = async () => {
   }));
 };
 
-export const getPublicArticleBySlug = async (slug: string) => {
+export const getPublicArticleByPublicNumber = async (value: string | number) => {
+  const publicNumber = parsePublicNumber(value);
+
+  if (!publicNumber) {
+    return null;
+  }
+
   const db = getDb();
   const rows = await db
     .select()
     .from(articles)
-    .where(eq(articles.slug, slug))
+    .where(eq(articles.publicNumber, publicNumber))
     .limit(1);
   const row = rows[0] ?? null;
 
@@ -268,6 +264,7 @@ export const getPublicArticleBySlug = async (slug: string) => {
   const assetUrls = await listPublicAssetUrlsById([row.coverAssetId]);
 
   return {
+    publicNumber: row.publicNumber,
     slug: row.slug,
     title: row.title,
     summary: row.summary,

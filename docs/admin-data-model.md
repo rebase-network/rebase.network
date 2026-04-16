@@ -291,7 +291,6 @@ Suggested fields:
 - `cover_asset_id`
 - `registration_mode`
 - `registration_url`
-- `registration_note`
 - `tags_json`
 - `status`
 - `published_at`

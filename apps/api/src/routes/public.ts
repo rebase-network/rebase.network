@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
 
 import { ok } from '../lib/http.js';
-import { getPublicArticleBySlug, listPublicArticles } from '../lib/articles.js';
+import { getPublicArticleByPublicNumber, listPublicArticles } from '../lib/articles.js';
 import { listPublicContributorGroups, listRandomPublicContributors } from '../lib/contributors.js';
-import { getPublicEventBySlug, listPublicEvents } from '../lib/events.js';
+import { getPublicEventByPublicNumber, listPublicEvents } from '../lib/events.js';
 import {
   getGeekDailySearchDocuments,
   getPublicGeekDailyEpisodeBySlug,
@@ -12,7 +12,7 @@ import {
   listPublicGeekDailyEpisodePreviews,
   listPublicGeekDailyEpisodes,
 } from '../lib/geekdaily.js';
-import { getPublicJobBySlug, listPublicJobs } from '../lib/jobs.js';
+import { getPublicJobByPublicNumber, listPublicJobs } from '../lib/jobs.js';
 import { getPublicAboutPage, getPublicSiteConfig } from '../lib/site.js';
 
 export const publicRoutes = new Hono();
@@ -29,6 +29,9 @@ const sortByPublishedAtDesc = <T extends { publishedAt?: string | null }>(items:
     const rightTime = right.publishedAt ? Date.parse(right.publishedAt) : 0;
     return rightTime - leftTime;
   });
+
+const buildContentHref = (basePath: string, publicNumber: number, slug: string) =>
+  `/${basePath}/${slug ? `${publicNumber}-${slug}` : publicNumber}`;
 
 publicRoutes.get('/site-config', async (c) => c.json(ok(await getPublicSiteConfig())));
 publicRoutes.get('/about', async (c) => c.json(ok(await getPublicAboutPage())));
@@ -56,21 +59,21 @@ publicRoutes.get('/home', async (c) => {
       type: 'article',
       title: item.title,
       summary: item.summary,
-      href: `/articles/${item.slug}`,
+      href: buildContentHref('articles', item.publicNumber, item.slug),
       publishedAt: item.publishedAt,
     })),
     ...recentJobs.map((item) => ({
       type: 'job',
       title: `${item.companyName} - ${item.roleTitle}`,
       summary: item.summary,
-      href: `/who-is-hiring/${item.slug}`,
+      href: buildContentHref('who-is-hiring', item.publicNumber, item.slug),
       publishedAt: item.publishedAt,
     })),
     ...upcomingEvents.map((item) => ({
       type: 'event',
       title: item.title,
       summary: item.summary,
-      href: `/events/${item.slug}`,
+      href: buildContentHref('events', item.publicNumber, item.slug),
       publishedAt: item.startAt,
     })),
     ...geekdaily.map((item) => ({
@@ -103,8 +106,8 @@ publicRoutes.get('/articles', async (c) => {
   return c.json(ok(limit > 0 ? rows.slice(0, limit) : rows));
 });
 
-publicRoutes.get('/articles/:slug', async (c) => {
-  const record = await getPublicArticleBySlug(c.req.param('slug'));
+publicRoutes.get('/articles/:publicNumber', async (c) => {
+  const record = await getPublicArticleByPublicNumber(c.req.param('publicNumber'));
   if (!record) {
     return c.json({ error: { code: 'NOT_FOUND', message: 'article not found' } }, 404);
   }
@@ -113,12 +116,13 @@ publicRoutes.get('/articles/:slug', async (c) => {
 
 publicRoutes.get('/jobs', async (c) => {
   const limit = getPositiveLimit(c.req.query('limit'), 0);
-  const rows = await listPublicJobs();
+  const includeExpired = c.req.query('includeExpired') === '1';
+  const rows = await listPublicJobs({ includeExpired });
   return c.json(ok(limit > 0 ? rows.slice(0, limit) : rows));
 });
 
-publicRoutes.get('/jobs/:slug', async (c) => {
-  const record = await getPublicJobBySlug(c.req.param('slug'));
+publicRoutes.get('/jobs/:publicNumber', async (c) => {
+  const record = await getPublicJobByPublicNumber(c.req.param('publicNumber'));
   if (!record) {
     return c.json({ error: { code: 'NOT_FOUND', message: 'job not found' } }, 404);
   }
@@ -132,8 +136,8 @@ publicRoutes.get('/events', async (c) => {
   return c.json(ok(filtered));
 });
 
-publicRoutes.get('/events/:slug', async (c) => {
-  const record = await getPublicEventBySlug(c.req.param('slug'));
+publicRoutes.get('/events/:publicNumber', async (c) => {
+  const record = await getPublicEventByPublicNumber(c.req.param('publicNumber'));
   if (!record) {
     return c.json({ error: { code: 'NOT_FOUND', message: 'event not found' } }, 404);
   }

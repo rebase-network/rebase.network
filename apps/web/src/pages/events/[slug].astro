@@ -2,17 +2,23 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import DetailHero from '@/components/DetailHero.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
-import { getEventBySlug, getEvents, getSiteSettings } from '@/lib/content';
+import { getEventByPublicNumber, getEvents, getSiteSettings } from '@/lib/content';
 import { formatEventWindow } from '@/lib/dates';
-import { getEventPath, getEventSlugFromRouteParam } from '@/lib/paths';
+import { getEventPath, getEventPublicNumberFromRouteParam } from '@/lib/paths';
 import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
 
-const eventSlug = getEventSlugFromRouteParam(Astro.params.slug ?? '');
-const [site, event, events] = await Promise.all([getSiteSettings(), getEventBySlug(eventSlug), getEvents()]);
-const related = event ? events.filter((item) => item.slug !== event.slug).slice(0, 3) : [];
+const routeParam = Astro.params.slug ?? '';
+const eventPublicNumber = getEventPublicNumberFromRouteParam(routeParam);
+const [site, event, events] = await Promise.all([getSiteSettings(), getEventByPublicNumber(eventPublicNumber), getEvents()]);
+const related = event ? events.filter((item) => item.publicNumber !== event.publicNumber).slice(0, 3) : [];
 const eventStatusLabel = event ? (event.status === 'upcoming' ? '即将举办' : '活动归档') : '';
 const eventLocationLine = event ? [event.location, event.venue].filter(Boolean).join(' · ') : '';
 const eventHeroMeta = event ? [formatEventWindow(event.startAt, event.endAt), eventLocationLine].filter(Boolean) : [];
+const eventRegistrationCopy = event
+  ? event.registrationUrl
+    ? '报名请使用公开链接，更多参与方式请查看正文中的活动说明。'
+    : '报名方式请查看正文中的活动说明，或以后续公告为准。'
+  : '';
 const eventHeroActions = event
   ? [
       ...(event.registrationUrl
@@ -79,9 +85,9 @@ if (!event) {
           </section>
 
           <section id="event-registration" class="detail-sidebar-section">
-            <h2>报名与说明</h2>
+            <h2>报名方式</h2>
             <p class="detail-sidebar-copy">
-              {event.registrationNote ?? '当前页面先提供活动说明，报名方式以公开链接或后续公告为准。'}
+              {eventRegistrationCopy}
             </p>
             {event.registrationUrl && (
               <ul class="detail-sidebar-list">
@@ -107,7 +113,7 @@ if (!event) {
               <h2>相关活动</h2>
               <ul class="related-list">
                 {related.map((item) => (
-                  <li><a href={getEventPath(item.startAt, item.slug)}>{item.title}</a></li>
+                  <li><a href={getEventPath(item.publicNumber, item.slug)}>{item.title}</a></li>
                 ))}
               </ul>
             </section>

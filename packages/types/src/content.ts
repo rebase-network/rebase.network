@@ -53,6 +53,7 @@ export interface ArticleAuthor {
 }
 
 export interface Article {
+  publicNumber: number;
   slug: string;
   title: string;
   summary: string;
@@ -66,11 +67,13 @@ export interface Article {
 }
 
 export interface Job {
+  publicNumber: number;
   slug: string;
   companyName: string;
   roleTitle: string;
   salary: string;
   supportsRemote: boolean;
+  isExpired: boolean;
   workMode: string;
   location: string;
   summary: string;
@@ -80,11 +83,13 @@ export interface Job {
   contactLabel: string;
   contactValue: string;
   publishedAt: string;
+  updatedAt: string;
   expiresAt: string | null;
   tags: string[];
 }
 
 export interface Event {
+  publicNumber: number;
   slug: string;
   title: string;
   summary: string;
@@ -95,7 +100,6 @@ export interface Event {
   venue: string;
   city: string;
   registrationUrl?: string;
-  registrationNote?: string;
   status: 'upcoming' | 'past';
   tags: string[];
   coverImageUrl?: string;

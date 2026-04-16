@@ -31,13 +31,13 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
           <p class="article-spotlight-kicker">最新文章</p>
           <span>{formatDate(leadArticle.publishedAt)}</span>
         </div>
-        <a class="article-spotlight-cover" href={getArticlePath(leadArticle.slug)} aria-label={leadArticle.title}>
+        <a class="article-spotlight-cover" href={getArticlePath(leadArticle.publicNumber, leadArticle.slug)} aria-label={leadArticle.title}>
           <img src={leadArticle.coverImageUrl ?? DEFAULT_ARTICLE_COVER_PATH} alt="" loading="lazy" />
         </a>
         <div class="article-spotlight-body">
           <p class="article-spotlight-meta">{leadArticle.readingTime}{leadAuthorLine ? ` · ${leadAuthorLine}` : ''}</p>
           <h2>
-            <a href={getArticlePath(leadArticle.slug)}>{leadArticle.title}</a>
+            <a href={getArticlePath(leadArticle.publicNumber, leadArticle.slug)}>{leadArticle.title}</a>
           </h2>
         </div>
       </article>

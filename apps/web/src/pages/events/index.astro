@@ -33,11 +33,11 @@ const featureEventPlace = leadUpcomingEvent
 const heroPrimaryAction = leadUpcomingEvent
   ? leadUpcomingEvent.registrationUrl
     ? { href: leadUpcomingEvent.registrationUrl, label: '立即报名', external: true }
-    : { href: getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug), label: '查看详情', external: false }
+    : { href: getEventPath(leadUpcomingEvent.publicNumber, leadUpcomingEvent.slug), label: '查看详情', external: false }
   : null;
 const heroSecondaryAction = leadUpcomingEvent
   ? leadUpcomingEvent.registrationUrl
-    ? { href: getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug), label: '活动详情' }
+    ? { href: getEventPath(leadUpcomingEvent.publicNumber, leadUpcomingEvent.slug), label: '活动详情' }
     : null
   : null;
 ---
@@ -55,7 +55,7 @@ const heroSecondaryAction = leadUpcomingEvent
 
     {leadUpcomingEvent ? (
       <article class="card event-spotlight">
-        <a class="event-spotlight-cover" href={getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug)} aria-label={leadUpcomingEvent.title}>
+        <a class="event-spotlight-cover" href={getEventPath(leadUpcomingEvent.publicNumber, leadUpcomingEvent.slug)} aria-label={leadUpcomingEvent.title}>
           <img
             class:list={['event-spotlight-image', !leadUpcomingEvent.coverImageUrl && 'default']}
             src={leadUpcomingEvent.coverImageUrl ?? DEFAULT_EVENT_COVER_PATH}
@@ -73,7 +73,7 @@ const heroSecondaryAction = leadUpcomingEvent
         </a>
         <div class="event-spotlight-body">
           <h2>
-            <a href={getEventPath(leadUpcomingEvent.startAt, leadUpcomingEvent.slug)}>{leadUpcomingEvent.title}</a>
+            <a href={getEventPath(leadUpcomingEvent.publicNumber, leadUpcomingEvent.slug)}>{leadUpcomingEvent.title}</a>
           </h2>
           <p class="event-spotlight-summary">{leadUpcomingEvent.summary}</p>
           <div class="event-spotlight-actions">

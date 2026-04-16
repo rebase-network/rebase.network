@@ -12,8 +12,11 @@ import {
 
 import PaginationBar from '../components/PaginationBar.vue';
 import { adminFetchWithMeta } from '../lib/api';
-import { formatBoolean, formatContentStatus, formatDate, formatDateTime } from '../lib/format';
+import { formatBoolean, formatContentStatus, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
+
+const getJobPreviewUrl = (publicNumber: number, slug: string) =>
+  getPublicSiteUrl(`/who-is-hiring/${slug ? `${publicNumber}-${slug}` : publicNumber}`);
 
 const rows = ref<AdminJobListItem[]>([]);
 const pagination = ref<PaginatedMeta | null>(null);
@@ -174,7 +177,6 @@ onBeforeUnmount(() => {
             <col class="admin-col-editor" />
             <col class="admin-status-filter-column" />
             <col class="admin-col-remote" />
-            <col class="admin-col-date" />
             <col class="admin-col-updated" />
             <col class="admin-col-actions" />
           </colgroup>
@@ -217,31 +219,31 @@ onBeforeUnmount(() => {
                 </div>
               </th>
               <th class="admin-col-remote">远程</th>
-              <th class="admin-col-date">截止日期</th>
               <th class="admin-col-updated">最后更新</th>
               <th class="admin-col-actions">操作</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="rows.length === 0">
-              <td class="admin-table-empty-row" colspan="7">当前筛选条件下没有招聘信息，请调整搜索或状态筛选。</td>
+              <td class="admin-table-empty-row" colspan="6">当前筛选条件下没有招聘信息，请调整搜索或状态筛选。</td>
             </tr>
             <tr v-for="row in rows" :key="row.id">
               <td class="admin-list-primary-cell">
                 <div class="table-cell-stack admin-list-primary">
-                  <strong class="admin-list-title">{{ row.companyName }}</strong>
-                  <div class="muted-row admin-list-subtitle">{{ row.roleTitle }}</div>
+                  <strong class="admin-list-title">{{ row.roleTitle }}</strong>
+                  <div class="muted-row admin-list-subtitle">
+                    {{ row.companyName }}<span v-if="row.isExpired"> · 已过期</span>
+                  </div>
                 </div>
               </td>
               <td>{{ row.editorName || '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td>{{ formatBoolean(row.supportsRemote) }}</td>
-              <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.expiresAt ?? undefined">{{ formatDate(row.expiresAt) }}</time></td>
               <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>
               <td class="table-actions-cell">
                 <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/jobs/${row.id}/edit`">编辑</RouterLink>
-                  <a class="table-link" :href="getPublicSiteUrl(`/who-is-hiring/${row.slug}`)" target="_blank" rel="noreferrer">前台预览</a>
+                  <a v-if="row.slug" class="table-link" :href="getJobPreviewUrl(row.publicNumber, row.slug)" target="_blank" rel="noreferrer">前台预览</a>
                 </div>
               </td>
             </tr>

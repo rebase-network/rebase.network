@@ -10,7 +10,6 @@ import type {
 } from '@rebase/types';
 
 import { fetchPublicApi } from '@/lib/api';
-import { getEventPath, getEventSlugFromRouteParam } from '@/lib/paths';
 
 interface PublicSiteConfigPayload {
   siteName: string;
@@ -149,21 +148,29 @@ export async function getArticles(): Promise<Article[]> {
   return fetchPublicApi<Article[]>('/api/public/v1/articles');
 }
 
-export async function getArticleBySlug(slug: string) {
+export async function getArticleByPublicNumber(publicNumber: number | undefined) {
+  if (!publicNumber) {
+    return undefined;
+  }
+
   try {
-    return await fetchPublicApi<Article>(`/api/public/v1/articles/${slug}`);
+    return await fetchPublicApi<Article>(`/api/public/v1/articles/${publicNumber}`);
   } catch {
     return undefined;
   }
 }
 
 export async function getJobs(): Promise<Job[]> {
-  return fetchPublicApi<Job[]>('/api/public/v1/jobs');
+  return fetchPublicApi<Job[]>('/api/public/v1/jobs?includeExpired=1');
 }
 
-export async function getJobBySlug(slug: string) {
+export async function getJobByPublicNumber(publicNumber: number | undefined) {
+  if (!publicNumber) {
+    return undefined;
+  }
+
   try {
-    return await fetchPublicApi<Job>(`/api/public/v1/jobs/${slug}`);
+    return await fetchPublicApi<Job>(`/api/public/v1/jobs/${publicNumber}`);
   } catch {
     return undefined;
   }
@@ -173,9 +180,13 @@ export async function getEvents(): Promise<Event[]> {
   return fetchPublicApi<Event[]>('/api/public/v1/events');
 }
 
-export async function getEventBySlug(slug: string) {
+export async function getEventByPublicNumber(publicNumber: number | undefined) {
+  if (!publicNumber) {
+    return undefined;
+  }
+
   try {
-    return await fetchPublicApi<Event>(`/api/public/v1/events/${slug}`);
+    return await fetchPublicApi<Event>(`/api/public/v1/events/${publicNumber}`);
   } catch {
     return undefined;
   }
@@ -252,18 +263,6 @@ export async function getHomeFeed() {
     latestGeekDaily: payload.latestGeekDaily ? mapGeekDailyEpisode(payload.latestGeekDaily) : undefined,
     recentGeekDaily: payload.recentGeekDaily.map(mapGeekDailyEpisode),
     featuredContributors: payload.featuredContributors,
-    dynamicFeed: payload.dynamicFeed.map((item) => {
-      if (item.type !== 'event' || !item.publishedAt || !item.href.startsWith('/events/')) {
-        return item;
-      }
-
-      const routeParam = item.href.slice('/events/'.length);
-      const slug = getEventSlugFromRouteParam(routeParam);
-
-      return {
-        ...item,
-        href: getEventPath(item.publishedAt, slug),
-      };
-    }),
+    dynamicFeed: payload.dynamicFeed,
   };
 }
