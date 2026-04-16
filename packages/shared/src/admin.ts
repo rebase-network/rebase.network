@@ -39,7 +39,7 @@ export const adminModules: ReadonlyArray<AdminModule> = [
     key: 'events',
     label: '活动',
     href: '/events',
-    summary: '维护社区活动与报名说明。',
+    summary: '维护社区活动与报名入口。',
     permission: 'event.read',
   },
   {

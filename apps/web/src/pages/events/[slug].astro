@@ -13,6 +13,11 @@ const related = event ? events.filter((item) => item.slug !== event.slug).slice(
 const eventStatusLabel = event ? (event.status === 'upcoming' ? '即将举办' : '活动归档') : '';
 const eventLocationLine = event ? [event.location, event.venue].filter(Boolean).join(' · ') : '';
 const eventHeroMeta = event ? [formatEventWindow(event.startAt, event.endAt), eventLocationLine].filter(Boolean) : [];
+const eventRegistrationCopy = event
+  ? event.registrationUrl
+    ? '报名请使用公开链接，更多参与方式请查看正文中的活动说明。'
+    : '报名方式请查看正文中的活动说明，或以后续公告为准。'
+  : '';
 const eventHeroActions = event
   ? [
       ...(event.registrationUrl
@@ -79,9 +84,9 @@ if (!event) {
           </section>
 
           <section id="event-registration" class="detail-sidebar-section">
-            <h2>报名与说明</h2>
+            <h2>报名方式</h2>
             <p class="detail-sidebar-copy">
-              {event.registrationNote ?? '当前页面先提供活动说明，报名方式以公开链接或后续公告为准。'}
+              {eventRegistrationCopy}
             </p>
             {event.registrationUrl && (
               <ul class="detail-sidebar-list">

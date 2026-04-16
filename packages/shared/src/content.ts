@@ -210,15 +210,14 @@ export const eventSchema = z
     title: requiredTrimmedString('title is required'),
     summary: requiredTrimmedString('summary is required'),
     bodyMarkdown: requiredTrimmedString('body is required'),
-    startAt: requiredTrimmedString('start time is required'),
-    endAt: requiredTrimmedString('end time is required'),
-    city: requiredTrimmedString('city is required'),
-    location: requiredTrimmedString('location is required'),
-    venue: requiredTrimmedString('venue is required'),
+    startAt: optionalTrimmedString,
+    endAt: optionalTrimmedString,
+    city: trimmedString.optional().default(''),
+    location: trimmedString.optional().default(''),
+    venue: trimmedString.optional().default(''),
     coverAssetId: z.string().uuid().optional().nullable().default(null),
     registrationMode: z.enum(registrationModeValues).default('external_url'),
     registrationUrl: optionalTrimmedString,
-    registrationNote: trimmedString.optional().default(''),
     tags: z.array(trimmedString).default([]),
     seoTitle: trimmedString.optional().default(''),
     seoDescription: trimmedString.optional().default(''),
@@ -226,7 +225,49 @@ export const eventSchema = z
     publishedAt: optionalTrimmedString,
   })
   .superRefine((value, ctx) => {
-    if (value.registrationMode === 'external_url' && !value.registrationUrl) {
+    const requiresPublishReadyDetails = value.status === 'published';
+
+    if (requiresPublishReadyDetails && !value.startAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['startAt'],
+        message: 'start time is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.endAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['endAt'],
+        message: 'end time is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.city) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['city'],
+        message: 'city is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.location) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['location'],
+        message: 'location is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && !value.venue) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['venue'],
+        message: 'venue is required',
+      });
+    }
+
+    if (requiresPublishReadyDetails && value.registrationMode === 'external_url' && !value.registrationUrl) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['registrationUrl'],
@@ -234,7 +275,26 @@ export const eventSchema = z
       });
     }
 
-    if (Date.parse(value.startAt) >= Date.parse(value.endAt)) {
+    const startAtTimestamp = value.startAt ? Date.parse(value.startAt) : Number.NaN;
+    const endAtTimestamp = value.endAt ? Date.parse(value.endAt) : Number.NaN;
+
+    if (value.startAt && Number.isNaN(startAtTimestamp)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['startAt'],
+        message: 'start time is invalid',
+      });
+    }
+
+    if (value.endAt && Number.isNaN(endAtTimestamp)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['endAt'],
+        message: 'end time is invalid',
+      });
+    }
+
+    if (!Number.isNaN(startAtTimestamp) && !Number.isNaN(endAtTimestamp) && startAtTimestamp >= endAtTimestamp) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['endAt'],
@@ -487,8 +547,8 @@ export interface AdminEventListItem {
   title: string;
   editorName: string | null;
   status: ContentStatus;
-  startAt: string;
-  endAt: string;
+  startAt: string | null;
+  endAt: string | null;
   city: string;
   registrationMode: RegistrationMode;
   updatedAt: string;

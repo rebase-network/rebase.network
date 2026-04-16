@@ -11,7 +11,6 @@ import AssetPickerField from '../components/AssetPickerField.vue';
 import MarkdownEditorField from '../components/MarkdownEditorField.vue';
 import { adminFetch, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus, formatDateTime, formatRegistrationMode, fromDateTimeInputValue, slugify, toDateTimeInputValue } from '../lib/format';
-import { getPublicSiteUrl } from '../lib/runtime-config';
 
 interface EventFormState {
   slug: string;
@@ -26,7 +25,6 @@ interface EventFormState {
   coverAssetId: string;
   registrationMode: 'external_url' | 'announcement_only';
   registrationUrl: string;
-  registrationNote: string;
   tags: string[];
   seoTitle: string;
   seoDescription: string;
@@ -50,7 +48,6 @@ const createBlankForm = (): EventFormState => ({
   coverAssetId: '',
   registrationMode: 'external_url',
   registrationUrl: '',
-  registrationNote: '',
   tags: [],
   seoTitle: '',
   seoDescription: '',
@@ -70,14 +67,6 @@ const slugTouched = ref(false);
 
 const eventId = computed(() => (typeof route.params.id === 'string' ? route.params.id : ''));
 const isNew = computed(() => eventId.value.length === 0);
-const publicUrl = computed(() => {
-  if (!form.slug) {
-    return '待生成';
-  }
-
-  const routeParam = form.startAt ? `${form.startAt.slice(0, 10)}-${form.slug}` : form.slug;
-  return getPublicSiteUrl(`/events/${routeParam}`);
-});
 const pageTitle = computed(() => (isNew.value ? '新增活动' : `编辑活动：${record.value?.title ?? ''}`));
 const statusLabel = computed(() => formatContentStatus(form.status));
 const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft') ? '保存草稿' : '保存修改'));
@@ -86,7 +75,7 @@ const canPublish = computed(() => form.status !== 'published');
 const canArchive = computed(() => Boolean(record.value) && form.status !== 'archived');
 const workflowHint = computed(() => {
   if (isNew.value) {
-    return '可先保存草稿，也可直接发布。';
+    return '可先保存草稿，时间、地点和报名信息可稍后补齐；也可直接发布。';
   }
 
   if (form.status === 'published') {
@@ -97,7 +86,7 @@ const workflowHint = computed(() => {
     return '已归档内容仅后台可见，点击“发布”可重新上线。';
   }
 
-  return '草稿内容仅后台可见，可继续修改后再发布。';
+  return '草稿内容仅后台可见，时间、地点和报名信息可继续补充后再发布。';
 });
 
 const resetFeedback = () => {
@@ -121,7 +110,6 @@ const applyRecord = (payload: AdminEventRecord) => {
     coverAssetId: payload.coverAssetId ?? '',
     registrationMode: payload.registrationMode,
     registrationUrl: payload.registrationUrl ?? '',
-    registrationNote: payload.registrationNote ?? '',
     tags: payload.tags,
     seoTitle: payload.seoTitle,
     seoDescription: payload.seoDescription,
@@ -226,8 +214,10 @@ onMounted(() => void loadRecord());
     <header class="page-header page-header-row">
       <div>
         <h2>{{ pageTitle }}</h2>
-        <p>先把活动详情写清楚，其余字段尽量精简。</p>
-        <small class="panel-meta">{{ workflowHint }}</small>
+        <p class="event-header-note">
+          <span>先把活动详情写清楚，其余字段尽量精简。</span>
+          <span class="panel-meta">{{ workflowHint }}</span>
+        </p>
       </div>
       <div class="page-actions">
         <RouterLink class="button-link" to="/events">返回列表</RouterLink>
@@ -273,6 +263,7 @@ onMounted(() => void loadRecord());
           v-model="form.bodyMarkdown"
           label="活动详情"
           placeholder="使用 Markdown 描述活动流程、议题和参与说明。"
+          :error="fieldIssues.bodyMarkdown"
           :rows="26"
         />
       </section>
@@ -285,10 +276,6 @@ onMounted(() => void loadRecord());
           </div>
 
           <dl class="summary-grid summary-grid-1 event-meta-grid">
-            <div class="summary-item">
-              <dt>公开地址</dt>
-              <dd>{{ publicUrl }}</dd>
-            </div>
             <div class="summary-item">
               <dt>最后更新</dt>
               <dd class="muted">{{ record ? formatDateTime(record.updatedAt) : '创建后生成' }}</dd>
@@ -316,25 +303,34 @@ onMounted(() => void loadRecord());
             <small v-if="fieldIssues.slug" class="field-error">{{ fieldIssues.slug }}</small>
           </label>
 
-          <div class="field-grid field-grid-2 field-grid-compact">
+          <div class="field-grid field-grid-compact event-datetime-grid">
             <label class="field">
               <span>开始时间</span>
               <input v-model="form.startAt" type="datetime-local" />
+              <small v-if="fieldIssues.startAt" class="field-error">{{ fieldIssues.startAt }}</small>
             </label>
             <label class="field">
               <span>结束时间</span>
               <input v-model="form.endAt" type="datetime-local" />
+              <small v-if="fieldIssues.endAt" class="field-error">{{ fieldIssues.endAt }}</small>
             </label>
           </div>
 
-          <div class="field-grid field-grid-2 field-grid-compact">
+          <div class="field-grid field-grid-2 field-grid-compact event-location-grid">
             <label class="field">
               <span>城市</span>
               <input v-model="form.city" type="text" placeholder="上海" />
+              <small v-if="fieldIssues.city" class="field-error">{{ fieldIssues.city }}</small>
             </label>
             <label class="field">
-              <span>地点描述</span>
+              <span>地点</span>
               <input v-model="form.location" type="text" placeholder="上海市静安区 / 线下空间" />
+              <small v-if="fieldIssues.location" class="field-error">{{ fieldIssues.location }}</small>
+            </label>
+            <label class="field event-location-wide">
+              <span>场地名称</span>
+              <input v-model="form.venue" type="text" placeholder="Rebase 社区空间 / 张江科学会堂" />
+              <small v-if="fieldIssues.venue" class="field-error">{{ fieldIssues.venue }}</small>
             </label>
           </div>
         </section>
@@ -355,6 +351,7 @@ onMounted(() => void loadRecord());
           <label class="field">
             <span>报名链接</span>
             <input v-model="form.registrationUrl" :disabled="form.registrationMode !== 'external_url'" type="url" placeholder="https://lu.ma/..." />
+            <small v-if="fieldIssues.registrationUrl" class="field-error">{{ fieldIssues.registrationUrl }}</small>
           </label>
         </section>
       </aside>
@@ -369,6 +366,13 @@ onMounted(() => void loadRecord());
 
 .event-editor-main {
   gap: 0.75rem;
+}
+
+.event-header-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.55rem;
+  align-items: baseline;
 }
 
 .event-leading-fields {
@@ -388,9 +392,31 @@ onMounted(() => void loadRecord());
   gap: 0.55rem;
 }
 
+.event-datetime-grid {
+  grid-template-columns: 1fr;
+}
+
+.event-location-grid {
+  grid-template-columns: minmax(112px, 0.72fr) minmax(0, 1.28fr);
+}
+
+.event-location-wide {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 1280px) {
   .event-editor-layout {
     grid-template-columns: minmax(0, 2.18fr) minmax(240px, 0.92fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .event-location-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-location-wide {
+    grid-column: auto;
   }
 }
 </style>

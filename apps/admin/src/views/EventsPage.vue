@@ -27,7 +27,8 @@ type EventStatusFilterValue = 'all' | ContentStatus;
 
 const filters = reactive<{ query: string; status: EventStatusFilterValue }>({ query: '', status: 'all' });
 
-const getEventPreviewUrl = (startAt: string, slug: string) => getPublicSiteUrl(`/events/${startAt.slice(0, 10)}-${slug}`);
+const getEventPreviewUrl = (startAt: string | null, slug: string) =>
+  getPublicSiteUrl(`/events/${startAt ? `${startAt.slice(0, 10)}-${slug}` : slug}`);
 
 const buildRequestPath = () => {
   const params = new URLSearchParams({
@@ -235,13 +236,14 @@ onBeforeUnmount(() => {
               <td>{{ row.editorName || '—' }}</td>
               <td><span class="status-pill">{{ formatContentStatus(row.status) }}</span></td>
               <td class="admin-list-date-cell">
-                <div class="table-cell-stack">
-                  <time class="admin-list-date" :datetime="row.startAt">{{ formatDateTime(row.startAt) }}</time>
+                <div v-if="row.startAt || row.endAt" class="table-cell-stack">
+                  <time class="admin-list-date" :datetime="row.startAt ?? undefined">{{ formatDateTime(row.startAt) }}</time>
                   <div class="muted-row admin-list-date-row">
                     <span>至</span>
-                    <time class="admin-list-date" :datetime="row.endAt">{{ formatDateTime(row.endAt) }}</time>
+                    <time class="admin-list-date" :datetime="row.endAt ?? undefined">{{ formatDateTime(row.endAt) }}</time>
                   </div>
                 </div>
+                <span v-else class="muted">待补充</span>
               </td>
               <td>{{ row.city }}</td>
               <td class="admin-list-date-cell"><time class="admin-list-date" :datetime="row.updatedAt">{{ formatDateTime(row.updatedAt) }}</time></td>

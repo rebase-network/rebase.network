@@ -95,7 +95,6 @@ export interface Event {
   venue: string;
   city: string;
   registrationUrl?: string;
-  registrationNote?: string;
   status: 'upcoming' | 'past';
   tags: string[];
   coverImageUrl?: string;

@@ -1,15 +1,44 @@
 import { asc, count, desc, eq, ilike, or } from 'drizzle-orm';
 
 import { events, staffAccounts } from '@rebase/db';
-import type { AdminEventListItem, ContentStatus, EventInput, PaginatedResult } from '@rebase/shared';
+import { validateEventInput, type AdminEventListItem, type ContentStatus, type EventInput, type PaginatedResult } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { listPublicAssetUrlsById } from './assets.js';
 import { getDb } from './db.js';
-import { badRequest, notFound } from './errors.js';
+import { ApiError, badRequest, notFound } from './errors.js';
 import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
 import { combineFilters, toContainsPattern } from './query-filters.js';
 import { ensurePublishedAt, toIsoString } from './utils.js';
+
+const draftEventDatePlaceholders = {
+  startAt: '1900-01-01T00:00:00.000Z',
+  endAt: '1900-01-01T01:00:00.000Z',
+} as const;
+
+type EventDateField = keyof typeof draftEventDatePlaceholders;
+
+const toStoredEventDate = (value: string | null, field: EventDateField) => new Date(value ?? draftEventDatePlaceholders[field]);
+
+const toAdminEventDate = (value: Date | string | null | undefined, field: EventDateField) => {
+  const iso = toIsoString(value);
+  return iso === draftEventDatePlaceholders[field] ? null : iso;
+};
+
+const assertPublishableEvent = (input: EventInput) => {
+  const result = validateEventInput({
+    ...input,
+    status: 'published',
+  });
+
+  if (result.valid && result.data) {
+    return result.data;
+  }
+
+  throw new ApiError(400, 'VALIDATION_ERROR', 'one or more fields failed validation', {
+    issues: result.issues ?? [],
+  });
+};
 
 const mapEventListItem = (row: any): AdminEventListItem => ({
   id: row.event.id,
@@ -17,8 +46,8 @@ const mapEventListItem = (row: any): AdminEventListItem => ({
   title: row.event.title,
   editorName: row.editorName ?? null,
   status: row.event.status,
-  startAt: toIsoString(row.event.startAt) ?? new Date().toISOString(),
-  endAt: toIsoString(row.event.endAt) ?? new Date().toISOString(),
+  startAt: toAdminEventDate(row.event.startAt, 'startAt'),
+  endAt: toAdminEventDate(row.event.endAt, 'endAt'),
   city: row.event.city,
   registrationMode: row.event.registrationMode,
   updatedAt: toIsoString(row.event.updatedAt) ?? new Date().toISOString(),
@@ -30,15 +59,14 @@ const mapEventDetail = (row: any) => ({
   title: row.title,
   summary: row.summary,
   bodyMarkdown: row.bodyMarkdown,
-  startAt: toIsoString(row.startAt) ?? new Date().toISOString(),
-  endAt: toIsoString(row.endAt) ?? new Date().toISOString(),
+  startAt: toAdminEventDate(row.startAt, 'startAt'),
+  endAt: toAdminEventDate(row.endAt, 'endAt'),
   city: row.city,
   location: row.location,
   venue: row.venue,
   coverAssetId: row.coverAssetId,
   registrationMode: row.registrationMode,
   registrationUrl: row.registrationUrl ?? '',
-  registrationNote: row.registrationNote ?? '',
   tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
   seoTitle: row.seoTitle ?? '',
   seoDescription: row.seoDescription ?? '',
@@ -122,15 +150,14 @@ export const createAdminEvent = async (input: EventInput, actor: AuditActor) => 
       title: input.title,
       summary: input.summary,
       bodyMarkdown: input.bodyMarkdown,
-      startAt: new Date(input.startAt),
-      endAt: new Date(input.endAt),
+      startAt: toStoredEventDate(input.startAt, 'startAt'),
+      endAt: toStoredEventDate(input.endAt, 'endAt'),
       city: input.city,
       location: input.location,
       venue: input.venue,
       coverAssetId: input.coverAssetId,
       registrationMode: input.registrationMode,
       registrationUrl: input.registrationUrl,
-      registrationNote: input.registrationNote,
       tagsJson: input.tags,
       seoTitle: input.seoTitle,
       seoDescription: input.seoDescription,
@@ -167,15 +194,14 @@ export const updateAdminEvent = async (id: string, input: EventInput, actor: Aud
       title: input.title,
       summary: input.summary,
       bodyMarkdown: input.bodyMarkdown,
-      startAt: new Date(input.startAt),
-      endAt: new Date(input.endAt),
+      startAt: toStoredEventDate(input.startAt, 'startAt'),
+      endAt: toStoredEventDate(input.endAt, 'endAt'),
       city: input.city,
       location: input.location,
       venue: input.venue,
       coverAssetId: input.coverAssetId,
       registrationMode: input.registrationMode,
       registrationUrl: input.registrationUrl,
-      registrationNote: input.registrationNote,
       tagsJson: input.tags,
       seoTitle: input.seoTitle,
       seoDescription: input.seoDescription,
@@ -204,6 +230,8 @@ export const publishAdminEvent = async (id: string, actor: AuditActor) => {
   if (!current) {
     throw notFound('event not found');
   }
+
+  assertPublishableEvent(current);
 
   const [updated] = await db
     .update(events)
@@ -272,7 +300,6 @@ export const listPublicEvents = async () => {
     venue: row.venue,
     city: row.city,
     registrationUrl: row.registrationUrl ?? undefined,
-    registrationNote: row.registrationNote ?? undefined,
     status: new Date(row.endAt).getTime() < now ? 'past' : 'upcoming',
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
     coverImageUrl: row.coverAssetId ? assetUrls.get(row.coverAssetId) : undefined,
@@ -300,7 +327,6 @@ export const getPublicEventBySlug = async (slug: string) => {
     venue: row.venue,
     city: row.city,
     registrationUrl: row.registrationUrl ?? undefined,
-    registrationNote: row.registrationNote ?? undefined,
     status: new Date(row.endAt).getTime() < now ? 'past' : 'upcoming',
     tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
     coverImageUrl: row.coverAssetId ? assetUrls.get(row.coverAssetId) : undefined,

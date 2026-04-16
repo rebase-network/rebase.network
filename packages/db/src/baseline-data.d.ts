@@ -100,7 +100,6 @@ declare module '../../../scripts/seed/baseline-data.mjs' {
     location: string;
     venue: string;
     registration_url: string | null;
-    registration_note: string | null;
     tags: string[];
   }
 

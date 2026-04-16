@@ -36,6 +36,13 @@
       "when": 1776109658110,
       "tag": "0004_youthful_red_ghost",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776367642260,
+      "tag": "0005_blue_overlord",
+      "breakpoints": true
     }
   ]
 }

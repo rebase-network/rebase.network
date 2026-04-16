@@ -194,7 +194,6 @@ Suggested fields:
 - `cover_image`
 - `registration_mode`
 - `registration_url`
-- `registration_note`
 - `status`
 - `published_at`
 - `seo_title`

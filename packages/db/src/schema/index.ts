@@ -266,7 +266,6 @@ export const events = pgTable('events', {
   coverAssetId: uuid('cover_asset_id').references(() => assets.id, { onDelete: 'set null' }),
   registrationMode: text('registration_mode').notNull(),
   registrationUrl: text('registration_url'),
-  registrationNote: text('registration_note'),
   tagsJson: jsonb('tags_json').notNull(),
   seoTitle: text('seo_title'),
   seoDescription: text('seo_description'),
