@@ -213,21 +213,19 @@ onMounted(() => void loadRecord());
 <template>
   <section class="stacked-gap">
     <header class="page-header event-page-header">
-      <div class="page-header-row">
-        <div>
-          <h2>{{ pageTitle }}</h2>
-        </div>
+      <div class="event-page-header-main">
+        <h2>{{ pageTitle }}</h2>
+      </div>
 
-        <div class="page-actions">
-          <RouterLink class="button-link" to="/events">返回列表</RouterLink>
-          <button :class="saveButtonClass" type="button" :disabled="loading || saving || actioning" @click="save">
-            {{ saving ? '保存中…' : saveButtonLabel }}
-          </button>
-          <button v-if="canPublish" class="button-link button-primary" type="button" :disabled="loading || saving || actioning" @click="publish">
-            {{ actioning ? '发布中…' : '发布' }}
-          </button>
-          <button v-if="canArchive" class="button-link button-danger" type="button" :disabled="saving || actioning" @click="runAction('archive')">归档</button>
-        </div>
+      <div class="page-actions event-page-header-actions">
+        <RouterLink class="button-link" to="/events">返回列表</RouterLink>
+        <button :class="saveButtonClass" type="button" :disabled="loading || saving || actioning" @click="save">
+          {{ saving ? '保存中…' : saveButtonLabel }}
+        </button>
+        <button v-if="canPublish" class="button-link button-primary" type="button" :disabled="loading || saving || actioning" @click="publish">
+          {{ actioning ? '发布中…' : '发布' }}
+        </button>
+        <button v-if="canArchive" class="button-link button-danger" type="button" :disabled="saving || actioning" @click="runAction('archive')">归档</button>
       </div>
 
       <div class="event-header-support">
@@ -354,6 +352,20 @@ onMounted(() => void loadRecord());
 </template>
 
 <style scoped>
+.event-page-header {
+  grid-template-columns: minmax(0, 2.48fr) minmax(260px, 0.9fr);
+  gap: 0.38rem 0.8rem;
+  align-items: start;
+}
+
+.event-page-header-main {
+  min-width: 0;
+}
+
+.event-page-header-actions {
+  grid-column: 2;
+}
+
 .event-editor-layout {
   grid-template-columns: minmax(0, 2.48fr) minmax(260px, 0.9fr);
 }
@@ -364,11 +376,11 @@ onMounted(() => void loadRecord());
 
 .event-header-support {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: baseline;
   justify-content: space-between;
   gap: 0.45rem 0.8rem;
-  margin-top: 0.38rem;
+  min-width: 0;
 }
 
 .event-header-meta {
@@ -410,8 +422,24 @@ onMounted(() => void loadRecord());
 }
 
 @media (max-width: 1280px) {
+  .event-page-header,
   .event-editor-layout {
     grid-template-columns: minmax(0, 2.18fr) minmax(240px, 0.92fr);
+  }
+}
+
+@media (max-width: 980px) {
+  .event-page-header {
+    grid-template-columns: 1fr;
+  }
+
+  .event-page-header-actions {
+    grid-column: auto;
+    justify-content: flex-start;
+  }
+
+  .event-header-support {
+    flex-wrap: wrap;
   }
 }
 
