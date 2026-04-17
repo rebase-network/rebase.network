@@ -1,30 +1,21 @@
 # Rebase Community Website
 
-This repository contains the Rebase community website and internal admin workspace.
+This repository contains the Rebase public website, the internal admin workspace, and the shared backend services that support both surfaces.
 
-The repository covers two parallel deliverables:
+## What Lives In This Repo
 
-- a public Rebase website for readers
-- a custom Rebase admin workspace for community operators
+- public site for readers in `apps/web`
+- admin workspace for operators in `apps/admin`
+- API and auth services in `apps/api`
+- shared database, contracts, and UI packages in `packages/*`
+- local and deployment scripts in `scripts/*` and `infra/*`
 
-## Target V1 Architecture
+## Current V1 Direction
 
-- frontend: Astro
-- public runtime and deployment: Cloudflare Workers
-- admin frontend: Vue
-- admin and public API: Hono
-- auth: Better Auth
-- primary database: PostgreSQL
-- database toolkit: Drizzle
-- media storage: Cloudflare R2
-- visual direction: community media
-- editorial format: structured fields plus Markdown bodies
+Rebase V1 is a content platform rather than a complex business platform.
 
-## Key Decisions
-
-- V1 is a content platform, not a complex business platform
-- readers do not need to log in
-- staff log in through a custom admin workspace
+- readers do not log in
+- staff operate through a custom admin workspace
 - event registration is out of scope for V1
 - GeekDaily search is in scope for V1
 - RSS feeds are in scope for V1
@@ -32,90 +23,114 @@ The repository covers two parallel deliverables:
 - GeekDaily detail URLs use `/geekdaily/geekdaily-{episode-number}`
 - GeekDaily titles default to `极客日报#{episode-number}` during migration
 - RSS feeds default to the latest 3 items per feed in V1
-- the admin experience is task-oriented and Rebase-specific, not collection-oriented
 
-## Documentation
+## Stack At A Glance
 
-- `DESIGN.md`: design-document index for the repository
-- `apps/web/design_principles.md`: public-site design intent, interaction rules, and content hierarchy guidance
-- `apps/web/DESIGN.md`: public-site hard spec in DESIGN.md format
-- `apps/admin/design_principles.md`: admin UX intent, density rules, and operator workflow guidance
-- `apps/admin/DESIGN.md`: admin hard spec in DESIGN.md format
-- `docs/v1-scope.md`: V1 goals, scope, and non-goals
-- `docs/architecture.md`: target system architecture, deployment, caching, and runtime decisions
-- `docs/content-model.md`: public content domains, field design, and URL conventions
-- `docs/admin-architecture.md`: custom admin and API architecture for Rebase operators
-- `docs/admin-information-architecture.md`: admin modules, operator workflows, and task-oriented UI structure
-- `docs/admin-data-model.md`: backend tables, relations, constraints, and workflow states
-- `docs/implementation-plan.md`: development phases and milestone plan
-- `docs/acceptance-criteria.md`: module-level acceptance criteria for product, content, and operations
-- `docs/quality-assurance.md`: development validation standards and smoke checks
-- `docs/local-development.md`: local setup, daily commands, and archive import notes
-- `docs/deployment.md`: operator handbook
-- `docs/production-config.md`: production settings index
-- `docs/launch-checklist.md`: release verification checklist
+- public frontend: Astro
+- public runtime: Cloudflare Workers
+- admin frontend: Vue
+- API runtime: Hono
+- auth: Better Auth
+- primary database: PostgreSQL
+- ORM and migrations: Drizzle
+- media storage: Cloudflare R2
 
-## Local Development
+## Quick Start
 
-Current reality in this repository:
-
-- the public Astro site is implemented and runnable today
-- the custom admin workspace and Hono API are the primary local stack
-- PostgreSQL, Drizzle seed data, and the bootstrapped operator account are all runnable from this repo
-
-Install dependencies:
+1. Install the recommended Node version.
+2. Enable Corepack and the pinned pnpm version.
+3. Copy `.env.example` to `.env`.
+4. Install dependencies.
+5. Bootstrap the local stack.
+6. Start the development services.
 
 ```bash
-pnpm install
-```
-
-Bootstrap the custom local stack:
-
-```bash
+nvm install
+nvm use
+corepack enable
+corepack prepare pnpm@10.6.5 --activate
 cp .env.example .env
+pnpm install
 pnpm local:bootstrap
+pnpm dev:stack
 ```
 
-Useful current commands:
+`pnpm local:bootstrap` starts PostgreSQL, applies migrations, seeds baseline content, and creates the default local admin account.
 
-- `pnpm local:bootstrap`: start PostgreSQL, apply migrations, seed content, and bootstrap the default admin account
-- `pnpm dev:stack`: run API, admin, and web together
-- `pnpm dev:public`: run API and the public site
-- `pnpm dev:ops`: run API and the admin workspace
-- `pnpm dev:admin`: run the Vue-based admin foundation locally
-- `pnpm dev:api`: run the Hono API foundation locally
-- `pnpm dev:web`: run the Astro public site locally
-- `pnpm build:admin`: build the admin frontend
-- `pnpm build:api`: build the API service
-- `pnpm typecheck:admin`: typecheck the admin app
-- `pnpm typecheck:api`: typecheck the API app
-- `pnpm db:up`: start PostgreSQL only
-- `pnpm db:migrate`: apply Drizzle migrations
-- `pnpm db:seed`: seed baseline content and load the GeekDaily archive when `geekdaily.csv` is available
-- `pnpm admin:bootstrap`: create or refresh the default local operator account
-- `pnpm test:smoke`: run Playwright smoke checks against the current build flow
-
-Local service ports:
+## Local Services
 
 - public site: `http://127.0.0.1:4321`
-- admin: `http://127.0.0.1:5174`
+- admin workspace: `http://127.0.0.1:5174`
 - API: `http://127.0.0.1:8788`
 - PostgreSQL: `127.0.0.1:55433`
 
-Default local operator account after `pnpm local:bootstrap`:
+Default local admin credentials after `pnpm local:bootstrap` or `pnpm admin:bootstrap`:
 
 - email: `admin@rebase.local`
 - password: `RebaseAdmin123456!`
+- display name: `Rebase Super Admin`
 
-If you have an archived or refreshed `geekdaily.csv`, re-run the seed step to reload GeekDaily history into the local database:
+These values come from `DEV_ADMIN_EMAIL`, `DEV_ADMIN_PASSWORD`, and `DEV_ADMIN_NAME` in `.env`. If you change them, re-run `pnpm admin:bootstrap` to refresh the local account.
 
-```bash
-pnpm db:seed
-```
+## Common Commands
 
-## Production Docs
+- `pnpm local:bootstrap`: start PostgreSQL, apply migrations, seed content, and bootstrap the local admin account
+- `pnpm dev:stack`: run API, admin, and web together
+- `pnpm dev:public`: run API and the public site
+- `pnpm dev:ops`: run API and the admin workspace
+- `pnpm dev:web`: run the Astro public site
+- `pnpm dev:admin`: run the Vue admin workspace
+- `pnpm dev:api`: run the Hono API
+- `pnpm db:up`: start PostgreSQL only
+- `pnpm db:migrate`: apply Drizzle migrations
+- `pnpm db:seed`: reseed baseline content and import `geekdaily.csv` when available
+- `pnpm admin:bootstrap`: recreate or refresh the local admin account
+- `pnpm test:smoke`: run Playwright smoke checks
 
-Use these docs as the entry points:
+## Repository Layout
+
+- `apps/web`: public website
+- `apps/admin`: internal admin workspace
+- `apps/api`: API, auth, and admin bootstrap script
+- `packages/db`: Drizzle schema, migrations, and seed data
+- `packages/shared`: shared validation and contracts
+- `packages/types`: shared types
+- `packages/ui`: shared UI building blocks
+- `infra/postgres`: local PostgreSQL container setup
+- `infra/production`: production deployment configuration
+- `tests/smoke`: Playwright smoke coverage
+
+## Documentation Guide
+
+Start here when you need project context:
+
+- `README.md`: repository overview and quick start
+- `DESIGN.md`: design-document index for the repository
+- `docs/v1-scope.md`: V1 goals, scope, and non-goals
+- `docs/local-development.md`: local setup, commands, and archive import notes
+
+Product, content, and delivery:
+
+- `docs/content-model.md`: public content domains, field rules, and URL conventions
+- `docs/implementation-plan.md`: delivery phases and milestone expectations
+- `docs/acceptance-criteria.md`: product and module-level acceptance criteria
+- `docs/quality-assurance.md`: validation standards and smoke-check expectations
+
+Engineering and admin architecture:
+
+- `docs/architecture.md`: system architecture, deployment, caching, and runtime decisions
+- `docs/admin-architecture.md`: custom admin, API, auth, and media architecture
+- `docs/admin-information-architecture.md`: operator workflows and admin module structure
+- `docs/admin-data-model.md`: backend tables, workflow states, and validation-critical constraints
+
+Design references:
+
+- `apps/web/design_principles.md`: public-site design intent and interaction rules
+- `apps/web/DESIGN.md`: public-site visual specification
+- `apps/admin/design_principles.md`: admin UX intent and workflow guidance
+- `apps/admin/DESIGN.md`: admin visual specification
+
+Operations and release:
 
 - `docs/deployment.md`: operator handbook
 - `docs/production-config.md`: production settings index

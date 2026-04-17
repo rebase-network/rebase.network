@@ -56,10 +56,27 @@ pnpm local:bootstrap
 - seed baseline site content and the GeekDaily archive
 - bootstrap the default local admin account
 
-Default local operator credentials:
+## Local Admin Account
+
+`pnpm local:bootstrap` and `pnpm admin:bootstrap` read the local admin identity from `.env`:
+
+- `DEV_ADMIN_EMAIL`
+- `DEV_ADMIN_PASSWORD`
+- `DEV_ADMIN_NAME`
+
+If you keep the values from `.env.example`, the default local operator account is:
 
 - email: `admin@rebase.local`
 - password: `RebaseAdmin123456!`
+- display name: `Rebase Super Admin`
+
+If you change any of these values later, re-run:
+
+```bash
+pnpm admin:bootstrap
+```
+
+This refreshes the credential login and local staff profile used by the admin workspace.
 
 ## Node And Package Manager Conventions
 
