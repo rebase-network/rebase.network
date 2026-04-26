@@ -66,6 +66,18 @@ interface GeekDailyArchiveOverviewPayload {
   featuredTags: string[];
 }
 
+interface GeekDailyArchivePayload {
+  data: PublicGeekDailyPreviewPayload[];
+  meta: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+    hasPrevPage: boolean;
+    hasNextPage: boolean;
+  };
+}
+
 interface HomeFeedPayload {
   latestGeekDaily: PublicGeekDailyEpisodePayload | null;
   recentArticles: Article[];
@@ -136,6 +148,35 @@ const mapGeekDailyEpisodePreview = (episode: PublicGeekDailyPreviewPayload): Gee
   })),
 });
 
+const countOccurrences = (value: string, pattern: string) => value.split(pattern).length - 1;
+
+const normalizeSummary = (summary: string) => {
+  let value = summary.trim();
+
+  if (!value) {
+    return value;
+  }
+
+  if (countOccurrences(value, '“') > countOccurrences(value, '”')) {
+    value += '”';
+  }
+
+  if (countOccurrences(value, '‘') > countOccurrences(value, '’')) {
+    value += '’';
+  }
+
+  if (!/[。！？!?…）)”’]$/u.test(value)) {
+    value += '…';
+  }
+
+  return value;
+};
+
+const mapArticle = (article: Article): Article => ({
+  ...article,
+  summary: normalizeSummary(article.summary),
+});
+
 export async function getSiteSettings() {
   return mapSiteSettings(await fetchPublicApi<PublicSiteConfigPayload>('/api/public/v1/site-config'));
 }
@@ -145,7 +186,8 @@ export async function getAboutContent(): Promise<AboutContent> {
 }
 
 export async function getArticles(): Promise<Article[]> {
-  return fetchPublicApi<Article[]>('/api/public/v1/articles');
+  const articles = await fetchPublicApi<Article[]>('/api/public/v1/articles');
+  return articles.map(mapArticle);
 }
 
 export async function getArticleByPublicNumber(publicNumber: number | undefined) {
@@ -154,7 +196,7 @@ export async function getArticleByPublicNumber(publicNumber: number | undefined)
   }
 
   try {
-    return await fetchPublicApi<Article>(`/api/public/v1/articles/${publicNumber}`);
+    return mapArticle(await fetchPublicApi<Article>(`/api/public/v1/articles/${publicNumber}`));
   } catch {
     return undefined;
   }
@@ -220,6 +262,37 @@ export async function getGeekDailyEpisodes(limit = -1): Promise<GeekDailyEpisode
   return episodes.map(mapGeekDailyEpisodePreview);
 }
 
+export async function getGeekDailyArchivePage({
+  page = 1,
+  pageSize = 10,
+  tag,
+  year,
+}: {
+  page?: number;
+  pageSize?: number;
+  tag?: string;
+  year?: string;
+} = {}) {
+  const params = new URLSearchParams();
+  params.set('page', String(page));
+  params.set('pageSize', String(pageSize));
+
+  if (tag) {
+    params.set('tag', tag);
+  }
+
+  if (year) {
+    params.set('year', year);
+  }
+
+  const payload = await fetchPublicApi<GeekDailyArchivePayload>(`/api/public/v1/geekdaily/archive?${params.toString()}`);
+
+  return {
+    data: payload.data.map(mapGeekDailyEpisodePreview),
+    meta: payload.meta,
+  };
+}
+
 export async function getGeekDailyEpisodeBySlug(slug: string) {
   try {
     return mapGeekDailyEpisode(await fetchPublicApi<PublicGeekDailyEpisodePayload>(`/api/public/v1/geekdaily/${slug}`));
@@ -233,7 +306,8 @@ export async function getGeekDailyArchiveOverview() {
 }
 
 export async function getLatestArticles(count = 3) {
-  return fetchPublicApi<Article[]>(`/api/public/v1/articles?limit=${count}`);
+  const articles = await fetchPublicApi<Article[]>(`/api/public/v1/articles?limit=${count}`);
+  return articles.map(mapArticle);
 }
 
 export async function getLatestJobs(count = 3) {
@@ -257,7 +331,7 @@ export async function getHomeFeed() {
   const payload = await fetchPublicApi<HomeFeedPayload>('/api/public/v1/home');
 
   return {
-    latestArticles: payload.recentArticles,
+    latestArticles: payload.recentArticles.map(mapArticle),
     latestJobs: payload.recentJobs,
     latestEvents: payload.upcomingEvents,
     latestGeekDaily: payload.latestGeekDaily ? mapGeekDailyEpisode(payload.latestGeekDaily) : undefined,

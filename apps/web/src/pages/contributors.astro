@@ -26,6 +26,22 @@ const contributorOverview = [
   },
 ];
 
+const seenContributorSlugs = new Set<string>();
+const displayGroups = groups.map((group) => {
+  const contributors = group.contributors.filter((contributor) => {
+    if (seenContributorSlugs.has(contributor.slug)) {
+      return false;
+    }
+    seenContributorSlugs.add(contributor.slug);
+    return true;
+  });
+
+  return {
+    ...group,
+    contributors,
+  };
+});
+
 const roleGuides: Record<string, { overview: string; joinHint: string; joinLabel: string; joinHref: string }> = {
   volunteers: {
     overview: '负责把社区里的内容、活动与协作真正推进下去，包括活动组织、内容整理、页面维护与公开发布。',
@@ -49,10 +65,20 @@ const roleGuides: Record<string, { overview: string; joinHint: string; joinLabel
 >
   <section class="shell page-hero single">
     <article class="hero-panel card contributors-hero">
-      <h1 class="hero-title">社区不是抽象概念，它总是由具体的人把内容、活动和协作推着往前走。</h1>
+      <h1 class="hero-title">贡献者</h1>
       <p class="hero-summary">
-        Rebase 社区完全由贡献者们推动，在社区中，每一次栏目更新、活动组织、内容撰写、项目组建、社区工具以及相应的代码贡献都是由大家贡献，每一次社区内的思想碰撞和新的探索都来源于贡献者们的一次次尝试。每个人的小小贡献汇聚成社区里的点点滴滴，社区正是由这点点滴滴的进步慢慢成长为大家交流的平台。
+        Rebase 由志愿者、编辑和长期协作者共同维护。内容整理、活动组织、日报推荐、网站维护和社区协作，都会在这里被记录。
       </p>
+      <div class="button-row">
+        <a
+          class="button-link"
+          href={collaborationLink}
+          target={isExternalLink(collaborationLink) ? '_blank' : undefined}
+          rel={isExternalLink(collaborationLink) ? 'noreferrer' : undefined}
+        >
+          了解如何参与 <span>↗</span>
+        </a>
+      </div>
       <div class="hero-overview" aria-label="贡献者页面概览">
         {contributorOverview.map((item) => (
           <article>
@@ -65,7 +91,7 @@ const roleGuides: Record<string, { overview: string; joinHint: string; joinLabel
   </section>
 
   <section class="shell page-section contributor-groups">
-    {groups.map((group, index) => (
+    {displayGroups.map((group, index) => (
       <section id={group.role.slug} class:list={['group-block', 'card', index % 2 === 0 ? 'tone-warm' : 'tone-cool']}>
         <div class="group-head">
           <div>
@@ -128,7 +154,7 @@ const roleGuides: Record<string, { overview: string; joinHint: string; joinLabel
     position: absolute;
     top: 1rem;
     right: 1.25rem;
-    color: rgba(17, 94, 89, 0.08);
+    color: rgba(17, 94, 89, 0.025);
     font-family: var(--display-font);
     font-size: clamp(4rem, 8vw, 6.8rem);
     letter-spacing: 0.08em;

@@ -111,17 +111,17 @@ if (!article) {
   }
 
   :global(.article-hero) {
-    color: white;
     padding: 1.05rem 1.2rem 0.92rem;
     background:
-      linear-gradient(135deg, rgba(12, 23, 22, 0.72), rgba(12, 23, 22, 0.3)),
+      radial-gradient(circle at top right, rgba(243, 196, 110, 0.14), transparent 24%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 250, 0.9)),
       var(--article-accent);
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 28px 60px rgba(23, 32, 29, 0.22);
+    border-color: rgba(15, 118, 110, 0.12);
+    box-shadow: var(--shadow-soft);
   }
 
   :global(.article-hero .light) {
-    color: white;
+    color: var(--text);
   }
 
   :global(.article-hero .detail-topline) {
@@ -149,7 +149,8 @@ if (!article) {
     background: transparent;
     font-size: 0.66rem;
     letter-spacing: 0.14em;
-    opacity: 0.58;
+    color: var(--accent-strong);
+    opacity: 0.72;
   }
 
   :global(.article-hero .hero-title) {
@@ -172,12 +173,14 @@ if (!article) {
     font-size: 0.62rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    opacity: 0.42;
+    color: var(--accent-strong);
+    opacity: 0.72;
   }
 
   :global(.article-hero .hero-summary) {
     max-width: 56ch;
     margin-top: 0.58rem;
+    color: var(--muted);
     font-size: 0.95rem;
     line-height: 1.58;
   }
@@ -203,7 +206,8 @@ if (!article) {
     background: transparent;
     font-size: 0.74rem;
     letter-spacing: 0.08em;
-    opacity: 0.92;
+    color: var(--muted);
+    opacity: 1;
   }
 
   :global(.article-hero .detail-meta-pill:not(:last-child)::after) {
@@ -219,8 +223,8 @@ if (!article) {
 
   :global(.article-hero .button-link.secondary) {
     padding: 0.34rem 0.7rem;
-    border-color: rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(15, 118, 110, 0.14);
+    background: rgba(255, 255, 255, 0.58);
     font-size: 0.69rem;
     letter-spacing: 0.06em;
   }

@@ -6,14 +6,12 @@ const expectStyledEpisodeCard = async (page: Page) => {
     return {
       display: computed.display,
       position: computed.position,
-      padding: computed.padding,
       backgroundImage: computed.backgroundImage,
     };
   });
 
   expect(styles.display).toBe('grid');
   expect(styles.position).toBe('relative');
-  expect(styles.padding).toBe('19.2px');
   expect(styles.backgroundImage).toContain('linear-gradient');
 };
 
@@ -37,14 +35,13 @@ test('GeekDaily search supports episode lookup and empty state', async ({ page }
 
 test('GeekDaily cards keep styles after pagination and filtering', async ({ page }) => {
   await page.goto('/geekdaily');
-  await expect(page.locator('.edition-chip')).toHaveText('Issue Archive');
-  await expect(
-    page.locator('.geekdaily-archive-hero').evaluate((element) => window.getComputedStyle(element, '::before').content),
-  ).resolves.toContain('GEEKDAILY');
+  await expect(page.getByRole('heading', { level: 1, name: 'Rebase 极客日报' })).toBeVisible();
   await expect(page.locator('.episode-card').first()).toBeVisible();
   await expectStyledEpisodeCard(page);
 
-  await page.getByRole('button', { name: '下一页' }).click();
+  const nextPage = page.getByRole('link', { name: '下一页' });
+  await expect(nextPage).toHaveAttribute('href', /page=2/);
+  await nextPage.click();
   await expect(page.locator('#pager-label')).toContainText('第 2 /');
   await expect(page.locator('.episode-card').first()).toBeVisible();
   await expectStyledEpisodeCard(page);

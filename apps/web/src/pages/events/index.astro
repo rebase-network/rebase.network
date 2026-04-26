@@ -15,6 +15,14 @@ const [site, upcomingEvents, pastEvents] = await Promise.all([
 
 const leadUpcomingEvent = upcomingEvents[0];
 const remainingUpcomingEvents = leadUpcomingEvent ? upcomingEvents.slice(1) : [];
+const pastEventGroups = Object.entries(
+  pastEvents.reduce<Record<string, typeof pastEvents>>((groups, event) => {
+    const year = new Intl.DateTimeFormat('zh-CN', { year: 'numeric', timeZone: 'Asia/Shanghai' }).format(new Date(event.startAt));
+    groups[year] = groups[year] ?? [];
+    groups[year].push(event);
+    return groups;
+  }, {}),
+).sort(([leftYear], [rightYear]) => Number(rightYear) - Number(leftYear));
 const featureEventBadge = leadUpcomingEvent ? (leadUpcomingEvent.registrationUrl ? '正在报名' : '即将开始') : '';
 const featureEventTime = leadUpcomingEvent
   ? `${new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Shanghai' }).format(new Date(leadUpcomingEvent.startAt))} - ${new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Shanghai' }).format(new Date(leadUpcomingEvent.endAt))}`
@@ -45,8 +53,8 @@ const heroSecondaryAction = leadUpcomingEvent
 <BaseLayout site={site} title="Rebase 活动" description="查看 Rebase 社区的当前活动与历史活动归档。">
   <section class="shell page-hero events-hero-layout">
     <article class="hero-panel card events-hero">
-      <h1 class="hero-title">人与人的联系就藏在交流的那一瞬间，每一场活动都是窥探新世界的机遇</h1>
-      <p class="hero-summary">在此页面展示 Rebase 社区里的活动，其他社区发起、Rebase 社区配合宣传和组织的活动也会展示在这里。任何社区希望 Rebase 社区能够一起合作的活动都可以提交，我们将有志愿者编辑负责整理和发布。</p>
+      <h1 class="hero-title">社区活动</h1>
+      <p class="hero-summary">这里展示 Rebase 社区主办、参与和协助传播的活动。你可以查看近期活动，也可以回看历史活动归档。</p>
       <div class="button-row">
         <a class="button-link" href="https://github.com/rebase-network/event-pool/issues" target="_blank" rel="noreferrer">提交活动 <span>↗</span></a>
         <a class="button-link secondary" href="/events/rss.xml">订阅 RSS <span>↗</span></a>
@@ -117,8 +125,18 @@ const heroSecondaryAction = leadUpcomingEvent
   <section id="event-archive" class="shell page-section">
     <SectionHeader title="历史活动" />
     {pastEvents.length > 0 ? (
-      <div class="grid-3">
-        {pastEvents.map((event) => <EventCard event={event} compact />)}
+      <div class="event-year-groups">
+        {pastEventGroups.map(([year, events]) => (
+          <section class="event-year-group" aria-labelledby={`event-year-${year}`}>
+            <div class="event-year-heading">
+              <h3 id={`event-year-${year}`}>{year}</h3>
+              <span>{events.length} 场活动</span>
+            </div>
+            <div class="grid-3">
+              {events.map((event) => <EventCard event={event} compact />)}
+            </div>
+          </section>
+        ))}
       </div>
     ) : (
       <ListEmptyState
@@ -150,7 +168,7 @@ const heroSecondaryAction = leadUpcomingEvent
     position: absolute;
     top: 0.95rem;
     right: 1.15rem;
-    color: rgba(17, 94, 89, 0.065);
+    color: rgba(17, 94, 89, 0.025);
     font-family: var(--display-font);
     font-size: clamp(3.2rem, 6vw, 5.6rem);
     letter-spacing: 0.08em;
@@ -176,7 +194,7 @@ const heroSecondaryAction = leadUpcomingEvent
     gap: 0.9rem;
     padding: 1.25rem;
     border-color: rgba(15, 118, 110, 0.12);
-    box-shadow: 0 24px 48px rgba(26, 40, 34, 0.1);
+    box-shadow: var(--shadow-soft);
   }
 
   .event-spotlight {
@@ -271,7 +289,7 @@ const heroSecondaryAction = leadUpcomingEvent
     font-size: 0.68rem;
     font-weight: 800;
     letter-spacing: 0.12em;
-    text-transform: uppercase;
+    text-transform: none;
   }
 
   .event-spotlight-date-block {
@@ -336,6 +354,39 @@ const heroSecondaryAction = leadUpcomingEvent
     flex-wrap: wrap;
     gap: 0.55rem;
     margin-top: 0;
+  }
+
+  .event-year-groups {
+    display: grid;
+    gap: 1.35rem;
+  }
+
+  .event-year-group {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .event-year-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .event-year-heading h3,
+  .event-year-heading span {
+    margin: 0;
+  }
+
+  .event-year-heading h3 {
+    font-size: clamp(1.35rem, 1.8vw, 1.8rem);
+  }
+
+  .event-year-heading span {
+    color: var(--muted);
+    font-size: 0.92rem;
   }
 
   .event-spotlight-actions .button-link {

@@ -23,7 +23,7 @@ const isHistoricalContributor = contributor.activityStatus === 'inactive';
   {contributor.avatarUrl ? (
     <img class="avatar image" src={contributor.avatarUrl} alt={`${contributor.name} 头像`} loading="lazy" />
   ) : (
-    <div class="avatar" style={`background:${avatarBackground}`}>
+    <div class="avatar avatar-placeholder" style={`--avatar-tint:${avatarBackground}`}>
       <span>{contributor.name.slice(0, 1)}</span>
     </div>
   )}
@@ -67,7 +67,7 @@ const isHistoricalContributor = contributor.activityStatus === 'inactive';
 
   .contributor-card:hover,
   .contributor-card:focus-within {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     border-color: rgba(15, 118, 110, 0.18);
     box-shadow: var(--shadow-strong);
   }
@@ -82,6 +82,13 @@ const isHistoricalContributor = contributor.activityStatus === 'inactive';
     font-size: 1.35rem;
     font-weight: 800;
     box-shadow: 0 16px 32px rgba(26, 40, 34, 0.12);
+  }
+
+  .avatar-placeholder {
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.02)),
+      var(--avatar-tint);
+    opacity: 0.86;
   }
 
   .image {

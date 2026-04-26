@@ -14,15 +14,21 @@ const related = event ? events.filter((item) => item.publicNumber !== event.publ
 const eventStatusLabel = event ? (event.status === 'upcoming' ? '即将举办' : '活动归档') : '';
 const eventLocationLine = event ? [event.location, event.venue].filter(Boolean).join(' · ') : '';
 const eventHeroMeta = event ? [formatEventWindow(event.startAt, event.endAt), eventLocationLine].filter(Boolean) : [];
+const eventCanRegister = Boolean(event?.registrationUrl && event.status === 'upcoming');
+const eventHasHistoricLink = Boolean(event?.registrationUrl && event.status === 'past');
+const eventLinkLabel = eventCanRegister ? '打开报名链接' : '查看历史活动链接';
+const eventActionTitle = eventCanRegister ? '报名方式' : eventHasHistoricLink ? '活动链接' : '参与方式';
 const eventRegistrationCopy = event
-  ? event.registrationUrl
-    ? '报名请使用公开链接，更多参与方式请查看正文中的活动说明。'
-    : '报名方式请查看正文中的活动说明，或以后续公告为准。'
+  ? eventCanRegister
+    ? '请通过公开链接报名，更多参与方式请查看正文中的活动说明。'
+    : eventHasHistoricLink
+      ? '这是历史活动，链接仅作为活动归档参考。'
+      : '参与方式请查看正文中的活动说明，或以后续公告为准。'
   : '';
 const eventHeroActions = event
   ? [
-      ...(event.registrationUrl
-        ? [{ href: event.registrationUrl, label: '立即报名', external: true, showIcon: true }]
+      ...(eventCanRegister
+        ? [{ href: event.registrationUrl!, label: '立即报名', external: true, showIcon: true }]
         : []),
     ]
   : [];
@@ -85,7 +91,7 @@ if (!event) {
           </section>
 
           <section id="event-registration" class="detail-sidebar-section">
-            <h2>报名方式</h2>
+            <h2>{eventActionTitle}</h2>
             <p class="detail-sidebar-copy">
               {eventRegistrationCopy}
             </p>
@@ -93,7 +99,7 @@ if (!event) {
               <ul class="detail-sidebar-list">
                 <li>
                   <a href={event.registrationUrl} target="_blank" rel="noreferrer">
-                    打开报名链接
+                    {eventLinkLabel}
                   </a>
                 </li>
               </ul>
@@ -138,13 +144,12 @@ if (!event) {
   }
 
   :global(.event-hero) {
-    color: white;
     padding: 1.05rem 1.2rem 0.92rem;
     background:
-      radial-gradient(circle at top right, rgba(245, 158, 11, 0.26), transparent 24%),
-      linear-gradient(135deg, rgba(16, 37, 34, 0.98), rgba(17, 94, 89, 0.92));
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 28px 60px rgba(16, 37, 34, 0.24);
+      radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 252, 250, 0.9));
+    border-color: rgba(15, 118, 110, 0.12);
+    box-shadow: var(--shadow-soft);
   }
 
   :global(.event-hero .hero-title) {
@@ -167,7 +172,8 @@ if (!event) {
     font-size: 0.64rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    opacity: 0.44;
+    color: var(--accent-strong);
+    opacity: 0.72;
   }
 
   :global(.event-hero .hero-summary) {
@@ -198,7 +204,8 @@ if (!event) {
     background: transparent;
     font-size: 0.74rem;
     letter-spacing: 0.08em;
-    opacity: 0.92;
+    color: var(--muted);
+    opacity: 1;
   }
 
   :global(.event-hero .detail-meta-pill:not(:last-child)::after) {
@@ -219,8 +226,8 @@ if (!event) {
   }
 
   :global(.event-hero .button-link.secondary) {
-    border-color: rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(15, 118, 110, 0.14);
+    background: rgba(255, 255, 255, 0.58);
   }
 
   .event-detail {

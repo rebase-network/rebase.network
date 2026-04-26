@@ -17,10 +17,9 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
 <BaseLayout site={site} title="Rebase 文章" description="浏览 Rebase 社区发布的文章、复盘与方法总结。">
   <section class:list={['shell', 'page-hero', 'article-hero-layout', !leadArticle && 'single']}>
     <article class="hero-panel card articles-hero">
-      <h1 class="hero-title">记录最新观点，思想的碰撞总是闪耀的，灵魂的交流总是感动的</h1>
-      <p class="hero-summary">把社区里的想法和尝试整理成可以继续阅读的文章，也接受大家推荐一些优秀的内容或将自己的文章发布到社区里。欢迎任何人投递文章！社区志愿将定期整理投递的文章，并发表在Rebase社区微信公众号和网站上</p>
+      <h1 class="hero-title">社区文章</h1>
+      <p class="hero-summary">把社区里的想法、复盘和方法整理成可以继续阅读的文章。欢迎推荐好内容，也欢迎把自己的文章投递给社区志愿者整理发布。</p>
       <div class="button-row article-hero-actions">
-        <span class="button-link secondary is-disabled" aria-disabled="true" title="推荐文章入口即将开放">推荐文章</span>
         <a class="button-link" href="/articles/rss.xml">订阅 RSS <span>↗</span></a>
       </div>
     </article>
@@ -39,6 +38,7 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
           <h2>
             <a href={getArticlePath(leadArticle.publicNumber, leadArticle.slug)}>{leadArticle.title}</a>
           </h2>
+          <p class="article-spotlight-summary">{leadArticle.summary}</p>
         </div>
       </article>
     )}
@@ -75,7 +75,7 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
     position: absolute;
     top: 0.95rem;
     right: 1.15rem;
-    color: rgba(17, 94, 89, 0.065);
+    color: rgba(17, 94, 89, 0.025);
     font-family: var(--display-font);
     font-size: clamp(3.2rem, 6vw, 5.6rem);
     letter-spacing: 0.08em;
@@ -128,7 +128,7 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
       radial-gradient(circle at top right, rgba(243, 196, 110, 0.16), transparent 24%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 251, 250, 0.94));
     border-color: rgba(15, 118, 110, 0.12);
-    box-shadow: 0 24px 48px rgba(26, 40, 34, 0.1);
+    box-shadow: var(--shadow-soft);
   }
 
   .article-spotlight-topline,
@@ -146,7 +146,8 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
   .article-spotlight-kicker,
   .article-spotlight-topline span,
   .article-spotlight-meta,
-  .article-spotlight-body h2 {
+  .article-spotlight-body h2,
+  .article-spotlight-summary {
     margin: 0;
   }
 
@@ -167,7 +168,7 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
   .article-spotlight-meta {
     font-size: 0.76rem;
     letter-spacing: 0.12em;
-    text-transform: uppercase;
+    text-transform: none;
   }
 
   .article-spotlight-kicker,
@@ -206,6 +207,15 @@ const leadAuthorLine = leadArticle?.authors.map((author) => author.name).filter(
   .article-spotlight-body h2 {
     font-size: clamp(1.45rem, 2vw, 2rem);
     line-height: 1.04;
+  }
+
+  .article-spotlight-summary {
+    color: var(--muted);
+    line-height: 1.66;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
   }
 
   .article-spotlight-body h2 a {

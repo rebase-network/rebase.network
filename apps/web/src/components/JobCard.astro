@@ -10,6 +10,10 @@ interface Props {
 
 const { job, compact = false } = Astro.props;
 const freshnessLabel = job.isExpired ? '已过期' : `更新 ${formatDate(job.updatedAt)}`;
+const normalizedCompanyName = job.companyName.trim();
+const companyName = normalizedCompanyName && !['/', '-', '—'].includes(normalizedCompanyName)
+  ? normalizedCompanyName
+  : '公司未公开';
 const formatWorkMode = (value: string) => {
   switch (value) {
     case 'full-time':
@@ -24,7 +28,7 @@ const formatWorkMode = (value: string) => {
 
 <a class:list={['job-card', 'card', { compact }]} href={getJobPath(job.publicNumber, job.slug)}>
   <div class="job-card-topline">
-    <p class="company-name">{job.companyName}</p>
+    <p class:list={['company-name', companyName === '公司未公开' && 'is-missing']}>{companyName}</p>
     <div class="job-card-flags">
       <span class:list={['job-state-flag', job.isExpired && 'is-expired']}>{freshnessLabel}</span>
       {job.supportsRemote && <strong class="remote-flag">远程</strong>}
@@ -57,7 +61,7 @@ const formatWorkMode = (value: string) => {
 
   .job-card:hover,
   .job-card:focus-visible {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     border-color: rgba(15, 118, 110, 0.18);
     box-shadow: var(--shadow-strong);
   }
@@ -72,8 +76,13 @@ const formatWorkMode = (value: string) => {
     color: var(--muted);
     font-size: 0.84rem;
     font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .job-card .company-name.is-missing {
+    color: rgba(92, 107, 115, 0.78);
+    font-weight: 600;
   }
 
   .job-card .job-card-flags {
@@ -107,8 +116,8 @@ const formatWorkMode = (value: string) => {
     margin: 0;
     background: rgba(15, 118, 110, 0.1);
     color: var(--accent-strong);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
   }
 
   .job-card h3 {
@@ -149,8 +158,8 @@ const formatWorkMode = (value: string) => {
   .job-card dt {
     color: var(--muted);
     font-size: 0.76rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
   }
 
   .job-card dd {

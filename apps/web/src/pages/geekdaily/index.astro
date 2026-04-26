@@ -1,17 +1,42 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getGeekDailyArchiveOverview, getGeekDailyEpisodes, getSiteSettings } from '@/lib/content';
+import { getGeekDailyArchiveOverview, getGeekDailyArchivePage, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 import { getGeekDailyPath } from '@/lib/paths';
 
 const pageSize = 10;
-const [site, overview, episodes] = await Promise.all([
+const rawInitialPage = Number(Astro.url.searchParams.get('page') ?? '1');
+const initialPage = Number.isFinite(rawInitialPage) && rawInitialPage > 0 ? Math.floor(rawInitialPage) : 1;
+const initialTag = Astro.url.searchParams.get('tag') ?? '';
+const initialYear = Astro.url.searchParams.get('year') ?? '';
+const [site, overview, archive] = await Promise.all([
   getSiteSettings(),
   getGeekDailyArchiveOverview(),
-  getGeekDailyEpisodes(pageSize),
+  getGeekDailyArchivePage({ page: initialPage, pageSize, tag: initialTag, year: initialYear }),
 ]);
+const episodes = archive.data;
+const archiveMeta = archive.meta;
 const years = overview.years;
 const featuredTags = overview.featuredTags;
+const initialActiveFilters = [initialTag && `标签 ${initialTag}`, initialYear && `年份 ${initialYear}`].filter(Boolean);
+const buildGeekDailyPageHref = (targetPage: number) => {
+  const params = new URLSearchParams();
+
+  if (initialTag) {
+    params.set('tag', initialTag);
+  }
+
+  if (initialYear) {
+    params.set('year', initialYear);
+  }
+
+  if (targetPage > 1) {
+    params.set('page', String(targetPage));
+  }
+
+  const queryString = params.toString();
+  return queryString ? `/geekdaily?${queryString}` : '/geekdaily';
+};
 
 Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
 ---
@@ -29,7 +54,6 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         由社区志愿者持续整理发布，每期收录值得关注的技术内容、推荐人和推荐语，方便你按期回看、检索与订阅。
       </p>
       <div class="button-row geekdaily-hero-actions">
-        <span class="button-link secondary is-disabled" aria-disabled="true" title="推荐内容入口即将开放">推荐内容 <span>↗</span></span>
         <a class="button-link" href="/geekdaily/rss.xml">订阅 RSS <span>↗</span></a>
       </div>
     </article>
@@ -93,8 +117,14 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
   <section class="shell page-section">
     <div class="results-head">
       <div id="results-status" role="status" aria-live="polite" aria-atomic="true">
-        <p id="results-count">共 {overview.totalEpisodes} 期</p>
-        <span id="results-state">默认展示最近 {pageSize} 期。</span>
+        <p id="results-count">{initialActiveFilters.length > 0 ? `找到 ${archiveMeta.totalItems} 期` : `共 ${overview.totalEpisodes} 期`}</p>
+        <span id="results-state">
+          {initialActiveFilters.length > 0
+            ? `当前条件：${initialActiveFilters.join(' · ')}`
+            : archiveMeta.page > 1
+              ? '按发布时间倒序浏览归档。'
+              : `默认展示最近 ${pageSize} 期。`}
+        </span>
       </div>
     </div>
 
@@ -115,9 +145,17 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
     </div>
 
     <div class="pager card" aria-label="GeekDaily 分页">
-      <button type="button" id="pager-prev" disabled>上一页</button>
-      <p id="pager-label">第 1 页</p>
-      <button type="button" id="pager-next" disabled={overview.totalEpisodes <= pageSize}>下一页</button>
+      {archiveMeta.hasPrevPage ? (
+        <a id="pager-prev" class="pager-link" href={buildGeekDailyPageHref(archiveMeta.page - 1)}>上一页</a>
+      ) : (
+        <a id="pager-prev" class="pager-link is-disabled" aria-disabled="true">上一页</a>
+      )}
+      <p id="pager-label">第 {archiveMeta.page} / {Math.max(archiveMeta.totalPages, 1)} 页</p>
+      {archiveMeta.hasNextPage ? (
+        <a id="pager-next" class="pager-link" href={buildGeekDailyPageHref(archiveMeta.page + 1)}>下一页</a>
+      ) : (
+        <a id="pager-next" class="pager-link is-disabled" aria-disabled="true">下一页</a>
+      )}
     </div>
   </section>
 
@@ -181,8 +219,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
     const totalEpisodes = Number(list?.dataset.totalEpisodes ?? '0');
     const count = document.querySelector<HTMLElement>('#results-count');
     const stateLabel = document.querySelector<HTMLElement>('#results-state');
-    const prevButton = document.querySelector<HTMLButtonElement>('#pager-prev');
-    const nextButton = document.querySelector<HTMLButtonElement>('#pager-next');
+    const prevButton = document.querySelector<HTMLElement>('#pager-prev');
+    const nextButton = document.querySelector<HTMLElement>('#pager-next');
     const pagerLabel = document.querySelector<HTMLElement>('#pager-label');
     const tagButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-tag]'));
     const yearButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-year]'));
@@ -205,7 +243,6 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       }).format(new Date(value));
 
     if (input && list && count && stateLabel && prevButton && nextButton && pagerLabel && resetButton) {
-      const defaultMarkup = list.innerHTML;
       let documentsPromise: Promise<SearchDocument[]> | undefined;
       const archivePageCache = new Map<string, Promise<ArchivePayload>>();
       let renderToken = 0;
@@ -239,6 +276,42 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 
       const buildActiveFilters = () =>
         [state.query && `搜索“${state.query}”`, state.tag && `标签 ${state.tag}`, state.year && `年份 ${state.year}`].filter(Boolean);
+
+      const buildUrlForPage = (targetPage: number) => {
+        const params = new URLSearchParams();
+
+        if (state.query) {
+          params.set('q', state.query);
+        }
+
+        if (state.tag) {
+          params.set('tag', state.tag);
+        }
+
+        if (state.year) {
+          params.set('year', state.year);
+        }
+
+        if (targetPage > 1) {
+          params.set('page', String(targetPage));
+        }
+
+        const queryString = params.toString();
+        return queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+      };
+
+      const setPagerLink = (element: HTMLElement, enabled: boolean, targetPage: number) => {
+        element.classList.toggle('is-disabled', !enabled);
+        element.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+
+        if (element instanceof HTMLAnchorElement) {
+          if (enabled) {
+            element.href = buildUrlForPage(targetPage);
+          } else {
+            element.removeAttribute('href');
+          }
+        }
+      };
 
       const renderEpisodeCards = (
         items: Array<{ episodeNumber: number; title: string; publishedAt: string; summary: string; editors: string[]; items: { title: string }[] }>,
@@ -302,9 +375,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
           params.delete('page');
         }
 
-        const queryString = params.toString();
-        const nextUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
-        window.history.replaceState({}, '', nextUrl);
+        window.history.replaceState({}, '', buildUrlForPage(state.page));
       };
 
       const hydrateFromUrl = () => {
@@ -318,16 +389,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
       };
 
       const restoreDefault = () => {
-        renderToken += 1;
-        list.innerHTML = defaultMarkup;
-        count.textContent = `共 ${totalEpisodes} 期`;
-        stateLabel.textContent = `默认展示最近 ${pageSize} 期。`;
-        pagerLabel.textContent = '第 1 页';
-        prevButton.disabled = true;
-        nextButton.disabled = totalEpisodes <= pageSize;
-        setBusyState(false);
-        syncControls();
-        updateUrl();
+        void loadAndRender();
       };
 
       const buildArchiveEndpoint = () => {
@@ -433,8 +495,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
               ? '按发布时间倒序浏览归档。'
               : `默认展示最近 ${pageSize} 期。`;
         pagerLabel.textContent = `第 ${payload.meta.page} / ${Math.max(payload.meta.totalPages, 1)} 页`;
-        prevButton.disabled = !payload.meta.hasPrevPage;
-        nextButton.disabled = !payload.meta.hasNextPage;
+        setPagerLink(prevButton, payload.meta.hasPrevPage, payload.meta.page - 1);
+        setPagerLink(nextButton, payload.meta.hasNextPage, payload.meta.page + 1);
 
         syncControls();
         updateUrl();
@@ -481,8 +543,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         count.textContent = activeFilters.length > 0 ? `找到 ${filtered.length} 期` : `共 ${documents.length} 期`;
         stateLabel.textContent = activeFilters.length > 0 ? `当前条件：${activeFilters.join(' · ')}` : `默认展示最近 ${pageSize} 期。`;
         pagerLabel.textContent = `第 ${state.page} / ${totalPages} 页`;
-        prevButton.disabled = state.page <= 1;
-        nextButton.disabled = state.page >= totalPages;
+        setPagerLink(prevButton, state.page > 1, state.page - 1);
+        setPagerLink(nextButton, state.page < totalPages, state.page + 1);
 
         syncControls();
         updateUrl();
@@ -512,8 +574,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
             count.textContent = '归档暂不可用';
             stateLabel.textContent = '归档数据加载失败。';
             pagerLabel.textContent = '第 1 页';
-            prevButton.disabled = true;
-            nextButton.disabled = true;
+            setPagerLink(prevButton, false, 1);
+            setPagerLink(nextButton, false, 1);
             setBusyState(false);
             syncControls();
             updateUrl();
@@ -542,8 +604,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
           count.textContent = '检索暂不可用';
           stateLabel.textContent = '历史检索数据加载失败。';
           pagerLabel.textContent = '第 1 页';
-          prevButton.disabled = true;
-          nextButton.disabled = true;
+          setPagerLink(prevButton, false, 1);
+          setPagerLink(nextButton, false, 1);
           setBusyState(false);
           syncControls();
           updateUrl();
@@ -560,12 +622,20 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         await loadAndRender();
       });
 
-      prevButton.addEventListener('click', async () => {
+      prevButton.addEventListener('click', async (event) => {
+        event.preventDefault();
+        if (prevButton.getAttribute('aria-disabled') === 'true') {
+          return;
+        }
         state.page -= 1;
         await loadAndRender();
       });
 
-      nextButton.addEventListener('click', async () => {
+      nextButton.addEventListener('click', async (event) => {
+        event.preventDefault();
+        if (nextButton.getAttribute('aria-disabled') === 'true') {
+          return;
+        }
         state.page += 1;
         await loadAndRender();
       });
@@ -635,7 +705,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
     position: absolute;
     top: 0.85rem;
     right: 1.15rem;
-    color: rgba(17, 94, 89, 0.08);
+    color: rgba(17, 94, 89, 0.025);
     font-family: var(--display-font);
     font-size: clamp(3.4rem, 7vw, 5.8rem);
     letter-spacing: 0.08em;
@@ -689,8 +759,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
     margin: 0;
     font-size: 0.82rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    text-transform: none;
   }
 
   .panel-title,
@@ -764,7 +834,10 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 
   .chip-button,
   .reset-button,
-  .pager button {
+  .pager-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.68rem 0.9rem;
     border: 0;
     border-radius: 999px;
@@ -789,7 +862,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
   }
 
   .reset-button,
-  .pager button {
+  .pager-link {
     background: rgba(31, 41, 51, 0.08);
     color: var(--text);
     font-weight: 700;
@@ -837,7 +910,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
 
   .episode-list :global(.episode-card:hover),
   .episode-list :global(.episode-card:focus-within) {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     border-color: rgba(15, 118, 110, 0.18);
     box-shadow: var(--shadow-strong);
   }
@@ -899,7 +972,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
     margin-top: 1rem;
   }
 
-  .pager button:disabled {
+  .pager-link.is-disabled {
     opacity: 0.45;
     cursor: not-allowed;
   }

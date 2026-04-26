@@ -3,11 +3,11 @@ import { expect, test } from '@playwright/test';
 const primaryRoutes = [
   { path: '/', heading: /Rebase Community 是由中国开发者们在业余时间用热爱建立的开发者社区/ },
   { path: '/about', heading: /Rebase Community 是由中国开发者们在业余时间用热爱建立的开发者社区/ },
-  { path: '/who-is-hiring', heading: /让招聘信息不仅被发出来，还能被读懂、被订阅、被稳定地回看/ },
+  { path: '/who-is-hiring', heading: /开放岗位/ },
   { path: '/geekdaily', heading: /Rebase 极客日报/ },
-  { path: '/articles', heading: /把社区里的想法、复盘和方法写成可以沉淀下来的文章/ },
-  { path: '/events', heading: /活动页先做好表达与归档，再慢慢加深运营能力/ },
-  { path: '/contributors', heading: /社区不是抽象概念，它总是由具体的人把内容、活动和协作推着往前走/ },
+  { path: '/articles', heading: /社区文章/ },
+  { path: '/events', heading: /社区活动/ },
+  { path: '/contributors', heading: /贡献者/ },
 ] as const;
 
 for (const route of primaryRoutes) {
@@ -31,7 +31,7 @@ test('detail pages render expected content blocks', async ({ page }) => {
 
   await page.goto('/events/2026-04-18-rebase-shanghai-builder-night');
   await expect(page.getByRole('heading', { level: 1, name: 'Rebase Shanghai Builder Night' })).toBeVisible();
-  await expect(page.getByText('外部报名链接')).toBeVisible();
+  await expect(page.getByText('打开报名链接')).toBeVisible();
 
   await page.goto('/who-is-hiring/protocol-growth-lead');
   await expect(page.getByRole('heading', { level: 1, name: 'protocol growth lead' })).toBeVisible();
@@ -47,4 +47,16 @@ test('pages expose canonical and social metadata', async ({ page }) => {
   );
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /social-card\.svg|https?:\/\//);
   await expect(page.locator('meta[name="twitter:description"]')).toHaveAttribute('content', /可阅读、可订阅/);
+});
+
+test('redesigned community UX avoids misleading public actions', async ({ page }) => {
+  await page.goto('/events');
+  await expect(page.locator('#event-archive')).not.toContainText('立即报名');
+
+  await page.goto('/who-is-hiring');
+  await expect(page.locator('.company-name', { hasText: /^\/$/ })).toHaveCount(0);
+
+  await page.goto('/geekdaily');
+  await expect(page.getByRole('link', { name: '下一页' })).toHaveAttribute('href', /page=2/);
+  await expect(page.getByText('推荐内容 ↗')).toHaveCount(0);
 });

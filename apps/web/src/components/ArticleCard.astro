@@ -46,7 +46,7 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
 
   .article-card:hover,
   .article-card:focus-within {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     border-color: rgba(15, 118, 110, 0.2);
     box-shadow: var(--shadow-strong);
   }
@@ -92,8 +92,8 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
     margin: 0 0 0.75rem;
     color: var(--muted);
     font-size: 0.82rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
   }
 
   h3 {
@@ -115,6 +115,8 @@ const authorLine = article.authors.map((author) => author.name).filter(Boolean).
   .article-card:hover h3 a,
   .article-card:focus-within h3 a {
     color: var(--accent-strong);
+    text-transform: none;
+    letter-spacing: 0.02em;
   }
 
   .author-line {
