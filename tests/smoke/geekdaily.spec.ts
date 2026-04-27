@@ -33,6 +33,16 @@ test('GeekDaily search supports episode lookup and empty state', async ({ page }
   await expect(page.locator('#results-count')).toHaveText(initialCount ?? '');
 });
 
+test('GeekDaily query renders meaningful first-response HTML', async ({ request }) => {
+  const response = await request.get('/geekdaily?q=1915');
+  expect(response.ok()).toBeTruthy();
+
+  const body = await response.text();
+  expect(body).toContain('找到 1 期');
+  expect(body).toContain('搜索“1915”');
+  expect(body).toContain('/geekdaily/geekdaily-1915');
+});
+
 test('GeekDaily cards keep styles after pagination and filtering', async ({ page }) => {
   await page.goto('/geekdaily');
   await expect(page.getByRole('heading', { level: 1, name: 'Rebase 极客日报' })).toBeVisible();

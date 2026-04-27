@@ -1,4 +1,12 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+const getPublishedHref = async (page: Page, listPath: string, slug: string) => {
+  await page.goto(listPath);
+  const href = await page.locator(`a[href*="${slug}"]`).first().getAttribute('href');
+  expect(href, `${slug} should be linked from ${listPath}`).toBeTruthy();
+  expect(href).toMatch(new RegExp(`^${listPath}/\\d+-${slug}$`));
+  return href as string;
+};
 
 const primaryRoutes = [
   { path: '/', heading: /Rebase Community 是由中国开发者们在业余时间用热爱建立的开发者社区/ },
@@ -25,25 +33,30 @@ test('detail pages render expected content blocks', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: '极客日报#1915' })).toBeVisible();
   await expect(page.getByText('推荐人：Cedric', { exact: true })).toBeVisible();
 
-  await page.goto('/articles/building-rebase-in-public');
+  const articleHref = await getPublishedHref(page, '/articles', 'building-rebase-in-public');
+  await page.goto(articleHref);
   await expect(page.getByRole('heading', { level: 1, name: '把 Rebase 做成一个持续更新的社区媒体站点' })).toBeVisible();
   await expect(page.getByText('重新定义社区站点')).toBeVisible();
 
-  await page.goto('/events/2026-04-18-rebase-shanghai-builder-night');
+  const eventHref = await getPublishedHref(page, '/events', 'rebase-shanghai-builder-night');
+  await page.goto(eventHref);
   await expect(page.getByRole('heading', { level: 1, name: 'Rebase Shanghai Builder Night' })).toBeVisible();
-  await expect(page.getByText('打开报名链接')).toBeVisible();
+  await expect(page.getByText('查看历史活动链接')).toBeVisible();
+  await expect(page.getByText('立即报名')).toHaveCount(0);
 
-  await page.goto('/who-is-hiring/protocol-growth-lead');
+  const jobHref = await getPublishedHref(page, '/who-is-hiring', 'protocol-growth-lead');
+  await page.goto(jobHref);
   await expect(page.getByRole('heading', { level: 1, name: 'protocol growth lead' })).toBeVisible();
   await expect(page.getByText('外部投递链接')).toBeVisible();
 });
 
 test('pages expose canonical and social metadata', async ({ page }) => {
-  await page.goto('/articles/building-rebase-in-public');
+  const articleHref = await getPublishedHref(page, '/articles', 'building-rebase-in-public');
+  await page.goto(articleHref);
 
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     'href',
-    'https://rebase.network/articles/building-rebase-in-public',
+    `https://rebase.network${articleHref}`,
   );
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /social-card\.svg|https?:\/\//);
   await expect(page.locator('meta[name="twitter:description"]')).toHaveAttribute('content', /可阅读、可订阅/);

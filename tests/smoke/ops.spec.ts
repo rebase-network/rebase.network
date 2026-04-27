@@ -14,7 +14,7 @@ test('/sitemap.xml returns key public URLs', async ({ request }) => {
   const body = await response.text();
   expect(body).toContain('<urlset');
   expect(body).toContain('https://rebase.network/geekdaily/geekdaily-1915');
-  expect(body).toContain('https://rebase.network/articles/building-rebase-in-public');
+  expect(body).toMatch(/https:\/\/rebase\.network\/articles\/\d+-building-rebase-in-public/);
 });
 
 test('/healthz returns runtime health data', async ({ request }) => {
