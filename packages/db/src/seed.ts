@@ -29,7 +29,7 @@ import {
   type Database,
   createDb,
 } from './index.js';
-import { loadGeekDailyArchive } from './geekdaily.js';
+import { getBaselineGeekDailyArchive, loadGeekDailyArchive } from './geekdaily.js';
 
 import {
   type ContentStatus,
@@ -554,11 +554,9 @@ const seedGeekDaily = async (database: Database) => {
   await database.delete(geekdailyEpisodes);
 
   const sourcePath = fileURLToPath(new URL('../../../geekdaily.csv', import.meta.url));
-  if (!existsSync(sourcePath)) {
-    return { totalEpisodes: 0, totalItems: 0 };
-  }
-
-  const episodes = loadGeekDailyArchive(sourcePath);
+  const archiveEpisodes = existsSync(sourcePath) ? loadGeekDailyArchive(sourcePath) : [];
+  const episodes = archiveEpisodes.length > 0 ? archiveEpisodes : getBaselineGeekDailyArchive();
+  const source = archiveEpisodes.length > 0 ? 'archive' : 'fixture';
   const insertedEpisodes = await database
     .insert(geekdailyEpisodes)
     .values(
@@ -594,6 +592,7 @@ const seedGeekDaily = async (database: Database) => {
   return {
     totalEpisodes: episodes.length,
     totalItems: itemRows.length,
+    source,
   };
 };
 
@@ -616,6 +615,9 @@ const main = async () => {
   try {
     const baselineData = await loadBaselineData();
 
+    let geekdailySeedSource = 'fixture';
+    let geekdailySeedItems = 0;
+
     await db.transaction(async (transaction) => {
       await transaction.delete(auditLogs);
       await transaction.delete(sessions);
@@ -624,10 +626,22 @@ const main = async () => {
       await seedAccessControl(transaction);
       await seedContent(transaction, baselineData);
       const geekdailyStats = await seedGeekDaily(transaction);
+      geekdailySeedSource = geekdailyStats.source;
+      geekdailySeedItems = geekdailyStats.totalItems;
       await seedSingletons(transaction, baselineData, geekdailyStats.totalEpisodes, geekdailyStats.totalItems);
     });
 
-    console.log(JSON.stringify(await summarize(db), null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          ...(await summarize(db)),
+          geekdailySeedSource,
+          geekdailyEpisodeItems: geekdailySeedItems,
+        },
+        null,
+        2,
+      ),
+    );
   } finally {
     await pool.end();
   }
