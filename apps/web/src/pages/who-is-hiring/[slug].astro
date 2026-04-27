@@ -33,7 +33,27 @@ const applyCopy = job
   : '';
 const contactValue = job?.contactValue?.trim() ?? '';
 const contactLabel = job?.contactLabel?.trim() || '联系方式';
-const applyButtonLabel = job?.isExpired ? '查看原投递链接' : '立即投递';
+const normalizedContactLabel = contactLabel.toLowerCase();
+const normalizedContactValue = contactValue.toLowerCase();
+const contactHref = contactValue
+  ? normalizedContactLabel.includes('email') || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactValue)
+    ? `mailto:${contactValue}`
+    : normalizedContactLabel.includes('telegram') || normalizedContactValue.startsWith('@') || normalizedContactValue.includes('t.me/')
+      ? normalizedContactValue.includes('t.me/')
+        ? contactValue
+        : `https://t.me/${contactValue.replace(/^@/, '')}`
+      : /^https?:\/\//i.test(contactValue)
+        ? contactValue
+        : ''
+  : '';
+const contactActionLabel = contactHref
+  ? contactHref.startsWith('mailto:')
+    ? '发送邮件'
+    : contactHref.includes('t.me/')
+      ? '打开 Telegram'
+      : '查看原始招聘信息'
+  : '联系招聘方';
+const applyButtonLabel = job?.isExpired ? '查看原投递链接' : '外部投递链接';
 const metaItems = job ? [job.salary, formatWorkMode(job.workMode), job.location, remoteLabel, expiryLabel, updateLabel].filter(Boolean) : [];
 
 if (!job) {
@@ -76,6 +96,14 @@ if (!job) {
                   <a class="job-sidebar-primary" href={job.applyUrl} target="_blank" rel="noreferrer">
                     {applyButtonLabel} <span>↗</span>
                   </a>
+                )}
+                {!job.applyUrl && contactValue && contactHref && (
+                  <a class:list={['job-sidebar-primary', job.isExpired && 'is-muted']} href={contactHref} target={contactHref.startsWith('http') ? '_blank' : undefined} rel={contactHref.startsWith('http') ? 'noreferrer' : undefined}>
+                    {contactActionLabel}{contactHref.startsWith('http') && <span>↗</span>}
+                  </a>
+                )}
+                {!job.applyUrl && contactValue && !contactHref && (
+                  <p class:list={['job-contact-action', job.isExpired && 'is-muted']}>{contactActionLabel}</p>
                 )}
                 <ul class="detail-sidebar-list">
                 {contactValue && (
@@ -229,6 +257,22 @@ if (!job) {
     font-weight: 800;
     letter-spacing: 0.04em;
     transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  }
+
+  .job-sidebar-primary.is-muted,
+  .job-contact-action.is-muted {
+    opacity: 0.72;
+  }
+
+  .job-contact-action {
+    margin: 0.8rem 0 0;
+    padding: 0.82rem 0.9rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 0.9rem;
+    background: rgba(15, 118, 110, 0.08);
+    color: var(--accent-strong);
+    font-weight: 800;
+    text-align: center;
   }
 
   .job-sidebar-primary:hover,

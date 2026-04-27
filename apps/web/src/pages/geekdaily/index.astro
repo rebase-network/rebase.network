@@ -1,26 +1,33 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getGeekDailyArchiveOverview, getGeekDailyArchivePage, getSiteSettings } from '@/lib/content';
+import { getGeekDailyArchiveOverview, getGeekDailyArchivePage, getGeekDailySearchPage, getSiteSettings } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 import { getGeekDailyPath } from '@/lib/paths';
 
 const pageSize = 10;
 const rawInitialPage = Number(Astro.url.searchParams.get('page') ?? '1');
 const initialPage = Number.isFinite(rawInitialPage) && rawInitialPage > 0 ? Math.floor(rawInitialPage) : 1;
+const initialQuery = Astro.url.searchParams.get('q')?.trim() ?? '';
 const initialTag = Astro.url.searchParams.get('tag') ?? '';
 const initialYear = Astro.url.searchParams.get('year') ?? '';
-const [site, overview, archive] = await Promise.all([
+const [site, overview, initialResult] = await Promise.all([
   getSiteSettings(),
   getGeekDailyArchiveOverview(),
-  getGeekDailyArchivePage({ page: initialPage, pageSize, tag: initialTag, year: initialYear }),
+  initialQuery
+    ? getGeekDailySearchPage({ query: initialQuery, page: initialPage, pageSize, tag: initialTag, year: initialYear })
+    : getGeekDailyArchivePage({ page: initialPage, pageSize, tag: initialTag, year: initialYear }),
 ]);
-const episodes = archive.data;
-const archiveMeta = archive.meta;
+const episodes = initialResult.data;
+const archiveMeta = initialResult.meta;
 const years = overview.years;
 const featuredTags = overview.featuredTags;
-const initialActiveFilters = [initialTag && `标签 ${initialTag}`, initialYear && `年份 ${initialYear}`].filter(Boolean);
+const initialActiveFilters = [initialQuery && `搜索“${initialQuery}”`, initialTag && `标签 ${initialTag}`, initialYear && `年份 ${initialYear}`].filter(Boolean);
 const buildGeekDailyPageHref = (targetPage: number) => {
   const params = new URLSearchParams();
+
+  if (initialQuery) {
+    params.set('q', initialQuery);
+  }
 
   if (initialTag) {
     params.set('tag', initialTag);
@@ -70,6 +77,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-re
         type="search"
         placeholder="搜索期数、标题、推荐语、条目标题或推荐人"
         autocomplete="off"
+        value={initialQuery}
       />
     </div>
 

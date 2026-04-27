@@ -146,20 +146,11 @@ const roleGuides: Record<string, { overview: string; joinHint: string; joinLabel
       radial-gradient(circle at top right, rgba(15, 118, 110, 0.18), transparent 26%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 251, 0.9));
     border-color: rgba(15, 118, 110, 0.14);
-    box-shadow: 0 28px 60px rgba(26, 40, 34, 0.12);
+    box-shadow: var(--shadow-soft);
   }
 
   .contributors-hero::before {
-    content: 'PEOPLE';
-    position: absolute;
-    top: 1rem;
-    right: 1.25rem;
-    color: rgba(17, 94, 89, 0.025);
-    font-family: var(--display-font);
-    font-size: clamp(4rem, 8vw, 6.8rem);
-    letter-spacing: 0.08em;
-    line-height: 0.82;
-    pointer-events: none;
+    content: none;
   }
 
   .contributors-hero > * {
@@ -217,6 +208,7 @@ const roleGuides: Record<string, { overview: string; joinHint: string; joinLabel
     padding: 1.25rem;
     animation: none;
     backdrop-filter: none;
+    box-shadow: var(--shadow-soft);
   }
 
   .group-block.tone-warm {

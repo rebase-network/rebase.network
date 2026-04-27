@@ -4,6 +4,7 @@ import DetailHero from '@/components/DetailHero.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getEventByPublicNumber, getEvents, getSiteSettings } from '@/lib/content';
 import { formatEventWindow } from '@/lib/dates';
+import { resolvePublicEventStatus } from '@/lib/eventStatus';
 import { getEventPath, getEventPublicNumberFromRouteParam } from '@/lib/paths';
 import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
 
@@ -11,12 +12,13 @@ const routeParam = Astro.params.slug ?? '';
 const eventPublicNumber = getEventPublicNumberFromRouteParam(routeParam);
 const [site, event, events] = await Promise.all([getSiteSettings(), getEventByPublicNumber(eventPublicNumber), getEvents()]);
 const related = event ? events.filter((item) => item.publicNumber !== event.publicNumber).slice(0, 3) : [];
-const eventStatusLabel = event ? (event.status === 'upcoming' ? '即将举办' : '活动归档') : '';
+const publicEventStatus = event ? resolvePublicEventStatus(event) : undefined;
+const eventStatusLabel = publicEventStatus?.detailStatusLabel ?? '';
 const eventLocationLine = event ? [event.location, event.venue].filter(Boolean).join(' · ') : '';
 const eventHeroMeta = event ? [formatEventWindow(event.startAt, event.endAt), eventLocationLine].filter(Boolean) : [];
-const eventCanRegister = Boolean(event?.registrationUrl && event.status === 'upcoming');
-const eventHasHistoricLink = Boolean(event?.registrationUrl && event.status === 'past');
-const eventLinkLabel = eventCanRegister ? '打开报名链接' : '查看历史活动链接';
+const eventCanRegister = Boolean(publicEventStatus?.canRegister);
+const eventHasHistoricLink = Boolean(event?.registrationUrl && publicEventStatus?.isPast);
+const eventLinkLabel = publicEventStatus?.detailActionLabel ?? '查看活动详情';
 const eventActionTitle = eventCanRegister ? '报名方式' : eventHasHistoricLink ? '活动链接' : '参与方式';
 const eventRegistrationCopy = event
   ? eventCanRegister
@@ -62,34 +64,12 @@ if (!event) {
 
       <section class="shell page-section detail-shell event-detail-shell">
         <article id="event-body" class="card detail-body-card event-detail">
-          <div class="detail-body-lead event-meta">
-            <p>{formatEventWindow(event.startAt, event.endAt)} · {eventStatusLabel}</p>
-            <p>{eventLocationLine}</p>
-          </div>
           <div class="event-reading-frame">
             <MarkdownContent content={event.content} />
           </div>
         </article>
 
         <aside class="card detail-sidebar">
-          <section id="event-info" class="detail-sidebar-section">
-            <h2>活动信息</h2>
-            <ul class="detail-fact-list">
-              <li>
-                <strong>时间</strong>
-                <span>{formatEventWindow(event.startAt, event.endAt)}</span>
-              </li>
-              <li>
-                <strong>地点</strong>
-                <span>{eventLocationLine}</span>
-              </li>
-              <li>
-                <strong>状态</strong>
-                <span>{eventStatusLabel}</span>
-              </li>
-            </ul>
-          </section>
-
           <section id="event-registration" class="detail-sidebar-section">
             <h2>{eventActionTitle}</h2>
             <p class="detail-sidebar-copy">

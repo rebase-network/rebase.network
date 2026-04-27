@@ -4,6 +4,7 @@ import ListEmptyState from '@/components/ListEmptyState.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getPastEvents, getSiteSettings, getUpcomingEvents } from '@/lib/content';
+import { resolvePublicEventStatus } from '@/lib/eventStatus';
 import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
 import { getEventPath } from '@/lib/paths';
 
@@ -14,6 +15,7 @@ const [site, upcomingEvents, pastEvents] = await Promise.all([
 ]);
 
 const leadUpcomingEvent = upcomingEvents[0];
+const leadUpcomingEventStatus = leadUpcomingEvent ? resolvePublicEventStatus(leadUpcomingEvent) : undefined;
 const remainingUpcomingEvents = leadUpcomingEvent ? upcomingEvents.slice(1) : [];
 const pastEventGroups = Object.entries(
   pastEvents.reduce<Record<string, typeof pastEvents>>((groups, event) => {
@@ -23,7 +25,7 @@ const pastEventGroups = Object.entries(
     return groups;
   }, {}),
 ).sort(([leftYear], [rightYear]) => Number(rightYear) - Number(leftYear));
-const featureEventBadge = leadUpcomingEvent ? (leadUpcomingEvent.registrationUrl ? '正在报名' : '即将开始') : '';
+const featureEventBadge = leadUpcomingEvent ? (leadUpcomingEventStatus?.canRegister ? '正在报名' : leadUpcomingEventStatus?.statusLabel ?? '即将开始') : '';
 const featureEventTime = leadUpcomingEvent
   ? `${new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Shanghai' }).format(new Date(leadUpcomingEvent.startAt))} - ${new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Shanghai' }).format(new Date(leadUpcomingEvent.endAt))}`
   : '';
@@ -39,12 +41,12 @@ const featureEventPlace = leadUpcomingEvent
     : `${leadUpcomingEvent.location} · ${leadUpcomingEvent.venue}`
   : '';
 const heroPrimaryAction = leadUpcomingEvent
-  ? leadUpcomingEvent.registrationUrl
+  ? leadUpcomingEventStatus?.canRegister && leadUpcomingEvent.registrationUrl
     ? { href: leadUpcomingEvent.registrationUrl, label: '立即报名', external: true }
     : { href: getEventPath(leadUpcomingEvent.publicNumber, leadUpcomingEvent.slug), label: '查看详情', external: false }
   : null;
 const heroSecondaryAction = leadUpcomingEvent
-  ? leadUpcomingEvent.registrationUrl
+  ? leadUpcomingEventStatus?.canRegister && leadUpcomingEvent.registrationUrl
     ? { href: getEventPath(leadUpcomingEvent.publicNumber, leadUpcomingEvent.slug), label: '活动详情' }
     : null
   : null;

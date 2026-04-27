@@ -78,6 +78,17 @@ interface GeekDailyArchivePayload {
   };
 }
 
+interface PublicGeekDailySearchItemPayload {
+  title: string;
+  authorName: string;
+  summary: string;
+}
+
+interface PublicGeekDailySearchDocumentPayload extends Omit<PublicGeekDailyPreviewPayload, 'items'> {
+  year: string;
+  items: PublicGeekDailySearchItemPayload[];
+}
+
 interface HomeFeedPayload {
   latestGeekDaily: PublicGeekDailyEpisodePayload | null;
   recentArticles: Article[];
@@ -299,6 +310,86 @@ export async function getGeekDailyArchivePage({
   return {
     data: payload.data.map(mapGeekDailyEpisodePreview),
     meta: payload.meta,
+  };
+}
+
+const getSearchableGeekDailyText = (episode: PublicGeekDailySearchDocumentPayload) =>
+  [
+    episode.title,
+    episode.summary,
+    episode.tags.join(' '),
+    episode.year,
+    ...episode.items.flatMap((item) => [item.title, item.authorName, item.summary]),
+  ]
+    .join(' ')
+    .toLowerCase();
+
+const mapGeekDailySearchDocument = (episode: PublicGeekDailySearchDocumentPayload): GeekDailyEpisodePreview => ({
+  ...episode,
+  items: episode.items.map((item) => ({
+    title: item.title,
+    author: item.authorName,
+    sourceUrl: '',
+    summary: item.summary,
+  })),
+});
+
+export async function getGeekDailySearchPage({
+  query = '',
+  page = 1,
+  pageSize = 10,
+  tag,
+  year,
+}: {
+  query?: string;
+  page?: number;
+  pageSize?: number;
+  tag?: string;
+  year?: string;
+} = {}) {
+  const documents = await fetchPublicApi<PublicGeekDailySearchDocumentPayload[]>('/api/public/v1/geekdaily/search');
+  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedTag = tag?.trim() ?? '';
+  const normalizedYear = year?.trim() ?? '';
+  const baseResults = documents.filter((document) => {
+    const matchesTag = !normalizedTag || document.tags.includes(normalizedTag);
+    const matchesYear = !normalizedYear || document.year === normalizedYear;
+    return matchesTag && matchesYear;
+  });
+  const filtered = normalizedQuery
+    ? (() => {
+        const numericQuery = normalizedQuery.replace(/^(geekdaily|episode)-/, '').replace(/^#/, '').trim();
+        const exactEpisodeMatches = baseResults.filter((document) => String(document.episodeNumber) === numericQuery);
+
+        if (/^\d+$/.test(numericQuery) && exactEpisodeMatches.length > 0) {
+          return exactEpisodeMatches;
+        }
+
+        const tokens = normalizedQuery
+          .split(/\s+/)
+          .map((token) => token.trim())
+          .filter(Boolean);
+
+        return baseResults.filter((document) =>
+          tokens.every((token) => getSearchableGeekDailyText(document).includes(token)),
+        );
+      })()
+    : baseResults;
+  const requestedPageSize = Number.isFinite(pageSize) && pageSize > 0 ? Math.floor(pageSize) : 10;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / requestedPageSize));
+  const normalizedPage = Number.isFinite(page) && page > 0 ? Math.min(Math.floor(page), totalPages) : 1;
+  const start = (normalizedPage - 1) * requestedPageSize;
+
+  return {
+    data: filtered.slice(start, start + requestedPageSize).map(mapGeekDailySearchDocument),
+    meta: {
+      page: normalizedPage,
+      pageSize: requestedPageSize,
+      totalItems: filtered.length,
+      totalPages,
+      hasPrevPage: normalizedPage > 1,
+      hasNextPage: normalizedPage < totalPages,
+    },
   };
 }
 

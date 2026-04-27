@@ -1,6 +1,7 @@
 ---
 import type { Event } from '@rebase/types';
 import { formatEventWindow } from '@/lib/dates';
+import { resolvePublicEventStatus } from '@/lib/eventStatus';
 import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
 import { getEventPath } from '@/lib/paths';
 
@@ -10,13 +11,7 @@ interface Props {
 }
 
 const { event, compact = false } = Astro.props;
-const isUpcoming = event.status === 'upcoming';
-const statusLabel = isUpcoming ? '即将举行' : '往期活动';
-const actionLabel = isUpcoming
-  ? event.registrationUrl
-    ? '立即报名'
-    : '查看详情'
-  : '查看回顾';
+const eventStatus = resolvePublicEventStatus(event);
 ---
 
 <article class:list={['event-card', 'card', { compact }]}>
@@ -30,8 +25,8 @@ const actionLabel = isUpcoming
   </a>
   <div class="content">
     <div class="status-row">
-      <p class="status">{statusLabel}</p>
-      <span class:list={['chip', !isUpcoming && 'is-past']}>{actionLabel}</span>
+      <p class="status">{eventStatus.statusLabel}</p>
+      <span class:list={['chip', eventStatus.isPast && 'is-past']}>{eventStatus.actionLabel}</span>
     </div>
     <h3>
       <a href={getEventPath(event.publicNumber, event.slug)}>{event.title}</a>

@@ -47,31 +47,18 @@ if (!article) {
 
       <section class="shell page-section detail-shell">
         <article id="article-body" class="card detail-body-card article-detail">
-          <div class="detail-body-lead article-meta">
-            <p>{formatDate(article.publishedAt)} · {article.readingTime}</p>
-            <p>{articleAuthors}</p>
-          </div>
           <MarkdownContent content={article.body} />
         </article>
 
         <aside class="card detail-sidebar">
-          <section id="article-info" class="detail-sidebar-section">
-            <h2>文章信息</h2>
-            <ul class="detail-fact-list">
-              <li>
-                <strong>发布时间</strong>
-                <span>{formatDate(article.publishedAt)}</span>
-              </li>
-              <li>
-                <strong>作者</strong>
-                <span>{articleAuthors}</span>
-              </li>
-              <li>
-                <strong>阅读时长</strong>
-                <span>{article.readingTime}</span>
-              </li>
-            </ul>
-          </section>
+          {article.tags.length > 0 && (
+            <section id="article-topics" class="detail-sidebar-section">
+              <h2>文章标签</h2>
+              <ul class="detail-tag-list">
+                {article.tags.map((tag) => <li>{tag}</li>)}
+              </ul>
+            </section>
+          )}
 
           <section id="article-actions" class="detail-sidebar-section">
             <h2>继续阅读</h2>

@@ -836,19 +836,11 @@ h4 {
     radial-gradient(circle at top left, rgba(243, 196, 110, 0.28), transparent 30%),
     radial-gradient(circle at 92% 18%, rgba(56, 189, 248, 0.16), transparent 24%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 251, 244, 0.92));
+  box-shadow: var(--shadow-soft);
 }
 
 .jobs-hero::before {
-  content: 'HIRING';
-  position: absolute;
-  top: 0.95rem;
-  right: 1.15rem;
-  color: rgba(17, 94, 89, 0.025);
-  font-family: var(--display-font);
-  font-size: clamp(3.2rem, 6vw, 5.6rem);
-  letter-spacing: 0.08em;
-  line-height: 0.82;
-  pointer-events: none;
+  content: none;
 }
 
 .jobs-hero .hero-title {
@@ -926,12 +918,6 @@ h4 {
   .jobs-hero .hero-topline {
     align-items: start;
     justify-content: start;
-  }
-
-  .jobs-hero::before {
-    top: 0.8rem;
-    right: 0.9rem;
-    font-size: clamp(2.7rem, 14vw, 4.4rem);
   }
 
   .jobs-hero {
