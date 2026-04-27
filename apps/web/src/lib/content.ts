@@ -9,7 +9,7 @@ import type {
   SiteSettings,
 } from '@rebase/types';
 
-import { fetchPublicApi } from '@/lib/api';
+import { fetchPublicApi, getPublicApiUrl } from '@/lib/api';
 
 interface PublicSiteConfigPayload {
   siteName: string;
@@ -285,7 +285,16 @@ export async function getGeekDailyArchivePage({
     params.set('year', year);
   }
 
-  const payload = await fetchPublicApi<GeekDailyArchivePayload>(`/api/public/v1/geekdaily/archive?${params.toString()}`);
+  const response = await fetch(getPublicApiUrl(`/api/public/v1/geekdaily/archive?${params.toString()}`), {
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+  const payload = (await response.json()) as GeekDailyArchivePayload;
+
+  if (!response.ok) {
+    throw new Error(`public api request failed for GeekDaily archive: status ${response.status}`);
+  }
 
   return {
     data: payload.data.map(mapGeekDailyEpisodePreview),
