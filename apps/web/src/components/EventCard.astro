@@ -20,7 +20,7 @@ const eventStatus = resolvePublicEventStatus(event);
       class:list={['cover-image', !event.coverImageUrl && 'default-cover-image']}
       src={event.coverImageUrl ?? DEFAULT_EVENT_COVER_PATH}
       alt=""
-      loading="lazy"
+      loading={compact ? 'eager' : 'lazy'}
     />
   </a>
   <div class="content">
@@ -74,7 +74,9 @@ const eventStatus = resolvePublicEventStatus(event);
   }
 
   .default-cover-image {
-    background: transparent;
+    background:
+      radial-gradient(circle at 78% 12%, rgba(243, 196, 110, 0.2), transparent 22%),
+      linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(255, 255, 255, 0.2));
   }
 
   .event-card:hover .cover-image,
