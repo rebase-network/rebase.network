@@ -62,6 +62,13 @@ function shouldOpenInNewTab(value: string) {
 
 const renderer = new marked.Renderer();
 
+renderer.heading = function ({ tokens, depth }) {
+  const text = this.parser.parseInline(tokens);
+  const normalizedDepth = Math.min(depth + 1, 6);
+
+  return `<h${normalizedDepth}>${text}</h${normalizedDepth}>`;
+};
+
 renderer.link = function ({ href, title, tokens }) {
   const text = this.parser.parseInline(tokens);
 

@@ -1,114 +1,84 @@
-# Admin Design Principles
+# 管理后台设计原则
 
-Design principles for the Rebase admin workspace in `apps/admin`.
+适用于 `apps/admin` 中 Rebase 管理工作台的设计原则。
 
-This file explains how the admin should feel and how operators should move through it.
-It does not replace `apps/admin/DESIGN.md`, which holds the hard visual specification.
+这个文件只回答三个问题：
 
-## Product Intent
+- admin 要帮助工作人员完成什么
+- 页面和模块应如何围绕任务组织
+- 哪些交互与文案取向长期成立
 
-The admin is a community operations workspace.
+颜色、字体、间距、组件和响应式硬规范见 `apps/admin/DESIGN.md`。
 
-It should help staff:
+## 产品意图
 
-- publish and edit content efficiently
-- understand status quickly
-- avoid mistakes in high-frequency workflows
-- maintain community data without thinking in raw schema terms
+管理后台是社区运营工作台，不是通用 CMS。
 
-It should not feel like:
+它应帮助工作人员：
 
-- a generic headless CMS
-- a database browser
-- a visual builder
-- a dashboard full of decorative emptiness
+- 高效发布和编辑内容
+- 快速判断状态
+- 在高频流程里避免犯错
+- 以任务视角维护数据，而不是以 schema 视角操作系统
 
-## Core Feeling
+长期前提：
 
-The admin should feel:
+- 中文优先
+- 桌面优先
+- 运营效率高于展示感
 
-- compact
-- clear
-- controlled
-- Chinese-first
-- desktop-first
-- operational rather than promotional
+## 核心原则
 
-The admin should not feel:
+### 运营效率优先
 
-- sparse in a way that wastes editing space
-- schema-driven
-- overloaded with helper copy
-- split into too many side panels competing for attention
+- 每个页面的主任务必须立刻明确
+- 高频操作应靠近它影响的内容
+- 列表页应默认支持扫描、筛选和分页
 
-## Primary Principles
+### 主编辑区域必须占优
 
-### Operator Efficiency First
+- 编辑页的主内容区必须保持视觉主导
+- 次级元数据不应挤压正文编辑区域
+- 低频设置应收进次级区块，而不是抢占首要位置
 
-- the primary task on each page should be obvious immediately
-- high-frequency actions should sit close to the content they affect
-- content lists should support scanning, filtering, and pagination without ceremony
+### 面向任务，而不是面向 schema
 
-### Compact, Not Claustrophobic
+- 使用岗位、GeekDaily、文章、贡献者、媒体、工作人员这类任务词汇
+- 不要让运营人员直接面对原始集合名、关系表思维或开发术语
 
-- reduce vertical waste aggressively
-- preserve enough whitespace for readability and error prevention
-- default toward denser layouts than the public site
+### 能内联就内联
 
-### Primary Editor Area Must Win
+- 筛选器优先内联
+- 相关控件尽量共享同一行
+- 破坏性操作保持克制并远离主发布路径
 
-- on editor pages, the main editing surface must remain visually dominant
-- secondary metadata should not crowd out the body editor
-- optional or rare settings should move into secondary blocks, tabs, or compact panels
+## 页面类型优先级
 
-### Task-Oriented Over Schema-Oriented
+### 列表页
 
-- think in jobs, GeekDaily, articles, contributors, assets, and staff tasks
-- do not expose raw collections or raw relational thinking unless it truly helps operators
-- labels should be operational, not developer-centric
+- 长列表必须分页
+- 搜索、数量和筛选应压缩在轻薄页头内
+- 空列表仍要保留方向感和恢复路径
 
-### Inline When Possible
+### 编辑页
 
-- filters should prefer inline or header-level presentation
-- destructive actions should stay restrained and localized
-- related controls should share one line where practical
+- 标题、状态和主正文应尽早出现
+- 不要在主编辑器之前堆叠低价值元数据
+- 破坏性操作不能主导布局
 
-## Admin Page-Type Guidance
+### 设置与工具页
 
-### List Pages
+- 相关设置应按小面板分组
+- 当两个工作流容易混淆时，用选项卡或分段模式
 
-Rules:
+## 文案规则
 
-- pagination is mandatory for long lists
-- search, counts, and filters should be compressed into a thin header area
-- table headers can carry lightweight filters when it improves density
-- if the list is empty under filters, preserve orientation and recovery paths
+- 默认使用简洁中文标签
+- 删除重复常识的辅助文案
+- 优先使用动作导向措辞
+- 只有在工作流不直观时才补解释
 
-### Editor Pages
-
-Rules:
-
-- title, status, and main body should surface early
-- avoid long stacks of low-value metadata before the main editor
-- side information is acceptable only when it meaningfully supports publishing decisions
-- destructive actions must never dominate the layout
-
-### Settings / Utility Pages
-
-Rules:
-
-- group related settings into small panels
-- avoid giant full-width destructive buttons
-- use tabs or segmented modes when two workflows are easy to confuse
-
-## Copy Guidance
-
-- default to concise Chinese labels
-- remove helper text that states the obvious
-- do not write CMS-flavored explanation unless the workflow is unusual
-- prefer action wording over descriptive wording
-
-Good:
+好的例子：
 
 - `开放岗位`
 - `状态`
@@ -116,34 +86,13 @@ Good:
 - `新增工作人员`
 - `上传文件`
 
-Avoid:
+## 反模式
 
-- long paragraphs above standard tables
-- duplicate explanatory cards that repeat the page title
-- technical jargon that operators do not need
+默认不要引入这些模式：
 
-## Interaction Rules
-
-- hover states must reflect actual affordance
-- keyboard focus must remain visible
-- destructive actions must be visually restrained and confirmed
-- tabs are appropriate when two nearby workflows are easy to confuse
-- list pages should stay readable without needing side explanations
-
-## Responsive Philosophy
-
-- admin is desktop-first
-- mobile admin support is not a priority in v1
-- optimize for laptop and desktop editing comfort
-- do not sacrifice desktop efficiency to maintain complex mobile admin layouts
-
-## Anti-Patterns
-
-Do not introduce these patterns into the admin by default:
-
-- giant sidebar widths with large empty regions
-- large hero-like headers on admin pages
-- wide empty right rails with low-value metadata
-- full-width destructive buttons inside dense forms
-- filters split into separate giant blocks when inline filters will do
-- list pages that require excessive scrolling before reaching the actual table
+- 大面积空白和过宽侧边栏
+- 巨大的管理页首屏式页头
+- 与任务无关的说明卡片
+- 全宽破坏性按钮
+- 明明可以内联却被拆散的筛选区
+- 必须先滚动很久才看见表格的列表页

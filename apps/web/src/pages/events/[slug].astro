@@ -4,6 +4,7 @@ import DetailHero from '@/components/DetailHero.astro';
 import MarkdownContent from '@/components/MarkdownContent.astro';
 import { getEventByPublicNumber, getEvents, getSiteSettings } from '@/lib/content';
 import { formatEventWindow } from '@/lib/dates';
+import { resolvePublicEventStatus } from '@/lib/eventStatus';
 import { getEventPath, getEventPublicNumberFromRouteParam } from '@/lib/paths';
 import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
 
@@ -11,18 +12,25 @@ const routeParam = Astro.params.slug ?? '';
 const eventPublicNumber = getEventPublicNumberFromRouteParam(routeParam);
 const [site, event, events] = await Promise.all([getSiteSettings(), getEventByPublicNumber(eventPublicNumber), getEvents()]);
 const related = event ? events.filter((item) => item.publicNumber !== event.publicNumber).slice(0, 3) : [];
-const eventStatusLabel = event ? (event.status === 'upcoming' ? '即将举办' : '活动归档') : '';
+const publicEventStatus = event ? resolvePublicEventStatus(event) : undefined;
+const eventStatusLabel = publicEventStatus?.detailStatusLabel ?? '';
 const eventLocationLine = event ? [event.location, event.venue].filter(Boolean).join(' · ') : '';
 const eventHeroMeta = event ? [formatEventWindow(event.startAt, event.endAt), eventLocationLine].filter(Boolean) : [];
+const eventCanRegister = Boolean(publicEventStatus?.canRegister);
+const eventHasHistoricLink = Boolean(event?.registrationUrl && publicEventStatus?.isPast);
+const eventLinkLabel = publicEventStatus?.detailActionLabel ?? '查看活动详情';
+const eventActionTitle = eventCanRegister ? '报名方式' : eventHasHistoricLink ? '活动链接' : '参与方式';
 const eventRegistrationCopy = event
-  ? event.registrationUrl
-    ? '报名请使用公开链接，更多参与方式请查看正文中的活动说明。'
-    : '报名方式请查看正文中的活动说明，或以后续公告为准。'
+  ? eventCanRegister
+    ? '请通过公开链接报名，更多参与方式请查看正文中的活动说明。'
+    : eventHasHistoricLink
+      ? '这是历史活动，链接仅作为活动归档参考。'
+      : '参与方式请查看正文中的活动说明，或以后续公告为准。'
   : '';
 const eventHeroActions = event
   ? [
-      ...(event.registrationUrl
-        ? [{ href: event.registrationUrl, label: '立即报名', external: true, showIcon: true }]
+      ...(eventCanRegister
+        ? [{ href: event.registrationUrl!, label: '立即报名', external: true, showIcon: true }]
         : []),
     ]
   : [];
@@ -56,36 +64,14 @@ if (!event) {
 
       <section class="shell page-section detail-shell event-detail-shell">
         <article id="event-body" class="card detail-body-card event-detail">
-          <div class="detail-body-lead event-meta">
-            <p>{formatEventWindow(event.startAt, event.endAt)} · {eventStatusLabel}</p>
-            <p>{eventLocationLine}</p>
-          </div>
           <div class="event-reading-frame">
             <MarkdownContent content={event.content} />
           </div>
         </article>
 
         <aside class="card detail-sidebar">
-          <section id="event-info" class="detail-sidebar-section">
-            <h2>活动信息</h2>
-            <ul class="detail-fact-list">
-              <li>
-                <strong>时间</strong>
-                <span>{formatEventWindow(event.startAt, event.endAt)}</span>
-              </li>
-              <li>
-                <strong>地点</strong>
-                <span>{eventLocationLine}</span>
-              </li>
-              <li>
-                <strong>状态</strong>
-                <span>{eventStatusLabel}</span>
-              </li>
-            </ul>
-          </section>
-
           <section id="event-registration" class="detail-sidebar-section">
-            <h2>报名方式</h2>
+            <h2>{eventActionTitle}</h2>
             <p class="detail-sidebar-copy">
               {eventRegistrationCopy}
             </p>
@@ -93,7 +79,7 @@ if (!event) {
               <ul class="detail-sidebar-list">
                 <li>
                   <a href={event.registrationUrl} target="_blank" rel="noreferrer">
-                    打开报名链接
+                    {eventLinkLabel}
                   </a>
                 </li>
               </ul>
@@ -138,20 +124,19 @@ if (!event) {
   }
 
   :global(.event-hero) {
-    color: white;
     padding: 1.05rem 1.2rem 0.92rem;
     background:
-      radial-gradient(circle at top right, rgba(245, 158, 11, 0.26), transparent 24%),
-      linear-gradient(135deg, rgba(16, 37, 34, 0.98), rgba(17, 94, 89, 0.92));
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 28px 60px rgba(16, 37, 34, 0.24);
+      radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 252, 250, 0.9));
+    border-color: rgba(15, 118, 110, 0.12);
+    box-shadow: var(--shadow-soft);
   }
 
   :global(.event-hero .hero-title) {
-    max-width: 11.5ch;
+    max-width: 14ch;
     margin-top: 0;
-    font-size: clamp(2.18rem, 4.4vw, 3.96rem);
-    line-height: 0.94;
+    font-size: clamp(2rem, 3.65vw, 3.4rem);
+    line-height: 1;
   }
 
   :global(.event-hero .detail-title-row) {
@@ -167,7 +152,8 @@ if (!event) {
     font-size: 0.64rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    opacity: 0.44;
+    color: var(--accent-strong);
+    opacity: 0.72;
   }
 
   :global(.event-hero .hero-summary) {
@@ -198,7 +184,8 @@ if (!event) {
     background: transparent;
     font-size: 0.74rem;
     letter-spacing: 0.08em;
-    opacity: 0.92;
+    color: var(--muted);
+    opacity: 1;
   }
 
   :global(.event-hero .detail-meta-pill:not(:last-child)::after) {
@@ -219,8 +206,8 @@ if (!event) {
   }
 
   :global(.event-hero .button-link.secondary) {
-    border-color: rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(15, 118, 110, 0.14);
+    background: rgba(255, 255, 255, 0.58);
   }
 
   .event-detail {

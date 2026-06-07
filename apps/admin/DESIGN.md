@@ -1,140 +1,140 @@
-# Admin Workspace DESIGN.md
+# 管理工作台 DESIGN.md
 
-Hard visual specification for `apps/admin`.
+适用于 `apps/admin` 的硬性视觉规范。
 
-Use this file for exact styling and component decisions.
-Use `apps/admin/design_principles.md` for the workflow and product rationale behind these choices.
+这个文件用于精确的样式与组件决策。
+关于这些选择背后的工作流与产品理由，请查看 `apps/admin/design_principles.md`。
 
-## 1. Visual Theme & Atmosphere
+## 1. 视觉主题与氛围
 
-The admin workspace is a compact editorial operations tool.
+管理工作台是一个紧凑的编辑运营工具。
 
-It should feel like:
+它应当给人的感觉是：
 
-- a focused workspace for community staff
-- warm but controlled
-- dense, efficient, and legible
-- quieter than the public site
+- 面向社区工作人员的专注工作区
+- 温暖但受控
+- 高密度、高效率、易辨读
+- 比公共网站更安静
 
-Key characteristics:
+关键特征：
 
-- muted warm background with subtle grid texture
-- slim sidebar and compact workspace shell
-- tight spacing rhythm and restrained panels
-- Chinese-first navigation and labels
-- rounded surfaces, but with smaller radii than the public site
-- utility-oriented typography with limited ornamental display usage
+- 带有细微网格纹理的低饱和暖色背景
+- 细窄侧边栏与紧凑的工作区外壳
+- 紧密的间距节奏与克制的面板
+- 中文优先的导航与标签
+- 圆角表面，但圆角半径小于公共网站
+- 偏实用的排版，装饰性展示字体使用受限
 
-## 2. Color Palette & Roles
+## 2. 色板与角色
 
-### Core Tokens
+### 核心令牌
 
-| Role | Token | Value | Use |
+| 角色 | Token | 值 | 用途 |
 |------|-------|-------|-----|
-| Page background | `--page-bg` | `#efe7d7` | admin canvas |
-| Surface | `--surface` | `rgba(255, 252, 246, 0.94)` | primary panels |
-| Strong surface | `--surface-strong` | `#fffdf8` | brighter cards or overlays |
-| Accent surface | `--surface-accent` | `rgba(14, 73, 68, 0.08)` | active utility backgrounds |
-| Danger surface | `--surface-danger` | `rgba(167, 52, 32, 0.08)` | destructive warning panels |
-| Success surface | `--surface-success` | `rgba(30, 120, 83, 0.08)` | success panels |
-| Primary text | `--text` | `#19312d` | all default text |
-| Secondary text | `--muted` | `#5f6c68` | helper copy and metadata |
-| Border line | `--line` | `rgba(25, 49, 45, 0.14)` | inputs, panels, rows |
-| Strong line | `--line-strong` | `rgba(25, 49, 45, 0.24)` | selected or emphasized separators |
-| Accent | `--accent` | `#0f6d64` | active nav, primary buttons, focus accents |
-| Accent strong | `--accent-strong` | `#0a4f49` | emphasis text and links |
-| Accent soft | `--accent-soft` | `#dff1eb` | soft accent fills |
-| Danger | `--danger` | `#a73420` | destructive text and states |
-| Success | `--success` | `#1e7853` | success text and states |
+| 页面背景 | `--page-bg` | `#efe7d7` | 管理后台画布 |
+| 表层 | `--surface` | `rgba(255, 252, 246, 0.94)` | 主面板 |
+| 强表层 | `--surface-strong` | `#fffdf8` | 更明亮的卡片或叠层 |
+| 强调表层 | `--surface-accent` | `rgba(14, 73, 68, 0.08)` | 激活态工具背景 |
+| Danger 表层 | `--surface-danger` | `rgba(167, 52, 32, 0.08)` | 破坏性警告面板 |
+| Success 表层 | `--surface-success` | `rgba(30, 120, 83, 0.08)` | 成功态面板 |
+| 主文本 | `--text` | `#19312d` | 默认文本 |
+| 次文本 | `--muted` | `#5f6c68` | 辅助文案与元数据 |
+| 边框线 | `--line` | `rgba(25, 49, 45, 0.14)` | 输入框、面板、行项 |
+| 强边框线 | `--line-strong` | `rgba(25, 49, 45, 0.24)` | 选中态或强调分隔线 |
+| Accent | `--accent` | `#0f6d64` | 激活导航、主按钮、焦点强调 |
+| 强 Accent | `--accent-strong` | `#0a4f49` | 强调文本与链接 |
+| 柔和 Accent | `--accent-soft` | `#dff1eb` | 柔和强调填充 |
+| Danger | `--danger` | `#a73420` | 破坏性文本与状态 |
+| Success | `--success` | `#1e7853` | 成功文本与状态 |
 
-### Functional Rules
+### 功能规则
 
-- accent green is the primary operational highlight
-- danger red should remain restrained and reserved for risky actions
-- backgrounds should stay warm and light, not sterile white
-- panel emphasis should come from tint and border change more often than from strong shadows
+- 绿色 accent 是主要的运营高亮色
+- 红色 danger 必须保持克制，只用于高风险操作
+- 背景应保持温暖、明亮，而不是冷白色
+- 面板强调更应通过色调和边框变化体现，而不是强阴影
 
-## 3. Typography Rules
+## 3. 排版规则
 
-### Font Families
+### 字体族
 
-- UI/body: `IBM Plex Sans`, `Noto Sans SC`, `Segoe UI`, sans-serif
-- Monospace: `IBM Plex Mono`, `SFMono-Regular`, monospace
+- UI / 正文：`IBM Plex Sans`、`Noto Sans SC`、`Segoe UI`、sans-serif
+- Monospace：`IBM Plex Mono`、`SFMono-Regular`、monospace
 
-### Type Hierarchy
+### 字阶层级
 
-| Role | Font | Size | Weight | Line Height | Notes |
+| 角色 | 字体 | 尺寸 | 字重 | 行高 | 说明 |
 |------|------|------|--------|-------------|-------|
-| Page title | IBM Plex Sans | app-specific, around `1.5rem` to `2rem` | 700 | `1.2` to `1.3` | compact section emphasis |
-| Nav item | IBM Plex Sans | `0.98rem` | 750 | `1.2` | readable, compact, Chinese-first |
-| Body | IBM Plex Sans | `1rem` | 400 | `1.5` | default workspace text |
-| Helper/meta | IBM Plex Sans | `0.92rem` or smaller | 400 | `1.4` to `1.5` | muted explanatory copy |
-| Utility label | IBM Plex Sans | `0.72rem` | 800 | `1.2` | uppercase accent labels when needed |
-| Button | IBM Plex Sans | `0.8rem` to `0.9rem` | 700 | `1.2` | compact but strong |
-| Code/meta chips | IBM Plex Mono | `0.68rem` to `0.88em` | 400 | compact | version, small inline code |
+| 页面标题 | IBM Plex Sans | 视应用而定，约 `1.5rem` 到 `2rem` | 700 | `1.2` 到 `1.3` | 紧凑的分区强调 |
+| 导航项 | IBM Plex Sans | `0.98rem` | 750 | `1.2` | 易读、紧凑、中文优先 |
+| 正文 | IBM Plex Sans | `1rem` | 400 | `1.5` | 默认工作区文本 |
+| 辅助 / 元数据 | IBM Plex Sans | `0.92rem` 或更小 | 400 | `1.4` 到 `1.5` | 低调的说明文案 |
+| 工具标签 | IBM Plex Sans | `0.72rem` | 800 | `1.2` | 在需要时使用大写 accent 标签 |
+| 按钮 | IBM Plex Sans | `0.8rem` 到 `0.9rem` | 700 | `1.2` | 紧凑但明确 |
+| 代码 / 元数据 chips | IBM Plex Mono | `0.68rem` 到 `0.88em` | 400 | 紧凑 | 版本号、小型 inline code |
 
-### Typography Rules
+### 排版规则
 
-- admin typography should optimize for scanning and data maintenance, not drama
-- Chinese labels should remain comfortable at compact sizes
-- metadata can be small, but navigation must not feel tiny
-- uppercase utility labels are acceptable in small doses for status and eyebrow text
+- admin 排版应优先服务扫描与数据维护，而不是戏剧性表达
+- 中文标签在紧凑字号下仍应保持舒适
+- 元数据可以较小，但导航不能显得太细碎
+- 大写工具标签可以少量用于状态与眉标文本
 
-## 4. Component Stylings
+## 4. 组件样式
 
-### Sidebar
+### 侧边栏
 
-- narrow default width
-- brand area small and practical
-- nav links are compact rounded rectangles
-- active nav state uses accent tint, stronger border, and a left indicator bar
-- version info sits below account and logout area
+- 默认宽度较窄
+- 品牌区域小而务实
+- 导航链接采用紧凑圆角矩形
+- 激活态使用 accent 染色、更强边框和左侧指示条
+- 版本信息位于账号与退出区域下方
 
-### Panels
+### 面板
 
-- panels use light surfaces, border, and restrained blur
-- panels should feel stable and quiet, not floating like marketing cards
-- destructive panels use tinted danger surfaces rather than loud fills
+- 面板使用浅色表层、边框与克制的模糊效果
+- 面板应稳定、安静，不应像营销卡片一样漂浮
+- 破坏性面板使用带色调的 danger 表层，而不是强烈纯色填充
 
-### Buttons
+### 按钮
 
-- default shape: pill
-- primary button: green gradient fill with white text
-- secondary button: surface-backed with border
-- danger button: text or border emphasis before strong fills
-- compact button variant is preferred inside dense tables and editors
+- 默认形状：胶囊形
+- 主按钮：绿色渐变填充，白色文字
+- 次按钮：`surface` 背景加边框
+- danger 按钮：优先用文字或边框强调，而不是强填充
+- 在密集表格和编辑器中优先使用紧凑按钮变体
 
-### Inputs
+### 输入控件
 
-- default input background is soft white
-- focus state uses accent border and outer glow ring
-- form controls should align tightly with labels and surrounding actions
-- avoid oversized textarea wrappers when the field is secondary
+- 默认输入背景是柔和白色
+- 焦点状态使用 accent 边框和外层光晕环
+- 表单控件应与标签和相邻操作紧密对齐
+- 当字段不是主字段时，避免使用过大的 textarea 容器
 
-### Tables and List Toolbars
+### 表格与列表工具栏
 
-- list toolbar should usually fit in one thin row on desktop
-- table links are text-like, not pill buttons
-- status filters can live inline or in header-level UI when density improves
-- pagination is mandatory for long datasets
+- 桌面端列表工具栏通常应能放进一行细条
+- 表格链接应像文本，不应像胶囊按钮
+- 当能提升密度时，状态筛选器可以放在内联区或页头级界面
+- 长数据集必须分页
 
-### Tabs and Split Modes
+### 选项卡与分裂模式
 
-- use tabs when two workflows are easy to confuse
-- tabs should stay visually quiet and compact
-- do not create giant duplicated panels for mutually exclusive workflows
+- 当两个工作流容易混淆时使用选项卡
+- 选项卡应保持安静、紧凑
+- 不要为互斥工作流创建庞大且重复的面板
 
-### Destructive Actions
+### 破坏性操作
 
-- never full-width by default inside dense pages
-- smaller size, reduced emphasis, explicit confirmation
-- keep them away from primary publish actions
+- 默认不要全宽
+- 使用更小尺寸、更低强调和显式确认
+- 应远离主要发布操作
 
-## 5. Layout Principles
+## 5. 布局原则
 
-### Spacing Scale
+### 间距尺度
 
-Preferred admin spacing rhythm:
+推荐的管理后台间距节奏：
 
 - `0.14rem`
 - `0.22rem`
@@ -146,84 +146,84 @@ Preferred admin spacing rhythm:
 - `0.84rem`
 - `1rem`
 
-### Shell and Grid
+### 外壳与网格
 
-- app shell columns: `142px` sidebar + main workspace
-- app shell outer padding: `0.44rem`
-- sidebar/workspace gap: about `0.78rem`
-- workspace shell should feel like one compact tray, not many disconnected layers
+- 应用外壳列结构：`142px` 侧边栏 + 主工作区
+- 应用外壳外边距：`0.44rem`
+- 侧边栏与工作区间距：约 `0.78rem`
+- 工作区外壳应感觉像一个紧凑托盘，而不是许多彼此割裂的层
 
-### Radius Scale
+### 圆角尺度
 
-| Token | Value | Use |
+| Token | 值 | 用途 |
 |------|-------|-----|
-| `--radius-lg` | `18px` | workspace panels and major shells |
-| `--radius-md` | `14px` | standard panels and cards |
-| `--radius-sm` | `10px` | controls and tighter blocks |
-| pill | `999px` | buttons, chips, filters |
+| `--radius-lg` | `18px` | 工作区面板与主要外壳 |
+| `--radius-md` | `14px` | 标准面板与卡片 |
+| `--radius-sm` | `10px` | 控件与更紧的区块 |
+| pill | `999px` | 按钮、标签块、筛选器 |
 
-### Whitespace Philosophy
+### 留白哲学
 
-- minimize dead space between sidebar and workspace
-- reduce vertical waste in list pages and editors
-- preserve enough rhythm for error prevention and visual grouping
-- admin should feel denser than the public site at every comparable layer
+- 尽量减少侧边栏与工作区之间的无效空白
+- 减少列表页和编辑器中的纵向浪费
+- 为防错和视觉分组保留足够节奏
+- 在所有可比较层级上，admin 都应比公共网站更密集
 
-## 6. Depth & Elevation
+## 6. 深度与层次
 
-| Level | Treatment | Use |
+| 层级 | 处理方式 | 用途 |
 |------|-----------|-----|
-| Canvas | warm gradient background + subtle grid mask | overall app field |
-| Workspace shell | light translucent tray with inset highlight | primary frame |
-| Panel | surface + border + `--shadow` | content blocks |
-| Active item | tint + border + small inset or hover lift | nav/filter/button active state |
-| Focus | accent border + 4px outer ring | input focus treatment |
+| 画布 | 暖色渐变背景 + 细微网格遮罩 | 整体应用场域 |
+| 工作区外壳 | 浅色半透明托盘 + 内嵌高光 | 主框架 |
+| 面板 | `surface` + 边框 + `--shadow` | 内容区块 |
+| 激活项 | 染色 + 边框 + 轻微内嵌或悬停抬升 | 导航 / 筛选器 / 按钮激活态 |
+| 焦点 | accent 边框 + 4px 外环 | 输入焦点处理 |
 
-Rules:
+规则：
 
-- rely more on tint, border, and shell nesting than heavy shadow stacks
-- admin depth should stay controlled and legible
-- blur is acceptable, but it should support polish rather than dominate the UI
+- 多依赖色调、边框和外壳层级，而不是厚重阴影堆栈
+- 管理后台的深度感应保持可控、清晰
+- 可以使用模糊效果，但它应服务细节质感，而不是主导界面
 
-## 7. Do's and Don'ts
+## 7. 建议与禁忌
 
-### Do
+### 建议
 
-- keep admin pages compact and readable
-- let primary editing regions dominate editor layouts
-- use one-line toolbars for search, counts, and lightweight actions when possible
-- keep navigation narrow and legible
-- use explicit but restrained danger styling
-- write Chinese-first labels for operator workflows
+- 保持管理后台页面紧凑且易读
+- 让主编辑区域主导编辑页布局
+- 在可行时，将搜索、数量和轻量操作压缩成单行工具栏
+- 保持导航窄而清晰
+- 对 danger 样式明确但克制
+- 为运营工作流编写中文优先标签
 
-### Don't
+### 禁忌
 
-- don't create large empty meta areas beside editors
-- don't use huge section headers for ordinary list pages
-- don't scatter related controls across multiple disconnected rows without need
-- don't style destructive actions like primary CTAs
-- don't regress into raw CMS collection vocabulary when task vocabulary exists
-- don't enlarge the sidebar just because extra space exists
+- 不要在编辑器旁创建大面积空白元数据区域
+- 不要为普通列表页使用巨大的分区标题
+- 不要无故把相关控件拆散到多行、多个割裂区域
+- 不要把破坏性操作样式做成主要 CTA
+- 当任务词汇已存在时，不要退回生硬的 CMS collection 术语
+- 不要因为有多余空间就放大侧边栏
 
-## 8. Responsive Behavior
+## 8. 响应式行为
 
-### Breakpoints
+### 断点
 
-| Name | Width | Expected Behavior |
+| 名称 | 宽度 | 预期行为 |
 |------|-------|-------------------|
-| Compact laptop and below | implementation-defined | workspace can stack or simplify only if necessary |
-| Primary target | desktop/laptop | optimize for stable desktop editing |
+| 紧凑笔记本及以下 | 由实现定义 | 只有必要时才堆叠或简化工作区 |
+| 主要目标 | 桌面端 / 笔记本 | 优化稳定的桌面编辑体验 |
 
-### Responsive Rules
+### 响应式规则
 
-- admin is desktop-first and does not need full mobile parity in v1
-- prioritize laptop readability and editing efficiency over touch layouts
-- if layouts collapse, preserve the editor and table usability first
-- do not spend complexity budget on mobile-specific admin patterns unless explicitly required
+- 管理后台以桌面优先，V1 不要求完整移动端对等体验
+- 优先保障笔记本可读性与编辑效率，而不是触摸式布局
+- 如果布局必须折叠，优先保住编辑器和表格的可用性
+- 除非明确要求，否则不要把复杂度预算花在移动端专用管理后台模式上
 
-## 9. Agent Prompt Guide
+## 9. 提示词指南
 
-### Quick Token Summary
+### 快速令牌摘要
 
 - background: `#efe7d7`
 - surface: `rgba(255, 252, 246, 0.94)`
@@ -237,19 +237,19 @@ Rules:
 - primary font: `IBM Plex Sans` + `Noto Sans SC`
 - monospace: `IBM Plex Mono`
 
-### Prompt Pattern
+### 提示词模式
 
-Use prompts like:
+可以使用如下提示词：
 
-- "Design a compact Chinese-first admin list page with a narrow left sidebar, one-line toolbar, paginated table, muted helper text, and restrained green accent states."
-- "Build a Rebase admin editor where the main content area dominates, secondary metadata is compact, destructive actions are small and confirmed, and panels use soft warm surfaces."
-- "Create an admin sidebar using 142px width, dense navigation links, accent-tinted active state, and compact account/version blocks at the bottom."
+- "设计一个中文优先、紧凑的管理后台列表页，使用窄左侧边栏、单行工具栏、分页表格、低调的辅助文本和克制的绿色激活态。"
+- "构建一个 Rebase 管理后台编辑器，让主内容区保持主导，次级元数据保持紧凑，破坏性操作尺寸更小且需确认，面板使用柔和暖色表层。"
+- "创建一个宽度为 142px 的管理后台侧边栏，使用高密度导航链接、带强调色染色的激活态，以及位于底部的紧凑账号 / 版本区块。"
 
-### Guardrail Reminder
+### 护栏提醒
 
-When in doubt:
+如有疑问：
 
-1. compress before adding more panels
-2. keep the operator's primary task visible
-3. prefer inline filters and compact toolbars
-4. never let decorative UI outrank the editing surface
+1. 先压缩，再考虑增加更多面板
+2. 保持运营人员的主任务可见
+3. 优先使用内联筛选器和紧凑工具栏
+4. 绝不要让装饰性界面压过编辑界面

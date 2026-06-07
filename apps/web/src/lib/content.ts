@@ -9,7 +9,7 @@ import type {
   SiteSettings,
 } from '@rebase/types';
 
-import { fetchPublicApi } from '@/lib/api';
+import { fetchPublicApi, getPublicApiUrl } from '@/lib/api';
 
 interface PublicSiteConfigPayload {
   siteName: string;
@@ -64,6 +64,29 @@ interface GeekDailyArchiveOverviewPayload {
   totalEpisodes: number;
   years: number[];
   featuredTags: string[];
+}
+
+interface GeekDailyArchivePayload {
+  data: PublicGeekDailyPreviewPayload[];
+  meta: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+    hasPrevPage: boolean;
+    hasNextPage: boolean;
+  };
+}
+
+interface PublicGeekDailySearchItemPayload {
+  title: string;
+  authorName: string;
+  summary: string;
+}
+
+interface PublicGeekDailySearchDocumentPayload extends Omit<PublicGeekDailyPreviewPayload, 'items'> {
+  year: string;
+  items: PublicGeekDailySearchItemPayload[];
 }
 
 interface HomeFeedPayload {
@@ -136,6 +159,35 @@ const mapGeekDailyEpisodePreview = (episode: PublicGeekDailyPreviewPayload): Gee
   })),
 });
 
+const countOccurrences = (value: string, pattern: string) => value.split(pattern).length - 1;
+
+const normalizeSummary = (summary: string) => {
+  let value = summary.trim();
+
+  if (!value) {
+    return value;
+  }
+
+  if (countOccurrences(value, '“') > countOccurrences(value, '”')) {
+    value += '”';
+  }
+
+  if (countOccurrences(value, '‘') > countOccurrences(value, '’')) {
+    value += '’';
+  }
+
+  if (!/[。！？!?…）)”’]$/u.test(value)) {
+    value += '…';
+  }
+
+  return value;
+};
+
+const mapArticle = (article: Article): Article => ({
+  ...article,
+  summary: normalizeSummary(article.summary),
+});
+
 export async function getSiteSettings() {
   return mapSiteSettings(await fetchPublicApi<PublicSiteConfigPayload>('/api/public/v1/site-config'));
 }
@@ -145,7 +197,8 @@ export async function getAboutContent(): Promise<AboutContent> {
 }
 
 export async function getArticles(): Promise<Article[]> {
-  return fetchPublicApi<Article[]>('/api/public/v1/articles');
+  const articles = await fetchPublicApi<Article[]>('/api/public/v1/articles');
+  return articles.map(mapArticle);
 }
 
 export async function getArticleByPublicNumber(publicNumber: number | undefined) {
@@ -154,7 +207,7 @@ export async function getArticleByPublicNumber(publicNumber: number | undefined)
   }
 
   try {
-    return await fetchPublicApi<Article>(`/api/public/v1/articles/${publicNumber}`);
+    return mapArticle(await fetchPublicApi<Article>(`/api/public/v1/articles/${publicNumber}`));
   } catch {
     return undefined;
   }
@@ -220,6 +273,126 @@ export async function getGeekDailyEpisodes(limit = -1): Promise<GeekDailyEpisode
   return episodes.map(mapGeekDailyEpisodePreview);
 }
 
+export async function getGeekDailyArchivePage({
+  page = 1,
+  pageSize = 10,
+  tag,
+  year,
+}: {
+  page?: number;
+  pageSize?: number;
+  tag?: string;
+  year?: string;
+} = {}) {
+  const params = new URLSearchParams();
+  params.set('page', String(page));
+  params.set('pageSize', String(pageSize));
+
+  if (tag) {
+    params.set('tag', tag);
+  }
+
+  if (year) {
+    params.set('year', year);
+  }
+
+  const response = await fetch(getPublicApiUrl(`/api/public/v1/geekdaily/archive?${params.toString()}`), {
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+  const payload = (await response.json()) as GeekDailyArchivePayload;
+
+  if (!response.ok) {
+    throw new Error(`public api request failed for GeekDaily archive: status ${response.status}`);
+  }
+
+  return {
+    data: payload.data.map(mapGeekDailyEpisodePreview),
+    meta: payload.meta,
+  };
+}
+
+const getSearchableGeekDailyText = (episode: PublicGeekDailySearchDocumentPayload) =>
+  [
+    episode.title,
+    episode.summary,
+    episode.tags.join(' '),
+    episode.year,
+    ...episode.items.flatMap((item) => [item.title, item.authorName, item.summary]),
+  ]
+    .join(' ')
+    .toLowerCase();
+
+const mapGeekDailySearchDocument = (episode: PublicGeekDailySearchDocumentPayload): GeekDailyEpisodePreview => ({
+  ...episode,
+  items: episode.items.map((item) => ({
+    title: item.title,
+    author: item.authorName,
+    sourceUrl: '',
+    summary: item.summary,
+  })),
+});
+
+export async function getGeekDailySearchPage({
+  query = '',
+  page = 1,
+  pageSize = 10,
+  tag,
+  year,
+}: {
+  query?: string;
+  page?: number;
+  pageSize?: number;
+  tag?: string;
+  year?: string;
+} = {}) {
+  const documents = await fetchPublicApi<PublicGeekDailySearchDocumentPayload[]>('/api/public/v1/geekdaily/search');
+  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedTag = tag?.trim() ?? '';
+  const normalizedYear = year?.trim() ?? '';
+  const baseResults = documents.filter((document) => {
+    const matchesTag = !normalizedTag || document.tags.includes(normalizedTag);
+    const matchesYear = !normalizedYear || document.year === normalizedYear;
+    return matchesTag && matchesYear;
+  });
+  const filtered = normalizedQuery
+    ? (() => {
+        const numericQuery = normalizedQuery.replace(/^(geekdaily|episode)-/, '').replace(/^#/, '').trim();
+        const exactEpisodeMatches = baseResults.filter((document) => String(document.episodeNumber) === numericQuery);
+
+        if (/^\d+$/.test(numericQuery) && exactEpisodeMatches.length > 0) {
+          return exactEpisodeMatches;
+        }
+
+        const tokens = normalizedQuery
+          .split(/\s+/)
+          .map((token) => token.trim())
+          .filter(Boolean);
+
+        return baseResults.filter((document) =>
+          tokens.every((token) => getSearchableGeekDailyText(document).includes(token)),
+        );
+      })()
+    : baseResults;
+  const requestedPageSize = Number.isFinite(pageSize) && pageSize > 0 ? Math.floor(pageSize) : 10;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / requestedPageSize));
+  const normalizedPage = Number.isFinite(page) && page > 0 ? Math.min(Math.floor(page), totalPages) : 1;
+  const start = (normalizedPage - 1) * requestedPageSize;
+
+  return {
+    data: filtered.slice(start, start + requestedPageSize).map(mapGeekDailySearchDocument),
+    meta: {
+      page: normalizedPage,
+      pageSize: requestedPageSize,
+      totalItems: filtered.length,
+      totalPages,
+      hasPrevPage: normalizedPage > 1,
+      hasNextPage: normalizedPage < totalPages,
+    },
+  };
+}
+
 export async function getGeekDailyEpisodeBySlug(slug: string) {
   try {
     return mapGeekDailyEpisode(await fetchPublicApi<PublicGeekDailyEpisodePayload>(`/api/public/v1/geekdaily/${slug}`));
@@ -233,7 +406,8 @@ export async function getGeekDailyArchiveOverview() {
 }
 
 export async function getLatestArticles(count = 3) {
-  return fetchPublicApi<Article[]>(`/api/public/v1/articles?limit=${count}`);
+  const articles = await fetchPublicApi<Article[]>(`/api/public/v1/articles?limit=${count}`);
+  return articles.map(mapArticle);
 }
 
 export async function getLatestJobs(count = 3) {
@@ -257,7 +431,7 @@ export async function getHomeFeed() {
   const payload = await fetchPublicApi<HomeFeedPayload>('/api/public/v1/home');
 
   return {
-    latestArticles: payload.recentArticles,
+    latestArticles: payload.recentArticles.map(mapArticle),
     latestJobs: payload.recentJobs,
     latestEvents: payload.upcomingEvents,
     latestGeekDaily: payload.latestGeekDaily ? mapGeekDailyEpisode(payload.latestGeekDaily) : undefined,

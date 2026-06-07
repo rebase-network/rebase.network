@@ -1,157 +1,92 @@
-# Web Design Principles
+# Web 设计原则
 
-Design principles for the public Rebase website in `apps/web`.
+适用于 `apps/web` 中 Rebase 公共网站的设计原则。
 
-This file explains the public product intent and interaction philosophy.
-It does not replace `apps/web/DESIGN.md`, which holds the hard visual specification.
+这个文件只回答三个问题：
 
-## Product Intent
+- 公共网站要帮助读者完成什么
+- 页面区块应如何分工
+- 哪些交互与文案取向长期成立
 
-The public website is a community media surface.
+颜色、字体、间距、组件和响应式硬规范见 `apps/web/DESIGN.md`。
 
-It should help readers:
+## 产品意图
 
-- understand what Rebase is quickly
-- discover current community activity
-- browse archives efficiently
-- read long-form content without friction
-- move between related content with minimal explanation
+公共网站是一个社区媒体界面，不是宣传册站点。
 
-It should not feel like:
+它应帮助读者：
 
-- a corporate brochure site
-- a VC portfolio page
-- a generic content farm
-- a maximalist landing page full of growth copy
+- 快速理解 Rebase 是什么
+- 发现当前社区活动
+- 高效浏览归档内容
+- 顺畅阅读长内容
+- 在相关内容之间自然跳转
 
-## Core Feeling
+## 核心原则
 
-The public site should feel:
+### 内容优先
 
-- warm
-- editorial
-- active
-- human
-- structured
-- trustworthy
+- 阅读和浏览优先于装饰
+- 主内容区块必须立刻清晰
+- 装饰只服务氛围，不与内容争抢注意力
 
-The public site should not feel:
+### 社区媒体高于营销
 
-- cold
-- luxury-minimal for its own sake
-- overly promotional
-- over-designed relative to the content
+- 页面应展示持续发生的社区活动迹象
+- 让文章、GeekDaily、岗位和活动本身承担内容表达
+- 避免在同一页面重复同一套品牌定位语
 
-## Primary Principles
+### 每个区块只做一件事
 
-### Content First
+- 首屏区负责建立方向感
+- 工具栏负责标识和导流
+- 卡片负责摘要和引导进入
+- 侧边栏只在它确实帮助行动或理解时存在
 
-- reading and browsing outrank decoration
-- the main content block should be obvious immediately
-- decorative texture should support atmosphere, not compete for attention
+### 交互必须诚实
 
-### Community Media Over Marketing
+- 看起来可点击的内容通常就应该可点击
+- 次要动作必须保持次要样式
+- RSS 应可见，但不应压过主要阅读路径
 
-- show signs of ongoing activity
-- let articles, GeekDaily, jobs, and events speak for the community
-- avoid repeating the same positioning statement in multiple blocks on the same page
+## 页面类型优先级
 
-### Compact, Not Cramped
+### 首页
 
-- archive pages should be tight and scan-friendly
-- detail pages should be focused and readable
-- remove redundant section copy when the next action is already obvious
+- 用最少解释建立 Rebase 的气质和入口
+- 应像社区活动快照，而不是等权模块堆叠
 
-### One Clear Purpose Per Block
+### 归档页
 
-- a hero should orient
-- a toolbar should label and route
-- a card should summarize and invite entry
-- a sidebar should either help action or help interpretation
+- 列表内容应主导页面
+- 首屏区与辅助区块必须简洁
+- 当完整分区标题没有增益时，使用工具栏
 
-If a block does not clearly help one of those jobs, compress it or remove it.
+### 详情页
 
-### Interaction Must Match Affordance
+- 正文应尽早出现
+- 不要在首屏区和正文里重复同一份元数据
+- 相关内容区块保持轻量
 
-- if a card lifts on hover, it should usually be clickable
-- if an action is secondary, style it as secondary
-- if RSS is available, keep it visible but low-emphasis
+## 文案规则
 
-## Page-Type Guidance
+- 使用简洁、直接、可扫描的标签
+- 优先使用务实语言，而不是口号式语言
+- 删除那些只是在解释显而易见页面结构的文案
 
-### Homepage
-
-- may be the most expressive page
-- should establish the Rebase mood and value quickly
-- should feel like a living snapshot of the community
-- should not become a dense wall of equal-weight modules
-
-### Archive Pages
-
-Examples:
-
-- GeekDaily list
-- jobs list
-- articles list
-- events list
-
-Rules:
-
-- hero should be concise
-- support blocks should be thin
-- list content should dominate the page
-- use toolbars when a full section header is unnecessary
-
-### Detail Pages
-
-Rules:
-
-- put the main content body near the top
-- do not repeat the same metadata in both hero and body unless it changes user decision-making
-- keep related-content sections lightweight
-- keep action sidebars compact and readable
-
-## Copy Guidance
-
-- use concise, direct labels
-- prefer practical language over brand-slogan language
-- avoid filler descriptions that restate obvious page structure
-- keep section labels short enough to scan quickly
-
-Good:
+好的例子：
 
 - `开放岗位`
 - `更多岗位`
 - `回到招聘列表`
 - `订阅 RSS`
 
-Avoid:
+## 反模式
 
-- long archive descriptions above already-visible lists
-- headers that repeat what the hero just said
-- helper text that explains obvious UI behavior
+默认不要引入这些模式：
 
-## Public Interaction Rules
-
-- hover implies action
-- focus must stay visible
-- navigational cards should usually be single-click targets
-- destructive or risky actions are rare on the public site and should not be visually prominent
-
-## Responsive Philosophy
-
-- public pages must work on both desktop and mobile
-- on desktop, support scanning through grid density
-- on mobile, preserve reading clarity before preserving decorative composition
-- collapse layout complexity before reducing text readability
-
-## Anti-Patterns
-
-Do not introduce these patterns into the public site by default:
-
-- giant archive heroes with low informational value
-- three layers of title plus eyebrow plus subtitle plus helper copy for simple lists
-- repeated metrics that do not change user choice
-- CMS-like form language on public-facing content
-- decorative tags with little browsing value
-- interaction cues that do not lead anywhere
+- 信息价值很低的巨大首屏区
+- 简单列表上方的长篇解释
+- 对用户决策没有影响的重复指标
+- 面向公众页面里出现 CMS 式术语
+- 没有去向的交互提示

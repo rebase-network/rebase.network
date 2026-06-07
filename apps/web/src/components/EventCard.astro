@@ -1,6 +1,7 @@
 ---
 import type { Event } from '@rebase/types';
 import { formatEventWindow } from '@/lib/dates';
+import { resolvePublicEventStatus } from '@/lib/eventStatus';
 import { DEFAULT_EVENT_COVER_PATH } from '@/lib/placeholders';
 import { getEventPath } from '@/lib/paths';
 
@@ -10,6 +11,7 @@ interface Props {
 }
 
 const { event, compact = false } = Astro.props;
+const eventStatus = resolvePublicEventStatus(event);
 ---
 
 <article class:list={['event-card', 'card', { compact }]}>
@@ -18,13 +20,13 @@ const { event, compact = false } = Astro.props;
       class:list={['cover-image', !event.coverImageUrl && 'default-cover-image']}
       src={event.coverImageUrl ?? DEFAULT_EVENT_COVER_PATH}
       alt=""
-      loading="lazy"
+      loading={compact ? 'eager' : 'lazy'}
     />
   </a>
   <div class="content">
     <div class="status-row">
-      <p class="status">{event.status === 'upcoming' ? '即将举行' : '往期活动'}</p>
-      {event.registrationUrl && <span class="chip">立即报名</span>}
+      <p class="status">{eventStatus.statusLabel}</p>
+      <span class:list={['chip', eventStatus.isPast && 'is-past']}>{eventStatus.actionLabel}</span>
     </div>
     <h3>
       <a href={getEventPath(event.publicNumber, event.slug)}>{event.title}</a>
@@ -50,7 +52,7 @@ const { event, compact = false } = Astro.props;
 
   .event-card:hover,
   .event-card:focus-within {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     border-color: rgba(15, 118, 110, 0.2);
     box-shadow: var(--shadow-strong);
   }
@@ -72,7 +74,9 @@ const { event, compact = false } = Astro.props;
   }
 
   .default-cover-image {
-    background: transparent;
+    background:
+      radial-gradient(circle at 78% 12%, rgba(243, 196, 110, 0.2), transparent 22%),
+      linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(255, 255, 255, 0.2));
   }
 
   .event-card:hover .cover-image,
@@ -89,8 +93,8 @@ const { event, compact = false } = Astro.props;
     color: var(--accent-strong);
     font-size: 0.76rem;
     font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    text-transform: none;
   }
 
   .status-row {
@@ -112,8 +116,13 @@ const { event, compact = false } = Astro.props;
     color: var(--accent-strong);
     font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .chip.is-past {
+    background: rgba(92, 107, 115, 0.08);
+    color: var(--muted);
   }
 
   h3 {

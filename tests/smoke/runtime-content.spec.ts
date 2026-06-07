@@ -12,7 +12,7 @@ test('published article pages reflect newly inserted and updated content without
   await client.connect();
 
   try {
-    await client.query(
+    const insertResult = await client.query<{ public_number: number }>(
       `
         insert into articles (
           slug,
@@ -26,6 +26,7 @@ test('published article pages reflect newly inserted and updated content without
           status,
           published_at
         ) values ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, 'published', $9)
+        returning public_number
       `,
       [
         slug,
@@ -39,8 +40,9 @@ test('published article pages reflect newly inserted and updated content without
         new Date('2026-04-07T12:00:00.000Z'),
       ],
     );
+    const articlePath = `/articles/${insertResult.rows[0]?.public_number}-${slug}`;
 
-    const firstResponse = await request.get(`/articles/${slug}?v=1`);
+    const firstResponse = await request.get(`${articlePath}?v=1`);
     expect(firstResponse.ok()).toBeTruthy();
     const firstBody = await firstResponse.text();
     expect(firstBody).toContain(initialTitle);
@@ -58,7 +60,7 @@ test('published article pages reflect newly inserted and updated content without
       [updatedTitle, 'runtime smoke summary beta', 'runtime smoke body beta', slug],
     );
 
-    const secondResponse = await request.get(`/articles/${slug}?v=2`);
+    const secondResponse = await request.get(`${articlePath}?v=2`);
     expect(secondResponse.ok()).toBeTruthy();
     const secondBody = await secondResponse.text();
     expect(secondBody).toContain(updatedTitle);

@@ -52,8 +52,8 @@ const { eyebrow, title, description, href, hrefLabel = '查看更多', compact =
     color: var(--accent-strong);
     font-size: 0.76rem;
     font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-transform: none;
   }
 
   h2 {
@@ -94,14 +94,13 @@ const { eyebrow, title, description, href, hrefLabel = '查看更多', compact =
     display: inline-flex;
     align-items: center;
     gap: 0.55rem;
-    padding: 0.78rem 1rem;
+    padding: 0.58rem 0.74rem;
     border: 1px solid rgba(15, 118, 110, 0.14);
     border-radius: 999px;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 252, 250, 0.86));
+    background: rgba(255, 255, 255, 0.58);
     color: var(--accent-strong);
     font-weight: 700;
-    box-shadow: 0 10px 20px rgba(15, 118, 110, 0.08);
+    box-shadow: none;
     white-space: nowrap;
     transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
   }
@@ -110,9 +109,8 @@ const { eyebrow, title, description, href, hrefLabel = '查看更多', compact =
   a:focus-visible {
     transform: translateY(-1px);
     border-color: rgba(15, 118, 110, 0.28);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(236, 249, 245, 0.92));
-    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.12);
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: var(--shadow-soft);
   }
 
   @media (max-width: 760px) {

@@ -36,9 +36,9 @@ test('feed links use the agreed public route conventions', async ({ request }) =
 
   const jobsFeed = await request.get('/who-is-hiring/rss.xml');
   const jobsBody = await jobsFeed.text();
-  expect(jobsBody).toContain('/who-is-hiring/protocol-growth-lead');
+  expect(jobsBody).toMatch(/https:\/\/rebase\.network\/who-is-hiring\/\d+-[a-z0-9-]+/);
 
   const eventsFeed = await request.get('/events/rss.xml');
   const eventsBody = await eventsFeed.text();
-  expect(eventsBody).toContain('/events/2026-04-25-geekdaily-editor-roundtable');
+  expect(eventsBody).toMatch(/https:\/\/rebase\.network\/events\/\d+-[a-z0-9-]+/);
 });

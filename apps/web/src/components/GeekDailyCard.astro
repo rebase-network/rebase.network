@@ -46,7 +46,7 @@ const { episode, compact = false } = Astro.props;
 
   .daily-card:hover,
   .daily-card:focus-within {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     border-color: rgba(245, 158, 11, 0.22);
     box-shadow: var(--shadow-strong);
   }
@@ -62,8 +62,8 @@ const { episode, compact = false } = Astro.props;
     margin: 0 0 0.75rem;
     color: var(--muted);
     font-size: 0.82rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
   }
 
   .issue-no {
@@ -101,8 +101,8 @@ const { episode, compact = false } = Astro.props;
     color: var(--accent-strong);
     font-size: 0.82rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
   }
 
   .tags {

@@ -1,48 +1,50 @@
 # DESIGN.md
 
-This repository uses a split design-document structure.
+这个仓库采用按应用拆分的设计文档结构。
 
-The root `DESIGN.md` is an index, not the full design system.
+根目录的 `DESIGN.md` 只是索引，不是完整设计系统。
 
-Use the app-specific files below when building or reviewing UI.
+使用规则很简单：
 
-## Structure
+- `design_principles.md` 负责“为什么这样设计”
+- `DESIGN.md` 负责“具体应该怎么做”
 
-### Public Website
+## 结构
+
+### 公共网站
 
 - `apps/web/design_principles.md`
-  - public-site design intent
-  - community-media tone
-  - content hierarchy
-  - interaction and copy principles
+  - 公共站点的产品意图
+  - 区块分工
+  - 交互与文案原则
 - `apps/web/DESIGN.md`
-  - hard visual spec for the public site
-  - colors, typography, spacing, components, responsive rules, and agent prompts
+  - 公共网站的硬性视觉规范
+  - 颜色、排版、间距、组件、响应式规则与提示词
 
-### Admin Workspace
+### 管理工作台
 
 - `apps/admin/design_principles.md`
-  - admin UX intent
-  - operator workflow priorities
-  - density, safety, and information hierarchy rules
+  - 管理后台产品意图
+  - 任务流优先级
+  - 交互与文案原则
 - `apps/admin/DESIGN.md`
-  - hard visual spec for the admin workspace
-  - colors, typography, spacing, components, responsive rules, and agent prompts
+  - 管理工作台的硬性视觉规范
+  - 颜色、排版、间距、组件、响应式规则与提示词
 
-## How To Use These Files
+## 如何使用这些文件
 
-- start with the relevant `design_principles.md` to understand the product and interaction intent
-- then use the matching app `DESIGN.md` for exact visual and component decisions
-- if a new design direction becomes the default, update both the principles file and the hard-spec file for that app
+- 先阅读对应的 `design_principles.md`，理解页面目标与交互取向
+- 再使用对应应用的 `DESIGN.md`，做出具体视觉和组件决策
+- 如果一项变化同时改变了“设计意图”和“默认实现”，需要同时更新两份文件
 
-## Update Rules
+## 更新规则
 
-- do not mix public-site rules into admin files, or admin rules into public-site files
-- prefer updating app-local files instead of expanding this index
-- if a rule is only true for one surface, keep it in that surface's documents
-- if a component changes in implementation and the change becomes the new standard, update the matching app `DESIGN.md`
+- 不要把公共网站规则混入 admin 文件，也不要把 admin 规则混入公共网站文件
+- 不要把视觉细节写进 `design_principles.md`
+- 不要把产品意图和任务规则重复写进 `DESIGN.md`
+- 优先更新应用本地文档，而不是继续扩展这个索引
 
-## Related Files
+## 相关文件
 
-- `README.md` for the project-wide documentation index
-- `AGENTS.md` for repository workflow rules
+- `README.md`：项目级文档索引
+- `AGENTS.md`：仓库工作流规则
