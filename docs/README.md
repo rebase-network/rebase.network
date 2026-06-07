@@ -6,7 +6,6 @@ Not every markdown file in the repo belongs here. Some documents intentionally s
 
 - `README.md`, `DESIGN.md`, and `AGENTS.md` stay at the repository root because they are top-level entry documents
 - `apps/web/*` and `apps/admin/*` design docs stay beside the surfaces they specify
-- `skills/*` documentation stays with each skill because it is workflow-local, not product-local
 
 ## Layout
 
@@ -42,4 +41,4 @@ Development, QA, deployment, and release operations:
 
 Repository-wide product, architecture, and operations docs should live under `docs/`.
 
-Only keep documents outside `docs/` when they are intentionally local to a specific app, skill, or repository entrypoint.
+Only keep documents outside `docs/` when they are intentionally local to a specific app or repository entrypoint.

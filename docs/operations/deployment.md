@@ -106,6 +106,7 @@ git rev-parse --short HEAD
 
 ```bash
 ./ops/manage.sh check
+./ops/manage.sh health
 ./ops/manage.sh rollout api
 ./ops/manage.sh deploy api
 ./ops/manage.sh deploy stack
@@ -123,6 +124,7 @@ git rev-parse --short HEAD
 | Command | Use |
 | --- | --- |
 | `./ops/manage.sh check` | verify host, compose file, env file, and running services |
+| `./ops/manage.sh health` | verify API liveness from the server side |
 | `./ops/manage.sh rollout api` | create a DB backup, deploy the API, run DB migrations, and verify readiness |
 | `./ops/manage.sh deploy api` | deploy API and shared-package changes |
 | `./ops/manage.sh deploy stack` | deploy compose-level or full-stack changes |
@@ -180,6 +182,17 @@ This performs the production-safe default sequence:
 
 ### Local verification commands
 
+Frontend release checks:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm --filter @rebase/web check
+pnpm build:web:prod
+pnpm build:admin:prod
+```
+
+Deploy-path checks:
+
 ```bash
 pnpm deploy:web:dry-run
 pnpm deploy:admin:dry-run
@@ -195,9 +208,44 @@ Frontend failure:
 3. check the Cloudflare settings in `docs/operations/production-config.md`
 4. only use manual `wrangler deploy` as an explicit emergency action, and record it in the release notes
 
+Common Cloudflare-specific failures:
+
+- `ERR_PNPM_OUTDATED_LOCKFILE`: run `pnpm install`, commit the updated `pnpm-lock.yaml`, and re-run `pnpm install --frozen-lockfile` locally before pushing
+- compatibility date mismatch: keep `apps/web/astro.config.mjs` aligned with `apps/web/wrangler.template.jsonc` so the Cloudflare adapter does not drift to an implicit future date
+- duplicate KV provisioning: set `SESSION_KV_NAMESPACE_ID` and `SESSION_KV_NAMESPACE_PREVIEW_ID` in Workers Builds so deploys bind the existing namespace instead of trying to create a new one
+- production domain returns `hello world`: verify the correct Worker is attached to the domain, the build ran from `main`, and the deploy command still points at the generated config
+- local Miniflare/runtime problems and Cloudflare build problems are not always the same class of failure; do not assume one explains the other
+
 Backend failure:
 
 1. run `./ops/manage.sh logs api 200`
 2. run `./ops/manage.sh ready`
 3. confirm the deploy machine is on the intended `main` commit
 4. redeploy from the correct commit if the synced code was wrong
+
+If `./ops/manage.sh check` fails, inspect these in order:
+
+1. SSH access to the current server host in `docs/operations/production-config.md`
+2. the remote project dir in `docs/operations/production-config.md` exists
+3. remote `infra/production/server.env` exists
+4. Docker Engine and Docker Compose plugin are installed remotely
+5. the compose file path in `docs/operations/production-config.md` still matches the server layout
+
+If `https://api.rebase.network` fails but local health is good, inspect:
+
+- `./ops/manage.sh logs cloudflared 200`
+- the tunnel token in `infra/production/server.env`
+- Cloudflare Zero Trust hostname mapping for `api.rebase.network`
+
+If R2 upload flows fail, check these in order:
+
+1. confirm the API is running in `r2-s3` mode rather than `wrangler-cli`
+2. verify `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, and `R2_PUBLIC_BASE_URL` in `infra/production/server.env`
+3. verify the R2 key is bucket-scoped to `rebase-media` with `Object Read & Write`
+4. restart the API after any env change with `./ops/manage.sh deploy api --no-sync`
+
+Known backend rollout failures:
+
+- `spawn wrangler ENOENT`: the service is in Wrangler fallback mode but the container cannot find the `wrangler` executable
+- `401` from `HeadBucket` or `PutObject`: the configured R2 S3 credentials are invalid, mismatched to the account, or missing bucket write scope
+- Docker build failure on `COPY geekdaily.csv`: `geekdaily.csv` is ignored by git and must not be required by the production API image build
