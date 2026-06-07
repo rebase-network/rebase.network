@@ -107,7 +107,7 @@ Start here:
 Product and delivery:
 
 - `docs/content-model.md`: public content domains, field rules, and URL conventions
-- `docs/implementation-plan.md`: delivery phases and milestone expectations
+- `docs/implementation-plan.md`: current roadmap and active workstreams
 - `docs/acceptance-criteria.md`: product and module-level acceptance criteria
 - `docs/quality-assurance.md`: validation standards and smoke-check expectations
 

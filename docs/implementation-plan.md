@@ -1,142 +1,111 @@
-# Implementation Plan
+# Implementation Roadmap
 
-## Goal
+## Purpose
 
-Turn the agreed V1 scope into a working first release in controlled phases.
+This file tracks the current implementation roadmap for the repository.
 
-Each completed batch of work should be committed promptly following the repository commit convention.
+It replaces the original phased buildout plan now that the V1 foundation already exists in the codebase.
 
-## Proposed Repository Structure
+## Current Baseline
 
-```text
-apps/
-  web/
-  admin/
-  api/
-packages/
-  db/
-  shared/
-  ui/
-docs/
-```
+The repository already includes:
 
-The repository targets a custom admin and API stack rather than a separately managed headless CMS.
+- `apps/web` for the public Astro site
+- `apps/admin` for the internal Vue workspace
+- `apps/api` for public and admin APIs plus auth/bootstrap flows
+- `packages/db`, `packages/shared`, `packages/types`, and `packages/ui` for shared foundations
+- local bootstrap scripts, smoke tests, and production rollout helpers
 
-Planned deployment target:
+This means the main job is no longer "build the stack from scratch". The main job is to harden, maintain, and evolve the current implementation without letting the docs drift away from reality.
 
-- `apps/web` on Cloudflare Workers
-- `apps/admin` on a separate Cloudflare Worker
-- `apps/api`, PostgreSQL, and `cloudflared` on a private backend host
+## Active Workstreams
 
-## Phase 1: Foundation and Direction Reset
+### 1. Public Site Stability and Content Quality
 
-Deliverables:
+Focus:
 
-- freeze the custom-admin architecture and data model
-- update docs and implementation assumptions
-- preserve the current public frontend baseline while aligning it with the target stack
+- keep archive, list, and detail pages stable across desktop and mobile
+- preserve route, RSS, sitemap, and health-check behavior
+- fold lasting UX and visual rules into `apps/web/design_principles.md` and `apps/web/DESIGN.md`
+- prevent regressions around misleading CTAs, broken search or pagination, metadata duplication, and placeholder content quality
 
 Definition of done:
 
-- the custom admin direction is documented clearly
-- the repo has an agreed target structure
-- the implementation direction is explicit
+- affected public routes still pass smoke coverage
+- changed page types are reviewed in a browser on desktop and mobile
+- source-of-truth docs are updated when the default behavior changes
 
-## Phase 2: Backend and Shared Foundations
+### 2. Admin Workflow Hardening
 
-Deliverables:
+Focus:
 
-- scaffold `apps/admin`, `apps/api`, `packages/db`, and `packages/shared`
-- Better Auth baseline
-- RBAC baseline
-- PostgreSQL schema and migrations
-- health and observability baseline
-- media metadata model
+- improve validation, publish/archive flows, and editor ergonomics for site settings, articles, jobs, events, contributors, GeekDaily, assets, staff, and audit views
+- keep role and permission behavior aligned with `docs/admin-architecture.md` and `docs/admin-information-architecture.md`
+- reduce operator reliance on manual cleanup or direct database intervention
 
 Definition of done:
 
-- staff can authenticate into the admin shell
-- admin and public API baselines run locally
-- schema and migrations are reproducible
+- target editorial workflows can be completed end-to-end from the admin UI
+- empty states, validation failures, and permission failures are explicit
+- admin behavior changes are reflected in the relevant docs
 
-## Phase 3: Core Rebase Admin Modules
+### 3. Backend and Data Reliability
 
-Deliverables:
+Focus:
 
-- site settings and singleton pages
-- articles admin flows
-- jobs admin flows
-- events admin flows
-- contributors and role management
-- media library baseline
-- audit log baseline
+- keep public and admin API contracts aligned with `docs/content-model.md` and `docs/admin-data-model.md`
+- preserve reproducible migrations, seed data, GeekDaily import behavior, runtime content freshness, and asset handling
+- maintain health and readiness visibility around API and database changes
 
 Definition of done:
 
-- staff can create, edit, publish, and archive the core content types through the custom admin
-- public API routes can serve published content for those modules
+- migrations and seeds remain reproducible on a clean local setup
+- content updates appear through the expected runtime path
+- backend changes do not silently break public routes, feeds, or admin flows
 
-## Phase 4: GeekDaily Workflow
+### 4. Release and Operations Hardening
 
-Deliverables:
+Focus:
 
-- episode-based GeekDaily schema
-- dedicated episode and item editor UX
-- CSV-informed migration strategy
-- search index output for frontend search
-- CSV import workflow for historical GeekDaily archive
-
-Definition of done:
-
-- GeekDaily list and detail pages work with episode-level URLs
-- staff can edit episodes through a dedicated workflow rather than generic JSON editing
-- historical CSV import remains reproducible
-
-## Phase 5: Public Site Data Transition
-
-Deliverables:
-
-- move the public site onto Rebase public API fetching
-- preserve existing public routes and RSS behavior
-- keep R2-backed media handling aligned with the new API
-- remove obsolete data access assumptions from the public site
+- keep `ops/manage.sh`, `infra/production/*`, `docs/deployment.md`, `docs/production-config.md`, and `docs/launch-checklist.md` in sync
+- prefer small, reviewable releases through the `dev` -> `main` pull request flow
+- validate dry-run deployment paths before production-impacting changes
 
 Definition of done:
 
-- pages render published content through Rebase-owned public APIs
-- the public site depends on Rebase-owned public APIs for published content
+- local and production procedures match the documented commands
+- release-critical checks remain current
+- rollback, backup, and readiness expectations stay clear to operators
 
-## Phase 6: Hardening and Launch Preparation
+### 5. Documentation Governance
 
-Deliverables:
+Focus:
 
-- SEO baseline
-- metadata and social cards
-- RSS feeds
-- cache strategy review
-- domain configuration checklist
-- analytics and observability basics
-- simple backend health-check baseline
-- deployment docs for web and admin
-- deployment docs for API and database
+- keep the `docs/` root limited to active baseline and operational source-of-truth files
+- archive dated process notes, redesign plans, and one-off review artifacts instead of mixing them into the live doc set
+- remove stale planning language, commands, and paths promptly when implementation changes
 
 Definition of done:
 
-- core SEO is in place
-- launch-critical routes are validated
-- deployment and domain steps are documented for the public worker, admin worker, and tunneled API stack
-- basic service health checks are documented
+- active docs reflect the current repo structure and scripts
+- historical materials stay available for reference without polluting the main index
+- future redesign work updates the durable design docs instead of creating a new shadow source of truth
 
-## Open Decisions to Resolve Before Launch
+## Near-Term Priorities
 
-- whether both public domains can remain directly accessible in production
-- exact Cloudflare cache policy by route
-- final analytics stack
-- final secret rotation and release checklist details for Cloudflare and the server stack
+- expand verification around admin login and critical publish flows, which currently have less automated coverage than the public site
+- keep deployment and launch docs aligned with the actual release workflow and helper scripts
+- continue tightening public content quality and content-state handling without reopening broad V1 scope
 
-## Working Rules During Implementation
+## Working Rules
 
-- keep V1 scope tight
-- avoid adding registration, user systems, or custom member features beyond staff auth
-- prefer stable and maintainable choices over clever complexity
+- keep V1 scope tight unless a requirement is explicitly re-scoped
 - commit after each coherent batch of completed work
+- update the matching source-of-truth doc when implementation changes become the new default
+- prefer archiving dated process material over leaving it in the live documentation root
+
+## Update Rule
+
+Revise this file when repository priorities materially change.
+
+Do not use it as a one-off feature plan or redesign scratchpad.

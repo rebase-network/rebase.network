@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1320" viewBox="0 0 1600 1320" fill="none">
+  <defs>
+    <linearGradient id="pageBg" x1="60" y1="40" x2="1540" y2="1240" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#dcece6"/>
+      <stop offset="0.5" stop-color="#f5efe2"/>
+      <stop offset="1" stop-color="#f7debf"/>
+    </linearGradient>
+    <linearGradient id="panelBg" x1="120" y1="140" x2="1480" y2="1060" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fbfdfb"/>
+      <stop offset="1" stop-color="#f6fbf9"/>
+    </linearGradient>
+    <radialGradient id="panelGlowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1288 290) rotate(145.33) scale(390 255)">
+      <stop stop-color="#d6efe9"/>
+      <stop offset="1" stop-color="#d6efe9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="panelGlowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1330 820) rotate(144.42) scale(448 272)">
+      <stop stop-color="#f6e0b4"/>
+      <stop offset="1" stop-color="#f6e0b4" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softShadow" x="86" y="106" width="1428" height="1030" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="12"/>
+      <feGaussianBlur stdDeviation="17"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.176471 0 0 0 0 0.239216 0 0 0 0 0.223529 0 0 0 0.08 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_hero"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_hero" result="shape"/>
+    </filter>
+  </defs>
+
+  <style>
+    .ui {
+      font-family: "SF Pro Display", "PingFang SC", "Noto Sans SC", sans-serif;
+      fill: #23313a;
+    }
+
+    .serif {
+      font-family: "Iowan Old Style", "Songti SC", "Noto Serif SC", Georgia, serif;
+      fill: #1f2d39;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .eyebrow {
+      font-size: 20px;
+      font-weight: 700;
+      fill: #0d665f;
+      letter-spacing: 0.06em;
+    }
+
+    .section-label {
+      font-size: 26px;
+      font-weight: 700;
+      fill: #2a3b41;
+    }
+
+    .title {
+      font-size: 74px;
+      line-height: 1.02;
+    }
+
+    .event-title {
+      font-size: 70px;
+      line-height: 1.02;
+    }
+
+    .summary {
+      font-size: 28px;
+      font-weight: 500;
+      fill: #5d6b73;
+    }
+
+    .meta {
+      font-size: 21px;
+      font-weight: 700;
+      fill: #5f6f76;
+      letter-spacing: 0.02em;
+    }
+
+    .chip-text {
+      font-size: 20px;
+      font-weight: 700;
+      fill: #0f655d;
+    }
+
+    .button-text {
+      font-size: 20px;
+      font-weight: 700;
+      fill: #27444d;
+    }
+
+    .button-text-inverse {
+      font-size: 20px;
+      font-weight: 700;
+      fill: #f8fbfa;
+    }
+
+    .callout {
+      font-size: 20px;
+      font-weight: 700;
+      fill: #526269;
+    }
+
+    .page-note {
+      font-size: 28px;
+      font-weight: 700;
+      fill: #2a3a40;
+    }
+  </style>
+
+  <rect width="1600" height="1320" fill="url(#pageBg)"/>
+
+  <text class="ui section-label" x="120" y="88">文章页 / 活动页 hero 社区化提案</text>
+  <text class="ui summary" x="120" y="126">方向：标题更收，文本更宽，meta 更轻，首屏高度更短，状态信息更自然。</text>
+
+  <g filter="url(#softShadow)">
+    <rect x="120" y="170" width="1360" height="440" rx="36" fill="url(#panelBg)"/>
+    <rect x="120" y="170" width="1360" height="440" rx="36" stroke="#d7e7e2"/>
+    <ellipse cx="1180" cy="310" rx="340" ry="220" fill="url(#panelGlowA)"/>
+
+    <rect x="168" y="218" width="184" height="42" rx="21" fill="#eaf5f0"/>
+    <text class="ui chip-text" x="206" y="245">文章页 hero 提案</text>
+
+    <rect x="1200" y="218" width="222" height="42" rx="21" fill="#f4f7f6"/>
+    <text class="ui eyebrow" x="1232" y="245">LONGFORM DISPATCH</text>
+
+    <text class="serif title" x="168" y="338">
+      <tspan x="168" dy="0">把 Rebase 做成一个</tspan>
+      <tspan x="168" dy="82">持续更新的社区媒体站点</tspan>
+    </text>
+
+    <text class="ui summary" x="168" y="492">
+      <tspan x="168" dy="0">为什么我们不只想做一个静态官网，而是想把社区日常真正组织成可阅读、</tspan>
+      <tspan x="168" dy="40">可订阅、可回看的公共空间。</tspan>
+    </text>
+
+    <rect x="168" y="534" width="168" height="44" rx="22" fill="#eef4f2"/>
+    <text class="ui meta" x="198" y="563">2026年4月5日</text>
+    <circle cx="354" cy="556" r="4" fill="#b8c7c1"/>
+    <rect x="376" y="534" width="144" height="44" rx="22" fill="#eef4f2"/>
+    <text class="ui meta" x="411" y="563">7 min read</text>
+    <circle cx="538" cy="556" r="4" fill="#b8c7c1"/>
+    <rect x="560" y="534" width="102" height="44" rx="22" fill="#eef4f2"/>
+    <text class="ui meta" x="598" y="563">Ruix</text>
+
+    <rect x="1214" y="524" width="208" height="54" rx="27" fill="#f8fbfa" stroke="#dbe9e4"/>
+    <text class="ui button-text" x="1256" y="557">订阅文章 RSS</text>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <rect x="120" y="676" width="1360" height="440" rx="36" fill="url(#panelBg)"/>
+    <rect x="120" y="676" width="1360" height="440" rx="36" stroke="#d7e7e2"/>
+    <ellipse cx="1260" cy="826" rx="376" ry="232" fill="url(#panelGlowB)"/>
+
+    <rect x="168" y="724" width="184" height="42" rx="21" fill="#eaf5f0"/>
+    <text class="ui chip-text" x="206" y="751">活动页 hero 提案</text>
+
+    <rect x="168" y="784" width="122" height="40" rx="20" fill="#edf6ef"/>
+    <text class="ui eyebrow" x="198" y="809">即将举办</text>
+
+    <text class="serif" x="168" y="892" font-size="64">
+      <tspan x="168" dy="0">Rebase Beijing Protocol</tspan>
+      <tspan x="168" dy="72">Reading Room</tspan>
+    </text>
+
+    <text class="ui summary" x="168" y="1022">
+      <tspan x="168" dy="0">一起读一篇 protocol research，顺手讨论它如何影响社区的长期内容栏目。</tspan>
+    </text>
+
+    <rect x="168" y="1044" width="314" height="44" rx="22" fill="#eef4f2"/>
+    <text class="ui meta" x="198" y="1073">2026年4月29日 19:00-21:00</text>
+    <circle cx="504" cy="1066" r="4" fill="#b8c7c1"/>
+    <rect x="526" y="1044" width="398" height="44" rx="22" fill="#eef4f2"/>
+    <text class="ui meta" x="560" y="1073">Beijing · Chaoyang reading room</text>
+
+    <rect x="1182" y="1030" width="112" height="54" rx="27" fill="#23313a"/>
+    <text class="ui button-text-inverse" x="1216" y="1063">报名</text>
+    <rect x="1310" y="1030" width="112" height="54" rx="27" fill="#f8fbfa" stroke="#dbe9e4"/>
+    <text class="ui button-text" x="1342" y="1063">归档</text>
+  </g>
+
+  <rect x="120" y="1162" width="1360" height="1" fill="#d9e4df"/>
+
+  <text class="ui page-note" x="120" y="1216">这版不是重新做风格，而是把现在的 detail hero 从“正式发布页”再往“社区内容页”推一步。</text>
+  <text class="ui callout" x="120" y="1260">1. 标题更小，但阅读重心还在。</text>
+  <text class="ui callout" x="520" y="1260">2. 文本块更宽，英文标题不再被压成很多行。</text>
+  <text class="ui callout" x="1028" y="1260">3. meta 改成更轻的信息片，状态标签回到内容流里。</text>
+</svg>

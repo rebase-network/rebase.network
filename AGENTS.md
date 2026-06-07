@@ -46,7 +46,7 @@ Examples:
 - Use `docs/admin-architecture.md` for the custom admin, API, auth, and media architecture.
 - Use `docs/admin-information-architecture.md` for operator workflows and admin module structure.
 - Use `docs/admin-data-model.md` for backend tables, workflow states, and validation-critical constraints.
-- Use `docs/implementation-plan.md` for delivery phases and milestone expectations.
+- Use `docs/implementation-plan.md` for the current roadmap and active workstreams.
 - Use `docs/acceptance-criteria.md` and `docs/quality-assurance.md` for acceptance criteria and development validation standards.
 - Use `docs/deployment.md` for the operator handbook.
 - Use `docs/production-config.md` for the production settings index.
