@@ -179,8 +179,6 @@ importers:
 
   packages/types: {}
 
-  packages/ui: {}
-
 packages:
 
   '@astrojs/check@0.9.8':
