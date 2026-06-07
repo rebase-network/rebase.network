@@ -30,8 +30,11 @@ const adminMessageTranslations = new Map<string, string>([
   ['one or more fields failed validation', '有字段校验未通过，请检查标红项。'],
   ['response payload is missing the data field', '响应数据缺少 data 字段。'],
   ['article not found', '未找到文章。'],
+  ['asset not found', '未找到媒体文件。'],
+  ['asset is still referenced', '该媒体仍被内容引用，无法删除。'],
   ['event not found', '未找到活动。'],
   ['job not found', '未找到招聘信息。'],
+  ['R2 delete is not configured', '当前环境未配置媒体删除能力。'],
 ]);
 
 const localizeAdminMessage = (message: string) => {

@@ -213,6 +213,7 @@ export const formatAuditAction = (action: string) => {
     publish: '发布',
     archive: '归档',
     upload: '上传',
+    delete: '删除',
   };
 
   if (!target || !verb) {

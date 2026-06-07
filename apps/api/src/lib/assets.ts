@@ -1,9 +1,9 @@
 import { and, count, desc, eq, ilike, inArray, or } from 'drizzle-orm';
 
-import { assets } from '@rebase/db';
+import { articles, assets, contributors, events } from '@rebase/db';
 import type { AdminAssetRecord, AssetInput, AssetStatus, PaginatedResult } from '@rebase/shared';
 
-import { getAssetUploadConfig, type UploadAssetOptions, uploadAssetToR2 } from './asset-storage.js';
+import { deleteAssetFromStorage, getAssetUploadConfig, type UploadAssetOptions, uploadAssetToR2 } from './asset-storage.js';
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
@@ -45,6 +45,26 @@ interface ListAdminAssetsInput extends PaginationInput {
   status?: AssetStatus;
   visibility?: 'public' | 'private';
 }
+
+const getAssetReferenceSummary = async (assetId: string) => {
+  const db = getDb();
+  const [articleRows, eventRows, contributorRows] = await Promise.all([
+    db.select({ value: count() }).from(articles).where(eq(articles.coverAssetId, assetId)),
+    db.select({ value: count() }).from(events).where(eq(events.coverAssetId, assetId)),
+    db.select({ value: count() }).from(contributors).where(eq(contributors.avatarAssetId, assetId)),
+  ]);
+
+  const articleCount = articleRows[0]?.value ?? 0;
+  const eventCount = eventRows[0]?.value ?? 0;
+  const contributorCount = contributorRows[0]?.value ?? 0;
+
+  return {
+    articles: articleCount,
+    events: eventCount,
+    contributors: contributorCount,
+    total: articleCount + eventCount + contributorCount,
+  };
+};
 
 export const listAdminAssets = async (input: ListAdminAssetsInput = {}): Promise<PaginatedResult<AdminAssetRecord>> => {
   const db = getDb();
@@ -226,4 +246,40 @@ export const updateAdminAsset = async (id: string, input: AssetInput, actor: Aud
   });
 
   return mapAsset(updated);
+};
+
+export const deleteAdminAsset = async (id: string, actor: AuditActor) => {
+  const db = getDb();
+  const rows = await db.select().from(assets).where(eq(assets.id, id)).limit(1);
+  const row = rows[0] ?? null;
+
+  if (!row) {
+    throw notFound('asset not found');
+  }
+
+  const references = await getAssetReferenceSummary(id);
+  if (references.total > 0) {
+    throw badRequest('asset is still referenced', references);
+  }
+
+  await deleteAssetFromStorage({
+    storageProvider: row.storageProvider,
+    bucket: row.bucket,
+    objectKey: row.objectKey,
+  });
+
+  await db.delete(assets).where(eq(assets.id, id));
+
+  await createAuditEntry({
+    ...actor,
+    action: 'asset.delete',
+    targetType: 'asset',
+    targetId: row.id,
+    summary: `Deleted asset ${row.objectKey}`,
+  });
+
+  return {
+    id: row.id,
+    objectKey: row.objectKey,
+  };
 };

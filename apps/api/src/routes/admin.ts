@@ -21,7 +21,7 @@ import {
 import { listAuditEntries } from '../lib/audit.js';
 import { getDashboardStats } from '../lib/access.js';
 import { createAdminArticle, getAdminArticle, listAdminArticles, publishAdminArticle, updateAdminArticle, archiveAdminArticle } from '../lib/articles.js';
-import { createAdminAsset, getAdminAsset, getAdminAssetUploadConfig, listAdminAssets, updateAdminAsset, uploadAdminAsset } from '../lib/assets.js';
+import { createAdminAsset, deleteAdminAsset, getAdminAsset, getAdminAssetUploadConfig, listAdminAssets, updateAdminAsset, uploadAdminAsset } from '../lib/assets.js';
 import { createAdminContributor, createAdminContributorRole, getAdminContributor, listAdminContributorRoles, listAdminContributors, updateAdminContributor, updateAdminContributorRole } from '../lib/contributors.js';
 import { createAdminEvent, getAdminEvent, listAdminEvents, publishAdminEvent, updateAdminEvent, archiveAdminEvent } from '../lib/events.js';
 import { createAdminGeekDailyEpisode, getAdminGeekDailyEpisode, listAdminGeekDailyEpisodes, publishAdminGeekDailyEpisode, updateAdminGeekDailyEpisode, archiveAdminGeekDailyEpisode } from '../lib/geekdaily.js';
@@ -270,6 +270,7 @@ adminRoutes.patch('/assets/:id', requireActiveStaff('asset.manage'), async (c) =
   const payload = expectValid(c, validateAssetInput(await c.req.json().catch(() => null)));
   return c.json(ok(await updateAdminAsset(c.req.param('id'), payload, getAuditActor(c))));
 });
+adminRoutes.delete('/assets/:id', requireActiveStaff('asset.manage'), async (c) => c.json(ok(await deleteAdminAsset(c.req.param('id'), getAuditActor(c)))));
 
 adminRoutes.get('/roles', requireActiveStaff('staff.manage'), async (c) => c.json(ok(await listAdminRoles())));
 adminRoutes.get('/staff', requireActiveStaff('staff.manage'), async (c) => {

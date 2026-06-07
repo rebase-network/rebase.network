@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join } from 'node:path';
 import { promisify } from 'node:util';
 
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import type { AdminAssetUploadConfig } from '@rebase/shared';
 import { imageSize } from 'image-size';
 
@@ -294,6 +294,21 @@ const uploadWithWrangler = async (objectKey: string, body: Buffer, mimeType: str
   }
 };
 
+const deleteWithS3 = async (bucket: string, objectKey: string) => {
+  const client = getS3Client();
+
+  await client.send(
+    new DeleteObjectCommand({
+      Bucket: bucket,
+      Key: objectKey,
+    }),
+  );
+};
+
+const deleteWithWrangler = async (bucket: string, objectKey: string) => {
+  await runWrangler(['r2', 'object', 'delete', `${bucket}/${objectKey}`, '--remote']);
+};
+
 export const getAssetUploadConfig = (): AdminAssetUploadConfig => {
   const env = getEnv();
   const mode = detectStorageMode();
@@ -330,6 +345,12 @@ export interface UploadAssetOptions {
   visibility?: 'public' | 'private';
   altText?: string | null;
   assetType?: string | null;
+}
+
+interface DeleteAssetOptions {
+  storageProvider?: string | null;
+  bucket?: string | null;
+  objectKey?: string | null;
 }
 
 export const uploadAssetToR2 = async ({
@@ -387,4 +408,33 @@ export const uploadAssetToR2 = async ({
     altText: String(altText ?? '').trim(),
     status: 'active',
   };
+};
+
+export const deleteAssetFromStorage = async ({ storageProvider, bucket, objectKey }: DeleteAssetOptions) => {
+  if (!objectKey) {
+    return;
+  }
+
+  if (storageProvider && storageProvider !== 'r2') {
+    return;
+  }
+
+  const env = getEnv();
+  const mode = detectStorageMode();
+  const targetBucket = bucket || env.r2Bucket;
+
+  if (mode === 'disabled') {
+    throw serviceUnavailable('R2 delete is not configured');
+  }
+
+  if (!targetBucket) {
+    throw serviceUnavailable('R2 delete is missing the bucket configuration');
+  }
+
+  if (mode === 'r2-s3') {
+    await deleteWithS3(targetBucket, objectKey);
+    return;
+  }
+
+  await deleteWithWrangler(targetBucket, objectKey);
 };
