@@ -1,12 +1,16 @@
 # 质量保障
 
-这个文件定义当前仓库的开发期验证方式。
+这个文件定义开发期验证方式。
 
-它回答的是“怎么检查”，而不是“历史上规划过什么”。产品验收门槛见 `docs/product/acceptance-criteria.md`，生产发布检查见 `docs/operations/launch-checklist.md`。
+它只回答“开发阶段怎么检查”，不负责记录生产部署步骤、线上配置值或发布后清单。对应内容分别见：
+
+- `docs/operations/deployment.md`
+- `docs/operations/production-config.md`
+- `docs/operations/launch-checklist.md`
 
 ## 使用原则
 
-- 只做与本次改动相关的最小验证集
+- 只执行与本次改动相关的最小验证集
 - 优先验证真实用户路径，而不是只看静态页面
 - 浏览器检查、自动化检查和文档同步缺一不可
 
@@ -21,7 +25,7 @@
 - `pnpm typecheck`
 - `pnpm test:smoke`，如果受影响路由在 smoke 覆盖范围内
 
-如果改动影响生产构建或发布产物，再执行：
+如果改动影响生产构建产物，再执行：
 
 - `pnpm build:web:prod`
 
@@ -32,7 +36,7 @@
 - 相关浏览器检查
 - `pnpm typecheck:admin`
 
-如果改动影响生产构建或发布产物，再执行：
+如果改动影响生产构建产物，再执行：
 
 - `pnpm build:admin`
 - 或 `pnpm build:admin:prod`
@@ -49,21 +53,13 @@
 - `pnpm db:migrate`
 - `pnpm db:seed`
 
-如果改动会影响公共页面或管理工作流，还要补做对应的浏览器检查。
+如果改动还会影响公共页面或管理工作流，要补做对应浏览器检查。
 
-### 部署、Cloudflare 或生产配置改动
+### 部署或生产配置改动
 
-按影响面执行：
-
-- `pnpm deploy:web:dry-run`
-- `pnpm deploy:admin:dry-run`
-- `pnpm deploy:server:config`
-
-并同步检查：
-
-- `docs/operations/deployment.md`
-- `docs/operations/production-config.md`
-- `docs/operations/launch-checklist.md`
+- 运行 `docs/operations/deployment.md` 中对应的 dry-run 或配置检查命令
+- 同步更新 `docs/operations/production-config.md`
+- 确保发布后检查项仍与 `docs/operations/launch-checklist.md` 一致
 
 ## 浏览器检查基线
 
@@ -86,9 +82,9 @@
 - 空状态、长标题、缺图是否可接受
 - 桌面端和移动端是否都可用
 
-## Smoke 与结构检查基线
+## 本地 Smoke 基线
 
-当前应优先覆盖的公共路由：
+当前应优先覆盖的本地公共路由：
 
 - `/`
 - `/about`
