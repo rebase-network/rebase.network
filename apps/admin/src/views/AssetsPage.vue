@@ -74,6 +74,7 @@ const uploadConfig = ref<AdminAssetUploadConfig | null>(null);
 const loading = ref(true);
 const saving = ref(false);
 const uploading = ref(false);
+const deleting = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const copyFeedback = ref('');
@@ -120,6 +121,7 @@ const editorPreviewMimeType = computed(() => selectedAsset.value?.mimeType || fo
 const editorPreviewIsImage = computed(() => editorPreviewSrc.value.length > 0 && editorPreviewMimeType.value.startsWith('image/'));
 const editorPanelTitle = computed(() => (isCreating.value ? '手动新建媒体记录' : '编辑已上传文件'));
 const saveButtonLabel = computed(() => (saving.value ? '保存中…' : isCreating.value ? '创建记录' : '保存修改'));
+const deleteButtonLabel = computed(() => (deleting.value ? '删除中…' : '删除文件'));
 const uploadButtonLabel = computed(() => {
   if (!uploading.value) {
     return uploadHasMultipleFiles.value ? '批量上传到 R2' : '上传到 R2';
@@ -521,6 +523,35 @@ const saveAsset = async () => {
   }
 };
 
+const deleteAssetRecord = async () => {
+  if (!selectedAsset.value) {
+    errorMessage.value = '请先选择一个已上传文件。';
+    return;
+  }
+
+  const confirmed = window.confirm(`确定删除文件“${selectedAsset.value.originalFilename}”吗？此操作会删除媒体记录，并尝试删除 R2 中的对象。`);
+  if (!confirmed) {
+    return;
+  }
+
+  deleting.value = true;
+  resetFeedback();
+
+  try {
+    const deleted = await adminRequest<{ id: string; objectKey: string }>(`/api/admin/v1/assets/${selectedAsset.value.id}`, {
+      method: 'DELETE',
+    });
+    assetPage.value = 1;
+    await loadPage(null, false);
+    successMessage.value = `已删除文件：${deleted.objectKey}`;
+    activeWorkspaceMode.value = 'edit';
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : '无法删除媒体文件。';
+  } finally {
+    deleting.value = false;
+  }
+};
+
 onMounted(() => {
   void loadPage();
 });
@@ -552,7 +583,16 @@ const goToAssetPage = async (nextPage: number) => {
         <p>上传与复用媒体资源</p>
       </div>
       <div v-if="activeWorkspaceMode === 'edit' && hasEditableRecord" class="page-actions">
-        <button class="button-link button-primary" type="button" :disabled="loading || saving" @click="saveAsset">
+        <button
+          v-if="selectedAsset && !isCreating"
+          class="button-link button-danger"
+          type="button"
+          :disabled="loading || saving || deleting"
+          @click="deleteAssetRecord"
+        >
+          {{ deleteButtonLabel }}
+        </button>
+        <button class="button-link button-primary" type="button" :disabled="loading || saving || deleting" @click="saveAsset">
           {{ saveButtonLabel }}
         </button>
       </div>
@@ -809,6 +849,9 @@ const goToAssetPage = async (nextPage: number) => {
             <a v-if="selectedAsset?.publicUrl || form.publicUrl" class="button-link button-compact" :href="selectedAsset?.publicUrl || form.publicUrl" target="_blank" rel="noreferrer">
               打开文件
             </a>
+            <button v-if="selectedAsset && !isCreating" class="button-link button-compact button-danger" type="button" :disabled="deleting" @click="deleteAssetRecord">
+              {{ deleteButtonLabel }}
+            </button>
           </div>
 
           <dl class="summary-grid summary-grid-2">
