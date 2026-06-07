@@ -25,7 +25,7 @@ Recommended Markdown-backed fields include:
 - `jobs.description`
 - `geekdaily_episodes.body`
 
-Detailed backend schema notes live in `docs/admin-data-model.md`.
+Detailed backend schema notes live in `docs/architecture/admin-data-model.md`.
 
 This document focuses on public content domains and URL behavior.
 

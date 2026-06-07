@@ -78,5 +78,5 @@ Both should succeed before treating the rollout as healthy.
 - `ops/manage.sh`
 - `infra/production/docker-compose.yml`
 - `infra/production/server.env.example`
-- `docs/deployment.md`
-- `docs/production-config.md`
+- `docs/operations/deployment.md`
+- `docs/operations/production-config.md`

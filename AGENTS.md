@@ -35,20 +35,21 @@ Examples:
 ## Documentation Map
 
 - Start with `README.md` for the current project baseline and document index.
+- Use `docs/README.md` for the repository-level documentation layout.
 - Use `DESIGN.md` as the repository design-document index.
 - Use `apps/web/design_principles.md` for public-site design intent, interaction rules, and content hierarchy guidance.
 - Use `apps/web/DESIGN.md` for public-site hard visual specification.
 - Use `apps/admin/design_principles.md` for admin UX intent, density rules, and operator workflow guidance.
 - Use `apps/admin/DESIGN.md` for admin hard visual specification.
-- Use `docs/v1-scope.md` for product scope and non-goals.
-- Use `docs/architecture.md` for target architecture, deployment, caching, and runtime decisions.
-- Use `docs/content-model.md` for public content domains, URL rules, RSS rules, and editorial assumptions.
-- Use `docs/admin-architecture.md` for the custom admin, API, auth, and media architecture.
-- Use `docs/admin-information-architecture.md` for operator workflows and admin module structure.
-- Use `docs/admin-data-model.md` for backend tables, workflow states, and validation-critical constraints.
-- Use `docs/implementation-plan.md` for the current roadmap and active workstreams.
-- Use `docs/acceptance-criteria.md` and `docs/quality-assurance.md` for acceptance criteria and development validation standards.
-- Use `docs/deployment.md` for the operator handbook.
-- Use `docs/production-config.md` for the production settings index.
-- Use `docs/launch-checklist.md` for the release verification checklist.
-- Use `docs/local-development.md` for local setup, daily commands, and archive import notes.
+- Use `docs/product/v1-scope.md` for product scope and non-goals.
+- Use `docs/architecture/architecture.md` for target architecture, deployment, caching, and runtime decisions.
+- Use `docs/product/content-model.md` for public content domains, URL rules, RSS rules, and editorial assumptions.
+- Use `docs/architecture/admin-architecture.md` for the custom admin, API, auth, and media architecture.
+- Use `docs/architecture/admin-information-architecture.md` for operator workflows and admin module structure.
+- Use `docs/architecture/admin-data-model.md` for backend tables, workflow states, and validation-critical constraints.
+- Use `docs/product/implementation-plan.md` for the current roadmap and active workstreams.
+- Use `docs/product/acceptance-criteria.md` and `docs/operations/quality-assurance.md` for acceptance criteria and development validation standards.
+- Use `docs/operations/deployment.md` for the operator handbook.
+- Use `docs/operations/production-config.md` for the production settings index.
+- Use `docs/operations/launch-checklist.md` for the release verification checklist.
+- Use `docs/operations/local-development.md` for local setup, daily commands, and archive import notes.

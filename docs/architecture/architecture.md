@@ -153,7 +153,7 @@ Steady-state production target for V1:
 - `cloudflared` in the same Docker Compose stack to expose `api.rebase.network` through Cloudflare Tunnel
 - public media served from Cloudflare R2 on `media.rebase.network`
 
-For the production settings index and operator handbook, see `docs/production-config.md` and `docs/deployment.md`.
+For the production settings index and operator handbook, see `docs/operations/production-config.md` and `docs/operations/deployment.md`.
 
 ### Why Cloudflare Tunnel for the API
 
@@ -209,7 +209,7 @@ Fallback behavior:
 - daily development continues on `dev`
 - merge `dev` into `main` only when the release candidate is ready
 - production deployments should run from `main`, not directly from `dev`
-- release procedures and operator rules live in `docs/deployment.md`
+- release procedures and operator rules live in `docs/operations/deployment.md`
 
 ## API Boundary
 

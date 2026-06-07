@@ -40,7 +40,7 @@ Definition of done:
 Focus:
 
 - improve validation, publish/archive flows, and editor ergonomics for site settings, articles, jobs, events, contributors, GeekDaily, assets, staff, and audit views
-- keep role and permission behavior aligned with `docs/admin-architecture.md` and `docs/admin-information-architecture.md`
+- keep role and permission behavior aligned with `docs/architecture/admin-architecture.md` and `docs/architecture/admin-information-architecture.md`
 - reduce operator reliance on manual cleanup or direct database intervention
 
 Definition of done:
@@ -53,7 +53,7 @@ Definition of done:
 
 Focus:
 
-- keep public and admin API contracts aligned with `docs/content-model.md` and `docs/admin-data-model.md`
+- keep public and admin API contracts aligned with `docs/product/content-model.md` and `docs/architecture/admin-data-model.md`
 - preserve reproducible migrations, seed data, GeekDaily import behavior, runtime content freshness, and asset handling
 - maintain health and readiness visibility around API and database changes
 
@@ -67,7 +67,7 @@ Definition of done:
 
 Focus:
 
-- keep `ops/manage.sh`, `infra/production/*`, `docs/deployment.md`, `docs/production-config.md`, and `docs/launch-checklist.md` in sync
+- keep `ops/manage.sh`, `infra/production/*`, `docs/operations/deployment.md`, `docs/operations/production-config.md`, and `docs/operations/launch-checklist.md` in sync
 - prefer small, reviewable releases through the `dev` -> `main` pull request flow
 - validate dry-run deployment paths before production-impacting changes
 

@@ -1,6 +1,6 @@
 # Deployment Manual
 
-This is the production operator handbook. Use `docs/production-config.md` for settings and `docs/launch-checklist.md` for release verification.
+This is the production operator handbook. Use `docs/operations/production-config.md` for settings and `docs/operations/launch-checklist.md` for release verification.
 
 ## Core Rules
 
@@ -15,7 +15,7 @@ This is the production operator handbook. Use `docs/production-config.md` for se
 
 ### 1. Configure Cloudflare frontend projects
 
-Configure the frontend Workers using the current values in `docs/production-config.md`.
+Configure the frontend Workers using the current values in `docs/operations/production-config.md`.
 
 For the first rollout, confirm at least:
 
@@ -40,7 +40,7 @@ cd /home/rebase/rebase.network
 cp infra/production/server.env.example infra/production/server.env
 ```
 
-Fill the required backend and R2 values listed in `docs/production-config.md`.
+Fill the required backend and R2 values listed in `docs/operations/production-config.md`.
 
 Production R2 mode should use S3-compatible credentials with `R2_DEV_USE_WRANGLER=false`.
 
@@ -59,7 +59,7 @@ For the first production database only:
 
 ### 4. Verify the initial rollout
 
-Run the `Initial Launch Only`, `Route Checks`, and relevant `Functional Checks` sections in `docs/launch-checklist.md`.
+Run the `Initial Launch Only`, `Route Checks`, and relevant `Functional Checks` sections in `docs/operations/launch-checklist.md`.
 
 ## Scenario 2: Release
 
@@ -71,7 +71,7 @@ Choose the smallest release path that matches the change set.
 2. push `dev`
 3. open and merge the `dev` -> `main` pull request
 4. wait for Cloudflare to deploy `rebase-web` and/or `rebase-admin`
-5. run the relevant checks in `docs/launch-checklist.md`
+5. run the relevant checks in `docs/operations/launch-checklist.md`
 
 ### Backend-only release
 
@@ -79,7 +79,7 @@ Choose the smallest release path that matches the change set.
 2. update the deploy machine to the matching `main` commit
 3. confirm the working tree is clean
 4. for API or schema changes, prefer `./ops/manage.sh rollout api`; use `./ops/manage.sh deploy api` only when you intentionally do not want the backup + migrate flow
-5. run the relevant checks in `docs/launch-checklist.md`
+5. run the relevant checks in `docs/operations/launch-checklist.md`
 
 Recommended local checks before backend deploys:
 
@@ -98,7 +98,7 @@ git rev-parse --short HEAD
 4. wait for Cloudflare frontend deploys to finish
 5. update the deploy machine to the matching `main` commit
 6. for backend changes that include the API or schema, prefer `./ops/manage.sh rollout api`; use `./ops/manage.sh deploy stack` when compose-level services also changed
-7. run the relevant checks in `docs/launch-checklist.md`
+7. run the relevant checks in `docs/operations/launch-checklist.md`
 
 ## Scenario 3: Maintenance
 
@@ -192,7 +192,7 @@ Frontend failure:
 
 1. inspect the Cloudflare build logs
 2. reproduce locally with `pnpm build:web:prod`, `pnpm build:admin:prod`, or the matching `*:dry-run` command
-3. check the Cloudflare settings in `docs/production-config.md`
+3. check the Cloudflare settings in `docs/operations/production-config.md`
 4. only use manual `wrangler deploy` as an explicit emergency action, and record it in the release notes
 
 Backend failure:

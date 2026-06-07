@@ -1,6 +1,6 @@
 # Launch Checklist
 
-Release verification checklist paired with `docs/deployment.md`.
+Release verification checklist paired with `docs/operations/deployment.md`.
 
 ## Initial Launch Only
 
@@ -9,14 +9,14 @@ Before the first production launch, confirm:
 - `rebase.network` and `admin.rebase.network` are published by the GitHub-connected Cloudflare Workers
 - `api.rebase.network` is routed through Cloudflare Tunnel to the private backend stack
 - `media.rebase.network` is attached to the R2 bucket
-- the initial backend deployment scenario in `docs/deployment.md` has been completed
+- the initial backend deployment scenario in `docs/operations/deployment.md` has been completed
 - the first admin account can sign in
 
 ## Every Production Release
 
 Before a release, confirm:
 
-- the operator is following the matching scenario in `docs/deployment.md`
+- the operator is following the matching scenario in `docs/operations/deployment.md`
 - the release candidate moved from `dev` to `main` through the normal pull request flow
 - frontend changes, if any, were published by the GitHub-connected Cloudflare flow
 - backend changes, if any, were deployed from the intended `main` commit with `./ops/manage.sh`

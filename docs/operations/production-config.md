@@ -2,7 +2,7 @@
 
 Current production settings index.
 
-Use `docs/deployment.md` for procedures and `docs/launch-checklist.md` for verification. This file records live production values and ownership. It is not a secret store.
+Use `docs/operations/deployment.md` for procedures and `docs/operations/launch-checklist.md` for verification. This file records live production values and ownership. It is not a secret store.
 
 ## Runtime Map
 
@@ -93,9 +93,9 @@ Use `infra/production/server.env.example` as the template for remote `infra/prod
 
 | File | Role |
 | --- | --- |
-| `docs/deployment.md` | operator handbook |
-| `docs/production-config.md` | production settings index |
-| `docs/launch-checklist.md` | release verification checklist |
+| `docs/operations/deployment.md` | operator handbook |
+| `docs/operations/production-config.md` | production settings index |
+| `docs/operations/launch-checklist.md` | release verification checklist |
 | `infra/production/docker-compose.yml` | backend services |
 | `infra/production/server.env.example` | backend env template |
 | `apps/web/wrangler.template.jsonc` | public Worker config template |

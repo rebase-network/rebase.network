@@ -9,7 +9,7 @@ Identify which documents are still part of the active repository baseline, which
 Cleanup completed on 2026-06-08:
 
 - dated redesign files were first archived and then removed from the repository
-- `docs/implementation-plan.md` was rewritten into a current roadmap
+- `docs/product/implementation-plan.md` was rewritten into a current roadmap
 
 ## Active Baseline Documents
 
@@ -17,18 +17,18 @@ These documents still match the current repository structure and should remain p
 
 - `README.md`
 - `DESIGN.md`
-- `docs/local-development.md`
-- `docs/v1-scope.md`
-- `docs/content-model.md`
-- `docs/architecture.md`
-- `docs/admin-architecture.md`
-- `docs/admin-information-architecture.md`
-- `docs/admin-data-model.md`
-- `docs/acceptance-criteria.md`
-- `docs/quality-assurance.md`
-- `docs/deployment.md`
-- `docs/production-config.md`
-- `docs/launch-checklist.md`
+- `docs/operations/local-development.md`
+- `docs/product/v1-scope.md`
+- `docs/product/content-model.md`
+- `docs/architecture/architecture.md`
+- `docs/architecture/admin-architecture.md`
+- `docs/architecture/admin-information-architecture.md`
+- `docs/architecture/admin-data-model.md`
+- `docs/product/acceptance-criteria.md`
+- `docs/operations/quality-assurance.md`
+- `docs/operations/deployment.md`
+- `docs/operations/production-config.md`
+- `docs/operations/launch-checklist.md`
 - `apps/web/design_principles.md`
 - `apps/web/DESIGN.md`
 - `apps/admin/design_principles.md`
@@ -43,7 +43,7 @@ Why these stay:
 
 ## Cleanup Actions
 
-### 1. `docs/implementation-plan.md`
+### 1. `docs/product/implementation-plan.md`
 
 This file used to be a future-tense phased delivery plan.
 
@@ -51,7 +51,7 @@ It was rewritten on 2026-06-08 into the current roadmap so the path can remain p
 
 Result:
 
-- keep `docs/implementation-plan.md` in the live doc set as the active roadmap file
+- keep `docs/product/implementation-plan.md` in the live doc set as the active roadmap file
 
 ### 2. Dated site-redesign process documents
 
@@ -63,7 +63,7 @@ Reasons:
 
 - they are not part of the main documentation index in `README.md`
 - most of them only reference each other, so they behave like a closed historical cluster rather than active baseline docs
-- their planning and validation intent is already covered by persistent docs such as `apps/web/design_principles.md`, `apps/web/DESIGN.md`, `docs/quality-assurance.md`, and `docs/launch-checklist.md`
+- their planning and validation intent is already covered by persistent docs such as `apps/web/design_principles.md`, `apps/web/DESIGN.md`, `docs/operations/quality-assurance.md`, and `docs/operations/launch-checklist.md`
 - several issues they discuss are already codified in automated tests under `tests/smoke/`
 
 Result:
@@ -81,7 +81,7 @@ These two files were the strongest delete candidates and have now been removed:
 
 Reasons:
 
-- they duplicate the long-lived testing guidance in `docs/quality-assurance.md`
+- they duplicate the long-lived testing guidance in `docs/operations/quality-assurance.md`
 - they overlap with executable coverage already present in:
   - `tests/smoke/routes.spec.ts`
   - `tests/smoke/geekdaily.spec.ts`
@@ -129,7 +129,7 @@ Before deleting any redesign document, check whether it contains a lasting rule 
 
 - `apps/web/design_principles.md`
 - `apps/web/DESIGN.md`
-- `docs/quality-assurance.md`
+- `docs/operations/quality-assurance.md`
 
 If a rule is still valuable, migrate that rule first, then archive or delete the dated process file.
 

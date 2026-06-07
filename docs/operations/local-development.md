@@ -1,6 +1,6 @@
 # Local Development
 
-This document covers the default local workflow only. Production operations live in `docs/deployment.md`, `docs/production-config.md`, and `docs/launch-checklist.md`.
+This document covers the default local workflow only. Production operations live in `docs/operations/deployment.md`, `docs/operations/production-config.md`, and `docs/operations/launch-checklist.md`.
 
 ## Local Stack
 
@@ -15,7 +15,7 @@ The active local stack is:
 
 The public site now runs in Astro server mode, so published content changes should appear on the next request instead of waiting for a full static rebuild.
 
-For local `astro dev`, the repo intentionally skips the Cloudflare adapter and uses Astro's normal dev server to avoid Miniflare-specific startup issues. Production Worker settings live in `docs/production-config.md`.
+For local `astro dev`, the repo intentionally skips the Cloudflare adapter and uses Astro's normal dev server to avoid Miniflare-specific startup issues. Production Worker settings live in `docs/operations/production-config.md`.
 
 ## One-Time Setup
 

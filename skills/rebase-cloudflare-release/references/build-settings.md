@@ -1,12 +1,12 @@
 # Cloudflare Worker Build Settings
 
-Use `docs/production-config.md` as the single source of truth for exact Cloudflare dashboard values.
+Use `docs/operations/production-config.md` as the single source of truth for exact Cloudflare dashboard values.
 
 Use this note only for release-time reminders.
 
 ## What To Check
 
-Before changing Cloudflare dashboard settings, confirm in `docs/production-config.md`:
+Before changing Cloudflare dashboard settings, confirm in `docs/operations/production-config.md`:
 
 - worker names
 - domains

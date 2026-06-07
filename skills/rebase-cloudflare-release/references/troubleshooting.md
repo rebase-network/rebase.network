@@ -64,5 +64,5 @@ Do not assume they are the same issue.
 - `apps/web/wrangler.template.jsonc`
 - `apps/admin/wrangler.production.jsonc`
 - `scripts/deploy/prepare-web-assets.mjs`
-- `docs/deployment.md`
-- `docs/production-config.md`
+- `docs/operations/deployment.md`
+- `docs/operations/production-config.md`

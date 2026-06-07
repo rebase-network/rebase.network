@@ -7,7 +7,7 @@ description: Deploy and operate the Rebase backend server stack on the private b
 
 ## Overview
 
-Use this skill for the server-managed half of the Rebase production stack. It centers on `ops/manage.sh`, the Docker Compose topology in `infra/production/docker-compose.yml`, and the production config registry in `docs/production-config.md`.
+Use this skill for the server-managed half of the Rebase production stack. It centers on `ops/manage.sh`, the Docker Compose topology in `infra/production/docker-compose.yml`, and the production config registry in `docs/operations/production-config.md`.
 
 ## Standard Rollout
 
@@ -27,7 +27,7 @@ Use this skill for the server-managed half of the Rebase production stack. It ce
 
 ## Current Production Index
 
-Use `docs/production-config.md` for the exact host alias, remote project dir, compose file, env file, service names, and public API hostname.
+Use `docs/operations/production-config.md` for the exact host alias, remote project dir, compose file, env file, service names, and public API hostname.
 
 Use `references/runbook.md` for the command set and `references/troubleshooting.md` for the known failure modes.
 
@@ -40,5 +40,5 @@ Use `references/runbook.md` for the command set and `references/troubleshooting.
 
 - Prefer `ops/manage.sh` over ad-hoc SSH commands.
 - Keep PostgreSQL private to the server and compose network; do not expose it publicly.
-- Update `docs/deployment.md` and `docs/production-config.md` when server topology or ownership changes.
+- Update `docs/operations/deployment.md` and `docs/operations/production-config.md` when server topology or ownership changes.
 - If the task also includes public/admin Workers, pair this skill with `rebase-cloudflare-release`.

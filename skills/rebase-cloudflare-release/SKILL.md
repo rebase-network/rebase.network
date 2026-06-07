@@ -31,7 +31,7 @@ Use this skill for the Rebase public and admin Workers release path. Keep the re
 - Admin domain: `admin.rebase.network`
 - Public API origin used by Workers: `https://api.rebase.network`
 
-Use `docs/production-config.md` as the production settings index and `references/build-settings.md` as the short release reminder.
+Use `docs/operations/production-config.md` as the production settings index and `references/build-settings.md` as the short release reminder.
 
 ## When To Read References
 
@@ -40,7 +40,7 @@ Use `docs/production-config.md` as the production settings index and `references
 
 ## Guardrails
 
-- Treat Cloudflare dashboard configuration as part of production state; update `docs/deployment.md` and `docs/production-config.md` when it changes.
+- Treat Cloudflare dashboard configuration as part of production state; update `docs/operations/deployment.md` and `docs/operations/production-config.md` when it changes.
 - Prefer `pnpm deploy:web:dry-run` and `pnpm deploy:admin:dry-run` for local verification.
 - Do not use local manual production deploys as the default path.
 - If the task also includes backend rollout, pair this skill with `rebase-api-rollout`.

@@ -37,7 +37,7 @@ The current stack is:
 
 ## Quick Start
 
-For the full local setup guide, use `docs/local-development.md`. The shortest path to a working local stack is:
+For the full local setup guide, use `docs/operations/local-development.md`. The shortest path to a working local stack is:
 
 ```bash
 nvm install
@@ -65,7 +65,7 @@ Local services:
 - API: `http://127.0.0.1:8788`
 - PostgreSQL: `127.0.0.1:55433`
 
-If you need the default local admin credentials or want to override them, see `docs/local-development.md`.
+If you need the default local admin credentials or want to override them, see `docs/operations/local-development.md`.
 
 ## Common Commands
 
@@ -101,22 +101,23 @@ Start here:
 
 - `README.md`: repository overview and contributor quick start
 - `DESIGN.md`: design-document index for the repository
-- `docs/local-development.md`: local setup, commands, and archive import notes
-- `docs/v1-scope.md`: V1 goals, scope, and non-goals
+- `docs/README.md`: repository-level documentation map
+- `docs/operations/local-development.md`: local setup, commands, and archive import notes
+- `docs/product/v1-scope.md`: V1 goals, scope, and non-goals
 
 Product and delivery:
 
-- `docs/content-model.md`: public content domains, field rules, and URL conventions
-- `docs/implementation-plan.md`: current roadmap and active workstreams
-- `docs/acceptance-criteria.md`: product and module-level acceptance criteria
-- `docs/quality-assurance.md`: validation standards and smoke-check expectations
+- `docs/product/content-model.md`: public content domains, field rules, and URL conventions
+- `docs/product/implementation-plan.md`: current roadmap and active workstreams
+- `docs/product/acceptance-criteria.md`: product and module-level acceptance criteria
+- `docs/operations/quality-assurance.md`: validation standards and smoke-check expectations
 
 Architecture and admin system:
 
-- `docs/architecture.md`: system architecture, deployment, caching, and runtime decisions
-- `docs/admin-architecture.md`: custom admin, API, auth, and media architecture
-- `docs/admin-information-architecture.md`: operator workflows and admin module structure
-- `docs/admin-data-model.md`: backend tables, workflow states, and validation-critical constraints
+- `docs/architecture/architecture.md`: system architecture, deployment, caching, and runtime decisions
+- `docs/architecture/admin-architecture.md`: custom admin, API, auth, and media architecture
+- `docs/architecture/admin-information-architecture.md`: operator workflows and admin module structure
+- `docs/architecture/admin-data-model.md`: backend tables, workflow states, and validation-critical constraints
 
 Design references:
 
@@ -127,9 +128,9 @@ Design references:
 
 Operations and release:
 
-- `docs/deployment.md`: operator handbook
-- `docs/production-config.md`: production settings index
-- `docs/launch-checklist.md`: release verification checklist
+- `docs/operations/deployment.md`: operator handbook
+- `docs/operations/production-config.md`: production settings index
+- `docs/operations/launch-checklist.md`: release verification checklist
 
 ## Repository Conventions
 

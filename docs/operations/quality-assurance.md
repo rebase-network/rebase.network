@@ -1,6 +1,6 @@
 # Quality Assurance
 
-Use this document for development-time validation. Use `docs/launch-checklist.md` for production release verification.
+Use this document for development-time validation. Use `docs/operations/launch-checklist.md` for production release verification.
 
 The goal is to combine:
 
@@ -62,7 +62,7 @@ An archived `geekdaily.csv`, when available, can be used as a reference source f
 
 ### 4. Production Release
 
-Use `docs/launch-checklist.md` for domain, health, SEO, and post-release checks.
+Use `docs/operations/launch-checklist.md` for domain, health, SEO, and post-release checks.
 
 ## Browser Review Checklist
 
@@ -110,7 +110,7 @@ Purpose:
 
 ### Local Route Smoke Tests
 
-Use browser automation to verify that critical routes load correctly during development and CI. Production route verification stays in `docs/launch-checklist.md`.
+Use browser automation to verify that critical routes load correctly during development and CI. Production route verification stays in `docs/operations/launch-checklist.md`.
 
 Recommended initial route set:
 
