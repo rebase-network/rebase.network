@@ -107,7 +107,7 @@ pnpm dev:stack
 产品与交付：
 
 - `docs/product/current-boundaries.md`：当前产品边界与明确非目标
-- `docs/product/content-model.md`：公共内容域、字段规则与 URL 约定
+- `docs/product/content-model.md`：公共内容域、URL 与 RSS 规则
 - `docs/product/acceptance-criteria.md`：当前验收基线
 - `docs/operations/quality-assurance.md`：开发期验证方式与检查基线
 - `docs/archive/README.md`：历史文档归档说明
@@ -115,6 +115,6 @@ pnpm dev:stack
 架构与管理系统：
 
 - `docs/architecture/architecture.md`：系统架构、部署、缓存与运行时决策
-- `docs/architecture/admin-architecture.md`：定制 admin、API、认证与媒体架构
+- `docs/architecture/admin-architecture.md`：管理后台写路径、权限、校验与媒体架构
 - `docs/architecture/admin-information-architecture.md`：运营人员工作流与管理模块结构
 - `docs/architecture/admin-data-model.md`：后端表、工作流状态与关键校验约束

@@ -1,289 +1,201 @@
 # 内容模型
 
-## 目标
+这个文件是公共内容形态的事实来源。
 
-Rebase 内容模型应支持：
+它回答的是：
 
-- 结构化的社区内容
-- 简洁的运营工作流
-- 可扩展的 GeekDaily 组织方式
-- 稳定的公共 URL
-- 一套编辑有意义编辑对象而非原始 tables 的定制 admin 体验
+- 公共网站有哪些内容域
+- 这些内容域如何映射到公共 URL
+- 哪些公共约束会影响页面、RSS 和搜索
 
-## 编辑格式
+它不负责记录完整后端字段全集。完整持久化字段和表结构见 `docs/architecture/admin-data-model.md`。
 
-使用：
+## 内容编辑格式
 
-- 结构化字段承载元数据和结构化页面分区
-- Markdown 承载长文本内容字段
+当前内容编辑默认采用两类结构：
 
-推荐由 Markdown 支撑的字段包括：
+- 结构化字段：用于标题、摘要、状态、时间、排序、关系和页面装配
+- Markdown：用于长正文内容
 
-- 按需使用的 `about_page` 分区
+Markdown 主要用于：
+
+- `about_page` 正文分区
 - `articles.body`
 - `events.body`
 - `jobs.description`
 - `geekdaily_episodes.body`
 
-详细的后端 schema 说明见 `docs/architecture/admin-data-model.md`。
-
-本文聚焦公共内容域与 URL 行为。
-
-## URL 约定
+## 公共 URL 规则
 
 ### 全局规则
 
-- URL 使用小写
+- 公共 URL 使用小写
 - 单词之间使用 `-`
 - 公共 URL 避免中文字符
 - 除站点根路径外，canonical URLs 不使用尾随斜杠
-- 已发布 URL 应保持稳定
+- 已发布 URL 保持稳定
 
-### 公共路由
+### 当前公共路由
 
 - 首页：`/`
 - About：`/about`
-- `who-is-hiring`：`/who-is-hiring`
+- 招聘列表：`/who-is-hiring`
 - 招聘详情：`/who-is-hiring/{public-number}-{slug}`
 - GeekDaily 列表：`/geekdaily`
 - GeekDaily 详情：`/geekdaily/geekdaily-{episode-number}`
-- 站点 RSS：`/rss.xml`
-- 招聘 RSS：`/who-is-hiring/rss.xml`
-- GeekDaily RSS：`/geekdaily/rss.xml`
 - 文章列表：`/articles`
 - 文章详情：`/articles/{public-number}-{slug}`
-- 文章 RSS：`/articles/rss.xml`
 - 活动列表：`/events`
 - 活动详情：`/events/{public-number}-{slug}`
+- 贡献者列表：`/contributors`
+
+### 当前发现类输出
+
+- 全站 RSS：`/rss.xml`
+- GeekDaily RSS：`/geekdaily/rss.xml`
+- 文章 RSS：`/articles/rss.xml`
 - 活动 RSS：`/events/rss.xml`
-- 贡献者：`/contributors`
+- 招聘 RSS：`/who-is-hiring/rss.xml`
+- `robots.txt`
+- `sitemap.xml`
 
-### Query Parameters
+## 公共内容域
 
-GeekDaily 示例：
+### `site_settings`
+
+站点级全局配置。
+
+公共职责：
+
+- 定义站点名、描述、主域名和媒体域名
+- 提供社交链接与页脚分组
+
+### `home_page`
+
+首页单例内容。
+
+公共职责：
+
+- 定义首页首屏区
+- 定义首页信号区和统计区
+- 定义首页的主要入口引导
+
+### `about_page`
+
+About 单例内容。
+
+公共职责：
+
+- 提供页面标题、摘要和正文分区
+- 支持长文阅读与基础 SEO 信息
+
+### `jobs`
+
+公开招聘条目。
+
+公共约束：
+
+- 公共路径使用 `/who-is-hiring/{public-number}-{slug}`
+- `slug` 在发布后保持稳定
+- 发布前必须至少存在 `apply_url` 或可替代联系方式
+- 职责与岗位范围写入正文描述，而不是分散成噪音字段
+
+### `articles`
+
+公开文章条目。
+
+公共约束：
+
+- 公共路径使用 `/articles/{public-number}-{slug}`
+- `slug` 在发布后保持稳定
+- 文章应具备标题、摘要、正文、作者与可选封面
+
+### `events`
+
+公开活动条目。
+
+公共约束：
+
+- 公共路径使用 `/events/{public-number}-{slug}`
+- `slug` 在发布后保持稳定
+- 外部报名活动必须有 `registration_url`
+- 当前系统只支持外部报名链接，不支持站内报名表单
+
+### `contributor_roles`
+
+贡献者分组角色。
+
+公共职责：
+
+- 定义贡献者在公共页面上的分组方式与排序方式
+
+### `contributors`
+
+公开贡献者资料。
+
+公共约束：
+
+- 贡献者按角色分组显示
+- 同一角色下的贡献者以平级方式展示
+- 当前只要求公开列表，不要求独立详情页
+
+### `geekdaily_episodes`
+
+GeekDaily 的公开期目记录。
+
+公共约束：
+
+- 公共路径使用 `/geekdaily/geekdaily-{episode-number}`
+- `episode_number` 必须稳定且唯一
+- 搜索面向期目，而不是面向单条条目页面
+
+### `geekdaily_episode_items`
+
+期目中的有序推荐条目。
+
+公共职责：
+
+- 为期目提供排序后的外部来源、标题和摘要
+- 不单独生成公开详情页
+
+## 当前查询参数
+
+### GeekDaily
 
 - `/geekdaily?q=agent`
 - `/geekdaily?tag=ai`
 - `/geekdaily?year=2026`
 - `/geekdaily?page=2`
 
-`Who-Is-Hiring` 示例：
+### `Who-Is-Hiring`
 
 - `/who-is-hiring?q=frontend`
 - `/who-is-hiring?location=shanghai`
 - `/who-is-hiring?mode=remote`
 
-## 公共内容域
-
-### `site_settings`
-
-全局站点配置的单例。
-
-建议字段：
-
-- `site_name`
-- `tagline`
-- `description`
-- `primary_domain`
-- `secondary_domain`
-- `media_domain`
-- `social_links`
-- `footer_groups`
-- `copyright_text`
-
-### `home_page`
-
-首页编辑结构的单例。
-
-建议字段：
-
-- `hero_title`
-- `hero_summary`
-- `hero_primary_cta_label`
-- `hero_primary_cta_url`
-- `hero_secondary_cta_label`
-- `hero_secondary_cta_url`
-- `home_signals`
-- `home_stats`
-
-### `about_page`
-
-About 内容的单例。
-
-建议字段：
-
-- `title`
-- `summary`
-- `sections`
-- `seo_title`
-- `seo_description`
-
-### `jobs`
-
-展示在 `Who-Is-Hiring` 页面中的社区招聘条目。
-
-建议字段：
-
-- `company_name`
-- `role_title`
-- `slug`
-- `salary`
-- `supports_remote`
-- `location`
-- `work_mode`
-- `summary`
-- `description`
-- `apply_url`
-- `apply_note`
-- `contact_label`
-- `contact_value`
-- `logo_asset_id`
-- `status`
-- `published_at`
-- `expires_at`
-- `seo_title`
-- `seo_description`
-
-说明：
-
-- 公共路径应使用 `/who-is-hiring/{public-number}-{slug}`
-- `slug` 在发布后应保持稳定
-- `description` 应支持 Markdown
-- 职责与岗位范围应直接写在 `description` 中
-- 在发布前必须至少存在 `apply_url` 或联系方式之一
-
-### `articles`
-
-社区发布的公共文章。
-
-建议字段：
-
-- `title`
-- `slug`
-- `summary`
-- `body`
-- `cover_image`
-- `authors`
-- `tags`
-- `status`
-- `published_at`
-- `seo_title`
-- `seo_description`
-
-Slug 规则：
-
-- 具备语义
-- 使用小写
-- 发布后保持稳定
-
-### `events`
-
-用于公共列表和详情页的社区活动。
-
-建议字段：
-
-- `title`
-- `slug`
-- `start_at`
-- `end_at`
-- `city`
-- `location`
-- `venue`
-- `summary`
-- `body`
-- `cover_image`
-- `registration_mode`
-- `registration_url`
-- `status`
-- `published_at`
-- `seo_title`
-- `seo_description`
-
-URL 规则：
-
-- 公共路径使用 `/events/{public-number}-{slug}`
-- `slug` 一旦发布应保持稳定
-
-### `contributor_roles`
-
-用于分组 contributors 的角色。
-
-建议字段：
-
-- `name`
-- `slug`
-- `description`
-- `sort_order`
-
-示例：
-
-- `volunteers`
-- `geekdaily-advisors`
-
-### `contributors`
-
-按角色展示的社区贡献者。
-
-建议字段：
-
-- `name`
-- `slug`
-- `avatar`
-- `headline`
-- `bio`
-- `roles`
-- `twitter_url`
-- `wechat`
-- `telegram`
-- `sort_order`
-- `status`
-- `activity_status`
-
-V1 中 contributor 活跃状态通过人工维护：
-
-- `active`：当前仍参与，并在公共列表中优先显示
-- `inactive`：历史贡献者，仍公开可见，但排序位于活跃贡献者之后
-
-公共 contributors 页面不应刻意抬高某一个代表性成员。同一角色下的 contributors 以平级方式展示，而 `inactive` contributors 可以在 UI 中带一个轻量的 `历史贡献者` 标签。
-
-V1 只要求公共列表页，不要求单独的 contributor 详情页。
-
-### `geekdaily_episodes`
-
-GeekDaily 的核心期目记录。
-
-建议字段：
-
-- `episode_number`
-- `slug`
-- `title`
-- `summary`
-- `body`
-- `published_at`
-- `tags`
-- `status`
-
-公共路由：
-
-- `/geekdaily/geekdaily-{episode-number}`
-
-### `geekdaily_episode_items`
-
-期目中的有序推荐条目。
-
-建议字段：
-
-- `episode_id`
-- `sort_order`
-- `title`
-- `author_name`
-- `source_url`
-- `summary`
-
 ## RSS 规则
 
-- 所有 feeds 只包含已发布内容
-- 全站 feed 应聚合核心内容类型中最新的 3 条公共内容
-- GeekDaily feed items 应使用期目页面
-- 招聘 feed items 应使用公开招聘详情页
-- feed descriptions 应遵循先前约定的 summary / body 规则
+- 所有 RSS 只包含已发布内容
+- 全站 RSS 聚合核心内容类型中的最新公共内容
+- GeekDaily RSS 以期目为单位，而不是以条目为单位
+- 招聘 RSS 指向公开招聘详情页，而不是外部申请链接
+- feed 描述遵循当前 summary / body 约定
+
+## 搜索边界
+
+当前明确在范围内的站内搜索只有 GeekDaily 搜索。
+
+搜索应主要覆盖：
+
+- 期号
+- 标题
+- 摘要
+- 标签
+- 日期
+- 期目条目标题
+
+## 相关文档
+
+- `docs/product/current-boundaries.md`：当前仍然生效的产品边界
+- `docs/architecture/admin-data-model.md`：完整后端字段与约束
+- `docs/architecture/architecture.md`：系统级运行时与部署事实

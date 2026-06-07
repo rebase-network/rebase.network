@@ -1,79 +1,45 @@
 # 架构
 
-## 概览
+这个文件是系统级事实来源。
 
-Rebase 网站围绕一套定制化的社区发布技术栈设计。
+它回答的是：
 
-它将以下部分拆分开来：
+- 系统由哪些运行时部分组成
+- 这些部分如何通信
+- 当前部署拓扑是什么
+- 哪些跨模块约束今天仍然成立
 
-- 公共网站
-- Rebase 管理工作台
-- Rebase admin 与公共 API 层
-- 媒体存储层
-- 主关系型数据库
+它不负责详细说明 admin 模块设计、后端表结构或公共内容字段全集。那些内容分别见相关子文档。
 
-这样既能保持公共体验轻量，也能给工作人员提供一个专门构建的内部工具，而不是通用的 headless CMS。
+## 系统边界
 
-Rebase 的目标架构，是本文档中描述的这套定制 admin 与 API 技术栈。
+当前系统由五个核心部分组成：
 
-## 技术栈
+- 面向读者的公共网站
+- 面向工作人员的管理工作台
+- 同时服务两者的 API 层
+- PostgreSQL 主数据库
+- Cloudflare R2 媒体存储
+
+核心边界：
+
+- 公共网站只读
+- 所有内容写入都经过内部 API
+- PostgreSQL 不直接暴露在公网
+- 媒体二进制文件不进入代码仓库，也不进入 PostgreSQL
+
+## 当前技术栈
 
 - 公共前端：Astro
-- 公共运行时与部署：Cloudflare Workers
-- admin 前端：Vue
-- admin 与公共 API：Hono
+- 公共运行时：Cloudflare Workers
+- 管理工作台：Vue
+- API：Hono
 - 认证：Better Auth
-- 主数据库：PostgreSQL
+- 数据库：PostgreSQL
 - schema 与 migrations：Drizzle
 - 媒体存储：Cloudflare R2
 
-## 产品与编辑默认设定
-
-- 视觉方向：社区媒体
-- 编辑格式：结构化字段 + Markdown 正文
-- V1 中 GeekDaily 搜索实现：由 Rebase 自有搜索索引载荷驱动的前端搜索
-- 如果未来需要，后续搜索扩展可以使用第三方服务或 plugin
-
-## 为什么采用这套架构
-
-### Astro
-
-- 适合内容密集型的公共体验
-- 组件模型强
-- 渲染策略灵活
-- 与 Cloudflare 部署目标配合良好
-
-### 定制 Admin 前端
-
-- 让 Rebase 能围绕发布 GeekDaily 或 jobs 等工作人员任务塑造 UI
-- 避免强迫运营人员以原始 collections 和 schema tables 的方式思考
-- 可以复用 TGO admin 实现中经过验证的交互模式
-
-### Hono API 层
-
-- 让所有写访问都经过显式、已认证的 API
-- 集中处理校验、工作流状态流转、权限与审计日志
-- 为公共网站提供稳定的只读 API，而不是把它耦合到仅限 admin 的结构
-
-### Better Auth
-
-- 干净地处理身份和 sessions
-- 让认证关注点与业务权限分离
-- 与已经在 TGO 中验证过的定制 admin 模式保持一致
-
-### PostgreSQL + Drizzle
-
-- 非常适合结构化的编辑与运营数据
-- 支持面向发布工作流的显式约束和索引
-- 让 schema 与 migrations 保持在版本控制中
-
-### R2
-
-- 让工作人员管理的媒体脱离代码库
-- 适配基于 Cloudflare 的交付模型
-- 避免把运营内容媒体存入 git 历史
-
-## 系统图
+## 运行时拓扑
 
 ```text
 读者浏览器
@@ -118,224 +84,117 @@ API 服务 (`apps/api`)
     +--> R2
 ```
 
-## 运行时模型
+## 两条核心数据流
 
 ### 公共只读流
 
-1. 读者在 `rebase.network` 或 `rebase.community` 请求公共页面。
-2. Astro app 运行在公共 Cloudflare Worker 上。
-3. worker 从 `api.rebase.network` 拉取已发布内容。
-4. Cloudflare 通过 `cloudflared` 将该 hostname 路由到私有后端主机上的 API 服务。
-5. API 从 PostgreSQL 读取结构化内容，并从 assets table 读取媒体 metadata。
-6. 媒体资源通过基于 R2 的 URL 提供服务。
-7. Cloudflare cache 被应用，用于提升重复访问性能。
+1. 读者访问 `rebase.network` 或 `rebase.community`
+2. `apps/web` 在 Cloudflare Worker 上渲染页面
+3. 公共页面从 `api.rebase.network` 拉取已发布内容
+4. API 从 PostgreSQL 读取结构化数据，并从 R2 读取媒体引用
 
-### 工作人员内容流
+### 工作人员写入流
 
-1. 工作人员打开 `admin.rebase.network`。
-2. admin UI 由专用 Cloudflare Worker 为 `apps/admin` 提供服务。
-3. admin app 调用 `api.rebase.network` 上的已认证路由。
-4. Cloudflare 通过 `cloudflared` 将 API 流量路由到私有后端主机上的 API 服务。
-5. API 校验请求、检查权限并应用业务规则。
-6. 结构化数据写入 PostgreSQL。
-7. 上传媒体存入 R2，并由 metadata 记录引用。
-8. 敏感操作写入审计日志。
-9. 公共网站通过公共 API 读取最新已发布内容。
+1. 工作人员访问 `admin.rebase.network`
+2. `apps/admin` 通过已认证 API 完成内容维护
+3. API 执行权限检查、状态流转、业务校验和审计
+4. 数据写入 PostgreSQL，媒体写入 R2
+5. 已发布内容随后经公共 API 出现在公共网站
 
-## 部署目标
+## 当前部署拓扑
 
-V1 的稳定生产目标：
+当前稳定生产形态：
 
-- `apps/web` 部署在 Cloudflare Worker 上，绑定 `rebase.network` 和 `rebase.community`
-- `apps/admin` 部署在独立 Cloudflare Worker 上，绑定 `admin.rebase.network`
+- `apps/web` 部署在 Cloudflare Worker，绑定 `rebase.network` 与 `rebase.community`
+- `apps/admin` 部署在独立 Cloudflare Worker，绑定 `admin.rebase.network`
 - `apps/api` 运行在私有后端主机上的 Docker Compose 中
-- PostgreSQL 运行在同一 Docker Compose 栈和同一私有后端主机中
-- `cloudflared` 运行在同一 Docker Compose 栈中，通过 Cloudflare Tunnel 暴露 `api.rebase.network`
-- 公共媒体通过 `media.rebase.network` 从 Cloudflare R2 提供服务
+- PostgreSQL 运行在同一私有后端主机的 Docker Compose 栈中
+- `cloudflared` 运行在同一私有后端主机中，对外暴露 `api.rebase.network`
+- `media.rebase.network` 指向 R2 公共媒体域名
 
-生产设置索引和运维手册见 `docs/operations/production-config.md` 与 `docs/operations/deployment.md`。
+这套拓扑的核心意图是：
 
-### 为什么 API 要用 Cloudflare Tunnel
+- 把读多写少的前端放在 edge
+- 把写路径和数据库留在私有服务器内
+- 让 API 通过 Cloudflare Tunnel 暴露，而不是直接公开源站
 
-- 在 V1 中让 API 源站不直接暴露在公网
-- 避免为了终止 HTTPS 额外引入 Caddy 或 Nginx
-- 让 Cloudflare 处理外部 TLS edge，同时由 tunnel 保护 edge 到源站的流量
-- 让 PostgreSQL 保持在服务器和 Docker 网络私有范围内
+## 渲染与内容刷新策略
 
-## 渲染策略
+当前策略是混合渲染，而不是全站静态构建。
 
-V1 应采用混合渲染策略。
-
-### 适合静态或稳定渲染的页面
+更适合稳定渲染的内容：
 
 - About 页面
-- contributors 页面
 - 固定站点配置区块
+- 相对稳定的 contributors 列表
 
-### 适合动态或缓存渲染的页面
+更适合动态或缓存渲染的内容：
 
 - 首页
-- GeekDaily 列表页
-- GeekDaily 详情页
-- jobs 页面
-- 文章列表与详情页
-- 活动列表与详情页
+- GeekDaily 列表与详情
+- 招聘列表与详情
+- 文章列表与详情
+- 活动列表与详情
 
-这种策略可以避免在内容频繁变更时触发不必要的全站重建。
-
-## 域名策略
-
-公共域名：
-
-- `rebase.network`
-- `rebase.community`
-
-运营域名：
-
-- `admin.rebase.network`：admin worker
-- `api.rebase.network`：通过 tunnel 暴露的 API hostname
-- `media.rebase.network`：R2 公共存储桶
-
-推荐行为：
-
-- 如果可行，两个公共域名都应直接访问网站
-
-回退行为：
-
-- 如果双域名直出变得不切实际，`rebase.community` 可以使用 `301` 跳转到 `rebase.network`
-
-## 发布策略
-
-- 日常开发持续在 `dev`
-- 只有当 release candidate 准备好时，才把 `dev` 合并到 `main`
-- 生产部署应从 `main` 运行，而不是直接从 `dev`
-- 发布流程和运维规则记录在 `docs/operations/deployment.md`
+目标是避免在高频内容更新时依赖全站重建。
 
 ## API 边界
 
-### 公共只读 API
+### 公共 API
 
-V1 应从 Rebase 自有的公共 API 路由中读取已发布内容。
+- 公共网站只从 Rebase 自有公共 API 读取内容
+- 公共 API 只返回应公开的已发布内容
+- 公共网站不应直接依赖仅限 admin 的内部结构
 
-公共网站不应依赖通用 CMS 的内容交付 API。
+### 管理 API
 
-### Admin 写 API
+- 所有写入都必须经过已认证 admin 路由
+- 浏览器端不应存在直连数据库的写路径
+- 权限、校验、审计和状态流转都集中在 API 层
 
-所有 admin 写操作都应通过已认证的 admin 路由完成。
+### 公共写入
 
-浏览器不应存在直连数据库的写入路径。
+当前系统没有公开写入入口：
 
-### 公共写 API
+- 无站内活动报名
+- 无站内职位申请
+- 无公开表单提交型工作流
 
-V1 仍然不包含活动报名表单。
+## 跨模块基线
 
-因此，V1 不需要面向表单或提交的公共写 API。
+### 媒体
 
-## 媒体策略
+- 固定品牌资源和静态装饰资源可以留在仓库
+- 内容型媒体资源应存放在 R2
+- 数据库只保存媒体 metadata，不保存二进制内容
 
-### 存放在仓库中
+### 缓存
 
-- logo
-- favicon
-- 固定装饰资源
-- 默认占位图
-- 兜底社交卡片资源
+- 公共 GET 响应依赖 Cloudflare edge caching
+- 动态列表页使用保守 TTL
+- 不依赖复杂失效机制作为首要前提
 
-### 存放在 R2
+### 健康检查
 
-- 文章封面图
-- 活动海报
-- contributor 头像
-- 与 job 相关的媒体
-- 如果未来需要，GeekDaily 媒体附件
+当前应保留以下探针：
 
-## 缓存策略
+- 公共网站：`/healthz`
+- API 存活：`/health`
+- API 就绪：`/ready`
+- 版本探针：`/version`
 
-V1 应优先使用务实的 cache control，而不是一开始就构建复杂失效机制。
+### 安全
 
-建议做法：
+- 读者不需要认证
+- 工作人员权限由 Better Auth 与应用层角色权限共同约束
+- admin 凭据不能到达公共客户端
+- PostgreSQL 保持服务器内网可见
 
-- V1 依赖 Cloudflare edge caching
-- 对公共 GET 响应在 edge 缓存
-- 对动态列表页保持保守 TTL
-- 对内容更新频繁的页面允许更快刷新
-- 如有需要，后续再增加定向 purge 规则
+## 相关文档
 
-## 搜索策略
-
-V1 仅包含 GeekDaily 搜索。
-
-推荐范围：
-
-- 对期目级 metadata 建立搜索
-- 包含标题、摘要、tags、日期、期号和推荐条目标题
-- 第一版保持轻量和务实
-
-V1 不需要重量级独立搜索引擎。
-
-V1 应在前端实现 GeekDaily 搜索，同时由 API 或构建层提供 Rebase 自有的搜索索引载荷。
-
-## Feed 策略
-
-V1 包含用于公共内容分发的 RSS 输出。
-
-推荐的 feeds：
-
-- `/rss.xml`
-- `/geekdaily/rss.xml`
-- `/articles/rss.xml`
-- `/events/rss.xml`
-- `/who-is-hiring/rss.xml`
-
-feed 生成应发生在公共网站层，并消费来自 Rebase 公共 API 的已发布内容。
-
-GeekDaily feed 条目应映射到期目页面，而不是期目内部的单条链接。
-
-招聘 feed 条目应映射到公开招聘详情页，而不是外部申请链接。
-
-V1 feed 默认值：
-
-- 每个 feed 返回最新 3 条已发布内容
-- article、event 和 hiring 的 feed 描述使用 summary
-- GeekDaily 的 feed 描述使用期目正文，或使用类似正文的生成摘要
-
-## 运维基线
-
-V1 应为后端服务提供一套简单的健康检查策略。
-
-推荐基线：
-
-- 公共网站健康端点：`/healthz`
-- API 存活端点：如 `/health`
-- API 就绪端点：如 `/ready`
-- 通过 API readiness 或部署工具检查数据库可达性
-- 后续可以在其他仓库用 GitHub Actions 实现外部定期检查和通知
-
-## SEO 基线
-
-V1 应交付一套轻量但完整的 SEO 基线。
-
-推荐基线：
-
-- 公共页面 canonical URLs
-- 默认 Open Graph 和 Twitter metadata
-- 共享社交卡片兜底资源
-- `/robots.txt`
-- `/sitemap.xml`
-
-## 安全基线
-
-- 读者永远不需要认证
-- admin 访问由 Better Auth 与应用层工作人员权限共同处理
-- admin 凭据永远不会到达公共客户端
-- 媒体写入访问必须位于已认证的 admin API 之后
-- 公共网站只消费已发布内容
-
-## V1 非目标
-
-- 复杂活动运营
-- 公共成员系统
-- 高级工作流自动化
-- 全站统一搜索
-- 多语言内容系统
-- 邮件订阅基础设施
+- `docs/architecture/admin-architecture.md`：管理后台写路径与内部约束
+- `docs/architecture/admin-information-architecture.md`：管理后台模块与运营工作流
+- `docs/architecture/admin-data-model.md`：完整后端表结构与约束
+- `docs/product/content-model.md`：公共内容域、URL 与 RSS 规则
+- `docs/operations/deployment.md`：部署手册
+- `docs/operations/production-config.md`：生产配置索引
