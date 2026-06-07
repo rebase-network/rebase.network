@@ -1,118 +1,118 @@
-# Quality Assurance
+# 质量保障
 
-Use this document for development-time validation. Use `docs/operations/launch-checklist.md` for production release verification.
+这个文档用于开发期验证。生产发布验证请使用 `docs/operations/launch-checklist.md`。
 
-The goal is to combine:
+目标是结合：
 
-- browser-based review
-- automated checks
-- realistic sample content
+- 浏览器评审
+- 自动化检查
+- 真实样例内容
 
-## Validation Layers
+## 验证层
 
-### 1. Browser Review
+### 1. 浏览器评审
 
-Browser review is required for page presentation acceptance.
+浏览器评审是页面呈现验收的必需项。
 
-It should cover:
+它应覆盖：
 
-- desktop viewport
-- mobile viewport
-- primary user flows
-- realistic content, not empty placeholders only
+- 桌面端视口
+- 移动端视口
+- 主要用户流程
+- 真实内容，而不仅是空占位
 
-Browser review should focus on:
+浏览器评审应重点检查：
 
-- layout
-- readability
-- spacing
-- navigation
-- link behavior
-- content hierarchy
-- empty states
-- overflow handling
+- 布局
+- 可读性
+- 间距
+- 导航
+- 链接行为
+- 内容层级
+- 空状态
+- 溢出处理
 
-### 2. Automated Checks
+### 2. 自动化检查
 
-Automated checks provide fast regression protection.
+自动化检查用于快速防回归。
 
-They should cover:
+它们应覆盖：
 
-- code quality
-- route availability
-- key page structure
-- feed output
-- major UI regressions
-- admin and public API basics where applicable
+- 代码质量
+- 路由可用性
+- 关键页面结构
+- feed 输出
+- 主要 UI 回归
+- 在适用时覆盖 admin 与公共 API 的基础行为
 
-### 3. Sample Content Validation
+### 3. 样例内容验证
 
-Sample content should be used throughout development to confirm real-world behavior.
+整个开发过程中都应使用样例内容来确认真实世界行为。
 
-Recommended baseline sample set:
+推荐的基线样例集：
 
-- 3 GeekDaily episodes
-- 2 articles
-- 2 events
-- 3 job entries
-- 4 contributors across at least 2 roles
-- a complete footer setup
+- 3 期 GeekDaily
+- 2 篇文章
+- 2 个活动
+- 3 条 job
+- 至少跨 2 个角色的 4 位 contributors
+- 一套完整的页脚配置
 
-An archived `geekdaily.csv`, when available, can be used as a reference source for episode-level structure.
+如果存在归档版 `geekdaily.csv`，可以把它作为期目级结构的参考来源。
 
-### 4. Production Release
+### 4. 生产发布
 
-Use `docs/operations/launch-checklist.md` for domain, health, SEO, and post-release checks.
+域名、健康检查、SEO 和发布后检查请使用 `docs/operations/launch-checklist.md`。
 
-## Browser Review Checklist
+## 浏览器评审清单
 
-Each major page should be reviewed in a browser for:
+每个主要页面都应在浏览器中检查以下内容：
 
-- visible main heading
-- clear navigation
-- working footer
-- correct content data
-- stable layout on desktop
-- stable layout on mobile
-- acceptable long-title behavior
-- acceptable empty-state behavior
+- 主标题可见
+- 导航清晰
+- 页脚可用
+- 内容数据正确
+- 桌面端布局稳定
+- 移动端布局稳定
+- 长标题行为可接受
+- 空状态行为可接受
 
-Pages that should always be reviewed manually:
+这些页面应始终人工评审：
 
 - `/`
 - `/about`
 - `/who-is-hiring`
-- a sample job detail page
+- 一个示例招聘详情页
 - `/geekdaily`
-- a sample GeekDaily detail page
+- 一个示例 GeekDaily 详情页
 - `/articles`
-- a sample article detail page
+- 一个示例文章详情页
 - `/events`
-- a sample event detail page
+- 一个示例活动详情页
 - `/contributors`
-- key admin list and editor screens once the custom admin is implemented
+- 定制 admin 实现完成后，关键 admin 列表页和编辑页
 
-## Automated Checks Plan
+## 自动化检查计划
 
-### Build-Level Checks
+### Build 级检查
 
-These should run on every meaningful feature batch:
+这些检查应在每一批有意义的功能改动上执行：
 
 - lint
 - typecheck
 - build
 
-Purpose:
+目的：
 
-- catch syntax and type issues
-- confirm route generation or runtime wiring
-- catch feed generation failures
+- 捕获语法与类型问题
+- 确认路由生成或运行时接线正常
+- 捕获 feed 生成失败
 
-### Local Route Smoke Tests
+### 本地路由 Smoke Tests
 
-Use browser automation to verify that critical routes load correctly during development and CI. Production route verification stays in `docs/operations/launch-checklist.md`.
+使用浏览器自动化在开发环境和 CI 中验证关键路由能正确加载。生产路由验证保留在 `docs/operations/launch-checklist.md`。
 
-Recommended initial route set:
+推荐的初始路由集：
 
 - `/`
 - `/about`
@@ -130,128 +130,128 @@ Recommended initial route set:
 - `/sitemap.xml`
 - `/healthz`
 
-When sample content exists, also test:
+如果存在样例内容，还应测试：
 
-- one GeekDaily detail route
-- one article detail route
-- one event detail route
-- one hiring detail route
+- 一个 GeekDaily 详情路由
+- 一个文章详情路由
+- 一个活动详情路由
+- 一个招聘详情路由
 
-Recommended checks:
+推荐检查项：
 
-- response is successful
-- expected heading or landmark exists
-- key page regions render
-- feed responses contain XML content
-- health and SEO support routes return the expected format
+- 响应成功
+- 预期的标题或页面地标存在
+- 关键页面区域被渲染
+- feed 响应包含 XML 内容
+- 健康检查与 SEO 支撑路由返回预期格式
 
-### Structural Assertions
+### 结构断言
 
-For major pages, verify:
+对于主要页面，验证：
 
-- a primary heading exists
-- navigation exists
-- footer exists
-- expected CTA or content block exists
+- 存在主标题
+- 存在导航
+- 存在页脚
+- 存在预期的 CTA 或内容区块
 
-Examples:
+示例：
 
-- the GeekDaily list page should include a search input or search trigger
-- the hiring detail page should include an apply link
-- the event detail page should include registration instructions or an external registration link
+- GeekDaily 列表页应包含搜索输入框或搜索触发器
+- 招聘详情页应包含申请链接
+- 活动详情页应包含报名说明或外部报名链接
 
-### Feed Checks
+### Feed 检查
 
-Each feed should be checked for:
+每个 feed 都应检查：
 
-- successful response
-- XML output
-- non-empty channel metadata
-- at least one item when sample data exists
-- item links that match public route conventions
+- 响应成功
+- 输出 XML
+- channel metadata 非空
+- 在存在样例数据时至少有一个 item
+- item links 符合公共路由约定
 
-Route conventions to verify:
+需要验证的路由约定：
 
-- GeekDaily items link to `/geekdaily/geekdaily-{episode-number}`
-- hiring items link to `/who-is-hiring/{public-number}-{slug}`
-- article items link to `/articles/{public-number}-{slug}`
-- event items link to `/events/{public-number}-{slug}`
+- GeekDaily items 链接到 `/geekdaily/geekdaily-{episode-number}`
+- 招聘 items 链接到 `/who-is-hiring/{public-number}-{slug}`
+- 文章 items 链接到 `/articles/{public-number}-{slug}`
+- 活动 items 链接到 `/events/{public-number}-{slug}`
 
-### Search Checks
+### 搜索检查
 
-GeekDaily search checks should verify:
+GeekDaily 搜索检查应验证：
 
-- the search UI is available
-- searching by episode number works
-- searching by keyword returns expected practical matches
-- empty search results render a clear state
-- search results link to valid episode pages
+- 搜索 UI 可用
+- 按期号搜索可用
+- 按关键词搜索能返回符合预期的实用匹配
+- 空搜索结果能渲染清晰状态
+- 搜索结果链接到有效期目页面
 
-### Admin Workflow Checks
+### Admin 工作流检查
 
-Once the custom admin lands, add checks for:
+定制 admin 落地后，补充以下检查：
 
-- admin login
-- dashboard availability
-- content list loading
-- content editor validation states
-- publish and archive action success paths for key modules
-- permission-based navigation visibility
+- admin 登录
+- 仪表盘可访问
+- 内容列表可加载
+- 内容编辑器的校验状态
+- 关键模块中 publish 与 archive 动作的成功路径
+- 基于权限的导航可见性
 
-### Visual Regression Checks
+### 视觉回归检查
 
-Visual regression is optional for the earliest phase, but recommended once the main UI is stable.
+在最早阶段，视觉回归是可选项；但主 UI 稳定后，建议引入。
 
-Start with screenshots for:
+先从以下页面截图开始：
 
-- home page
-- GeekDaily list page
-- GeekDaily detail page
-- hiring list page
-- hiring detail page
-- admin dashboard
-- one admin editor page
+- 首页
+- GeekDaily 列表页
+- GeekDaily 详情页
+- 招聘列表页
+- 招聘详情页
+- admin 仪表盘
+- 一个 admin 编辑页
 
-Capture at least:
+至少捕获：
 
-- one desktop viewport
-- one mobile viewport for public pages
+- 一个桌面端视口
+- 公共页面的一个移动端视口
 
-The goal is to catch major layout regressions, not pixel-perfect design policing.
+目标是捕获重大的布局回归，而不是做像素级设计警察。
 
-### Suggested Tooling
+### 建议工具
 
-Recommended first-pass tooling:
+推荐的第一阶段工具：
 
-- formatter and lint setup
-- type checking
-- Playwright for browser automation
+- formatter 与 lint 配置
+- 类型检查
+- 用于浏览器自动化的 Playwright
 
-Playwright is a good fit because it can:
+Playwright 很适合，因为它可以：
 
-- load pages
-- inspect elements
-- click links
-- enter search input
-- capture screenshots
-- verify feed responses
-- cover admin screens later in the project
+- 加载页面
+- 检查元素
+- 点击链接
+- 输入搜索内容
+- 截图
+- 验证 feed 响应
+- 在项目后期覆盖 admin 页面
 
-## Definition of Done for Testing
+## 测试完成定义
 
-A feature batch should not be considered complete until:
+一批功能在满足以下条件前，不应视为完成：
 
-- the relevant manual browser review has been done
-- the relevant automated checks pass
-- realistic sample content has been tested where applicable
-- known limitations are documented if they are intentionally deferred
+- 相关人工浏览器评审已完成
+- 相关自动化检查已通过
+- 适用时已经使用真实样例内容测试
+- 如有刻意延后项，其已知限制已被记录
 
-## Future Expansion
+## 后续扩展
 
-After the initial build is stable, QA can be expanded with:
+在初始构建稳定后，QA 可以继续扩展为：
 
-- richer visual regression coverage
-- accessibility checks
-- performance budget checks
-- schema validation for admin and public API responses
-- redirect validation for future URL migrations
+- 更丰富的视觉回归覆盖
+- 可访问性检查
+- 性能预算检查
+- admin 与公共 API 响应的 schema 校验
+- 面向未来 URL 迁移的 redirect 校验

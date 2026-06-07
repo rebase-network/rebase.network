@@ -1,17 +1,17 @@
-# Repository Docs
+# 仓库文档
 
-This directory holds repository-level documentation.
+这个目录用于存放仓库级文档。
 
-Not every markdown file in the repo belongs here. Some documents intentionally stay next to the code or workflow they govern:
+并不是仓库里的所有 Markdown 文件都属于这里。有些文档会有意放在它们所约束的代码或工作流旁边：
 
-- `README.md`, `DESIGN.md`, and `AGENTS.md` stay at the repository root because they are top-level entry documents
-- `apps/web/*` and `apps/admin/*` design docs stay beside the surfaces they specify
+- `README.md`、`DESIGN.md` 和 `AGENTS.md` 保留在仓库根目录，因为它们是顶层入口文档
+- `apps/web/*` 与 `apps/admin/*` 的设计文档保留在各自界面旁边，因为它们直接规定这些界面的规范
 
-## Layout
+## 目录布局
 
 ### `docs/product/`
 
-Product scope, content rules, acceptance, and roadmap:
+产品范围、内容规则、验收标准与路线图：
 
 - `v1-scope.md`
 - `content-model.md`
@@ -20,7 +20,7 @@ Product scope, content rules, acceptance, and roadmap:
 
 ### `docs/architecture/`
 
-System, admin, and data-model design:
+系统、admin 与数据模型设计：
 
 - `architecture.md`
 - `admin-architecture.md`
@@ -29,7 +29,7 @@ System, admin, and data-model design:
 
 ### `docs/operations/`
 
-Development, QA, deployment, and release operations:
+开发、QA、部署与发布运维：
 
 - `local-development.md`
 - `quality-assurance.md`
@@ -37,8 +37,8 @@ Development, QA, deployment, and release operations:
 - `production-config.md`
 - `launch-checklist.md`
 
-## Update Rule
+## 更新规则
 
-Repository-wide product, architecture, and operations docs should live under `docs/`.
+仓库级的产品、架构与运维文档应放在 `docs/` 下。
 
-Only keep documents outside `docs/` when they are intentionally local to a specific app or repository entrypoint.
+只有当文档明确属于某个应用或仓库入口点时，才应放在 `docs/` 之外。

@@ -1,114 +1,114 @@
-# Admin Design Principles
+# 管理后台设计原则
 
-Design principles for the Rebase admin workspace in `apps/admin`.
+适用于 `apps/admin` 中 Rebase 管理工作台的设计原则。
 
-This file explains how the admin should feel and how operators should move through it.
-It does not replace `apps/admin/DESIGN.md`, which holds the hard visual specification.
+这个文件说明管理后台应该呈现什么感受，以及运营人员应如何在其中流转。
+它不能替代 `apps/admin/DESIGN.md`，后者保存的是硬性视觉规范。
 
-## Product Intent
+## 产品意图
 
-The admin is a community operations workspace.
+管理后台是一个社区运营工作台。
 
-It should help staff:
+它应该帮助工作人员：
 
-- publish and edit content efficiently
-- understand status quickly
-- avoid mistakes in high-frequency workflows
-- maintain community data without thinking in raw schema terms
+- 高效发布和编辑内容
+- 快速理解当前状态
+- 在高频工作流中避免犯错
+- 在不直接面对原始 schema 的情况下维护社区数据
 
-It should not feel like:
+它不应让人感觉像：
 
-- a generic headless CMS
-- a database browser
-- a visual builder
-- a dashboard full of decorative emptiness
+- 通用的 headless CMS
+- 数据库浏览器
+- 可视化搭建器
+- 充满装饰性留白的仪表盘
 
-## Core Feeling
+## 核心感受
 
-The admin should feel:
+管理后台应当给人的感觉是：
 
-- compact
-- clear
-- controlled
-- Chinese-first
-- desktop-first
-- operational rather than promotional
+- 紧凑
+- 清晰
+- 可控
+- 中文优先
+- 桌面优先
+- 偏运营而不是偏宣传
 
-The admin should not feel:
+管理后台不应让人感觉：
 
-- sparse in a way that wastes editing space
-- schema-driven
-- overloaded with helper copy
-- split into too many side panels competing for attention
+- 稀疏到浪费编辑空间
+- 被 schema 驱动
+- 堆满辅助说明文案
+- 被过多互相抢占注意力的侧边面板切碎
 
-## Primary Principles
+## 核心原则
 
-### Operator Efficiency First
+### 运营效率优先
 
-- the primary task on each page should be obvious immediately
-- high-frequency actions should sit close to the content they affect
-- content lists should support scanning, filtering, and pagination without ceremony
+- 每个页面的主任务都应该立刻明确
+- 高频操作应靠近它所影响的内容
+- 内容列表应支持扫描、筛选和分页，而不是增加额外仪式感
 
-### Compact, Not Claustrophobic
+### 紧凑，但不压抑
 
-- reduce vertical waste aggressively
-- preserve enough whitespace for readability and error prevention
-- default toward denser layouts than the public site
+- 强力减少纵向浪费
+- 为可读性和防错保留足够留白
+- 默认采用比公共网站更高密度的布局
 
-### Primary Editor Area Must Win
+### 主编辑区域必须占优
 
-- on editor pages, the main editing surface must remain visually dominant
-- secondary metadata should not crowd out the body editor
-- optional or rare settings should move into secondary blocks, tabs, or compact panels
+- 在编辑页中，主编辑区域必须保持视觉主导
+- 次级元数据不应挤压正文编辑器
+- 可选项或低频设置应进入次级区块、选项卡或紧凑面板
 
-### Task-Oriented Over Schema-Oriented
+### 面向任务，而不是面向 schema
 
-- think in jobs, GeekDaily, articles, contributors, assets, and staff tasks
-- do not expose raw collections or raw relational thinking unless it truly helps operators
-- labels should be operational, not developer-centric
+- 应以岗位、GeekDaily、文章、贡献者、资源和工作人员任务的视角来思考
+- 除非确实有助于运营人员，否则不要暴露原始内容集合或关系型建模思维
+- 标签用语应服务运营，而不是服务开发者
 
-### Inline When Possible
+### 能内联就内联
 
-- filters should prefer inline or header-level presentation
-- destructive actions should stay restrained and localized
-- related controls should share one line where practical
+- 筛选器应优先使用内联或页头级展示
+- 破坏性操作应保持克制并就近出现
+- 相关控件在可行时应共享同一行
 
-## Admin Page-Type Guidance
+## 管理后台页面类型指引
 
-### List Pages
+### 列表页
 
-Rules:
+规则：
 
-- pagination is mandatory for long lists
-- search, counts, and filters should be compressed into a thin header area
-- table headers can carry lightweight filters when it improves density
-- if the list is empty under filters, preserve orientation and recovery paths
+- 长列表必须分页
+- 搜索、数量和筛选应压缩进一块轻薄的页头区域
+- 如果能提升密度，表头可以承载轻量筛选器
+- 如果筛选后列表为空，页面仍应保持方向感和恢复路径
 
-### Editor Pages
+### 编辑页
 
-Rules:
+规则：
 
-- title, status, and main body should surface early
-- avoid long stacks of low-value metadata before the main editor
-- side information is acceptable only when it meaningfully supports publishing decisions
-- destructive actions must never dominate the layout
+- 标题、状态和正文主体应尽早出现
+- 不要在主编辑器之前堆叠大量低价值元数据
+- 只有当侧边信息确实支持发布决策时，才允许它存在
+- 破坏性操作绝不能主导布局
 
-### Settings / Utility Pages
+### 设置 / 工具页
 
-Rules:
+规则：
 
-- group related settings into small panels
-- avoid giant full-width destructive buttons
-- use tabs or segmented modes when two workflows are easy to confuse
+- 将相关设置分组到小面板中
+- 避免巨大的全宽破坏性按钮
+- 当两个工作流容易混淆时，使用选项卡或分段模式
 
-## Copy Guidance
+## 文案指引
 
-- default to concise Chinese labels
-- remove helper text that states the obvious
-- do not write CMS-flavored explanation unless the workflow is unusual
-- prefer action wording over descriptive wording
+- 默认使用简洁的中文标签
+- 删除那些只是在重复显而易见事实的辅助文案
+- 除非工作流真的特殊，否则不要写 CMS 风格的解释
+- 优先使用动作导向的措辞，而不是描述导向的措辞
 
-Good:
+好的例子：
 
 - `开放岗位`
 - `状态`
@@ -116,34 +116,34 @@ Good:
 - `新增工作人员`
 - `上传文件`
 
-Avoid:
+避免：
 
-- long paragraphs above standard tables
-- duplicate explanatory cards that repeat the page title
-- technical jargon that operators do not need
+- 标准表格上方的长段说明
+- 重复页面标题含义的说明卡片
+- 运营人员根本不需要的技术术语
 
-## Interaction Rules
+## 交互规则
 
-- hover states must reflect actual affordance
-- keyboard focus must remain visible
-- destructive actions must be visually restrained and confirmed
-- tabs are appropriate when two nearby workflows are easy to confuse
-- list pages should stay readable without needing side explanations
+- 悬停状态必须准确反映真实可操作暗示
+- 键盘焦点必须保持可见
+- 破坏性操作必须在视觉上克制，并要求确认
+- 当两个相邻工作流容易混淆时，选项卡是合适的
+- 列表页应在没有侧边说明的情况下依然易读
 
-## Responsive Philosophy
+## 响应式理念
 
-- admin is desktop-first
-- mobile admin support is not a priority in v1
-- optimize for laptop and desktop editing comfort
-- do not sacrifice desktop efficiency to maintain complex mobile admin layouts
+- 管理后台以桌面优先
+- V1 不以移动端管理后台支持为优先事项
+- 优先优化笔记本和桌面端上的编辑舒适度
+- 不要为了维持复杂的移动端管理布局而牺牲桌面效率
 
-## Anti-Patterns
+## 反模式
 
-Do not introduce these patterns into the admin by default:
+默认不要把下面这些模式引入管理后台：
 
-- giant sidebar widths with large empty regions
-- large hero-like headers on admin pages
-- wide empty right rails with low-value metadata
-- full-width destructive buttons inside dense forms
-- filters split into separate giant blocks when inline filters will do
-- list pages that require excessive scrolling before reaching the actual table
+- 过宽的侧边栏与大片空白区域
+- 管理页面上的大型首屏式页头
+- 宽阔却低价值的右侧空栏元数据区域
+- 密集表单中的全宽破坏性按钮
+- 明明可以用内联筛选器，却拆成多个巨大的筛选区块
+- 必须先滚动很久才能看到真正表格的列表页

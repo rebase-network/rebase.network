@@ -1,366 +1,366 @@
-# Admin Information Architecture
+# 管理后台信息架构
 
-## Goal
+## 目标
 
-Design the Rebase admin around staff tasks rather than database tables.
+围绕工作人员任务来设计 Rebase admin，而不是围绕数据库 tables。
 
-Every module should answer a real operator question such as:
+每个模块都应回答一个真实的运营问题，例如：
 
-- what do we need to publish today
-- which GeekDaily episode is being edited
-- which jobs are currently live
-- which contributors belong to which role
+- 今天需要发布什么
+- 哪一期 GeekDaily 正在编辑
+- 哪些 jobs 当前在线
+- 哪些 contributors 属于哪个角色
 
-## Primary Users
+## 主要用户
 
-- super administrators
-- content editors
-- GeekDaily editors
-- hiring editors
-- event editors
-- community editors
-- auditors
+- 超级管理员
+- 内容编辑
+- GeekDaily 编辑
+- 招聘编辑
+- 活动编辑
+- 社区编辑
+- 审计人员
 
-## Top-Level Navigation
+## 顶层导航
 
-Recommended top-level modules:
+推荐的顶层模块：
 
-- Dashboard
+- 仪表盘
 - GeekDaily
-- Who-Is-Hiring
-- Articles
-- Events
-- Contributors
-- Pages and Navigation
-- Media Library
-- Staff and Permissions
-- Audit Logs
+- 招聘
+- 文章
+- 活动
+- 贡献者
+- 页面与导航
+- 媒体库
+- 工作人员与权限
+- 审计日志
 
-## Dashboard
+## 仪表盘
 
-Purpose:
+目的：
 
-- show what needs attention today
-- expose recent changes and publishing health
+- 展示今天需要关注的事项
+- 暴露最近变更和发布健康状况
 
-Recommended widgets:
+推荐组件：
 
-- draft counts by content type
-- latest published GeekDaily, article, job, and event
-- stale drafts that have not been updated recently
-- content missing required fields
-- system health summary
-- quick actions for new episode, new job, new article, and new event
+- 按内容类型统计草稿数量
+- 最新发布的 GeekDaily、article、job 和 event
+- 长时间未更新的陈旧草稿
+- 缺失必填字段的内容
+- 系统健康概览
+- 新建期目、新建 job、新建 article 和新建 event 的快捷操作
 
-## GeekDaily Module
+## GeekDaily 模块
 
-Purpose:
+目的：
 
-- make daily episode authoring fast and hard to misuse
+- 让每日期目创作足够快，并且不容易误用
 
-Views:
+视图：
 
-- episode list
-- new episode editor
-- episode detail and preview
+- 期目列表
+- 新建期目编辑器
+- 期目详情与预览
 
-List needs:
+列表需求：
 
-- filter by episode number, date, status, and keyword
-- clearly show published vs draft
-- quick links to preview and edit
+- 支持按期号、日期、状态和关键词筛选
+- 清晰显示已发布与草稿
+- 提供预览和编辑快捷链接
 
-Editor needs:
+编辑器需求：
 
-- episode number
-- title with default `极客日报#{episode-number}`
-- summary
-- intro/body field
-- published date
+- 期号
+- 标题，默认值为 `极客日报#{episode-number}`
+- 摘要
+- 导语 / 正文字段
+- 发布时间
 - tags
-- ordered list of recommendation items
+- 有序的推荐条目列表
 
-Episode item editor needs:
+期目条目编辑器需求：
 
-- item title
-- recommender name
-- source URL
-- summary
-- sort order
+- 条目标题
+- 推荐人姓名
+- 来源 URL
+- 摘要
+- 排序顺序
 
-Operator affordances:
+运营辅助能力：
 
-- duplicate last episode structure
-- validate unique episode number before publish
-- show final public URL
-- markdown preview for intro/body
-- historical import remains a bootstrap or seed workflow in V1, not a dedicated admin screen
+- 复制上一期的结构
+- 在发布前校验 `episode_number` 唯一性
+- 显示最终公共 URL
+- 为导语 / 正文提供 Markdown 预览
+- 历史导入在 V1 中仍属于 bootstrap 或 seed 工作流，而不是单独的 admin 界面
 
-## Who-Is-Hiring Module
+## 招聘模块
 
-Purpose:
+目的：
 
-- help staff publish readable, structured jobs instead of dumping raw text
+- 帮助工作人员发布结构化、可读的 jobs，而不是倾倒原始文本
 
-Views:
+视图：
 
-- job list
-- job editor
-- archived jobs view
+- job 列表
+- job 编辑器
+- 已归档 jobs 视图
 
-List needs:
+列表需求：
 
-- filter by status, location, work mode, remote support, and expiry
-- quick visibility into whether a job is still live
+- 支持按状态、地点、工作模式、是否支持远程和过期时间筛选
+- 快速看出一个 job 是否仍然在线
 
-Editor needs:
+编辑器需求：
 
-- company or team name
-- role title
+- 公司或团队名称
+- 岗位标题
 - slug
-- salary
-- remote support flag
-- work mode
-- location
-- summary
-- full description
-- apply URL
-- alternate contact label/value
-- expiry date
-- status
+- 薪资
+- 是否支持远程
+- 工作模式
+- 地点
+- 摘要
+- 完整描述
+- `apply_url`
+- 备用联系方式标签 / 值
+- 过期日期
+- 状态
 
-Validation affordances:
+校验辅助：
 
-- require at least one of apply URL or alternate contact
-- warn when a published job is expired
-- show final public detail URL and feed presence expectations
+- 要求至少提供 `apply_url` 或备用联系方式之一
+- 当已发布 job 已过期时发出警告
+- 展示最终公共详情 URL 以及 feed 中的展示预期
 
-## Articles Module
+## 文章模块
 
-Purpose:
+目的：
 
-- support longer-form Rebase publishing with clean metadata and preview
+- 支持更长篇的 Rebase 内容发布，并保持元数据与预览整洁
 
-Views:
+视图：
 
-- article list
-- article editor
-- preview link
+- 文章列表
+- 文章编辑器
+- 预览链接
 
-List needs:
+列表需求：
 
-- filter by status, author, tag, and keyword
-- show publish time, updated time, and slug
+- 支持按状态、作者、tag 和关键词筛选
+- 显示发布时间、更新时间和 slug
 
-Editor needs:
+编辑器需求：
 
-- title
+- 标题
 - slug
-- summary
-- body in Markdown
-- authors
+- 摘要
+- Markdown 正文
+- 作者
 - tags
-- cover image
-- SEO title and description
-- status
+- 封面图
+- SEO 标题和描述
+- 状态
 
-## Events Module
+## 活动模块
 
-Purpose:
+目的：
 
-- manage public event listings and detail pages cleanly
+- 干净地管理公开活动列表和详情页
 
-Views:
+视图：
 
-- current events
-- past events
-- event editor
+- 当前活动
+- 过往活动
+- 活动编辑器
 
-List needs:
+列表需求：
 
-- filter by status, date range, and city
-- clear visual distinction between upcoming and past
+- 支持按状态、日期范围和城市筛选
+- 对即将开始和已结束活动做出清晰视觉区分
 
-Editor needs:
+编辑器需求：
 
-- title
+- 标题
 - slug
-- start time
-- end time
-- city
-- location
-- venue
-- summary
-- body in Markdown
-- cover image
-- registration mode
-- external registration URL
-- status
+- 开始时间
+- 结束时间
+- 城市
+- 地点
+- 场地
+- 摘要
+- Markdown 正文
+- 封面图
+- 报名模式
+- 外部报名 URL
+- 状态
 
-Validation affordances:
+校验辅助：
 
-- start time must be before end time
-- external registration mode requires a URL
-- event URL preview should include the date prefix
+- 开始时间必须早于结束时间
+- 外部报名模式必须提供 URL
+- event URL 预览应包含日期前缀
 
-## Contributors Module
+## 贡献者模块
 
-Purpose:
+目的：
 
-- manage people and role groupings without turning contributor maintenance into freeform text entry
+- 管理人物与角色分组，同时避免让 contributor 维护退化成自由文本录入
 
-Views:
+视图：
 
-- contributor list
-- contributor editor
-- contributor roles
+- contributor 列表
+- contributor 编辑器
+- contributor 角色
 
-Contributor editor needs:
+Contributor 编辑器需求：
 
-- name
+- 姓名
 - slug
-- avatar
-- headline
-- bio
-- one or more roles
-- social links such as Twitter, WeChat, Telegram
-- sort order
-- status
+- 头像
+- 标题语
+- 简介
+- 一个或多个角色
+- 如 Twitter、WeChat、Telegram 等社交链接
+- 排序顺序
+- 状态
 
-Role editor needs:
+角色编辑器需求：
 
-- role name
-- role slug
-- description
-- sort order
+- 角色名称
+- 角色 slug
+- 描述
+- 排序顺序
 
-## Pages and Navigation Module
+## 页面与导航模块
 
-Purpose:
+目的：
 
-- maintain singleton pages and global site settings with friendly section-based forms
+- 通过友好的分区式表单维护单例页面与全局站点配置
 
-Subsections:
+子分区：
 
-- Home
+- 首页
 - About
 - Footer
-- Social Links
+- 社交链接
 
-Home editor should be organized as sections, not raw JSON:
+首页编辑器应按分区组织，而不是暴露原始 JSON：
 
-- hero
-- current signals
-- home stats
-- feed callout
+- 首屏区
+- 当前信号
+- 首页统计
+- feed 引导区
 
-About editor should support:
+About 编辑器应支持：
 
-- page title
-- page summary
-- ordered body sections
+- 页面标题
+- 页面摘要
+- 有序的正文分区
 
-Footer editor should support:
+Footer 编辑器应支持：
 
-- social links
-- supported projects
-- media resources
-- friendly links
-- copyright
+- 社交链接
+- 支持项目
+- 媒体资源
+- 友情链接
+- 版权信息
 
-## Media Library Module
+## 媒体库模块
 
-Purpose:
+目的：
 
-- centralize reusable media selection and metadata maintenance
+- 集中管理可复用媒体的选择和 metadata 维护
 
-Views:
+视图：
 
-- asset list
-- upload flow
-- asset detail drawer or panel
+- 资源列表
+- 上传流程
+- 资源详情抽屉或面板
 
-Recommended fields:
+推荐字段：
 
-- filename
+- 文件名
 - mime type
-- byte size
-- asset purpose
+- 字节大小
+- 资源用途
 - alt text
-- visibility
-- created time
-- upload owner
-- usage references later if needed
+- 可见性
+- 创建时间
+- 上传所有者
+- 如果未来需要，再加入使用引用
 
-## Staff and Permissions Module
+## 工作人员与权限模块
 
-Purpose:
+目的：
 
-- control who can access the admin and what they can do
+- 控制谁能访问 admin，以及他们能做什么
 
-Views:
+视图：
 
-- staff accounts
-- roles
-- role summaries
+- 工作人员账号
+- 角色
+- 角色摘要
 
-Staff needs:
+工作人员需求：
 
-- create staff user
-- assign one or more roles
-- suspend or disable access
-- leave notes when needed
+- 创建工作人员用户
+- 分配一个或多个角色
+- 暂停或禁用访问
+- 在需要时留下备注
 
-Role needs:
+角色需求：
 
-- role code
-- name
-- description
-- bound permissions
-- system-role protection for critical roles
+- 角色 code
+- 名称
+- 描述
+- 绑定的权限
+- 对关键角色的系统角色保护
 
-## Audit Logs Module
+## 审计日志模块
 
-Purpose:
+目的：
 
-- make operational changes visible and reviewable
+- 让运营变更可见、可审查
 
-List needs:
+列表需求：
 
-- actor
-- action
-- target type
-- target id
-- timestamp
-- request id if available
+- 操作人
+- 动作
+- 目标类型
+- 目标 id
+- 时间戳
+- 如果可用则显示 `request_id`
 
-Filtering should support:
+筛选应支持：
 
-- actor
-- module
-- action type
-- time range
+- 操作人
+- 模块
+- 动作类型
+- 时间范围
 
-## Shared UX Rules
+## 共享 UX 规则
 
-Across all modules:
+跨所有模块：
 
-- keep labels in staff-friendly language
-- hide raw schema details when they do not help the task
-- make publish state obvious
-- make validation messages specific and actionable
-- keep preview links near the save and publish controls
-- prefer dedicated repeated-item editors over raw JSON textareas
-- preserve history through archive rather than hard delete
+- 使用工作人员友好的语言标签
+- 当原始 schema 细节无助于任务时隐藏它们
+- 让发布状态足够醒目
+- 让校验提示具体且可执行
+- 把预览链接放在保存和发布控件附近
+- 对重复项优先使用专门编辑器，而不是原始 JSON textarea
+- 通过 archive 保留历史，而不是 hard delete
 
-## First Release Workflow Goals
+## 首个版本的工作流目标
 
-A staff member should be able to do each of the following without touching the database:
+工作人员应当能够在不接触数据库的情况下完成以下操作：
 
-- publish a new GeekDaily episode
-- post a new job and later archive it
-- publish an article with a cover image
-- publish an event with an external registration link
-- add a contributor and assign one or more roles
-- update the homepage and footer
-- upload and reuse media
+- 发布新的 GeekDaily 期目
+- 发布一个新的 job，并在之后归档它
+- 发布带封面图的 article
+- 发布带外部报名链接的 event
+- 添加一个 contributor 并分配一个或多个角色
+- 更新首页和页脚
+- 上传并复用媒体

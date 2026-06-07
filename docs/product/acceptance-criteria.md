@@ -1,233 +1,233 @@
-# Acceptance Criteria
+# 验收标准
 
-## Purpose
+## 目的
 
-This document defines how Rebase website work should be reviewed and accepted during development.
+这个文档定义了 Rebase 网站相关工作在开发期间应如何被评审和验收。
 
-Acceptance should not rely on a single visual pass.
+验收不应只依赖一次视觉浏览。
 
-Each feature batch should be checked from four perspectives:
+每一批功能都应从四个视角检查：
 
-- content model correctness
-- public page behavior
-- admin workspace and operations workflow
-- release readiness
+- 内容模型正确性
+- 公共页面行为
+- 管理工作台与运营工作流
+- 发布就绪度
 
-## Acceptance Levels
+## 验收层级
 
-### Level 1: Content Model Acceptance
+### Level 1：内容模型验收
 
-Use this level to confirm that the data shape supports real editorial work.
+用这个层级确认数据结构能够支撑真实的编辑工作。
 
-Questions to verify:
+需要验证的问题：
 
-- does the data model match the intended public page structure
-- are required fields present
-- are field names clear and stable
-- are status values consistent
-- are media fields correctly separated from code assets
-- do slug rules and URL rules support long-term stability
+- 数据模型是否匹配目标公共页面结构
+- 必填字段是否存在
+- 字段名是否清晰且稳定
+- 状态值是否一致
+- 媒体字段是否与代码资源正确分离
+- slug 规则与 URL 规则是否支持长期稳定性
 
-This level is complete only when the data model is strong enough to hold real content rather than placeholder assumptions.
+只有当数据模型足够承载真实内容，而不是占位假设时，这一层才算完成。
 
-### Level 2: Page Presentation Acceptance
+### Level 2：页面呈现验收
 
-Use this level to confirm that public pages render correctly with realistic content.
+用这个层级确认公共页面在真实内容下能正确渲染。
 
-This level must include actual browser-based review.
+这一层必须包含真实的浏览器评审。
 
-Questions to verify:
+需要验证的问题：
 
-- does the page show the correct content
-- does the layout work on desktop and mobile
-- do long titles, empty sections, and missing media degrade gracefully
-- are links and calls to action understandable
-- is the page hierarchy easy to scan
+- 页面是否展示正确内容
+- 布局在桌面端和移动端上是否可用
+- 长标题、空分区和缺失媒体时是否能优雅降级
+- 链接和行动引导是否易于理解
+- 页面层级是否便于扫描
 
-### Level 3: Operations Workflow Acceptance
+### Level 3：运营工作流验收
 
-Use this level to confirm that operators can maintain the site through the Rebase admin workspace.
+用这个层级确认运营人员能够通过 Rebase 管理工作台维护网站。
 
-Questions to verify:
+需要验证的问题：
 
-- can staff log in
-- can staff create, edit, publish, archive, and update content
-- do published changes appear on the public site
-- do unpublished or archived changes behave correctly
-- do uploaded images appear correctly on the public site
+- 工作人员能否登录
+- 工作人员能否创建、编辑、发布、归档和更新内容
+- 已发布变更是否会出现在公共网站上
+- 未发布或已归档变更的行为是否正确
+- 上传图片是否能正确出现在公共网站上
 
-### Level 4: Release Acceptance
+### Level 4：发布验收
 
-Use this level before launch or before a significant release.
+在上线前或重大版本发布前使用这个层级。
 
-Questions to verify:
+需要验证的问题：
 
-- do critical routes respond correctly
-- do feeds render correctly
-- do metadata and canonical URLs look right
-- does the site handle the agreed domain strategy
-- is the site acceptable on desktop and mobile
+- 关键路由是否响应正确
+- RSS 源是否渲染正确
+- 元数据与 canonical URLs 是否正确
+- 网站是否遵循已约定的域名策略
+- 网站在桌面端和移动端上是否可接受
 
-## Module Criteria
+## 模块标准
 
-### Home Page
+### 首页
 
-The home page is accepted when:
+首页在满足以下条件时通过验收：
 
-- the Rebase introduction is visible and readable
-- recent articles are shown
-- recent events are shown
-- recent jobs are shown
-- the latest GeekDaily is shown
-- section ordering makes sense on desktop and mobile
-- empty states do not break the layout
+- Rebase 介绍清晰可见且易读
+- 展示最近文章
+- 展示最近活动
+- 展示最近岗位
+- 展示最新 GeekDaily
+- 分区顺序在桌面端和移动端上都合理
+- 空状态不会破坏布局
 
-### About Page
+### 关于页面
 
-The About page is accepted when:
+关于页面在满足以下条件时通过验收：
 
-- the core Rebase description is present
-- the page supports long-form content cleanly
-- typography remains readable on mobile
-- metadata can be configured through the admin workspace
+- Rebase 的核心描述存在
+- 页面能干净地承载长内容
+- 排版在移动端上仍然易读
+- 元数据可通过管理工作台配置
 
-### Who-Is-Hiring List Page
+### `Who-Is-Hiring` 列表页
 
-The hiring list page is accepted when:
+招聘列表页在满足以下条件时通过验收：
 
-- jobs render from published admin data
-- active jobs are clearly readable and scannable
-- expired or archived jobs are not incorrectly shown as active
-- filtering or search behavior works if implemented in the current batch
-- the page links to public job detail pages
+- 岗位来自已发布的管理后台数据
+- 在线岗位清晰、易读、易扫描
+- 已过期或已归档岗位不会被错误显示为在线
+- 如果本批次实现了筛选或搜索，其行为应正常
+- 页面链接到公开招聘详情页
 
-### Hiring Detail Page
+### 招聘详情页
 
-The hiring detail page is accepted when:
+招聘详情页在满足以下条件时通过验收：
 
-- the page is available at `/who-is-hiring/{public-number}-{slug}`
-- the title, company, location, work mode, and description render correctly
-- the apply link is visible and functional
-- the page remains readable even when some optional metadata is absent
-- SEO metadata and social metadata can be populated
+- 页面可通过 `/who-is-hiring/{public-number}-{slug}` 访问
+- 标题、公司、地点、工作模式和描述渲染正确
+- 申请链接可见且可用
+- 即使部分可选元数据缺失，页面仍然易读
+- 可以配置 SEO 元数据与社交元数据
 
-### GeekDaily List Page
+### GeekDaily 列表页
 
-The GeekDaily list page is accepted when:
+GeekDaily 列表页在满足以下条件时通过验收：
 
-- episodes render as episode-level records rather than item-level rows
-- each episode links to `/geekdaily/geekdaily-{episode-number}`
-- pagination or list chunking works if included in the batch
-- the search entry point is visible and usable
-- the layout remains readable with realistic episode counts
+- 期目以期目级记录呈现，而不是条目级行
+- 每一期都链接到 `/geekdaily/geekdaily-{episode-number}`
+- 如果当前批次包含分页或分块列表，它们应工作正常
+- 搜索入口可见且可用
+- 在真实期目数量下布局仍然易读
 
-### GeekDaily Detail Page
+### GeekDaily 详情页
 
-The GeekDaily detail page is accepted when:
+GeekDaily 详情页在满足以下条件时通过验收：
 
-- the route matches the `geekdaily-{episode-number}` convention
-- the episode metadata is shown correctly
-- all items in the episode are rendered in the correct order
-- source links work
-- long summaries do not break the layout
-- mobile reading remains comfortable
+- 路由符合 `geekdaily-{episode-number}` 约定
+- 期目元数据展示正确
+- 期目中的所有条目按正确顺序渲染
+- 来源链接可用
+- 较长摘要不会破坏布局
+- 移动端阅读体验舒适
 
-### GeekDaily Search
+### GeekDaily 搜索
 
-GeekDaily search is accepted when:
+GeekDaily 搜索在满足以下条件时通过验收：
 
-- users can search by episode number, title, summary, tags, or date
-- result quality is practical for content discovery
-- the UI clearly distinguishes empty results from loading or idle states
-- result items link to the correct episode pages
-- mobile search interaction is usable
+- 用户可以按期号、标题、摘要、标签或日期搜索
+- 结果质量足以支持内容发现
+- 界面能清晰区分空结果、加载中和空闲状态
+- 结果项链接到正确的期目页面
+- 移动端搜索交互可用
 
-### Articles List Page
+### 文章列表页
 
-The articles list page is accepted when:
+文章列表页在满足以下条件时通过验收：
 
-- published articles appear in the correct order
-- cards or rows display title, summary, date, and cover information correctly
-- each item links to the matching detail page
-- the page handles missing images gracefully
+- 已发布文章按正确顺序出现
+- 卡片或行项能正确显示标题、摘要、日期和封面信息
+- 每一项都链接到对应详情页
+- 页面能优雅处理缺失图片
 
-### Article Detail Page
+### 文章详情页
 
-The article detail page is accepted when:
+文章详情页在满足以下条件时通过验收：
 
-- the article URL matches `/articles/{public-number}-{slug}`
-- title, body, author information, and cover image render correctly
-- rich content remains readable on desktop and mobile
-- metadata can be configured through the admin workspace
+- 文章 URL 符合 `/articles/{public-number}-{slug}`
+- 标题、正文、作者信息和封面图渲染正确
+- 富内容在桌面端和移动端上都保持易读
+- 元数据可通过管理工作台配置
 
-### Events List Page
+### 活动列表页
 
-The events list page is accepted when:
+活动列表页在满足以下条件时通过验收：
 
-- upcoming and past events are clearly distinguished
-- events appear in the correct date order
-- each event links to the matching detail page
-- missing optional fields do not break the page
+- 即将开始和过往活动被清晰区分
+- 活动按正确日期顺序出现
+- 每个活动都链接到对应详情页
+- 可选字段缺失时不会破坏页面
 
-### Event Detail Page
+### 活动详情页
 
-The event detail page is accepted when:
+活动详情页在满足以下条件时通过验收：
 
-- the URL matches `/events/{public-number}-{slug}`
-- date, time, location, and content render correctly
-- external registration links are clearly visible when configured
-- the page remains useful without an in-site registration form
+- URL 符合 `/events/{public-number}-{slug}`
+- 日期、时间、地点和内容渲染正确
+- 配置了外部报名链接时，它们清晰可见
+- 即使没有站内报名表单，页面仍然有用
 
-### Contributors Page
+### 贡献者页面
 
-The contributors page is accepted when:
+贡献者页面在满足以下条件时通过验收：
 
-- contributors are grouped by role
-- the intended role ordering is respected
-- contributor avatars, names, and bios render correctly
-- the page handles contributors with partial profile information
+- contributors 按角色分组
+- 预期的角色排序得到遵守
+- contributor 头像、姓名和简介渲染正确
+- 页面能处理资料不完整的 contributors
 
-### Footer
+### 页脚
 
-The footer is accepted when:
+页脚在满足以下条件时通过验收：
 
-- social links are present
-- supported projects are present
-- media resources are present
-- friendly links are present
-- copyright text is present
-- the layout remains readable on mobile
+- 社交链接存在
+- 支持项目存在
+- 媒体资源存在
+- 友情链接存在
+- 版权文本存在
+- 布局在移动端上仍然易读
 
 ### RSS Feeds
 
-RSS output is accepted when:
+RSS 输出在满足以下条件时通过验收：
 
-- `/rss.xml` is valid and returns recent public content
-- `/geekdaily/rss.xml` returns episode-level entries
-- `/articles/rss.xml` returns article entries
-- `/events/rss.xml` returns event entries
-- `/who-is-hiring/rss.xml` returns hiring entries
-- every feed item has a stable title, link, description, and publication date
-- hiring feed items point to public hiring detail pages
+- `/rss.xml` 有效，并返回最近公共内容
+- `/geekdaily/rss.xml` 返回期目级条目
+- `/articles/rss.xml` 返回文章条目
+- `/events/rss.xml` 返回活动条目
+- `/who-is-hiring/rss.xml` 返回招聘条目
+- 每个 RSS 条目都有稳定的标题、链接、描述和发布时间
+- 招聘 RSS 条目指向公开招聘详情页
 
-## Admin Workflow Criteria
+## 管理后台工作流标准
 
-The admin workflow is accepted when staff can complete the following flows successfully:
+当工作人员能够成功完成以下流程时，管理后台工作流通过验收：
 
-- create and publish an article
-- create and publish a GeekDaily episode with multiple items
-- create and publish a job entry
-- create and publish an event
-- create and publish a contributor
-- update footer links
-- upload media and reuse it in public content
+- 创建并发布 article
+- 创建并发布包含多个条目的 GeekDaily 期目
+- 创建并发布 job
+- 创建并发布 event
+- 创建并发布 contributor
+- 更新页脚链接
+- 上传媒体并在公共内容中复用
 
-## Release Gate
+## 发布门槛
 
-A feature batch is ready to merge or release when:
+当满足以下条件时，一批功能就可以合并或发布：
 
-- the relevant data model is stable
-- the relevant public pages pass browser review
-- the related automated checks pass
-- the admin workflow has been validated for the affected feature
-- unresolved issues are either fixed or explicitly accepted
+- 相关数据模型稳定
+- 相关公共页面通过浏览器评审
+- 相关自动化检查通过
+- 受影响功能的管理后台工作流已验证
+- 未解决问题要么已修复，要么被明确接受

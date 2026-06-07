@@ -1,35 +1,35 @@
-# Admin Architecture
+# 管理后台架构
 
-## Goal
+## 目标
 
-Build a Rebase-specific admin workspace and API that help community staff maintain content reliably.
+构建一个面向 Rebase 的管理工作台和 API，帮助社区工作人员可靠地维护内容。
 
-The admin is not a generic CMS shell.
+这个管理后台不是通用的 CMS 外壳。
 
-It is a task-oriented internal product for publishing, curation, and operational maintenance.
+它是一个面向任务的内部产品，用于发布、策展和运营维护。
 
-## Product Principles
+## 产品原则
 
-- optimize for staff workflows, not table CRUD
-- keep the public site read-only for readers
-- keep all writes behind authenticated admin APIs
-- validate content before it can be published
-- prefer explicit workflow states over hidden conventions
-- keep media, content, auth, and audit concerns separated
-- reuse proven technical patterns from the TGO custom admin where they fit
+- 优化工作人员工作流，而不是 table CRUD
+- 公共网站对读者保持只读
+- 所有写入都放在已认证的 admin API 之后
+- 内容在发布前必须完成校验
+- 优先使用显式工作流状态，而不是隐式约定
+- 媒体、内容、认证和审计关注点保持分离
+- 在适合的地方复用来自 TGO 定制 admin 的成熟技术模式
 
-## Target Stack
+## 目标技术栈
 
-- public website: Astro in `apps/web`
-- admin frontend: Vue in `apps/admin`
-- admin and public API: Hono in `apps/api`
-- auth: Better Auth
-- database: PostgreSQL
-- schema and migrations: Drizzle in `packages/db`
-- shared DTOs, enums, and validation helpers: `packages/shared`
-- media storage: Cloudflare R2
+- 公共网站：`apps/web` 中的 Astro
+- admin 前端：`apps/admin` 中的 Vue
+- admin 与公共 API：`apps/api` 中的 Hono
+- 认证：Better Auth
+- 数据库：PostgreSQL
+- schema 与 migrations：`packages/db` 中的 Drizzle
+- 共享 DTOs、enums 与校验辅助：`packages/shared`
+- 媒体存储：Cloudflare R2
 
-## Repository Shape
+## 仓库结构
 
 ```text
 apps/
@@ -44,33 +44,33 @@ docs/
 infra/
 ```
 
-## System Diagram
+## 系统图
 
 ```text
-reader browser
+读者浏览器
     |
     v
-cloudflare edge
+Cloudflare edge
     |
     v
-public worker (`apps/web`)
+公共 worker (`apps/web`)
     |
     v
 `api.rebase.network`
     |
     v
-cloudflare tunnel (`cloudflared`)
+Cloudflare Tunnel (`cloudflared`)
     |
     v
-api service (`apps/api`)
+API 服务 (`apps/api`)
     |
-    +--> postgresql
-    +--> r2
+    +--> PostgreSQL
+    +--> R2
 
-staff browser
+工作人员浏览器
     |
     v
-cloudflare edge
+Cloudflare edge
     |
     v
 admin worker (`apps/admin`)
@@ -79,117 +79,117 @@ admin worker (`apps/admin`)
 `api.rebase.network`
     |
     v
-cloudflare tunnel (`cloudflared`)
+Cloudflare Tunnel (`cloudflared`)
     |
     v
-api service (`apps/api`)
+API 服务 (`apps/api`)
     |
-    +--> better auth
-    +--> postgresql
-    +--> r2
+    +--> Better Auth
+    +--> PostgreSQL
+    +--> R2
 ```
 
-## Runtime Responsibilities
+## 运行时职责
 
 ### `apps/web`
 
-- renders the public Rebase website
-- only consumes published content
-- never holds admin credentials
-- generates feeds, sitemap, robots, and public-facing metadata
-- uses the public API rather than reading the database directly
+- 渲染公开的 Rebase 网站
+- 只消费已发布内容
+- 永远不持有 admin 凭据
+- 生成 feeds、sitemap、robots 和面向公众的 metadata
+- 通过公共 API 获取数据，而不是直接读取数据库
 
 ### `apps/admin`
 
-- provides the operator-facing workspace
-- groups content by real Rebase tasks such as GeekDaily, jobs, events, and contributors
-- offers list, editor, preview, publish, archive, and audit-aware flows
-- renders navigation based on staff permissions
+- 提供面向运营人员的工作台
+- 按照 Rebase 的真实任务对内容分组，例如 GeekDaily、jobs、events 和 contributors
+- 提供列表、编辑、预览、发布、归档以及具备审计意识的工作流
+- 根据工作人员权限渲染导航
 
 ### `apps/api`
 
-- exposes authenticated admin routes for all write actions
-- exposes public read routes for the website
-- centralizes validation, workflow transitions, permission checks, and audit logging
-- provides health and readiness endpoints for deployment checks
+- 为所有写操作暴露已认证的 admin 路由
+- 为网站暴露公共只读路由
+- 集中处理校验、工作流状态流转、权限检查和审计日志
+- 提供 health 与 readiness 端点用于部署检查
 
 ### `packages/db`
 
-- owns PostgreSQL schema definitions
-- owns migrations and seed scripts
-- expresses database-level constraints that backstop application validation
+- 负责 PostgreSQL schema 定义
+- 负责 migrations 与 seed 脚本
+- 表达能够兜底应用层校验的数据库级约束
 
 ### `packages/shared`
 
-- holds shared enums, DTOs, validation helpers, markdown helpers, and admin/public contracts
-- keeps admin and API aligned on field shapes and status values
+- 存放共享 enums、DTOs、校验辅助、Markdown 辅助，以及 admin / public 契约
+- 保持 admin 与 API 在字段结构和状态值上的一致
 
-## Auth and Access Model
+## 认证与访问模型
 
-Better Auth should handle:
+Better Auth 应负责：
 
-- user identity
-- session issuance and validation
-- password reset and future login extensions
+- 用户身份
+- session 签发与校验
+- 密码重置及未来登录方式扩展
 
-Application-owned tables should handle:
+由应用自有表负责：
 
-- which users are staff
-- which roles a staff account has
-- which permissions a role grants
-- which actions must be audited
+- 哪些用户属于工作人员
+- 工作人员账号拥有哪些角色
+- 某个角色授予哪些权限
+- 哪些动作必须被审计
 
-Readers never authenticate.
+读者永远不需要认证。
 
-Only staff use the admin.
+只有工作人员使用 admin。
 
-## Validation Model
+## 校验模型
 
-Every write path should be guarded at four levels:
+每条写入路径都应由四层保护：
 
-1. form validation in the admin UI
-2. API input validation in `apps/api`
-3. business rule validation in domain services
-4. PostgreSQL constraints in `packages/db`
+1. admin UI 中的表单校验
+2. `apps/api` 中的 API 输入校验
+3. 领域服务中的业务规则校验
+4. `packages/db` 中的 PostgreSQL 约束
 
-Examples:
+示例：
 
-- GeekDaily episode number must be unique
-- a job must have an apply URL or an alternate contact method
-- an external-registration event must include a registration URL
-- a contributor must belong to at least one published role
+- GeekDaily 的 `episode_number` 必须唯一
+- job 必须有 `apply_url` 或备用联系方式
+- 采用外部报名的 event 必须包含 `registration_url`
+- contributor 必须至少属于一个已发布角色
 
-## Workflow States
+## 工作流状态
 
-Recommended default content states:
+推荐的默认内容状态：
 
 - `draft`
 - `published`
 - `archived`
 
-Optional later extension:
+后续可选扩展：
 
 - `scheduled`
 - `in_review`
 
-The first working release should prioritize clear draft, publish, and archive behavior over complex approval flows.
+首个可工作的版本应优先保证清晰的草稿、发布和归档行为，而不是复杂审批流。
 
-## Media Model
+## 媒体模型
 
-Use R2 for staff-managed media.
+工作人员管理的媒体使用 R2。
 
-Recommended media flow:
+推荐的媒体流转方式：
 
-1. admin requests an upload intent from the API
-2. API issues a signed upload flow to R2
-3. admin finalizes the upload with metadata such as alt text and asset purpose
-4. content editors choose existing assets from the media library
+1. admin 向 API 请求 upload intent
+2. API 向 R2 签发已签名上传流程
+3. admin 以 `alt text` 和资源用途等 metadata 完成上传收尾
+4. 内容编辑者从媒体库中选择已有 assets
 
-The database should store media metadata, not binary file content.
+数据库应存储媒体 metadata，而不是二进制文件内容。
 
-## Public Read API
+## 公共只读 API
 
-The public site should consume explicit published-content routes such as:
+公共网站应消费明确的已发布内容路由，例如：
 
 - `/api/public/v1/site-config`
 - `/api/public/v1/home`
@@ -205,13 +205,13 @@ The public site should consume explicit published-content routes such as:
 - `/api/public/v1/geekdaily/:slug`
 - `/api/public/v1/geekdaily/search`
 
-This keeps the public site decoupled from admin-only models and permissions.
+这样可以让公共网站与仅限 admin 的模型和权限解耦。
 
-## Audit and Observability
+## 审计与可观测性
 
-Sensitive admin actions should create audit records.
+敏感的 admin 操作应写入审计记录。
 
-At minimum, audit:
+至少要审计：
 
 - create
 - update
@@ -219,34 +219,34 @@ At minimum, audit:
 - archive
 - role changes
 - staff changes
-- media finalize and archive actions
+- media finalize 与 archive actions
 
-Recommended runtime probes:
+推荐的运行时探针：
 
-- public website: `/healthz`
-- API liveness: `/health`
-- API readiness: `/ready`
-- version probe: `/version`
+- 公共网站：`/healthz`
+- API 存活检查：`/health`
+- API 就绪检查：`/ready`
+- 版本探针：`/version`
 
-## Deployment Model
+## 部署模型
 
-Steady-state production split:
+稳定生产形态建议如下：
 
-- `apps/web` on a Cloudflare Worker for `rebase.network` and `rebase.community`
-- `apps/admin` on a separate Cloudflare Worker for `admin.rebase.network`
-- `apps/api` on the private backend host inside Docker Compose
-- PostgreSQL on the private backend host inside the same Docker Compose stack
-- `cloudflared` on the private backend host to publish `api.rebase.network` through Cloudflare Tunnel
-- R2 for media on `media.rebase.network`
+- `apps/web` 部署在 Cloudflare Worker 上，对应 `rebase.network` 与 `rebase.community`
+- `apps/admin` 部署在独立的 Cloudflare Worker 上，对应 `admin.rebase.network`
+- `apps/api` 运行在私有后端主机中的 Docker Compose
+- PostgreSQL 运行在同一台私有后端主机中的 Docker Compose 栈里
+- `cloudflared` 运行在私有后端主机上，通过 Cloudflare Tunnel 发布 `api.rebase.network`
+- `media.rebase.network` 对应 R2 媒体
 
-This keeps the public and admin frontends at the edge while the writable backend stays on the server without exposing PostgreSQL publicly.
+这样可以把公共前端和 admin 前端放在 edge，同时让可写后端留在服务器内部，而不向公网暴露 PostgreSQL。
 
-See `docs/operations/production-config.md` for the production settings index and `docs/operations/deployment.md` for the operator handbook.
+生产设置索引见 `docs/operations/production-config.md`，运维手册见 `docs/operations/deployment.md`。
 
-## Non-Goals for the First Admin Release
+## 首个 admin 版本的非目标
 
-- complex multi-step approval engines
-- collaborative realtime editing
-- inline visual page builders
-- member self-service profile editing
-- generic low-code schema editing in production
+- 复杂的多步骤审批引擎
+- 协同实时编辑
+- 内嵌可视化页面搭建器
+- 成员自助资料编辑
+- 生产环境中的通用 low-code schema 编辑

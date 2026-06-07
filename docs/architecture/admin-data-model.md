@@ -1,66 +1,66 @@
-# Admin Data Model
+# 管理后台数据模型
 
-## Goal
+## 目标
 
-Define the backend tables and constraints for the Rebase custom admin and API stack.
+为 Rebase 定制 admin 和 API 技术栈定义后端 tables 与约束。
 
-This model focuses on stable V1 content operations, not speculative future complexity.
+这个模型聚焦稳定的 V1 内容运营，而不是推测性的未来复杂度。
 
-## Modeling Principles
+## 建模原则
 
-- primary keys use UUID
-- public URLs use stable slugs, not internal ids
-- workflow state is explicit on publishable entities
-- uploaded binaries live in R2, not PostgreSQL
-- validation belongs in both the application and the database
-- GeekDaily episode items deserve first-class relational records
+- 主键使用 UUID
+- 公共 URL 使用稳定的 slug，而不是内部 id
+- 可发布实体的工作流状态必须显式存在
+- 上传的二进制文件存放在 R2，而不是 PostgreSQL
+- 校验同时属于应用层和数据库层
+- GeekDaily 期目条目应拥有一等公民式的关系记录
 
-## Core Status Enums
+## 核心状态 Enums
 
-Recommended content status:
+推荐的内容状态：
 
 - `draft`
 - `published`
 - `archived`
 
-Optional later extension:
+后续可选扩展：
 
 - `scheduled`
 - `in_review`
 
-Recommended staff account status:
+推荐的工作人员账号状态：
 
 - `invited`
 - `active`
 - `suspended`
 - `disabled`
 
-Recommended asset status:
+推荐的资源状态：
 
 - `uploaded`
 - `active`
 - `archived`
 - `deleted`
 
-## Auth and Access Tables
+## 认证与访问控制表
 
 ### `users`
 
-Identity records owned by Better Auth.
+由 Better Auth 持有的身份记录。
 
 ### `sessions`
 
-Session records owned by Better Auth.
+由 Better Auth 持有的 session 记录。
 
 ### `accounts`
 
-Authentication provider records owned by Better Auth.
+由 Better Auth 持有的认证提供方记录。
 
 ### `staff_accounts`
 
-Defines which authenticated users may enter the Rebase admin.
+定义哪些已认证用户可以进入 Rebase admin。
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `user_id`
@@ -74,13 +74,13 @@ Suggested fields:
 - `created_at`
 - `updated_at`
 
-Constraint notes:
+约束说明：
 
-- unique on `user_id`
+- `user_id` 唯一
 
 ### `roles`
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `code`
@@ -92,7 +92,7 @@ Suggested fields:
 
 ### `permissions`
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `code`
@@ -104,15 +104,15 @@ Suggested fields:
 
 ### `staff_role_bindings`
 
-Many-to-many between staff accounts and roles.
+`staff_accounts` 与 `roles` 之间的多对多关系。
 
 ### `role_permission_bindings`
 
-Many-to-many between roles and permissions.
+`roles` 与 `permissions` 之间的多对多关系。
 
 ### `audit_logs`
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `actor_user_id`
@@ -127,13 +127,13 @@ Suggested fields:
 - `user_agent`
 - `created_at`
 
-## Site and Singleton Tables
+## 站点与单例表
 
 ### `site_settings`
 
-Global site configuration.
+全局站点配置。
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `site_name`
@@ -151,9 +151,9 @@ Suggested fields:
 
 ### `home_page`
 
-Home-page-specific structure.
+首页专属结构。
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `hero_title`
@@ -170,7 +170,7 @@ Suggested fields:
 
 ### `about_page`
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `title`
@@ -182,13 +182,13 @@ Suggested fields:
 - `created_at`
 - `updated_at`
 
-## Media Table
+## 媒体表
 
 ### `assets`
 
-Stores media metadata only.
+仅存储媒体 metadata。
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `storage_provider`
@@ -208,15 +208,15 @@ Suggested fields:
 - `created_at`
 - `updated_at`
 
-Constraint notes:
+约束说明：
 
-- unique on `object_key`
+- `object_key` 唯一
 
-## Publishable Content Tables
+## 可发布内容表
 
 ### `articles`
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `slug`
@@ -236,13 +236,13 @@ Suggested fields:
 - `created_at`
 - `updated_at`
 
-Constraint notes:
+约束说明：
 
-- unique on `slug`
+- `slug` 唯一
 
 ### `jobs`
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `slug`
@@ -268,15 +268,15 @@ Suggested fields:
 - `created_at`
 - `updated_at`
 
-Constraint notes:
+约束说明：
 
-- unique on `slug`
-- application logic should require either `apply_url` or `contact_value`
-- role scope and responsibilities live inside `description_markdown`
+- `slug` 唯一
+- 应用逻辑必须要求至少存在 `apply_url` 或 `contact_value`
+- 职责范围与岗位说明保存在 `description_markdown`
 
 ### `events`
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `slug`
@@ -300,15 +300,15 @@ Suggested fields:
 - `created_at`
 - `updated_at`
 
-Constraint notes:
+约束说明：
 
-- unique on `slug`
-- application logic should require `registration_url` when `registration_mode = external`
-- database check should enforce `end_at >= start_at`
+- `slug` 唯一
+- 当 `registration_mode = external` 时，应用逻辑应要求 `registration_url`
+- 数据库检查应强制 `end_at >= start_at`
 
 ### `contributor_roles`
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `slug`
@@ -319,13 +319,13 @@ Suggested fields:
 - `created_at`
 - `updated_at`
 
-Constraint notes:
+约束说明：
 
-- unique on `slug`
+- `slug` 唯一
 
 ### `contributors`
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `slug`
@@ -342,21 +342,21 @@ Suggested fields:
 - `created_at`
 - `updated_at`
 
-Constraint notes:
+约束说明：
 
-- unique on `slug`
+- `slug` 唯一
 
 ### `contributor_role_bindings`
 
-Many-to-many between contributors and contributor roles.
+`contributors` 与 `contributor_roles` 之间的多对多关系。
 
-Constraint notes:
+约束说明：
 
-- unique on contributor plus role pair
+- `contributor` 与 `role` 的组合唯一
 
 ### `geekdaily_episodes`
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `slug`
@@ -371,14 +371,14 @@ Suggested fields:
 - `created_at`
 - `updated_at`
 
-Constraint notes:
+约束说明：
 
-- unique on `slug`
-- unique on `episode_number`
+- `slug` 唯一
+- `episode_number` 唯一
 
 ### `geekdaily_episode_items`
 
-Suggested fields:
+建议字段：
 
 - `id`
 - `episode_id`
@@ -390,14 +390,14 @@ Suggested fields:
 - `created_at`
 - `updated_at`
 
-Constraint notes:
+约束说明：
 
-- unique on `episode_id` plus `sort_order`
-- foreign key to `geekdaily_episodes`
+- `episode_id` 与 `sort_order` 的组合唯一
+- 外键指向 `geekdaily_episodes`
 
-## Suggested Indexes
+## 建议索引
 
-At minimum, index:
+至少应建立以下索引：
 
 - `articles(status, published_at)`
 - `jobs(status, published_at)`
@@ -410,20 +410,20 @@ At minimum, index:
 - `audit_logs(created_at)`
 - `audit_logs(actor_staff_account_id)`
 
-## API-Critical Business Rules
+## API 关键业务规则
 
-The data model should support these rules directly or indirectly:
+数据模型应直接或间接支持以下规则：
 
-- only `published` content reaches the public API
-- archived content remains visible in the admin only
-- a GeekDaily episode cannot publish without at least one item
-- a contributor should not publish without at least one role binding
-- homepage and footer references should only point at published content
-- media references should use active assets only
+- 只有 `published` 内容会进入公共 API
+- 已归档内容只在 admin 中可见
+- 一个 GeekDaily 期目在没有至少一个条目时不能发布
+- contributor 在没有至少一个角色绑定时不应发布
+- 首页与页脚的引用只能指向已发布内容
+- 媒体引用只能使用 active assets
 
-## Future Tables That Can Wait
+## 可以延后的未来表
 
-These tables are intentionally deferred until justified:
+以下 tables 明确延后，只有在有充分理由时再加入：
 
 - `content_revisions`
 - `scheduled_jobs`
@@ -431,4 +431,4 @@ These tables are intentionally deferred until justified:
 - `search_documents`
 - `webhooks`
 
-V1 should keep the model understandable for operators and maintainers.
+V1 应保持模型对运营人员和维护者都易于理解。

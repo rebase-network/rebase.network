@@ -1,226 +1,226 @@
-# Rebase Community Website V1 Scope
+# Rebase 社区网站 V1 范围
 
-## Product Goal
+## 产品目标
 
-Build a new Rebase community website and a maintainable Rebase-specific admin workspace in this repository.
+在这个仓库中构建新的 Rebase 社区网站，以及一个易维护、面向 Rebase 的管理工作台。
 
-V1 should establish a stable public-facing content platform plus a task-oriented internal tool for community staff.
+V1 应建立一个稳定的面向公众内容平台，并配套一套面向社区工作人员任务的内部工具。
 
-The first release should prioritize:
+首个版本应优先保证：
 
-- clear community positioning
-- a community-media presentation style that surfaces ongoing activity
-- strong mobile and desktop reading experience
-- sustainable content publishing
-- scalable handling of GeekDaily history
-- an operator-friendly custom admin instead of a generic headless CMS
-- room for future expansion without overbuilding V1
+- 清晰的社区定位
+- 能持续展示社区动态的社区媒体呈现方式
+- 优秀的移动端与桌面端阅读体验
+- 可持续的内容发布能力
+- 对 GeekDaily 历史的可扩展处理
+- 一个对运营人员友好的定制 admin，而不是通用的 headless CMS
+- 在不过度建设 V1 的前提下，为未来扩展预留空间
 
-## Product Positioning
+## 产品定位
 
-V1 is:
+V1 是：
 
-- a community website
-- a content hub
-- an operations-friendly publishing platform
-- a community-media experience that helps readers discover what is happening inside Rebase
-- a custom admin workspace for staff content maintenance
+- 社区网站
+- 内容中枢
+- 对运营友好的发布平台
+- 帮助读者发现 Rebase 内部动态的社区媒体体验
+- 面向工作人员进行内容维护的定制 admin 工作台
 
-V1 is not:
+V1 不是：
 
-- a full community member product
-- a complex event operations platform
-- a social product with accounts, comments, or feeds for readers
+- 完整的社区成员产品
+- 复杂的活动运营平台
+- 面向读者、带账号、评论或 feeds 的社交产品
 
-## Target Users
+## 目标用户
 
-- public readers who browse Rebase content
-- community operators who maintain content and site configuration
-- future contributors who need a clear entry point into the community
+- 浏览 Rebase 内容的公开读者
+- 维护内容和站点配置的社区运营人员
+- 未来需要明确进入社区入口的贡献者
 
-## In Scope
+## 范围内
 
-### Public Pages
+### 公共页面
 
-- home page
-- about page
-- who-is-hiring page
-- hiring detail page
-- GeekDaily list page
-- GeekDaily detail page
-- articles list page
-- article detail page
-- events list page
-- event detail page
-- contributors page
-- global footer content
+- 首页
+- About 页面
+- `Who-Is-Hiring` 页面
+- 招聘详情页
+- GeekDaily 列表页
+- GeekDaily 详情页
+- 文章列表页
+- 文章详情页
+- 活动列表页
+- 活动详情页
+- 贡献者页面
+- 全局页脚内容
 
-### Home Page
+### 首页
 
-The home page should surface:
+首页应展示：
 
-- a concise Rebase introduction
-- recent articles
-- recent events
-- recent jobs
-- the latest GeekDaily
-- entry points into core community content
+- 简洁的 Rebase 介绍
+- 最近文章
+- 最近活动
+- 最近 jobs
+- 最新 GeekDaily
+- 通往核心社区内容的入口
 
-### Admin Capabilities
+### Admin 能力
 
-Staff should be able to manage:
+工作人员应能够管理：
 
-- home page content
-- about page content
-- GeekDaily content
-- articles
-- events
+- 首页内容
+- About 页面内容
+- GeekDaily 内容
+- 文章
+- 活动
 - jobs
 - contributors
-- footer content
-- media uploads
-- staff roles and permissions
-- audit visibility for sensitive changes
+- 页脚内容
+- 媒体上传
+- 工作人员角色与权限
+- 对敏感变更的审计可见性
 
-### Editorial Format
+### 编辑格式
 
-V1 content editing should use:
+V1 的内容编辑应使用：
 
-- structured fields for metadata, taxonomy, and page assembly
-- Markdown for long-form body content
+- 结构化字段承载 metadata、taxonomy 和页面装配
+- Markdown 承载长正文内容
 
-This applies to article bodies, About content, event detail content, hiring detail content, and GeekDaily episode body content when needed.
+这适用于文章正文、About 内容、活动详情内容、招聘详情内容，以及在需要时使用的 GeekDaily 期目正文。
 
-### GeekDaily Search
+### GeekDaily 搜索
 
-GeekDaily search is part of V1.
+GeekDaily 搜索属于 V1 范围。
 
-The first version should support search by:
+第一版应支持按以下维度搜索：
 
-- title
-- summary
+- 标题
+- 摘要
 - tags
-- episode number
-- date
-- recommendation item title
+- 期号
+- 日期
+- 推荐条目标题
 
-V1 search should optimize for practical discovery, not heavyweight full-text search quality.
+V1 搜索应优先满足务实的内容发现，而不是追求重量级全文搜索质量。
 
-The first implementation should use frontend search over a Rebase-owned search payload.
+第一版实现应使用基于 Rebase 自有搜索载荷的前端搜索。
 
-If future needs grow, the project may later integrate a third-party search service or plugin.
+如果未来需求增长，项目后续可以接入第三方搜索服务或 plugin。
 
 ### RSS Feeds
 
-RSS is part of V1.
+RSS 属于 V1 范围。
 
-The first version should include:
+第一版应包含：
 
-- a site-wide feed at `/rss.xml`
-- a GeekDaily feed at `/geekdaily/rss.xml`
-- an articles feed at `/articles/rss.xml`
-- an events feed at `/events/rss.xml`
-- a hiring feed at `/who-is-hiring/rss.xml`
+- 位于 `/rss.xml` 的全站 feed
+- 位于 `/geekdaily/rss.xml` 的 GeekDaily feed
+- 位于 `/articles/rss.xml` 的 articles feed
+- 位于 `/events/rss.xml` 的 events feed
+- 位于 `/who-is-hiring/rss.xml` 的 hiring feed
 
-The site-wide feed should aggregate recent public content from:
+全站 feed 应聚合以下公共内容中的近期内容：
 
-- GeekDaily episodes
+- GeekDaily 期目
 - articles
 - events
 - jobs
 
-GeekDaily RSS items should be episode-based rather than item-based.
+GeekDaily RSS items 应以期目为单位，而不是以单条条目为单位。
 
-Hiring RSS items should be job-based and link to public job detail pages.
+招聘 RSS items 应以 job 为单位，并链接到公开招聘详情页。
 
-Each V1 feed should default to the latest 3 published items.
+每个 V1 feed 默认只返回最新 3 条已发布内容。
 
-## Out of Scope
+## 范围外
 
-The following items are explicitly excluded from V1:
+以下内容明确排除在 V1 之外：
 
-- in-site event registration forms
-- event registration data collection and admin review
-- public user accounts
-- member login
-- comments
-- likes, favorites, or notifications
-- multilingual support
-- complex editorial approval workflows
-- advanced recommendation systems
-- full-site unified search
-- email subscription systems
-- advanced feed distribution workflows
-- member self-service profile editing
+- 站内活动报名表单
+- 活动报名数据收集与后台审核
+- 公开用户账号
+- 成员登录
+- 评论
+- 点赞、收藏或通知
+- 多语言支持
+- 复杂的编辑审批工作流
+- 高级推荐系统
+- 全站统一搜索
+- 邮件订阅系统
+- 高级 feed 分发工作流
+- 成员自助资料编辑
 
-## Event Module Boundary
+## 活动模块边界
 
-V1 event pages support:
+V1 的活动页面支持：
 
-- upcoming events
-- past events
-- event detail content
-- external registration links
-- registration instructions
+- 即将开始的活动
+- 过往活动
+- 活动详情内容
+- 外部报名链接
+- 报名说明
 
-V1 does not support:
+V1 不支持：
 
-- internal event registration forms
-- registration management
-- attendee exports
+- 站内活动报名表单
+- 报名管理
+- 参与者导出
 
-## Hiring Module Boundary
+## 招聘模块边界
 
-V1 hiring pages support:
+V1 的招聘页面支持：
 
-- a public hiring list page
-- public hiring detail pages
-- hiring RSS output
-- public apply links and hiring metadata
+- 公开招聘列表页
+- 公开招聘详情页
+- 招聘 RSS 输出
+- 公开申请链接与招聘 metadata
 
-V1 does not support:
+V1 不支持：
 
-- in-site job application forms
-- applicant tracking
-- recruiter dashboards beyond staff content management
+- 站内职位申请表单
+- 申请人跟踪
+- 超出工作人员内容管理范围的招聘方仪表盘
 
-Suggested hiring detail content includes:
+建议的招聘详情内容包括：
 
-- company or team name
-- role title
-- salary
-- remote support
-- work mode
-- work scope and responsibilities inside the main description
-- work location
-- contact or application method
+- 公司或团队名称
+- 岗位标题
+- 薪资
+- 是否支持远程
+- 工作模式
+- 写在主描述中的工作范围和职责
+- 工作地点
+- 联系方式或申请方式
 
-## Admin Experience Boundary
+## Admin 体验边界
 
-V1 admin should support:
+V1 admin 应支持：
 
-- login for staff
-- task-oriented list and editor screens
-- validation before publish
-- media selection and upload
-- draft, publish, and archive actions
-- role-based access control
-- audit visibility for sensitive operations
+- 工作人员登录
+- 面向任务的列表与编辑界面
+- 发布前校验
+- 媒体选择与上传
+- 草稿、发布和归档动作
+- 基于角色的访问控制
+- 对敏感运营的审计可见性
 
-V1 admin does not need:
+V1 admin 不需要：
 
-- realtime collaborative editing
-- multi-step approval workflows
-- low-code schema editing
-- page-builder-style drag-and-drop composition
+- 实时协同编辑
+- 多步骤审批工作流
+- low-code schema 编辑
+- 类 page-builder 的拖拽式编排
 
-## Success Criteria
+## 成功标准
 
-V1 is successful when:
+当满足以下条件时，V1 算成功：
 
-- the core public pages are implemented
-- the site works well on desktop and mobile
-- staff can manage the main content types through the custom admin workspace
-- GeekDaily history can be browsed and searched reliably
-- media assets are managed through a stable storage solution
-- the architecture supports long-term operation and expansion
+- 核心公共页面已经实现
+- 网站在桌面端和移动端上表现良好
+- 工作人员可以通过定制 admin 工作台管理主要内容类型
+- GeekDaily 历史可以被可靠浏览和搜索
+- 媒体资源通过稳定的存储方案管理
+- 架构支持长期运行与扩展

@@ -1,105 +1,105 @@
-# Architecture
+# 架构
 
-## Overview
+## 概览
 
-The Rebase website is designed around a custom community publishing stack.
+Rebase 网站围绕一套定制化的社区发布技术栈设计。
 
-It separates:
+它将以下部分拆分开来：
 
-- the public website
-- the Rebase admin workspace
-- the Rebase admin and public API layer
-- the media storage layer
-- the primary relational database
+- 公共网站
+- Rebase 管理工作台
+- Rebase admin 与公共 API 层
+- 媒体存储层
+- 主关系型数据库
 
-This keeps the public experience lightweight while giving staff a purpose-built internal tool instead of a generic headless CMS.
+这样既能保持公共体验轻量，也能给工作人员提供一个专门构建的内部工具，而不是通用的 headless CMS。
 
-The target architecture for Rebase is the custom admin and API stack described in this document.
+Rebase 的目标架构，是本文档中描述的这套定制 admin 与 API 技术栈。
 
-## Technology Stack
+## 技术栈
 
-- public frontend: Astro
-- public runtime and deployment: Cloudflare Workers
-- admin frontend: Vue
-- admin and public API: Hono
-- auth: Better Auth
-- primary database: PostgreSQL
-- schema and migrations: Drizzle
-- media storage: Cloudflare R2
+- 公共前端：Astro
+- 公共运行时与部署：Cloudflare Workers
+- admin 前端：Vue
+- admin 与公共 API：Hono
+- 认证：Better Auth
+- 主数据库：PostgreSQL
+- schema 与 migrations：Drizzle
+- 媒体存储：Cloudflare R2
 
-## Product and Editorial Defaults
+## 产品与编辑默认设定
 
-- visual direction: community media
-- editorial format: structured fields plus Markdown bodies
-- GeekDaily search implementation in V1: frontend search backed by a Rebase-owned search index payload
-- future search expansion may use a third-party service or plugin if needed
+- 视觉方向：社区媒体
+- 编辑格式：结构化字段 + Markdown 正文
+- V1 中 GeekDaily 搜索实现：由 Rebase 自有搜索索引载荷驱动的前端搜索
+- 如果未来需要，后续搜索扩展可以使用第三方服务或 plugin
 
-## Why This Architecture
+## 为什么采用这套架构
 
 ### Astro
 
-- good fit for content-heavy public experiences
-- strong component model
-- flexible rendering strategies
-- works well with Cloudflare deployment targets
+- 适合内容密集型的公共体验
+- 组件模型强
+- 渲染策略灵活
+- 与 Cloudflare 部署目标配合良好
 
-### Custom Admin Frontend
+### 定制 Admin 前端
 
-- lets Rebase shape the UI around staff tasks such as publishing GeekDaily or jobs
-- avoids forcing operators to think in raw collections and schema tables
-- can reuse proven interaction patterns from the TGO admin implementation
+- 让 Rebase 能围绕发布 GeekDaily 或 jobs 等工作人员任务塑造 UI
+- 避免强迫运营人员以原始 collections 和 schema tables 的方式思考
+- 可以复用 TGO admin 实现中经过验证的交互模式
 
-### Hono API Layer
+### Hono API 层
 
-- keeps write access behind explicit authenticated APIs
-- centralizes validation, workflow transitions, permissions, and audit logging
-- gives the public site a stable read API instead of coupling it to admin-only structures
+- 让所有写访问都经过显式、已认证的 API
+- 集中处理校验、工作流状态流转、权限与审计日志
+- 为公共网站提供稳定的只读 API，而不是把它耦合到仅限 admin 的结构
 
 ### Better Auth
 
-- handles identity and sessions cleanly
-- keeps authentication concerns separate from business permissions
-- aligns with the existing custom-admin pattern already proven in TGO
+- 干净地处理身份和 sessions
+- 让认证关注点与业务权限分离
+- 与已经在 TGO 中验证过的定制 admin 模式保持一致
 
-### PostgreSQL plus Drizzle
+### PostgreSQL + Drizzle
 
-- strong fit for structured editorial and operational data
-- supports explicit constraints and indexes for publication workflows
-- keeps schema and migrations in version control
+- 非常适合结构化的编辑与运营数据
+- 支持面向发布工作流的显式约束和索引
+- 让 schema 与 migrations 保持在版本控制中
 
 ### R2
 
-- keeps staff-managed media separate from code
-- fits the Cloudflare-based delivery model
-- avoids storing operational content media in git history
+- 让工作人员管理的媒体脱离代码库
+- 适配基于 Cloudflare 的交付模型
+- 避免把运营内容媒体存入 git 历史
 
-## System Diagram
+## 系统图
 
 ```text
-reader browser
+读者浏览器
     |
     v
-cloudflare edge
+Cloudflare edge
     |
     v
-public worker (`apps/web`)
+公共 worker (`apps/web`)
     |
     v
 `api.rebase.network`
     |
     v
-cloudflare tunnel (`cloudflared`)
+Cloudflare Tunnel (`cloudflared`)
     |
     v
-api service (`apps/api`)
+API 服务 (`apps/api`)
     |
-    +--> postgresql
-    +--> r2
+    +--> PostgreSQL
+    +--> R2
 
-staff browser
+工作人员浏览器
     |
     v
-cloudflare edge
+Cloudflare edge
     |
     v
 admin worker (`apps/admin`)
@@ -108,178 +108,178 @@ admin worker (`apps/admin`)
 `api.rebase.network`
     |
     v
-cloudflare tunnel (`cloudflared`)
+Cloudflare Tunnel (`cloudflared`)
     |
     v
-api service (`apps/api`)
+API 服务 (`apps/api`)
     |
-    +--> better auth
-    +--> postgresql
-    +--> r2
+    +--> Better Auth
+    +--> PostgreSQL
+    +--> R2
 ```
 
-## Runtime Model
+## 运行时模型
 
-### Public Read Flow
+### 公共只读流
 
-1. A reader requests a public page on `rebase.network` or `rebase.community`.
-2. The Astro app runs on the public Cloudflare Worker.
-3. The worker fetches published content from `api.rebase.network`.
-4. Cloudflare routes that hostname through `cloudflared` to the API service on the private backend host.
-5. The API reads structured content from PostgreSQL and media metadata from the assets table.
-6. Media assets are served from R2-backed URLs.
-7. Cloudflare cache is applied to improve repeat access performance.
+1. 读者在 `rebase.network` 或 `rebase.community` 请求公共页面。
+2. Astro app 运行在公共 Cloudflare Worker 上。
+3. worker 从 `api.rebase.network` 拉取已发布内容。
+4. Cloudflare 通过 `cloudflared` 将该 hostname 路由到私有后端主机上的 API 服务。
+5. API 从 PostgreSQL 读取结构化内容，并从 assets table 读取媒体 metadata。
+6. 媒体资源通过基于 R2 的 URL 提供服务。
+7. Cloudflare cache 被应用，用于提升重复访问性能。
 
-### Staff Content Flow
+### 工作人员内容流
 
-1. A staff member opens `admin.rebase.network`.
-2. The admin UI is served by a dedicated Cloudflare Worker for `apps/admin`.
-3. The admin app calls authenticated routes on `api.rebase.network`.
-4. Cloudflare routes API traffic through `cloudflared` to the API service on the private backend host.
-5. The API validates the request, checks permissions, and applies business rules.
-6. Structured data is written to PostgreSQL.
-7. Uploaded media is stored in R2 and referenced by metadata records.
-8. Sensitive actions write audit logs.
-9. The public site reads the latest published content through the public API.
+1. 工作人员打开 `admin.rebase.network`。
+2. admin UI 由专用 Cloudflare Worker 为 `apps/admin` 提供服务。
+3. admin app 调用 `api.rebase.network` 上的已认证路由。
+4. Cloudflare 通过 `cloudflared` 将 API 流量路由到私有后端主机上的 API 服务。
+5. API 校验请求、检查权限并应用业务规则。
+6. 结构化数据写入 PostgreSQL。
+7. 上传媒体存入 R2，并由 metadata 记录引用。
+8. 敏感操作写入审计日志。
+9. 公共网站通过公共 API 读取最新已发布内容。
 
-## Deployment Targets
+## 部署目标
 
-Steady-state production target for V1:
+V1 的稳定生产目标：
 
-- `apps/web` on a Cloudflare Worker bound to `rebase.network` and `rebase.community`
-- `apps/admin` on a separate Cloudflare Worker bound to `admin.rebase.network`
-- `apps/api` in Docker Compose on the private backend host
-- PostgreSQL in the same Docker Compose stack on the private backend host
-- `cloudflared` in the same Docker Compose stack to expose `api.rebase.network` through Cloudflare Tunnel
-- public media served from Cloudflare R2 on `media.rebase.network`
+- `apps/web` 部署在 Cloudflare Worker 上，绑定 `rebase.network` 和 `rebase.community`
+- `apps/admin` 部署在独立 Cloudflare Worker 上，绑定 `admin.rebase.network`
+- `apps/api` 运行在私有后端主机上的 Docker Compose 中
+- PostgreSQL 运行在同一 Docker Compose 栈和同一私有后端主机中
+- `cloudflared` 运行在同一 Docker Compose 栈中，通过 Cloudflare Tunnel 暴露 `api.rebase.network`
+- 公共媒体通过 `media.rebase.network` 从 Cloudflare R2 提供服务
 
-For the production settings index and operator handbook, see `docs/operations/production-config.md` and `docs/operations/deployment.md`.
+生产设置索引和运维手册见 `docs/operations/production-config.md` 与 `docs/operations/deployment.md`。
 
-### Why Cloudflare Tunnel for the API
+### 为什么 API 要用 Cloudflare Tunnel
 
-- keeps the API origin off the public internet in V1
-- avoids adding Caddy or Nginx just to terminate HTTPS
-- lets Cloudflare handle the external TLS edge while the tunnel secures edge-to-origin traffic
-- keeps PostgreSQL private to the server and Docker network
+- 在 V1 中让 API 源站不直接暴露在公网
+- 避免为了终止 HTTPS 额外引入 Caddy 或 Nginx
+- 让 Cloudflare 处理外部 TLS edge，同时由 tunnel 保护 edge 到源站的流量
+- 让 PostgreSQL 保持在服务器和 Docker 网络私有范围内
 
-## Rendering Strategy
+## 渲染策略
 
-V1 should use a mixed rendering strategy.
+V1 应采用混合渲染策略。
 
-### Good Candidates for Static or Stable Rendering
+### 适合静态或稳定渲染的页面
 
-- about page
-- contributors page
-- fixed site configuration sections
+- About 页面
+- contributors 页面
+- 固定站点配置区块
 
-### Good Candidates for Dynamic or Cached Rendering
+### 适合动态或缓存渲染的页面
 
-- home page
-- GeekDaily list page
-- GeekDaily detail page
-- jobs page
-- article list and detail pages
-- event list and detail pages
+- 首页
+- GeekDaily 列表页
+- GeekDaily 详情页
+- jobs 页面
+- 文章列表与详情页
+- 活动列表与详情页
 
-This strategy avoids unnecessary full-site rebuilds when content changes frequently.
+这种策略可以避免在内容频繁变更时触发不必要的全站重建。
 
-## Domain Strategy
+## 域名策略
 
-Public domains:
+公共域名：
 
 - `rebase.network`
 - `rebase.community`
 
-Operational domains:
+运营域名：
 
-- `admin.rebase.network` for the admin worker
-- `api.rebase.network` for the tunneled API hostname
-- `media.rebase.network` for the R2 public bucket
+- `admin.rebase.network`：admin worker
+- `api.rebase.network`：通过 tunnel 暴露的 API hostname
+- `media.rebase.network`：R2 公共存储桶
 
-Preferred behavior:
+推荐行为：
 
-- both public domains should access the site directly if practical
+- 如果可行，两个公共域名都应直接访问网站
 
-Fallback behavior:
+回退行为：
 
-- `rebase.community` may redirect with `301` to `rebase.network` if direct dual-domain delivery becomes impractical
+- 如果双域名直出变得不切实际，`rebase.community` 可以使用 `301` 跳转到 `rebase.network`
 
-## Release Strategy
+## 发布策略
 
-- daily development continues on `dev`
-- merge `dev` into `main` only when the release candidate is ready
-- production deployments should run from `main`, not directly from `dev`
-- release procedures and operator rules live in `docs/operations/deployment.md`
+- 日常开发持续在 `dev`
+- 只有当 release candidate 准备好时，才把 `dev` 合并到 `main`
+- 生产部署应从 `main` 运行，而不是直接从 `dev`
+- 发布流程和运维规则记录在 `docs/operations/deployment.md`
 
-## API Boundary
+## API 边界
 
-### Public Read API
+### 公共只读 API
 
-V1 should read published content from Rebase-owned public API routes.
+V1 应从 Rebase 自有的公共 API 路由中读取已发布内容。
 
-The public site should not depend on a generic CMS delivery API.
+公共网站不应依赖通用 CMS 的内容交付 API。
 
-### Admin Write API
+### Admin 写 API
 
-All admin writes should go through authenticated admin routes.
+所有 admin 写操作都应通过已认证的 admin 路由完成。
 
-There should be no direct browser-to-database write path.
+浏览器不应存在直连数据库的写入路径。
 
-### Public Write API
+### 公共写 API
 
-V1 still does not include event registration forms.
+V1 仍然不包含活动报名表单。
 
-As a result, V1 does not require a public write API for forms or submissions.
+因此，V1 不需要面向表单或提交的公共写 API。
 
-## Media Strategy
+## 媒体策略
 
-### Store in the Repository
+### 存放在仓库中
 
 - logo
 - favicon
-- fixed decorative assets
-- default placeholders
-- fallback social card assets
+- 固定装饰资源
+- 默认占位图
+- 兜底社交卡片资源
 
-### Store in R2
+### 存放在 R2
 
-- article cover images
-- event posters
-- contributor avatars
-- job-related media
-- future GeekDaily media attachments if needed
+- 文章封面图
+- 活动海报
+- contributor 头像
+- 与 job 相关的媒体
+- 如果未来需要，GeekDaily 媒体附件
 
-## Caching Strategy
+## 缓存策略
 
-V1 should use practical cache control instead of complex invalidation from day one.
+V1 应优先使用务实的 cache control，而不是一开始就构建复杂失效机制。
 
-Suggested approach:
+建议做法：
 
-- rely on Cloudflare edge caching in V1
-- cache public GET responses at the edge
-- keep TTLs conservative for dynamic list pages
-- allow faster refresh for pages with frequent content updates
-- add targeted purge rules later if needed
+- V1 依赖 Cloudflare edge caching
+- 对公共 GET 响应在 edge 缓存
+- 对动态列表页保持保守 TTL
+- 对内容更新频繁的页面允许更快刷新
+- 如有需要，后续再增加定向 purge 规则
 
-## Search Strategy
+## 搜索策略
 
-V1 includes GeekDaily search only.
+V1 仅包含 GeekDaily 搜索。
 
-Recommended scope:
+推荐范围：
 
-- search against episode-level metadata
-- include title, summary, tags, date, episode number, and recommendation item titles
-- keep the first version lightweight and practical
+- 对期目级 metadata 建立搜索
+- 包含标题、摘要、tags、日期、期号和推荐条目标题
+- 第一版保持轻量和务实
 
-V1 does not require a heavyweight dedicated search engine.
+V1 不需要重量级独立搜索引擎。
 
-V1 should implement GeekDaily search in the frontend while sourcing a Rebase-owned search index payload from the API or build layer.
+V1 应在前端实现 GeekDaily 搜索，同时由 API 或构建层提供 Rebase 自有的搜索索引载荷。
 
-## Feed Strategy
+## Feed 策略
 
-V1 includes RSS output for public content distribution.
+V1 包含用于公共内容分发的 RSS 输出。
 
-Recommended feeds:
+推荐的 feeds：
 
 - `/rss.xml`
 - `/geekdaily/rss.xml`
@@ -287,55 +287,55 @@ Recommended feeds:
 - `/events/rss.xml`
 - `/who-is-hiring/rss.xml`
 
-Feed generation should happen in the public website layer and consume published content from the Rebase public API.
+feed 生成应发生在公共网站层，并消费来自 Rebase 公共 API 的已发布内容。
 
-GeekDaily feed items should map to episode pages, not individual links inside an episode.
+GeekDaily feed 条目应映射到期目页面，而不是期目内部的单条链接。
 
-Hiring feed items should map to public hiring detail pages rather than external apply links.
+招聘 feed 条目应映射到公开招聘详情页，而不是外部申请链接。
 
-V1 feed defaults:
+V1 feed 默认值：
 
-- each feed returns the latest 3 published items
-- article, event, and hiring feed descriptions use summary content
-- GeekDaily feed descriptions use the episode body content or a body-like generated summary
+- 每个 feed 返回最新 3 条已发布内容
+- article、event 和 hiring 的 feed 描述使用 summary
+- GeekDaily 的 feed 描述使用期目正文，或使用类似正文的生成摘要
 
-## Operations Baseline
+## 运维基线
 
-V1 should include a simple health-check strategy for backend services.
+V1 应为后端服务提供一套简单的健康检查策略。
 
-Recommended baseline:
+推荐基线：
 
-- a public website health endpoint at `/healthz`
-- an API liveness endpoint such as `/health`
-- an API readiness endpoint such as `/ready`
-- a database reachability check through API readiness or deployment tooling
-- follow-up external periodic checks and notifications may be implemented from another repository with GitHub Actions
+- 公共网站健康端点：`/healthz`
+- API 存活端点：如 `/health`
+- API 就绪端点：如 `/ready`
+- 通过 API readiness 或部署工具检查数据库可达性
+- 后续可以在其他仓库用 GitHub Actions 实现外部定期检查和通知
 
-## SEO Baseline
+## SEO 基线
 
-V1 should ship with a lightweight but complete SEO baseline.
+V1 应交付一套轻量但完整的 SEO 基线。
 
-Recommended baseline:
+推荐基线：
 
-- canonical URLs on public pages
-- default Open Graph and Twitter metadata
-- a shared social card asset fallback
+- 公共页面 canonical URLs
+- 默认 Open Graph 和 Twitter metadata
+- 共享社交卡片兜底资源
 - `/robots.txt`
 - `/sitemap.xml`
 
-## Security Baseline
+## 安全基线
 
-- readers never need authentication
-- admin access is handled by Better Auth plus application-level staff permissions
-- admin credentials never reach the public client
-- media write access stays behind authenticated admin APIs
-- public site only consumes published content
+- 读者永远不需要认证
+- admin 访问由 Better Auth 与应用层工作人员权限共同处理
+- admin 凭据永远不会到达公共客户端
+- 媒体写入访问必须位于已认证的 admin API 之后
+- 公共网站只消费已发布内容
 
-## V1 Non-Goals
+## V1 非目标
 
-- complex event operations
-- public member system
-- advanced workflow automation
-- full-site search across all collections
-- multi-language content system
-- email subscription infrastructure
+- 复杂活动运营
+- 公共成员系统
+- 高级工作流自动化
+- 全站统一搜索
+- 多语言内容系统
+- 邮件订阅基础设施

@@ -1,69 +1,69 @@
-# Launch Checklist
+# 上线检查清单
 
-Release verification checklist paired with `docs/operations/deployment.md`.
+与 `docs/operations/deployment.md` 配套使用的发布验证清单。
 
-## Initial Launch Only
+## 仅首次上线
 
-Before the first production launch, confirm:
+在第一次生产上线前，确认：
 
-- `rebase.network` and `admin.rebase.network` are published by the GitHub-connected Cloudflare Workers
-- `api.rebase.network` is routed through Cloudflare Tunnel to the private backend stack
-- `media.rebase.network` is attached to the R2 bucket
-- the initial backend deployment scenario in `docs/operations/deployment.md` has been completed
-- the first admin account can sign in
+- `rebase.network` 和 `admin.rebase.network` 已由连接 GitHub 的 Cloudflare Workers 发布
+- `api.rebase.network` 已通过 Cloudflare Tunnel 路由到私有后端栈
+- `media.rebase.network` 已绑定到 R2 存储桶
+- `docs/operations/deployment.md` 中的初始后端部署场景已经完成
+- 第一个 admin 账号可以登录
 
-## Every Production Release
+## 每次生产发布
 
-Before a release, confirm:
+发布前，确认：
 
-- the operator is following the matching scenario in `docs/operations/deployment.md`
-- the release candidate moved from `dev` to `main` through the normal pull request flow
-- frontend changes, if any, were published by the GitHub-connected Cloudflare flow
-- backend changes, if any, were deployed from the intended `main` commit with `./ops/manage.sh`
-- production secrets and runtime settings are still the intended ones
+- 运维人员遵循了 `docs/operations/deployment.md` 中对应的发布场景
+- release candidate 通过常规 Pull Request 流从 `dev` 进入 `main`
+- 如有前端改动，它们由连接 GitHub 的 Cloudflare 流程发布
+- 如有后端改动，它们通过 `./ops/manage.sh` 从目标 `main` commit 部署
+- 生产 secrets 与运行时配置仍然是预期值
 
-## Route Checks
+## 路由检查
 
-Verify these public routes:
+验证这些公共路由：
 
-- landing pages: `https://rebase.network/`, `https://rebase.network/about`
-- content hubs: `https://rebase.network/who-is-hiring`, `https://rebase.network/geekdaily`, `https://rebase.network/articles`, `https://rebase.network/events`, `https://rebase.network/contributors`
-- feeds: `https://rebase.network/rss.xml`, `https://rebase.network/geekdaily/rss.xml`, `https://rebase.network/articles/rss.xml`, `https://rebase.network/events/rss.xml`, `https://rebase.network/who-is-hiring/rss.xml`
-- discovery and health: `https://rebase.network/robots.txt`, `https://rebase.network/sitemap.xml`, `https://rebase.network/healthz`
+- 落地页：`https://rebase.network/`、`https://rebase.network/about`
+- 内容入口：`https://rebase.network/who-is-hiring`、`https://rebase.network/geekdaily`、`https://rebase.network/articles`、`https://rebase.network/events`、`https://rebase.network/contributors`
+- feeds：`https://rebase.network/rss.xml`、`https://rebase.network/geekdaily/rss.xml`、`https://rebase.network/articles/rss.xml`、`https://rebase.network/events/rss.xml`、`https://rebase.network/who-is-hiring/rss.xml`
+- 发现与健康检查：`https://rebase.network/robots.txt`、`https://rebase.network/sitemap.xml`、`https://rebase.network/healthz`
 
-Verify these admin and API routes:
+验证这些 admin 与 API 路由：
 
-- `https://admin.rebase.network`, admin login, admin dashboard
-- `https://api.rebase.network/health`, `https://api.rebase.network/ready`, `https://api.rebase.network/version`
+- `https://admin.rebase.network`、admin 登录、admin 仪表盘
+- `https://api.rebase.network/health`、`https://api.rebase.network/ready`、`https://api.rebase.network/version`
 
-If `rebase.community` is part of the active public routing policy for the release, verify that domain too.
+如果本次发布仍将 `rebase.community` 纳入有效公共路由策略，也要验证该域名。
 
-## Functional Checks
+## 功能检查
 
-Verify at least one real operator flow when the related area changed:
+当相关区域发生变化时，至少验证一个真实运营流程：
 
-- content edit round trip
-- media upload round trip
-- affected public detail page or list page refresh
+- 内容编辑往返
+- 媒体上传往返
+- 受影响的公共详情页或列表页刷新
 
-## Domain And SEO Checks
+## 域名与 SEO 检查
 
-Verify:
+验证：
 
-- canonical URLs point to `https://rebase.network`
-- Open Graph and Twitter metadata are present
-- fallback social image resolves correctly
-- `robots.txt` advertises the sitemap
-- `sitemap.xml` includes key public routes and content pages
-- at least one real uploaded asset resolves from `https://media.rebase.network`
+- canonical URLs 指向 `https://rebase.network`
+- Open Graph 和 Twitter metadata 存在
+- 兜底社交图片可以正确访问
+- `robots.txt` 公告了 sitemap
+- `sitemap.xml` 包含关键公共路由和内容页面
+- 至少一个真实上传的资源可以从 `https://media.rebase.network` 访问
 
-## Post-Release Monitoring
+## 发布后监控
 
-Confirm after release:
+发布后确认：
 
-- `/healthz` stays healthy
-- `/ready` stays healthy
-- `cloudflared` remains connected
-- PostgreSQL is still private to the server
-- external monitoring is probing the public site and API
-- repeated failures alert the team instead of being silently ignored
+- `/healthz` 保持健康
+- `/ready` 保持健康
+- `cloudflared` 仍保持连接
+- PostgreSQL 仍然只在服务器内部可见
+- 外部监控正在探测公共网站与 API
+- 重复故障会通知团队，而不是被静默忽略

@@ -1,43 +1,43 @@
-# Rebase Community Website
+# Rebase 社区网站
 
-This monorepo powers `rebase.network`: the public community website, the internal admin workspace, and the backend services that support both.
+这个 monorepo 为 `rebase.network` 提供支持，包含对外的社区网站、内部管理工作台，以及同时服务两者的后端服务。
 
-## Project Overview
+## 项目概览
 
-The repository brings together four parts of the product in one place:
+这个仓库将产品的四个部分集中在同一个地方：
 
-- a public site for readers in `apps/web`
-- a custom admin workspace for editors and operators in `apps/admin`
-- API and auth services in `apps/api`
-- shared database, validation, and UI packages in `packages/*`
+- 面向读者的公共网站，位于 `apps/web`
+- 面向编辑和运营人员的定制化管理工作台，位于 `apps/admin`
+- 位于 `apps/api` 的 API 与认证服务
+- 位于 `packages/*` 的共享数据库、校验与 UI 包
 
-## V1 Focus
+## V1 重点
 
-Rebase V1 is intentionally content-first.
+Rebase V1 明确采用内容优先策略。
 
-- readers do not log in
-- staff work through a purpose-built admin workspace
-- GeekDaily search is in scope
-- GeekDaily detail pages use `/geekdaily/geekdaily-{episode-number}`
-- GeekDaily titles default to `极客日报#{episode-number}` during migration
-- hiring detail pages and hiring RSS are in scope
-- RSS feeds publish the latest 3 items per feed in V1
-- event registration is out of scope
+- 读者无需登录
+- 工作人员通过专门构建的管理工作台处理工作
+- GeekDaily 搜索属于范围内功能
+- GeekDaily 详情页使用 `/geekdaily/geekdaily-{episode-number}`
+- 迁移期间，GeekDaily 标题默认使用 `极客日报#{episode-number}`
+- 招聘详情页与招聘 RSS 属于范围内功能
+- V1 中每个 RSS feed 仅发布最新 3 条内容
+- 活动报名不在范围内
 
-## Tech Snapshot
+## 技术快照
 
-The current stack is:
+当前技术栈如下：
 
-- Astro for the public site
-- Vue for the admin workspace
-- Hono for the API runtime
-- Better Auth for authentication
-- PostgreSQL and Drizzle for data and migrations
-- Cloudflare Workers and R2 for runtime and media storage
+- 公共网站使用 Astro
+- 管理工作台使用 Vue
+- API 运行时使用 Hono
+- 认证使用 Better Auth
+- 数据与迁移使用 PostgreSQL 和 Drizzle
+- 运行时与媒体存储使用 Cloudflare Workers 和 R2
 
-## Quick Start
+## 快速开始
 
-For the full local setup guide, use `docs/operations/local-development.md`. The shortest path to a working local stack is:
+完整的本地搭建指南见 `docs/operations/local-development.md`。最快启动本地环境的方式如下：
 
 ```bash
 nvm install
@@ -50,87 +50,70 @@ pnpm local:bootstrap
 pnpm dev:stack
 ```
 
-What this does:
+这些命令会：
 
-- starts local PostgreSQL
-- applies Drizzle migrations
-- seeds baseline content and archive data
-- bootstraps a local admin account
-- runs the web app, admin app, and API together
+- 启动本地 PostgreSQL
+- 应用 Drizzle migrations
+- 注入基础内容和归档数据
+- 初始化本地管理账号
+- 同时运行公共网站、管理工作台和 API
 
-Local services:
+本地服务地址：
 
-- public site: `http://127.0.0.1:4321`
-- admin workspace: `http://127.0.0.1:5174`
-- API: `http://127.0.0.1:8788`
-- PostgreSQL: `127.0.0.1:55433`
+- 公共网站：`http://127.0.0.1:4321`
+- 管理工作台：`http://127.0.0.1:5174`
+- API：`http://127.0.0.1:8788`
+- PostgreSQL：`127.0.0.1:55433`
 
-If you need the default local admin credentials or want to override them, see `docs/operations/local-development.md`.
+如果你需要默认的本地管理账号凭据，或想覆盖默认值，请查看 `docs/operations/local-development.md`。
 
-## Common Commands
+## 常用命令
 
-- `pnpm local:bootstrap`: prepare the full local stack from database startup through admin bootstrap
-- `pnpm dev:stack`: run API, admin, and web together
-- `pnpm dev:public`: run API and the public site
-- `pnpm dev:ops`: run API and the admin workspace
-- `pnpm dev:web`: run only the Astro public site
-- `pnpm dev:admin`: run only the Vue admin workspace
-- `pnpm dev:api`: run only the Hono API
-- `pnpm db:migrate`: apply Drizzle migrations
-- `pnpm db:seed`: reseed baseline content and import `geekdaily.csv` when available
-- `pnpm admin:bootstrap`: recreate or refresh the local admin account
-- `pnpm test:smoke`: run Playwright smoke checks
+- `pnpm local:bootstrap`：从数据库启动到管理账号初始化，准备完整本地环境
+- `pnpm dev:stack`：同时运行 API、admin 和 web
+- `pnpm dev:public`：运行 API 和公共网站
+- `pnpm dev:ops`：运行 API 和管理工作台
+- `pnpm dev:web`：仅运行 Astro 公共网站
+- `pnpm dev:admin`：仅运行 Vue 管理工作台
+- `pnpm dev:api`：仅运行 Hono API
+- `pnpm db:migrate`：应用 Drizzle migrations
+- `pnpm db:seed`：重新注入基础内容，并在可用时导入 `geekdaily.csv`
+- `pnpm admin:bootstrap`：重新创建或刷新本地管理账号
+- `pnpm test:smoke`：运行 Playwright smoke checks
 
-## Repository Map
+## 仓库结构
 
-- `apps/web`: public website
-- `apps/admin`: internal admin workspace
-- `apps/api`: API, auth, and admin bootstrap script
-- `packages/db`: schema, migrations, and seed data
-- `packages/shared`: shared validation and contracts
-- `packages/types`: shared types
-- `infra/postgres`: local PostgreSQL container setup
-- `infra/production`: production deployment configuration
-- `scripts/local`: local development scripts
-- `tests/smoke`: Playwright smoke coverage
+- `apps/web`：公共网站
+- `apps/admin`：内部管理工作台
+- `apps/api`：API、认证与管理账号初始化脚本
+- `packages/db`：schema、migrations 与 seed 数据
+- `packages/shared`：共享校验与契约
+- `packages/types`：共享类型
+- `infra/postgres`：本地 PostgreSQL 容器配置
+- `infra/production`：生产部署配置
+- `scripts/local`：本地开发脚本
+- `tests/smoke`：Playwright smoke 覆盖
 
-## Documentation Index
+## 文档索引
 
-Start here:
+建议从这里开始：
 
-- `README.md`: repository overview and contributor quick start
-- `DESIGN.md`: design-document index for the repository
-- `docs/README.md`: repository-level documentation map
-- `docs/operations/local-development.md`: local setup, commands, and archive import notes
-- `docs/product/v1-scope.md`: V1 goals, scope, and non-goals
+- `README.md`：仓库概览与贡献者快速开始
+- `DESIGN.md`：仓库级设计文档索引
+- `docs/README.md`：仓库级文档地图
+- `docs/operations/local-development.md`：本地搭建、命令与归档导入说明
+- `docs/product/v1-scope.md`：V1 目标、范围与非目标
 
-Product and delivery:
+产品与交付：
 
-- `docs/product/content-model.md`: public content domains, field rules, and URL conventions
-- `docs/product/implementation-plan.md`: current roadmap and active workstreams
-- `docs/product/acceptance-criteria.md`: product and module-level acceptance criteria
-- `docs/operations/quality-assurance.md`: validation standards and smoke-check expectations
+- `docs/product/content-model.md`：公共内容域、字段规则与 URL 约定
+- `docs/product/implementation-plan.md`：当前路线图与进行中的工作流
+- `docs/product/acceptance-criteria.md`：产品级与模块级验收标准
+- `docs/operations/quality-assurance.md`：校验标准与 smoke 检查期望
 
-Architecture and admin system:
+架构与管理系统：
 
-- `docs/architecture/architecture.md`: system architecture, deployment, caching, and runtime decisions
-- `docs/architecture/admin-architecture.md`: custom admin, API, auth, and media architecture
-- `docs/architecture/admin-information-architecture.md`: operator workflows and admin module structure
-- `docs/architecture/admin-data-model.md`: backend tables, workflow states, and validation-critical constraints
-
-Design references:
-
-- `apps/web/design_principles.md`: public-site design intent and interaction rules
-- `apps/web/DESIGN.md`: public-site visual specification
-- `apps/admin/design_principles.md`: admin UX intent and workflow guidance
-- `apps/admin/DESIGN.md`: admin visual specification
-
-Operations and release:
-
-- `docs/operations/deployment.md`: operator handbook
-- `docs/operations/production-config.md`: production settings index
-- `docs/operations/launch-checklist.md`: release verification checklist
-
-## Repository Conventions
-
-Workflow conventions for coding agents live in `AGENTS.md`.
+- `docs/architecture/architecture.md`：系统架构、部署、缓存与运行时决策
+- `docs/architecture/admin-architecture.md`：定制 admin、API、认证与媒体架构
+- `docs/architecture/admin-information-architecture.md`：运营人员工作流与管理模块结构
+- `docs/architecture/admin-data-model.md`：后端表、工作流状态与关键校验约束

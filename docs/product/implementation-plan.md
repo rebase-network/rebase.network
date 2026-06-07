@@ -1,111 +1,111 @@
-# Implementation Roadmap
+# 实施路线图
 
-## Purpose
+## 目的
 
-This file tracks the current implementation roadmap for the repository.
+这个文件用于跟踪仓库当前的实施路线图。
 
-It replaces the original phased buildout plan now that the V1 foundation already exists in the codebase.
+由于代码库中已经存在 V1 基础设施，它替代了最初按阶段构建的计划。
 
-## Current Baseline
+## 当前基线
 
-The repository already includes:
+仓库已经包含：
 
-- `apps/web` for the public Astro site
-- `apps/admin` for the internal Vue workspace
-- `apps/api` for public and admin APIs plus auth/bootstrap flows
-- `packages/db`, `packages/shared`, and `packages/types` for shared foundations
-- local bootstrap scripts, smoke tests, and production rollout helpers
+- `apps/web`：对外的 Astro 网站
+- `apps/admin`：内部 Vue 工作台
+- `apps/api`：公共与 admin API，以及 auth / bootstrap 流程
+- `packages/db`、`packages/shared` 和 `packages/types`：共享基础设施
+- 本地初始化脚本、smoke tests 与生产 rollout 辅助脚本
 
-This means the main job is no longer "build the stack from scratch". The main job is to harden, maintain, and evolve the current implementation without letting the docs drift away from reality.
+这意味着当前的主任务不再是“从零开始搭建整套技术栈”，而是持续加固、维护并演进现有实现，同时避免文档与现实脱节。
 
-## Active Workstreams
+## 当前工作流
 
-### 1. Public Site Stability and Content Quality
+### 1. 公共网站稳定性与内容质量
 
-Focus:
+重点：
 
-- keep archive, list, and detail pages stable across desktop and mobile
-- preserve route, RSS, sitemap, and health-check behavior
-- fold lasting UX and visual rules into `apps/web/design_principles.md` and `apps/web/DESIGN.md`
-- prevent regressions around misleading CTAs, broken search or pagination, metadata duplication, and placeholder content quality
+- 保持归档页、列表页和详情页在桌面端与移动端上稳定
+- 保持路由、RSS、sitemap 与健康检查行为稳定
+- 将长期有效的 UX 与视觉规则收敛到 `apps/web/design_principles.md` 与 `apps/web/DESIGN.md`
+- 防止围绕误导性 CTA、失效搜索或分页、metadata 重复、占位内容质量的回归
 
-Definition of done:
+完成定义：
 
-- affected public routes still pass smoke coverage
-- changed page types are reviewed in a browser on desktop and mobile
-- source-of-truth docs are updated when the default behavior changes
+- 受影响的公共 routes 仍通过 smoke 覆盖
+- 被修改的页面类型已在桌面端和移动端浏览器中检查
+- 当默认行为变化时，source-of-truth 文档已同步更新
 
-### 2. Admin Workflow Hardening
+### 2. Admin 工作流加固
 
-Focus:
+重点：
 
-- improve validation, publish/archive flows, and editor ergonomics for site settings, articles, jobs, events, contributors, GeekDaily, assets, staff, and audit views
-- keep role and permission behavior aligned with `docs/architecture/admin-architecture.md` and `docs/architecture/admin-information-architecture.md`
-- reduce operator reliance on manual cleanup or direct database intervention
+- 改进 site settings、articles、jobs、events、contributors、GeekDaily、assets、staff 和 audit 视图的校验、发布 / 归档流与编辑器易用性
+- 让角色与权限行为始终与 `docs/architecture/admin-architecture.md` 和 `docs/architecture/admin-information-architecture.md` 对齐
+- 减少运营人员对手工清理或直接数据库干预的依赖
 
-Definition of done:
+完成定义：
 
-- target editorial workflows can be completed end-to-end from the admin UI
-- empty states, validation failures, and permission failures are explicit
-- admin behavior changes are reflected in the relevant docs
+- 目标编辑工作流可以从 admin UI 端到端完成
+- 空状态、校验失败和权限失败都明确可见
+- admin 行为变化已反映在相关文档中
 
-### 3. Backend and Data Reliability
+### 3. 后端与数据可靠性
 
-Focus:
+重点：
 
-- keep public and admin API contracts aligned with `docs/product/content-model.md` and `docs/architecture/admin-data-model.md`
-- preserve reproducible migrations, seed data, GeekDaily import behavior, runtime content freshness, and asset handling
-- maintain health and readiness visibility around API and database changes
+- 保持公共与 admin API 契约与 `docs/product/content-model.md` 和 `docs/architecture/admin-data-model.md` 一致
+- 保持 migrations、seed 数据、GeekDaily 导入行为、运行时内容新鲜度与资源处理的可重复性
+- 在 API 和数据库变更周围维持健康与就绪可见性
 
-Definition of done:
+完成定义：
 
-- migrations and seeds remain reproducible on a clean local setup
-- content updates appear through the expected runtime path
-- backend changes do not silently break public routes, feeds, or admin flows
+- 在干净的本地环境中，migrations 和 seeds 仍可重复执行
+- 内容更新会沿着预期运行时路径出现
+- 后端变更不会悄悄破坏公共 routes、feeds 或 admin flows
 
-### 4. Release and Operations Hardening
+### 4. 发布与运维加固
 
-Focus:
+重点：
 
-- keep `ops/manage.sh`, `infra/production/*`, `docs/operations/deployment.md`, `docs/operations/production-config.md`, and `docs/operations/launch-checklist.md` in sync
-- prefer small, reviewable releases through the `dev` -> `main` pull request flow
-- validate dry-run deployment paths before production-impacting changes
+- 保持 `ops/manage.sh`、`infra/production/*`、`docs/operations/deployment.md`、`docs/operations/production-config.md` 和 `docs/operations/launch-checklist.md` 同步
+- 优先通过 `dev` -> `main` 的 Pull Request 流程做小而可审查的发布
+- 在会影响生产的改动前，验证 dry-run 部署路径
 
-Definition of done:
+完成定义：
 
-- local and production procedures match the documented commands
-- release-critical checks remain current
-- rollback, backup, and readiness expectations stay clear to operators
+- 本地与生产流程和文档命令一致
+- 关键发布检查始终保持最新
+- rollback、backup 与 readiness 预期对运营人员始终清晰
 
-### 5. Documentation Governance
+### 5. 文档治理
 
-Focus:
+重点：
 
-- keep the `docs/` root limited to active baseline and operational source-of-truth files
-- archive dated process notes, redesign plans, and one-off review artifacts instead of mixing them into the live doc set
-- remove stale planning language, commands, and paths promptly when implementation changes
+- 保持 `docs/` 根目录只包含活跃的基线文档和运维 source-of-truth 文件
+- 将过期流程说明、重设计计划和一次性评审产物归档，而不是混入在线文档集
+- 当实现变化时，及时移除陈旧的规划语言、命令和路径
 
-Definition of done:
+完成定义：
 
-- active docs reflect the current repo structure and scripts
-- low-value historical materials are removed or moved out of the live documentation path
-- future redesign work updates the durable design docs instead of creating a new shadow source of truth
+- 活跃文档反映当前仓库结构和脚本
+- 低价值历史材料被移除或移出在线文档路径
+- 未来重设计工作会更新持久设计文档，而不是另起一套影子 source of truth
 
-## Near-Term Priorities
+## 近期优先事项
 
-- expand verification around admin login and critical publish flows, which currently have less automated coverage than the public site
-- keep deployment and launch docs aligned with the actual release workflow and helper scripts
-- continue tightening public content quality and content-state handling without reopening broad V1 scope
+- 扩大对 admin 登录和关键发布流的验证覆盖；它们目前的自动化覆盖低于公共网站
+- 保持部署和上线文档与实际发布工作流及辅助脚本一致
+- 在不重新打开广义 V1 范围的前提下，继续收紧公共内容质量和内容状态处理
 
-## Working Rules
+## 工作规则
 
-- keep V1 scope tight unless a requirement is explicitly re-scoped
-- commit after each coherent batch of completed work
-- update the matching source-of-truth doc when implementation changes become the new default
-- prefer archiving dated process material over leaving it in the live documentation root
+- 除非需求被明确重新定义，否则保持 V1 范围收敛
+- 每完成一批连贯工作就提交一次 commit
+- 当实现变化成为新的默认标准时，更新对应的 source-of-truth 文档
+- 与其把过期流程材料留在在线文档根目录，不如优先归档它们
 
-## Update Rule
+## 更新规则
 
-Revise this file when repository priorities materially change.
+当仓库优先级发生实质变化时，修订这个文件。
 
-Do not use it as a one-off feature plan or redesign scratchpad.
+不要把它当作一次性功能计划或重设计草稿板。

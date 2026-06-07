@@ -1,136 +1,136 @@
-# Public Website DESIGN.md
+# 公共网站 DESIGN.md
 
-Hard visual specification for `apps/web`.
+适用于 `apps/web` 的硬性视觉规范。
 
-Use this file for concrete styling and component decisions.
-Use `apps/web/design_principles.md` for the product and interaction rationale behind these choices.
+这个文件用于具体的样式和组件决策。
+关于这些选择背后的产品与交互理由，请查看 `apps/web/design_principles.md`。
 
-## 1. Visual Theme & Atmosphere
+## 1. 视觉主题与氛围
 
-The public Rebase website is a community-media interface with editorial warmth.
+Rebase 公共网站是一个带有编辑温度的社区媒体界面。
 
-The visual system should feel like:
+视觉系统应当给人的感觉是：
 
-- a living archive of developer community activity
-- soft but intentional
-- content-led rather than promo-led
-- crafted, but not precious
+- 一个活的开发者社区活动档案馆
+- 柔和但有意图
+- 以内容驱动，而不是以宣传驱动
+- 经过打磨，但不矫饰
 
-Key characteristics:
+关键特征：
 
-- warm paper-like background field with layered radial color washes
-- glass-soft cards with restrained blur and visible borders
-- serif display typography for narrative emphasis
-- sans-serif body typography for scanning and utility
-- compact archive and detail layouts with limited decorative overhead
-- light watermark labels only when they reinforce section identity
+- 类纸张的暖色背景场，叠加多层 radial 色洗
+- 轻玻璃感卡片，带克制的模糊和可见边框
+- 用 serif 展示字体承载叙事性强调
+- 用 sans-serif 正文字体承担扫描与实用功能
+- 紧凑的归档与详情布局，减少装饰性开销
+- 只有在能强化分区身份时才使用轻量水印标签
 
-## 2. Color Palette & Roles
+## 2. 色板与角色
 
-### Core Tokens
+### 核心令牌
 
-| Role | Token | Value | Use |
+| 角色 | Token | 值 | 用途 |
 |------|-------|-------|-----|
-| Page background | `--page-bg` | `#f8f1e2` | overall warm site tone |
-| Surface | `--surface` | `rgba(255, 255, 255, 0.88)` | cards and floating panels |
-| Strong surface | `--surface-strong` | `#fffdf8` | brighter surface moments |
-| Primary text | `--text` | `#1f2933` | headings, body text, default button fill |
-| Secondary text | `--muted` | `#5c6b73` | summaries, metadata, helper text |
-| Accent | `--accent` | `#0f766e` | highlight tint, active accents |
-| Accent strong | `--accent-strong` | `#115e59` | pills, eyebrow text, active states |
-| Accent soft | `--accent-soft` | `#d9f1ea` | soft background emphasis |
-| Border line | `--line` | `rgba(31, 41, 51, 0.12)` | card borders, separators |
+| 页面背景 | `--page-bg` | `#f8f1e2` | 网站整体暖色基调 |
+| Surface | `--surface` | `rgba(255, 255, 255, 0.88)` | 卡片和浮层面板 |
+| 强 Surface | `--surface-strong` | `#fffdf8` | 更明亮的表面时刻 |
+| 主文本 | `--text` | `#1f2933` | 标题、正文、默认按钮填充 |
+| 次文本 | `--muted` | `#5c6b73` | 摘要、元数据、辅助文案 |
+| Accent | `--accent` | `#0f766e` | 高亮染色、激活强调 |
+| 强 Accent | `--accent-strong` | `#115e59` | pills、眉标文本、激活态 |
+| 柔和 Accent | `--accent-soft` | `#d9f1ea` | 柔和背景强调 |
+| 边框线 | `--line` | `rgba(31, 41, 51, 0.12)` | 卡片边框与分隔线 |
 
-### Supporting Background Washes
+### 辅助背景色洗
 
-Use these as atmospheric accents, not semantic UI colors:
+这些颜色只用作氛围强化，而不是语义化 UI 配色：
 
-- mint wash: `rgba(209, 236, 228, 0.92)`
-- warm apricot wash: `rgba(255, 220, 184, 0.68)`
-- sky wash: `rgba(125, 211, 252, 0.18)`
+- 薄荷色洗：`rgba(209, 236, 228, 0.92)`
+- 暖杏色洗：`rgba(255, 220, 184, 0.68)`
+- 天空色洗：`rgba(125, 211, 252, 0.18)`
 
-### Functional Rules
+### 功能规则
 
-- accent colors should guide attention, not dominate large surfaces
-- muted text should still remain readable against light surfaces
-- cards should stay lighter than the page background
-- public pages should not introduce harsh black or saturated neon colors without a deliberate redesign
+- accent 色应引导注意力，而不是主导大面积表面
+- muted 文本在浅色表面上仍必须可读
+- 卡片应比页面背景更亮
+- 如果没有经过明确重设计，公共页面不应引入刺眼黑色或高饱和霓虹色
 
-## 3. Typography Rules
+## 3. 排版规则
 
-### Font Families
+### 字体族
 
-- Display: `Iowan Old Style`, `Palatino Linotype`, `Book Antiqua`, `Georgia`, serif
-- Body/UI: `Avenir Next`, `Segoe UI`, `Helvetica Neue`, sans-serif
-- Monospace when needed: project default monospace or browser fallback only
+- 展示字体：`Iowan Old Style`、`Palatino Linotype`、`Book Antiqua`、`Georgia`、serif
+- 正文 / UI：`Avenir Next`、`Segoe UI`、`Helvetica Neue`、sans-serif
+- 仅在必要时使用等宽字体：项目默认 monospace 或浏览器回退字体
 
-### Type Hierarchy
+### 字阶层级
 
-| Role | Font | Size | Weight | Line Height | Notes |
+| 角色 | 字体 | 尺寸 | 字重 | 行高 | 说明 |
 |------|------|------|--------|-------------|-------|
-| Hero title | Display | `clamp(2.8rem, 6vw, 5.8rem)` | 700-ish serif default | `0.92` | strong narrative headline |
-| Detail hero title | Display | `clamp(2.2rem, 4.5vw, 3.8rem)` | 700-ish serif default | `0.94` | tighter detail variant |
-| Hero summary | Body | `1.05rem` | 400 | `1.8` | limit to readable width |
-| Card title | Display/body mixed by component | `1.32rem` to `1.45rem` | 700 | `1.05` to `1.1` | prioritize scanability |
-| Body text | Body | `1rem` | 400 | `1.7` to `1.8` | long-form reading |
-| Metadata label | Body | `0.72rem` to `0.78rem` | 800 | `1.2` to `1.4` | uppercase utility labels |
-| Button text | Body | `0.9rem` to `1rem` | 700 | `1.2` | compact, strong |
+| 首屏标题 | 展示字体 | `clamp(2.8rem, 6vw, 5.8rem)` | 默认偏 700 的 serif | `0.92` | 强叙事性标题 |
+| 详情页首屏标题 | 展示字体 | `clamp(2.2rem, 4.5vw, 3.8rem)` | 默认偏 700 的 serif | `0.94` | 更紧凑的详情变体 |
+| 首屏摘要 | 正文字体 | `1.05rem` | 400 | `1.8` | 宽度限制在易读范围 |
+| 卡片标题 | 视组件混用展示字体 / 正文字体 | `1.32rem` 到 `1.45rem` | 700 | `1.05` 到 `1.1` | 优先保障可扫描性 |
+| 正文 | 正文字体 | `1rem` | 400 | `1.7` 到 `1.8` | 长文阅读 |
+| 元数据标签 | 正文字体 | `0.72rem` 到 `0.78rem` | 800 | `1.2` 到 `1.4` | 大写工具标签 |
+| 按钮文本 | 正文字体 | `0.9rem` 到 `1rem` | 700 | `1.2` | 紧凑、明确 |
 
-### Typography Rules
+### 排版规则
 
-- serif is reserved for moments of narrative emphasis: hero titles and certain section headings
-- sans-serif handles summaries, metadata, navigation, and actions
-- uppercase utility labels are acceptable when they remain short
-- never use overly light display weights on the public site; Rebase should feel grounded, not fragile
+- serif 只保留给叙事性强调时刻：首屏标题和部分分区标题
+- sans-serif 处理摘要、元数据、导航和操作
+- 当长度足够短时，可以接受大写工具标签
+- 公共网站绝不要使用过轻的展示字重；Rebase 应显得扎实，而不是脆弱
 
-## 4. Component Stylings
+## 4. 组件样式
 
-### Buttons
+### 按钮
 
-- default shape: pill
-- primary button: dark text-color fill with white text
-- secondary button: transparent or surface-backed with border
-- hover: slight vertical lift and soft shadow
-- do not create oversized CTA blocks for archive flows
+- 默认形状：胶囊形
+- 主按钮：深色文本色填充，白色文字
+- 次按钮：透明或 `surface` 背景加边框
+- 悬停：轻微向上抬升并配合柔和阴影
+- 不要为归档流创建过大的 CTA 区块
 
-### Cards
+### 卡片
 
-- base card uses `--surface`, border, blur, and `--shadow`
-- cards may lift slightly on hover if they are clickable
-- clickable cards must remain fully operable across the full intended hit area
-- metadata should be concise and placed after title importance is established
+- 基础卡片使用 `--surface`、边框、模糊和 `--shadow`
+- 可点击的卡片在悬停时可以轻微抬升
+- 可点击的卡片必须在完整预期命中区域内都可操作
+- 元数据应简洁，并在标题建立重要性之后再出现
 
-### Hero Panels
+### 首屏面板
 
-- hero panels can use subtle gradients and watermark labels
-- archive heroes should remain compact
-- hero should orient the user once; lower sections should not repeat its explanation
+- 首屏面板可以使用细微渐变和水印标签
+- 归档首屏区应保持紧凑
+- 首屏区只需完成一次导向；下面的分区不应重复解释它
 
-### Toolbars
+### 工具栏
 
-- use for list labels, counts, and one lightweight action
-- left side: label + count
-- right side: RSS, back-to-list, or equivalent secondary action
-- keep toolbar thinner than section-header blocks
+- 用于列表标签、数量和一个轻量动作
+- 左侧：标签 + 数量
+- 右侧：RSS、返回列表或同类次级操作
+- 工具栏应比完整分区标题区块更薄
 
-### Navigation
+### 导航
 
-- navigation uses body font, compact pills, and muted defaults
-- active nav item should gain background tint and stronger text
-- avoid oversized header height on desktop and mobile
+- 导航使用正文字体、紧凑胶囊样式和低调默认态
+- 激活导航项应获得背景染色和更强文本
+- 不要在桌面端或移动端上使用过高的页头
 
-### Footer
+### 页脚
 
-- footer is a structured utility block, not a marketing close
-- social links should prefer recognizable icons
-- link groups should remain easy to scan
-- avoid mixing technical infrastructure labels into reader-facing footer copy
+- 页脚是结构化工具区，不是营销收尾
+- 社交链接优先使用易识别图标
+- 链接分组应保持易扫描
+- 避免在面向读者的页脚文案中混入技术基础设施标签
 
-## 5. Layout Principles
+## 5. 布局原则
 
-### Spacing Scale
+### 间距尺度
 
-Preferred spacing rhythm for the public site:
+公共网站推荐的间距节奏：
 
 - `0.3rem`
 - `0.45rem`
@@ -143,83 +143,83 @@ Preferred spacing rhythm for the public site:
 - `1.6rem`
 - `1.8rem`
 
-### Containers and Grid
+### 容器与网格
 
-- main content width token: `--content-width: 1180px`
-- shell width: `min(calc(100% - 2rem), 1180px)`
-- default page hero grid: `1.5fr / 1fr`
-- archive grids typically use 2-column or 3-column card layouts on desktop
+- 主内容宽度 token：`--content-width: 1180px`
+- 外壳宽度：`min(calc(100% - 2rem), 1180px)`
+- 默认页面首屏网格：`1.5fr / 1fr`
+- 桌面端归档网格通常使用 2 列或 3 列卡片布局
 
-### Whitespace Philosophy
+### 留白哲学
 
-- give long-form content enough breathing room to read
-- compress support sections when they are not the main purpose of the page
-- prefer denser archive layouts over large decorative whitespace bands
+- 为长文阅读保留足够呼吸空间
+- 当支撑性分区不是页面主目标时，压缩它们
+- 归档布局优先更高密度，而不是大片装饰性留白带
 
-### Radius Scale
+### 圆角尺度
 
-| Token | Value | Use |
+| Token | 值 | 用途 |
 |------|-------|-----|
-| `--radius-lg` | `32px` | large shells, feature frames |
-| `--radius-md` | `20px` | cards and panels |
-| `--radius-sm` | `14px` | tighter cards and internal items |
-| pill | `999px` | buttons, status pills, metadata chips |
+| `--radius-lg` | `32px` | 大外壳、特色框体 |
+| `--radius-md` | `20px` | 卡片和面板 |
+| `--radius-sm` | `14px` | 更紧凑的卡片与内部项 |
+| pill | `999px` | 按钮、状态胶囊、元数据标签块 |
 
-## 6. Depth & Elevation
+## 6. 深度与层次
 
-| Level | Treatment | Use |
+| 层级 | 处理方式 | 用途 |
 |------|-----------|-----|
-| Background | layered radial gradients + subtle grid mask | overall atmosphere |
-| Card base | `--shadow` and thin border | default content containers |
-| Card hover | `--shadow-strong` or custom hover shadow | clickable surfaces |
-| Highlight | gradient overlays or soft tint pills | section identity and active accents |
+| 背景 | 多层 radial gradients + 细微网格遮罩 | 整体氛围 |
+| 卡片基底 | `--shadow` 与细边框 | 默认内容容器 |
+| 卡片悬停 | `--shadow-strong` 或自定义悬停阴影 | 可点击表面 |
+| 高亮 | 渐变叠层或柔和染色胶囊 | 分区身份与激活强调 |
 
-Rules:
+规则：
 
-- use blur and shadow lightly; surfaces should feel airy, not glossy
-- depth should separate content blocks, not create a dashboard aesthetic
-- avoid dark shadow stacks that feel enterprise-heavy
+- 轻用模糊与阴影；表面应轻盈，而不是油亮
+- 深度感应服务内容分层，而不是制造仪表盘气质
+- 避免带有浓重企业感的深色阴影堆栈
 
-## 7. Do's and Don'ts
+## 7. 建议与禁忌
 
-### Do
+### 建议
 
-- use warm layered backgrounds
-- keep archive pages compact
-- use serif display type for major headings
-- make hover states meaningful
-- compress related-content and archive labels into toolbars when possible
-- keep RSS visible but secondary
+- 使用分层暖色背景
+- 保持归档页紧凑
+- 为主要标题使用 serif 展示字体
+- 让悬停状态真正有意义
+- 尽量把相关内容和归档标签压缩进工具栏
+- 让 RSS 可见但保持次要
 
-### Don't
+### 禁忌
 
-- don't repeat hero explanations below the hero
-- don't use giant empty sections between archive modules
-- don't overload cards with decorative tags
-- don't use high-saturation accent backgrounds as default surfaces
-- don't make non-clickable cards look clickable
+- 不要在首屏区下方重复首屏区解释
+- 不要在归档模块之间插入巨大的空白分区
+- 不要给卡片叠加太多装饰性标签
+- 不要把高饱和 accent 背景作为默认 `surface`
+- 不要让不可点击的卡片看起来像可点击
 
-## 8. Responsive Behavior
+## 8. 响应式行为
 
-### Breakpoints
+### 断点
 
-| Name | Width | Expected Behavior |
+| 名称 | 宽度 | 预期行为 |
 |------|-------|-------------------|
-| Mobile | `<720px` | single-column reading, tighter spacing |
-| Tablet / small desktop | `<960px` | collapse hero and detail side layouts to one column |
-| Desktop | `>=960px` | multi-column lists and hero/detail support layouts |
+| 移动端 | `<720px` | 单列阅读，更紧凑的间距 |
+| 平板 / 小桌面 | `<960px` | 首屏区与详情侧边布局折叠为单列 |
+| 桌面端 | `>=960px` | 多列列表与首屏区 / 详情支撑布局 |
 
-### Responsive Rules
+### 响应式规则
 
-- public site must support mobile and desktop
-- list grids collapse before text scales down aggressively
-- detail sidebars should become inline sections on smaller screens
-- keep button hit areas comfortable on touch devices
-- preserve readable line lengths and do not shrink body text below comfortable reading size
+- 公共网站必须同时支持移动端和桌面端
+- 列表网格应先折叠，再激进缩小文本
+- 在较小屏幕上，详情页侧边栏应变为内联分区
+- 在触摸设备上保持舒适的按钮命中区域
+- 保持可读的行长，不要把正文字体缩小到不舒适的程度
 
-## 9. Agent Prompt Guide
+## 9. 提示词指南
 
-### Quick Token Summary
+### 快速令牌摘要
 
 - background: `#f8f1e2`
 - surface: `rgba(255, 255, 255, 0.88)`
@@ -232,19 +232,19 @@ Rules:
 - display font: `Iowan Old Style` stack
 - body font: `Avenir Next` stack
 
-### Prompt Pattern
+### 提示词模式
 
-Use prompts like:
+可以使用如下提示词：
 
-- "Design a Rebase archive page with a compact editorial hero, warm paper-like background washes, serif headline, scan-friendly card grid, and one thin toolbar above the list."
-- "Build a Rebase detail page where the body content appears early, metadata is compact, and related content uses a lightweight toolbar instead of a verbose header block."
-- "Create a Rebase card using a soft translucent surface, 20px radius, thin border, gentle lift on hover, and concise metadata under a strong title."
+- "为 Rebase 设计一个紧凑的编辑风归档页，使用类纸张的暖色背景色洗、serif 标题、利于扫描的卡片网格，并在列表上方放置一条细工具栏。"
+- "构建一个 Rebase 详情页，让正文尽早出现、元数据保持紧凑，并用轻量工具栏替代冗长的分区标题区块来承载相关内容。"
+- "创建一张 Rebase 卡片，使用柔和半透明的表面、20px 圆角、细边框、轻微悬停抬升，以及位于强标题下方的简洁元数据。"
 
-### Guardrail Reminder
+### 护栏提醒
 
-When in doubt:
+如有疑问：
 
-1. reduce repeated explanation
-2. preserve content density
-3. keep hover and click behavior aligned
-4. make archive pages feel useful before making them feel decorative
+1. 减少重复解释
+2. 保持内容密度
+3. 保证悬停与点击行为一致
+4. 先让归档页有用，再让它好看
