@@ -1,5 +1,7 @@
 # Rebase 社区网站 V1 范围
 
+> 归档说明：这是一份历史范围文档，仅供追溯背景使用；当前有效边界请查看 `docs/product/current-boundaries.md`。
+
 ## 产品目标
 
 在这个仓库中构建新的 Rebase 社区网站，以及一个易维护、面向 Rebase 的管理工作台。

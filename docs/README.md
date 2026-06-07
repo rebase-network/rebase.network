@@ -11,11 +11,10 @@
 
 ### `docs/product/`
 
-产品范围、内容规则、验收标准与路线图：
+当前产品边界、内容规则与验收基线：
 
-- `v1-scope.md`
+- `current-boundaries.md`
 - `content-model.md`
-- `implementation-plan.md`
 - `acceptance-criteria.md`
 
 ### `docs/architecture/`
@@ -29,7 +28,7 @@
 
 ### `docs/operations/`
 
-开发、QA、部署与发布运维：
+开发、验证、部署与发布运维：
 
 - `local-development.md`
 - `quality-assurance.md`
@@ -37,8 +36,20 @@
 - `production-config.md`
 - `launch-checklist.md`
 
+### `docs/archive/`
+
+历史范围文档、阶段性路线图和不再作为当前事实来源的材料：
+
+- `README.md`
+- `product/v1-scope.md`
+- `product/implementation-plan.md`
+
 ## 更新规则
 
 仓库级的产品、架构与运维文档应放在 `docs/` 下。
 
 只有当文档明确属于某个应用或仓库入口点时，才应放在 `docs/` 之外。
+
+活跃文档应优先描述当前事实、当前流程和当前约束。
+
+阶段性规划、历史范围或已经失效的叙述，应移入 `docs/archive/`，不要继续留在活跃文档路径中。

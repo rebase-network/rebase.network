@@ -102,14 +102,15 @@ pnpm dev:stack
 - `DESIGN.md`：仓库级设计文档索引
 - `docs/README.md`：仓库级文档地图
 - `docs/operations/local-development.md`：本地搭建、命令与归档导入说明
-- `docs/product/v1-scope.md`：V1 目标、范围与非目标
+- `docs/product/current-boundaries.md`：当前仍然生效的产品边界
 
 产品与交付：
 
+- `docs/product/current-boundaries.md`：当前产品边界与明确非目标
 - `docs/product/content-model.md`：公共内容域、字段规则与 URL 约定
-- `docs/product/implementation-plan.md`：当前路线图与进行中的工作流
-- `docs/product/acceptance-criteria.md`：产品级与模块级验收标准
-- `docs/operations/quality-assurance.md`：校验标准与 smoke 检查期望
+- `docs/product/acceptance-criteria.md`：当前验收基线
+- `docs/operations/quality-assurance.md`：开发期验证方式与检查基线
+- `docs/archive/README.md`：历史文档归档说明
 
 架构与管理系统：
 
