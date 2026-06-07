@@ -4,7 +4,6 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@rebase/ui": ["../../packages/ui/src/index.ts"],
       "@rebase/types": ["../../packages/types/src/index.ts"]
     }
   }

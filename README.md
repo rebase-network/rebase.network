@@ -89,7 +89,6 @@ If you need the default local admin credentials or want to override them, see `d
 - `packages/db`: schema, migrations, and seed data
 - `packages/shared`: shared validation and contracts
 - `packages/types`: shared types
-- `packages/ui`: shared UI building blocks
 - `infra/postgres`: local PostgreSQL container setup
 - `infra/production`: production deployment configuration
 - `scripts/local`: local development scripts

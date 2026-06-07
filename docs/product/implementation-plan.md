@@ -13,7 +13,7 @@ The repository already includes:
 - `apps/web` for the public Astro site
 - `apps/admin` for the internal Vue workspace
 - `apps/api` for public and admin APIs plus auth/bootstrap flows
-- `packages/db`, `packages/shared`, `packages/types`, and `packages/ui` for shared foundations
+- `packages/db`, `packages/shared`, and `packages/types` for shared foundations
 - local bootstrap scripts, smoke tests, and production rollout helpers
 
 This means the main job is no longer "build the stack from scratch". The main job is to harden, maintain, and evolve the current implementation without letting the docs drift away from reality.
