@@ -268,6 +268,7 @@ export const formatAuditSummary = (summary: string) => {
     [/^Created asset (.+)$/i, (m) => `已创建媒体记录 ${m[1]}`],
     [/^Uploaded asset (.+)$/i, (m) => `已上传媒体资源 ${m[1]}`],
     [/^Updated asset (.+)$/i, (m) => `已更新媒体记录 ${m[1]}`],
+    [/^Deleted asset (.+)$/i, (m) => `已删除媒体文件 ${m[1]}`],
     [/^Updated global site settings$/i, () => '已更新全局站点设置'],
     [/^Updated homepage content$/i, () => '已更新首页内容'],
     [/^Updated about page$/i, () => '已更新关于页'],
