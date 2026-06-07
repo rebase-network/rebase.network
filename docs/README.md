@@ -25,6 +25,7 @@
 - `admin-architecture.md`
 - `admin-information-architecture.md`
 - `admin-data-model.md`
+- `admin-data-model-fields.md`
 
 ### `docs/operations/`
 

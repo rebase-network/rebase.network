@@ -194,7 +194,8 @@ API 服务 (`apps/api`)
 
 - `docs/architecture/admin-architecture.md`：管理后台写路径与内部约束
 - `docs/architecture/admin-information-architecture.md`：管理后台模块与运营工作流
-- `docs/architecture/admin-data-model.md`：完整后端表结构与约束
+- `docs/architecture/admin-data-model.md`：后端核心约束
+- `docs/architecture/admin-data-model-fields.md`：完整字段附录
 - `docs/product/content-model.md`：公共内容域、URL 与 RSS 规则
 - `docs/operations/deployment.md`：部署手册
 - `docs/operations/production-config.md`：生产配置索引

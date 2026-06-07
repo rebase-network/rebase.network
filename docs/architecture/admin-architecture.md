@@ -145,5 +145,6 @@ Better Auth 负责：
 
 - `docs/architecture/architecture.md`：系统级运行时与部署事实
 - `docs/architecture/admin-information-architecture.md`：管理后台模块与运营工作流
-- `docs/architecture/admin-data-model.md`：完整后端表结构与约束
+- `docs/architecture/admin-data-model.md`：后端核心约束
+- `docs/architecture/admin-data-model-fields.md`：完整字段附录
 - `docs/product/current-boundaries.md`：当前仍然生效的产品边界

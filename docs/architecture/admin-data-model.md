@@ -1,403 +1,155 @@
 # 管理后台数据模型
 
+这个文件是后端数据模型的核心约束文档。
+
+它只回答三类问题：
+
+- 哪些建模前提长期成立
+- 哪些状态、关系和约束不能被破坏
+- 哪些规则直接影响 API、发布和运营流程
+
+完整字段清单见 `docs/architecture/admin-data-model-fields.md`。
+
 ## 目标
 
-为 Rebase 定制 admin 和 API 技术栈定义后端表与约束。
+为 Rebase 定制 admin 和 API 技术栈定义后端核心约束。
 
-这个模型聚焦稳定的 V1 内容运营，而不是推测性的未来复杂度。
+当前重点不是穷举所有可能字段，而是保持数据模型对实现、运营和发布都足够稳定、清晰。
 
-## 建模原则
+## 建模前提
 
 - 主键使用 UUID
-- 公共 URL 使用稳定的 slug，而不是内部 id
-- 可发布实体的工作流状态必须显式存在
-- 上传的二进制文件存放在 R2，而不是 PostgreSQL
-- 校验同时属于应用层和数据库层
-- GeekDaily 期目条目应拥有一等公民式的关系记录
+- 公共 URL 使用稳定 slug，而不是内部 id
+- 可发布实体必须显式持有工作流状态
+- 媒体二进制文件存放在 R2，而不是 PostgreSQL
+- 校验同时存在于应用层和数据库层
+- GeekDaily 期目及其条目保持一等公民关系模型
 
-## 核心状态 Enums
+## 核心状态
 
-推荐的内容状态：
+### 内容状态
 
 - `draft`
 - `published`
 - `archived`
 
-后续可选扩展：
+可选扩展：
 
 - `scheduled`
 - `in_review`
 
-推荐的工作人员账号状态：
+### 工作人员账号状态
 
 - `invited`
 - `active`
 - `suspended`
 - `disabled`
 
-推荐的资源状态：
+### 资源状态
 
 - `uploaded`
 - `active`
 - `archived`
 - `deleted`
 
-## 认证与访问控制表
+## 模型分层
 
-### `users`
+### 认证与访问控制
 
-由 Better Auth 持有的身份记录。
+核心表：
 
-### `sessions`
+- `users`
+- `sessions`
+- `accounts`
+- `staff_accounts`
+- `roles`
+- `permissions`
+- `staff_role_bindings`
+- `role_permission_bindings`
+- `audit_logs`
 
-由 Better Auth 持有的 session 记录。
+核心约束：
 
-### `accounts`
+- 只有被 `staff_accounts` 接纳的用户可以进入 admin
+- `staff_accounts.user_id` 必须唯一
+- 角色与权限通过显式绑定表建模，不依赖隐式约定
+- 敏感操作应有可追溯的 `audit_logs`
 
-由 Better Auth 持有的认证提供方记录。
+### 站点与单例
 
-### `staff_accounts`
+核心表：
 
-定义哪些已认证用户可以进入 Rebase admin。
+- `site_settings`
+- `home_page`
+- `about_page`
 
-建议字段：
+核心约束：
 
-- `id`
-- `user_id`
-- `status`
-- `display_name`
-- `notes`
-- `last_login_at`
-- `invited_by_staff_id`
-- `invited_at`
-- `activated_at`
-- `created_at`
-- `updated_at`
+- 它们是单例内容，而不是普通集合
+- 对首页和页脚可见内容的引用只能指向已发布内容
 
-约束说明：
+### 媒体
 
-- `user_id` 唯一
+核心表：
 
-### `roles`
+- `assets`
 
-建议字段：
+核心约束：
 
-- `id`
-- `code`
-- `name`
-- `description`
-- `is_system`
-- `created_at`
-- `updated_at`
+- 数据库只保存媒体元数据
+- `object_key` 必须唯一
+- 公共引用只应使用 active 资源
 
-### `permissions`
+### 可发布内容
 
-建议字段：
+核心表：
 
-- `id`
-- `code`
-- `name`
-- `resource`
-- `action`
-- `created_at`
-- `updated_at`
+- `articles`
+- `jobs`
+- `events`
+- `contributors`
+- `contributor_roles`
+- `contributor_role_bindings`
+- `geekdaily_episodes`
+- `geekdaily_episode_items`
 
-### `staff_role_bindings`
+## 核心完整性约束
 
-`staff_accounts` 与 `roles` 之间的多对多关系。
+### 唯一性
 
-### `role_permission_bindings`
+- `articles.slug` 唯一
+- `jobs.slug` 唯一
+- `events.slug` 唯一
+- `contributors.slug` 唯一
+- `contributor_roles.slug` 唯一
+- `geekdaily_episodes.slug` 唯一
+- `geekdaily_episodes.episode_number` 唯一
+- `geekdaily_episode_items (episode_id, sort_order)` 唯一
+- `contributor_role_bindings` 中贡献者与角色的组合唯一
 
-`roles` 与 `permissions` 之间的多对多关系。
+### 关系约束
 
-### `audit_logs`
+- `geekdaily_episode_items` 外键指向 `geekdaily_episodes`
+- 贡献者与角色通过绑定表关联，而不是靠自由文本
+- 工作人员、角色与权限都通过显式关系表关联
 
-建议字段：
+### 发布时间与列表约束
 
-- `id`
-- `actor_user_id`
-- `actor_staff_account_id`
-- `action`
-- `target_type`
-- `target_id`
-- `summary`
-- `payload_json`
-- `request_id`
-- `request_ip`
-- `user_agent`
-- `created_at`
+- 只有 `published` 内容进入公共 API
+- `archived` 内容只在 admin 中可见
+- 发布顺序依赖 `published_at`、`sort_order` 或日期字段，不能依赖隐式插入顺序
 
-## 站点与单例表
+### 业务约束
 
-### `site_settings`
+- 岗位发布前必须至少存在 `apply_url` 或 `contact_value`
+- 当 `registration_mode = external` 时，活动必须存在 `registration_url`
+- `events.end_at` 不能早于 `events.start_at`
+- GeekDaily 期目在没有至少一个条目时不能发布
+- contributor 在没有至少一个角色绑定时不应发布
 
-全局站点配置。
+## 最低索引基线
 
-建议字段：
-
-- `id`
-- `site_name`
-- `tagline`
-- `description`
-- `primary_domain`
-- `secondary_domain`
-- `media_domain`
-- `social_links_json`
-- `footer_groups_json`
-- `copyright_text`
-- `updated_by_staff_id`
-- `created_at`
-- `updated_at`
-
-### `home_page`
-
-首页专属结构。
-
-建议字段：
-
-- `id`
-- `hero_title`
-- `hero_summary`
-- `hero_primary_cta_label`
-- `hero_primary_cta_url`
-- `hero_secondary_cta_label`
-- `hero_secondary_cta_url`
-- `home_signals_json`
-- `home_stats_json`
-- `updated_by_staff_id`
-- `created_at`
-- `updated_at`
-
-### `about_page`
-
-建议字段：
-
-- `id`
-- `title`
-- `summary`
-- `sections_json`
-- `seo_title`
-- `seo_description`
-- `updated_by_staff_id`
-- `created_at`
-- `updated_at`
-
-## 媒体表
-
-### `assets`
-
-仅存储媒体元数据。
-
-建议字段：
-
-- `id`
-- `storage_provider`
-- `bucket`
-- `object_key`
-- `visibility`
-- `asset_type`
-- `mime_type`
-- `byte_size`
-- `width`
-- `height`
-- `checksum`
-- `original_filename`
-- `alt_text`
-- `uploaded_by_staff_id`
-- `status`
-- `created_at`
-- `updated_at`
-
-约束说明：
-
-- `object_key` 唯一
-
-## 可发布内容表
-
-### `articles`
-
-建议字段：
-
-- `id`
-- `slug`
-- `title`
-- `summary`
-- `body_markdown`
-- `reading_time`
-- `cover_asset_id`
-- `cover_accent`
-- `authors_json`
-- `tags_json`
-- `status`
-- `published_at`
-- `seo_title`
-- `seo_description`
-- `updated_by_staff_id`
-- `created_at`
-- `updated_at`
-
-约束说明：
-
-- `slug` 唯一
-
-### `jobs`
-
-建议字段：
-
-- `id`
-- `slug`
-- `company_name`
-- `role_title`
-- `salary`
-- `supports_remote`
-- `work_mode`
-- `location`
-- `summary`
-- `description_markdown`
-- `apply_url`
-- `apply_note`
-- `contact_label`
-- `contact_value`
-- `expires_at`
-- `tags_json`
-- `status`
-- `published_at`
-- `seo_title`
-- `seo_description`
-- `updated_by_staff_id`
-- `created_at`
-- `updated_at`
-
-约束说明：
-
-- `slug` 唯一
-- 应用逻辑必须要求至少存在 `apply_url` 或 `contact_value`
-- 职责范围与岗位说明保存在 `description_markdown`
-
-### `events`
-
-建议字段：
-
-- `id`
-- `slug`
-- `title`
-- `summary`
-- `body_markdown`
-- `start_at`
-- `end_at`
-- `city`
-- `location`
-- `venue`
-- `cover_asset_id`
-- `registration_mode`
-- `registration_url`
-- `tags_json`
-- `status`
-- `published_at`
-- `seo_title`
-- `seo_description`
-- `updated_by_staff_id`
-- `created_at`
-- `updated_at`
-
-约束说明：
-
-- `slug` 唯一
-- 当 `registration_mode = external` 时，应用逻辑应要求 `registration_url`
-- 数据库检查应强制 `end_at >= start_at`
-
-### `contributor_roles`
-
-建议字段：
-
-- `id`
-- `slug`
-- `name`
-- `description`
-- `sort_order`
-- `status`
-- `created_at`
-- `updated_at`
-
-约束说明：
-
-- `slug` 唯一
-
-### `contributors`
-
-建议字段：
-
-- `id`
-- `slug`
-- `name`
-- `headline`
-- `bio`
-- `avatar_asset_id`
-- `avatar_seed`
-- `twitter_url`
-- `wechat`
-- `telegram`
-- `sort_order`
-- `status`
-- `created_at`
-- `updated_at`
-
-约束说明：
-
-- `slug` 唯一
-
-### `contributor_role_bindings`
-
-`contributors` 与 `contributor_roles` 之间的多对多关系。
-
-约束说明：
-
-- `contributor` 与 `role` 的组合唯一
-
-### `geekdaily_episodes`
-
-建议字段：
-
-- `id`
-- `slug`
-- `episode_number`
-- `title`
-- `summary`
-- `body_markdown`
-- `published_at`
-- `tags_json`
-- `status`
-- `updated_by_staff_id`
-- `created_at`
-- `updated_at`
-
-约束说明：
-
-- `slug` 唯一
-- `episode_number` 唯一
-
-### `geekdaily_episode_items`
-
-建议字段：
-
-- `id`
-- `episode_id`
-- `sort_order`
-- `title`
-- `author_name`
-- `source_url`
-- `summary`
-- `created_at`
-- `updated_at`
-
-约束说明：
-
-- `episode_id` 与 `sort_order` 的组合唯一
-- 外键指向 `geekdaily_episodes`
-
-## 建议索引
-
-至少应建立以下索引：
+至少应建立这些索引：
 
 - `articles(status, published_at)`
 - `jobs(status, published_at)`
@@ -410,20 +162,9 @@
 - `audit_logs(created_at)`
 - `audit_logs(actor_staff_account_id)`
 
-## API 关键业务规则
+## 当前明确延后的表
 
-数据模型应直接或间接支持以下规则：
-
-- 只有 `published` 内容会进入公共 API
-- 已归档内容只在 admin 中可见
-- 一个 GeekDaily 期目在没有至少一个条目时不能发布
-- contributor 在没有至少一个角色绑定时不应发布
-- 首页与页脚的引用只能指向已发布内容
-- 媒体引用只能使用 active assets
-
-## 可以延后的未来表
-
-以下表明确延后，只有在有充分理由时再加入：
+以下表只有在被现实需求证明之前才引入：
 
 - `content_revisions`
 - `scheduled_jobs`
@@ -431,4 +172,8 @@
 - `search_documents`
 - `webhooks`
 
-V1 应保持模型对运营人员和维护者都易于理解。
+## 相关文档
+
+- `docs/architecture/admin-data-model-fields.md`：完整字段附录
+- `docs/product/content-model.md`：公共内容域、URL 与 RSS 规则
+- `docs/architecture/admin-architecture.md`：写路径、权限与校验分层

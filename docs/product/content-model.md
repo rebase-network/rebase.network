@@ -8,7 +8,7 @@
 - 这些内容域如何映射到公共 URL
 - 哪些公共约束会影响页面、RSS 和搜索
 
-它不负责记录完整后端字段全集。完整持久化字段和表结构见 `docs/architecture/admin-data-model.md`。
+它不负责记录完整后端字段全集。后端核心约束见 `docs/architecture/admin-data-model.md`，完整字段附录见 `docs/architecture/admin-data-model-fields.md`。
 
 ## 内容编辑格式
 
@@ -197,5 +197,6 @@ GeekDaily 的公开期目记录。
 ## 相关文档
 
 - `docs/product/current-boundaries.md`：当前仍然生效的产品边界
-- `docs/architecture/admin-data-model.md`：完整后端字段与约束
+- `docs/architecture/admin-data-model.md`：后端核心约束
+- `docs/architecture/admin-data-model-fields.md`：完整字段附录
 - `docs/architecture/architecture.md`：系统级运行时与部署事实
