@@ -34,6 +34,12 @@ interface UploadFormState {
   assetType: string;
 }
 
+interface UploadQueueItem {
+  key: string;
+  file: File;
+  previewUrl: string;
+}
+
 type AssetWorkspaceMode = 'upload' | 'edit';
 
 const visibilityOptions: AssetVisibility[] = ['public', 'private'];
@@ -59,7 +65,7 @@ const createUploadForm = (): UploadFormState => ({
   folder: 'media',
   visibility: 'public',
   altText: '',
-  assetType: 'image',
+  assetType: '',
 });
 
 const rows = ref<AdminAssetRecord[]>([]);
@@ -76,8 +82,10 @@ const activeWorkspaceMode = ref<AssetWorkspaceMode>('upload');
 const selectedAssetId = ref<string | null>(null);
 const manualCreateMode = ref(false);
 const assetPage = ref(1);
-const uploadFile = ref<File | null>(null);
-const uploadPreviewUrl = ref('');
+const uploadFiles = ref<UploadQueueItem[]>([]);
+const uploadProgressIndex = ref(0);
+const uploadProgressTotal = ref(0);
+const uploadProgressName = ref('');
 const form = reactive<AssetFormState>(createBlankForm());
 const upload = reactive<UploadFormState>(createUploadForm());
 const filters = reactive({
@@ -89,14 +97,40 @@ const filters = reactive({
 const selectedAsset = computed(() => rows.value.find((row) => row.id === selectedAssetId.value) ?? null);
 const isCreating = computed(() => manualCreateMode.value);
 const hasEditableRecord = computed(() => manualCreateMode.value || Boolean(selectedAsset.value));
-const uploadPreviewSrc = computed(() => uploadPreviewUrl.value);
-const uploadPreviewMimeType = computed(() => uploadFile.value?.type ?? '');
+const uploadFileCount = computed(() => uploadFiles.value.length);
+const uploadHasMultipleFiles = computed(() => uploadFileCount.value > 1);
+const uploadPrimaryItem = computed(() => uploadFiles.value[0] ?? null);
+const uploadPreviewSrc = computed(() => uploadPrimaryItem.value?.previewUrl ?? '');
+const uploadPreviewMimeType = computed(() => uploadPrimaryItem.value?.file.type ?? '');
 const uploadPreviewIsImage = computed(() => uploadPreviewSrc.value.length > 0 && uploadPreviewMimeType.value.startsWith('image/'));
+const uploadSelectionSummary = computed(() => {
+  if (uploadFileCount.value === 0) {
+    return '未选择';
+  }
+
+  if (uploadFileCount.value === 1) {
+    return uploadPrimaryItem.value?.file.name ?? '未命名文件';
+  }
+
+  return `已选择 ${uploadFileCount.value} 个文件`;
+});
+const uploadTotalSize = computed(() => uploadFiles.value.reduce((total, item) => total + item.file.size, 0));
 const editorPreviewSrc = computed(() => selectedAsset.value?.publicUrl || form.publicUrl || '');
 const editorPreviewMimeType = computed(() => selectedAsset.value?.mimeType || form.mimeType || '');
 const editorPreviewIsImage = computed(() => editorPreviewSrc.value.length > 0 && editorPreviewMimeType.value.startsWith('image/'));
 const editorPanelTitle = computed(() => (isCreating.value ? '手动新建媒体记录' : '编辑已上传文件'));
 const saveButtonLabel = computed(() => (saving.value ? '保存中…' : isCreating.value ? '创建记录' : '保存修改'));
+const uploadButtonLabel = computed(() => {
+  if (!uploading.value) {
+    return uploadHasMultipleFiles.value ? '批量上传到 R2' : '上传到 R2';
+  }
+
+  if (uploadProgressTotal.value > 1) {
+    return `上传中（${uploadProgressIndex.value}/${uploadProgressTotal.value}）…`;
+  }
+
+  return '上传中…';
+});
 const uploadStatusMessage = computed(() => {
   if (!uploadConfig.value) {
     return '';
@@ -114,6 +148,17 @@ const uploadStatusMessage = computed(() => {
     default:
       return uploadConfig.value.message;
   }
+});
+const uploadProgressMessage = computed(() => {
+  if (!uploading.value || !uploadProgressName.value) {
+    return '';
+  }
+
+  if (uploadProgressTotal.value > 1) {
+    return `正在上传 ${uploadProgressIndex.value}/${uploadProgressTotal.value}：${uploadProgressName.value}`;
+  }
+
+  return `正在上传：${uploadProgressName.value}`;
 });
 const assetStats = computed(() => [
   {
@@ -188,23 +233,49 @@ const resetEditorForm = () => {
   Object.assign(form, createBlankForm(uploadConfig.value?.bucket ?? 'rebase-media'));
 };
 
-const revokePreviewUrl = () => {
-  if (uploadPreviewUrl.value) {
-    URL.revokeObjectURL(uploadPreviewUrl.value);
-    uploadPreviewUrl.value = '';
+const resetUploadProgress = () => {
+  uploadProgressIndex.value = 0;
+  uploadProgressTotal.value = 0;
+  uploadProgressName.value = '';
+};
+
+const revokePreviewUrls = () => {
+  for (const item of uploadFiles.value) {
+    URL.revokeObjectURL(item.previewUrl);
   }
 };
 
-const setUploadFile = (file: File | null) => {
-  revokePreviewUrl();
-  uploadFile.value = file;
+const deriveUploadAssetType = (file: File) => {
+  if (file.type.startsWith('image/')) {
+    return 'image';
+  }
 
-  if (!file) {
+  if (file.type.startsWith('video/')) {
+    return 'video';
+  }
+
+  if (file.type === 'application/pdf') {
+    return 'document';
+  }
+
+  return 'file';
+};
+
+const setUploadFiles = (files: File[]) => {
+  revokePreviewUrls();
+  uploadFiles.value = files.map((file, index) => ({
+    key: `${file.name}-${file.size}-${file.lastModified}-${index}`,
+    file,
+    previewUrl: URL.createObjectURL(file),
+  }));
+
+  if (files.length === 0) {
+    upload.assetType = '';
     return;
   }
 
-  uploadPreviewUrl.value = URL.createObjectURL(file);
-  upload.assetType = file.type.startsWith('image/') ? 'image' : 'file';
+  const detectedTypes = [...new Set(files.map((file) => deriveUploadAssetType(file)))];
+  upload.assetType = detectedTypes.length === 1 ? detectedTypes[0] : '';
 };
 
 const applyAsset = (asset: AdminAssetRecord) => {
@@ -306,41 +377,100 @@ const loadPage = async (nextSelectedId: string | null = selectedAssetId.value, p
 
 const onFilePicked = (event: Event) => {
   const input = event.target as HTMLInputElement;
-  setUploadFile(input.files?.[0] ?? null);
+  setUploadFiles(Array.from(input.files ?? []));
+  input.value = '';
+};
+
+const buildUploadPayload = (file: File) => {
+  const payload = new FormData();
+  payload.append('file', file);
+  payload.append('folder', upload.folder.trim());
+  payload.append('visibility', upload.visibility);
+
+  const altText = upload.altText.trim();
+  if (altText) {
+    payload.append('altText', altText);
+  }
+
+  const assetType = upload.assetType.trim();
+  if (assetType) {
+    payload.append('assetType', assetType);
+  }
+
+  return payload;
+};
+
+const summarizeUploadFailures = (failures: string[]) => {
+  const visible = failures.slice(0, 3).join('；');
+  if (failures.length <= 3) {
+    return visible;
+  }
+
+  return `${visible}；另有 ${failures.length - 3} 个文件失败`;
 };
 
 const uploadAsset = async () => {
-  if (!uploadFile.value) {
-    errorMessage.value = '请先选择一个要上传的文件。';
+  if (uploadFileCount.value === 0) {
+    errorMessage.value = '请先选择至少一个要上传的文件。';
     return;
   }
 
   uploading.value = true;
   resetFeedback();
+  uploadProgressTotal.value = uploadFileCount.value;
+
+  const queue = [...uploadFiles.value];
+  const failedFiles: File[] = [];
+  const failures: string[] = [];
+  let uploadedCount = 0;
+  let lastUploadedAssetId: string | null = null;
+  let successText = '';
 
   try {
-    const payload = new FormData();
-    payload.append('file', uploadFile.value);
-    payload.append('folder', upload.folder);
-    payload.append('visibility', upload.visibility);
-    payload.append('altText', upload.altText);
-    payload.append('assetType', upload.assetType);
+    for (const [index, item] of queue.entries()) {
+      uploadProgressIndex.value = index + 1;
+      uploadProgressName.value = item.file.name;
 
-    const asset = await adminRequest<AdminAssetRecord>('/api/admin/v1/assets/upload', {
-      method: 'POST',
-      body: payload,
-    });
+      try {
+        const asset = await adminRequest<AdminAssetRecord>('/api/admin/v1/assets/upload', {
+          method: 'POST',
+          body: buildUploadPayload(item.file),
+        });
+        uploadedCount += 1;
+        lastUploadedAssetId = asset.id;
+      } catch (error) {
+        failedFiles.push(item.file);
+        failures.push(`${item.file.name}：${error instanceof Error ? error.message : '无法上传文件。'}`);
+      }
+    }
 
-    successMessage.value = '文件已上传到 R2，并自动登记到媒体库。';
+    if (uploadedCount > 0) {
+      successText =
+        uploadedCount === 1
+          ? '文件已上传到 R2，并自动登记到媒体库。'
+          : `已上传 ${uploadedCount} 个文件到 R2，并自动登记到媒体库。`;
+
+      assetPage.value = 1;
+      await loadPage(lastUploadedAssetId, false);
+    }
+
+    if (failedFiles.length > 0) {
+      errorMessage.value =
+        uploadedCount > 0
+          ? `${failedFiles.length} 个文件上传失败：${summarizeUploadFailures(failures)}`
+          : `所选文件上传失败：${summarizeUploadFailures(failures)}`;
+      setUploadFiles(failedFiles);
+      activeWorkspaceMode.value = 'upload';
+      return;
+    }
+
     upload.altText = '';
-    setUploadFile(null);
-    assetPage.value = 1;
-    await loadPage(asset.id, false);
+    setUploadFiles([]);
+    successMessage.value = successText;
     activeWorkspaceMode.value = 'edit';
-  } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '无法上传文件。';
   } finally {
     uploading.value = false;
+    resetUploadProgress();
   }
 };
 
@@ -401,7 +531,7 @@ watch([() => filters.query, () => filters.status, () => filters.visibility], () 
 });
 
 onBeforeUnmount(() => {
-  revokePreviewUrl();
+  revokePreviewUrls();
 
   if (copyFeedbackTimer !== null) {
     window.clearTimeout(copyFeedbackTimer);
@@ -573,6 +703,7 @@ const goToAssetPage = async (nextPage: number) => {
             <div class="panel-meta">{{ uploadConfig?.bucket ?? '未配置 bucket' }}</div>
           </div>
           <div class="panel-meta">{{ uploadStatusMessage }}</div>
+          <div v-if="uploadProgressMessage" class="panel-meta">{{ uploadProgressMessage }}</div>
 
           <dl class="summary-grid summary-grid-2">
             <div class="summary-item">
@@ -580,12 +711,12 @@ const goToAssetPage = async (nextPage: number) => {
               <dd class="muted">{{ uploadConfig?.publicBaseUrl || '尚未配置公开域名' }}</dd>
             </div>
             <div class="summary-item">
-              <dt>当前文件</dt>
-              <dd>{{ uploadFile?.name || '未选择' }}</dd>
+              <dt>已选文件</dt>
+              <dd>{{ uploadSelectionSummary }}</dd>
             </div>
             <div class="summary-item">
-              <dt>文件大小</dt>
-              <dd class="muted">{{ uploadFile ? formatFileSize(uploadFile.size) : '未选择' }}</dd>
+              <dt>{{ uploadHasMultipleFiles ? '总大小' : '文件大小' }}</dt>
+              <dd class="muted">{{ uploadFileCount > 0 ? formatFileSize(uploadTotalSize) : '未选择' }}</dd>
             </div>
             <div class="summary-item">
               <dt>对象目录</dt>
@@ -595,24 +726,38 @@ const goToAssetPage = async (nextPage: number) => {
 
           <div v-if="uploadPreviewSrc" class="summary-item summary-asset">
             <div v-if="uploadPreviewIsImage" class="asset-preview-frame">
-              <img :src="uploadPreviewSrc" :alt="upload.altText || uploadFile?.name || 'asset preview'" />
+              <img :src="uploadPreviewSrc" :alt="upload.altText || uploadPrimaryItem?.file.name || 'asset preview'" />
             </div>
             <div class="summary-asset-copy">
-              <div class="eyebrow">预览</div>
-              <strong>{{ uploadFile?.name || '未命名文件' }}</strong>
-              <p>上传完成后会自动登记到媒体库，并切换到“编辑已上传文件”。</p>
+              <div class="eyebrow">{{ uploadHasMultipleFiles ? '首个预览' : '预览' }}</div>
+              <strong>{{ uploadPrimaryItem?.file.name || '未命名文件' }}</strong>
+              <p>
+                {{
+                  uploadHasMultipleFiles
+                    ? `已选择 ${uploadFileCount} 个文件，点击后会逐个上传并自动登记到媒体库。`
+                    : '上传完成后会自动登记到媒体库，并切换到“编辑已上传文件”。'
+                }}
+              </p>
             </div>
           </div>
           <div v-else class="empty-inline">选择文件后，会在这里看到上传预览。</div>
 
           <label class="field">
             <span>选择文件</span>
-            <input type="file" @change="onFilePicked" />
+            <input type="file" multiple :disabled="uploading" @change="onFilePicked" />
           </label>
 
-          <div v-if="uploadFile" class="upload-file-chip">
-            <strong>{{ uploadFile.name }}</strong>
-            <span>{{ formatFileSize(uploadFile.size) }}</span>
+          <div v-if="uploadFiles.length" class="upload-selection-list">
+            <div v-for="item in uploadFiles" :key="item.key" class="upload-file-chip">
+              <strong>{{ item.file.name }}</strong>
+              <span>{{ formatFileSize(item.file.size) }}</span>
+            </div>
+          </div>
+
+          <div v-if="uploadFiles.length" class="inline-actions">
+            <button class="button-link button-compact" type="button" :disabled="uploading" @click="setUploadFiles([])">
+              清空选择
+            </button>
           </div>
 
           <div class="field-grid field-grid-2">
@@ -621,7 +766,7 @@ const goToAssetPage = async (nextPage: number) => {
               <input v-model="upload.folder" type="text" placeholder="articles" />
             </label>
             <label class="field">
-              <span>资源类型</span>
+              <span>资源类型（留空自动识别）</span>
               <input v-model="upload.assetType" type="text" placeholder="image" />
             </label>
           </div>
@@ -634,13 +779,17 @@ const goToAssetPage = async (nextPage: number) => {
               </select>
             </label>
             <label class="field">
-              <span>Alt 文案</span>
-              <input v-model="upload.altText" type="text" placeholder="帮助编辑识别图片内容" />
+              <span>{{ uploadHasMultipleFiles ? '统一 Alt 文案（可选）' : 'Alt 文案' }}</span>
+              <input
+                v-model="upload.altText"
+                type="text"
+                :placeholder="uploadHasMultipleFiles ? '如填写，将应用到所有已选文件' : '帮助编辑识别图片内容'"
+              />
             </label>
           </div>
 
-          <button class="button-link button-primary upload-button" type="button" :disabled="!uploadConfig?.enabled || !uploadFile || uploading" @click="uploadAsset">
-            {{ uploading ? '上传中…' : '上传到 R2' }}
+          <button class="button-link button-primary upload-button" type="button" :disabled="!uploadConfig?.enabled || uploadFileCount === 0 || uploading" @click="uploadAsset">
+            {{ uploadButtonLabel }}
           </button>
         </section>
 
