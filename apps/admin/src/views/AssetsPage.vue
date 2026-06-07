@@ -1010,6 +1010,10 @@ const goToAssetPage = async (nextPage: number) => {
   width: 5.4rem;
 }
 
+.asset-table :deep(.admin-col-asset-type) {
+  width: 7rem;
+}
+
 .asset-thumb {
   display: grid;
   width: 3.45rem;
