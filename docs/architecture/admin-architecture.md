@@ -195,15 +195,15 @@ The public site should consume explicit published-content routes such as:
 - `/api/public/v1/home`
 - `/api/public/v1/about`
 - `/api/public/v1/articles`
-- `/api/public/v1/articles/:slug`
+- `/api/public/v1/articles/:publicNumber`
 - `/api/public/v1/jobs`
-- `/api/public/v1/jobs/:slug`
+- `/api/public/v1/jobs/:publicNumber`
 - `/api/public/v1/events`
-- `/api/public/v1/events/:slug`
+- `/api/public/v1/events/:publicNumber`
 - `/api/public/v1/contributors`
 - `/api/public/v1/geekdaily`
 - `/api/public/v1/geekdaily/:slug`
-- `/api/public/v1/geekdaily/search-index`
+- `/api/public/v1/geekdaily/search`
 
 This keeps the public site decoupled from admin-only models and permissions.
 

@@ -88,7 +88,7 @@ Focus:
 Definition of done:
 
 - active docs reflect the current repo structure and scripts
-- historical materials stay available for reference without polluting the main index
+- low-value historical materials are removed or moved out of the live documentation path
 - future redesign work updates the durable design docs instead of creating a new shadow source of truth
 
 ## Near-Term Priorities

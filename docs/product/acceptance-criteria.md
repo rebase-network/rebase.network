@@ -105,7 +105,7 @@ The hiring list page is accepted when:
 
 The hiring detail page is accepted when:
 
-- the page is available at `/who-is-hiring/{slug}`
+- the page is available at `/who-is-hiring/{public-number}-{slug}`
 - the title, company, location, work mode, and description render correctly
 - the apply link is visible and functional
 - the page remains readable even when some optional metadata is absent
@@ -155,7 +155,7 @@ The articles list page is accepted when:
 
 The article detail page is accepted when:
 
-- the article URL matches `/articles/{slug}`
+- the article URL matches `/articles/{public-number}-{slug}`
 - title, body, author information, and cover image render correctly
 - rich content remains readable on desktop and mobile
 - metadata can be configured through the admin workspace
@@ -173,7 +173,7 @@ The events list page is accepted when:
 
 The event detail page is accepted when:
 
-- the URL matches `/events/{slug}`
+- the URL matches `/events/{public-number}-{slug}`
 - date, time, location, and content render correctly
 - external registration links are clearly visible when configured
 - the page remains useful without an in-site registration form

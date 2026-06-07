@@ -44,17 +44,17 @@ This document focuses on public content domains and URL behavior.
 - home: `/`
 - about: `/about`
 - who-is-hiring: `/who-is-hiring`
-- hiring detail: `/who-is-hiring/{slug}`
+- hiring detail: `/who-is-hiring/{public-number}-{slug}`
 - GeekDaily list: `/geekdaily`
 - GeekDaily detail: `/geekdaily/geekdaily-{episode-number}`
 - site RSS: `/rss.xml`
 - hiring RSS: `/who-is-hiring/rss.xml`
 - GeekDaily RSS: `/geekdaily/rss.xml`
 - articles list: `/articles`
-- article detail: `/articles/{slug}`
+- article detail: `/articles/{public-number}-{slug}`
 - articles RSS: `/articles/rss.xml`
 - events list: `/events`
-- event detail: `/events/{slug}`
+- event detail: `/events/{public-number}-{slug}`
 - events RSS: `/events/rss.xml`
 - contributors: `/contributors`
 
@@ -146,7 +146,7 @@ Suggested fields:
 
 Notes:
 
-- public path should use `/who-is-hiring/{slug}`
+- public path should use `/who-is-hiring/{public-number}-{slug}`
 - `slug` should be stable after publication
 - `description` should support Markdown
 - responsibilities and role scope should be written directly in `description`
@@ -201,7 +201,7 @@ Suggested fields:
 
 URL rule:
 
-- public path uses `/events/{slug}`
+- public path uses `/events/{public-number}-{slug}`
 - `slug` should remain stable once published
 
 ### `contributor_roles`

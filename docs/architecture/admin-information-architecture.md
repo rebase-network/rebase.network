@@ -63,7 +63,6 @@ Views:
 - episode list
 - new episode editor
 - episode detail and preview
-- archive import tools
 
 List needs:
 
@@ -95,7 +94,7 @@ Operator affordances:
 - validate unique episode number before publish
 - show final public URL
 - markdown preview for intro/body
-- import historical data from CSV tools when needed
+- historical import remains a bootstrap or seed workflow in V1, not a dedicated admin screen
 
 ## Who-Is-Hiring Module
 
@@ -303,11 +302,11 @@ Views:
 
 - staff accounts
 - roles
-- permission matrix summary
+- role summaries
 
 Staff needs:
 
-- invite or create staff user
+- create staff user
 - assign one or more roles
 - suspend or disable access
 - leave notes when needed

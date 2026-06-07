@@ -173,9 +173,9 @@ Each feed should be checked for:
 Route conventions to verify:
 
 - GeekDaily items link to `/geekdaily/geekdaily-{episode-number}`
-- hiring items link to `/who-is-hiring/{slug}`
-- article items link to `/articles/{slug}`
-- event items link to `/events/{slug}`
+- hiring items link to `/who-is-hiring/{public-number}-{slug}`
+- article items link to `/articles/{public-number}-{slug}`
+- event items link to `/events/{public-number}-{slug}`
 
 ### Search Checks
 

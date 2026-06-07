@@ -38,12 +38,6 @@ Development, QA, deployment, and release operations:
 - `production-config.md`
 - `launch-checklist.md`
 
-### `docs/meta/`
-
-Documentation maintenance and repository-level audits:
-
-- `documentation-audit-2026-06-08.md`
-
 ## Update Rule
 
 Repository-wide product, architecture, and operations docs should live under `docs/`.
