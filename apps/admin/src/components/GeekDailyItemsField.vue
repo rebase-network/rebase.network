@@ -3,6 +3,7 @@ import { computed } from 'vue';
 
 const props = defineProps<{
   modelValue: Array<{ title: string; authorName: string; sourceUrl: string; summary: string }>;
+  issues?: Record<string, string>;
 }>();
 
 const emit = defineEmits<{
@@ -35,6 +36,11 @@ const countNotice = computed(() => {
 
   return null;
 });
+
+const itemIssue = (index: number, key: 'title' | 'authorName' | 'sourceUrl' | 'summary') =>
+  props.issues?.[`items.${index}.${key}`] ?? '';
+
+const rootIssue = computed(() => props.issues?.items ?? '');
 </script>
 
 <template>
@@ -52,6 +58,8 @@ const countNotice = computed(() => {
       {{ countNotice.text }}
     </div>
 
+    <div v-if="rootIssue" class="field-error">{{ rootIssue }}</div>
+
     <div v-if="modelValue.length === 0" class="empty-inline">至少添加一条推荐内容。</div>
 
     <div v-else class="stacked-gap">
@@ -67,6 +75,7 @@ const countNotice = computed(() => {
             </div>
             <div class="field-inline-control">
               <input :value="item.title" placeholder="项目或文章标题" @input="updateItem(index, 'title', ($event.target as HTMLInputElement).value)" />
+              <small v-if="itemIssue(index, 'title')" class="field-error">{{ itemIssue(index, 'title') }}</small>
             </div>
           </label>
           <label class="field-inline-row field-inline-row-compact">
@@ -75,6 +84,7 @@ const countNotice = computed(() => {
             </div>
             <div class="field-inline-control">
               <input :value="item.authorName" placeholder="Cedric" @input="updateItem(index, 'authorName', ($event.target as HTMLInputElement).value)" />
+              <small v-if="itemIssue(index, 'authorName')" class="field-error">{{ itemIssue(index, 'authorName') }}</small>
             </div>
           </label>
         </div>
@@ -84,6 +94,7 @@ const countNotice = computed(() => {
           </div>
           <div class="field-inline-control">
             <input :value="item.sourceUrl" placeholder="https://github.com/..." @input="updateItem(index, 'sourceUrl', ($event.target as HTMLInputElement).value)" />
+            <small v-if="itemIssue(index, 'sourceUrl')" class="field-error">{{ itemIssue(index, 'sourceUrl') }}</small>
           </div>
         </label>
         <label class="field-inline-row field-inline-row-compact">
@@ -92,6 +103,7 @@ const countNotice = computed(() => {
           </div>
           <div class="field-inline-control">
             <textarea rows="3" :value="item.summary" placeholder="填写推荐理由，说明为什么值得看。" @input="updateItem(index, 'summary', ($event.target as HTMLTextAreaElement).value)" />
+            <small v-if="itemIssue(index, 'summary')" class="field-error">{{ itemIssue(index, 'summary') }}</small>
           </div>
         </label>
       </div>

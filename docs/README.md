@@ -9,6 +9,13 @@
 
 ## 目录布局
 
+### 顶层入口文档
+
+高频入口文档保留在 `docs/` 顶层：
+
+- `RUNBOOK.md`
+- `COMMAND-CARD.md`
+
 ### `docs/product/`
 
 当前产品边界、内容规则与验收基线：

@@ -108,10 +108,10 @@ export const articleAuthorSchema = z.object({
 });
 
 export const geekdailyItemSchema = z.object({
-  title: requiredTrimmedString('标题不能为空'),
-  authorName: requiredTrimmedString('作者姓名不能为空'),
-  sourceUrl: requiredTrimmedString('来源链接不能为空'),
-  summary: requiredTrimmedString('推荐语不能为空'),
+  title: trimmedString.default(''),
+  authorName: trimmedString.default(''),
+  sourceUrl: trimmedString.default(''),
+  summary: trimmedString.default(''),
 });
 
 export const geekdailyEditorSchema = requiredTrimmedString('编辑姓名不能为空');
@@ -408,17 +408,77 @@ export const contributorSchema = z.object({
 
 export type ContributorInput = z.infer<typeof contributorSchema>;
 
-export const geekdailyEpisodeSchema = z.object({
-  episodeNumber: z.number().int().positive(),
-  title: requiredTrimmedString('标题不能为空'),
-  summary: trimmedString.default(''),
-  bodyMarkdown: trimmedString.default(''),
-  editors: z.array(geekdailyEditorSchema).default([]),
-  tags: z.array(trimmedString).default([]),
-  status: z.enum(contentStatusValues).default('draft'),
-  publishedAt: trimmedString.default(''),
-  items: z.array(geekdailyItemSchema).min(1, '至少添加一条内容'),
-});
+const hasGeekDailyItemContent = (item: {
+  title: string;
+  authorName: string;
+  sourceUrl: string;
+  summary: string;
+}) => [item.title, item.authorName, item.sourceUrl, item.summary].some((value) => value.length > 0);
+
+export const geekdailyEpisodeSchema = z
+  .object({
+    episodeNumber: z.number().int().positive(),
+    title: requiredTrimmedString('标题不能为空'),
+    summary: trimmedString.default(''),
+    bodyMarkdown: trimmedString.default(''),
+    editors: z.array(geekdailyEditorSchema).default([]),
+    tags: z.array(trimmedString).default([]),
+    status: z.enum(contentStatusValues).default('draft'),
+    publishedAt: trimmedString.default(''),
+    items: z.array(geekdailyItemSchema).default([]),
+  })
+  .superRefine((value, ctx) => {
+    if (value.status !== 'published') {
+      return;
+    }
+
+    const itemsWithContent = value.items
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => hasGeekDailyItemContent(item));
+
+    if (itemsWithContent.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['items'],
+        message: '至少添加一条内容',
+      });
+      return;
+    }
+
+    for (const { item, index } of itemsWithContent) {
+      if (!item.title) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['items', index, 'title'],
+          message: '标题不能为空',
+        });
+      }
+
+      if (!item.authorName) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['items', index, 'authorName'],
+          message: '作者姓名不能为空',
+        });
+      }
+
+      if (!item.sourceUrl) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['items', index, 'sourceUrl'],
+          message: '来源链接不能为空',
+        });
+      }
+
+      if (!item.summary) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['items', index, 'summary'],
+          message: '推荐语不能为空',
+        });
+      }
+    }
+  });
 
 export type GeekDailyEpisodeInput = z.infer<typeof geekdailyEpisodeSchema>;
 
@@ -450,6 +510,14 @@ export function buildGeekDailySummary(input: Pick<GeekDailyEpisodeInput, 'items'
     .filter(Boolean)
     .slice(0, 3)
     .join('、');
+  if (input.items.length === 0) {
+    return '本期待补充推荐内容。';
+  }
+
+  if (!previewTitles) {
+    return `本期收录 ${input.items.length} 条社区推荐。`;
+  }
+
   const suffix = input.items.length > 3 ? ' 等内容。' : '。';
   return `本期收录 ${input.items.length} 条社区推荐，涉及 ${previewTitles}${suffix}`;
 }
@@ -459,10 +527,14 @@ export function buildGeekDailyBodyMarkdown(
 ) {
   const editors = normalizeStringList(input.editors);
   const customNote = input.bodyMarkdown.trim();
-  const itemBlocks = input.items.map(
-    (item, index) =>
-      `### ${index + 1}. ${item.title}\n\n- 推荐人：${item.authorName}\n- 链接：${item.sourceUrl}\n- 推荐语：${item.summary}`,
-  );
+  const itemBlocks = input.items.length > 0
+    ? input.items.map(
+        (item, index) =>
+          `### ${index + 1}. ${item.title || '待补充标题'}\n\n- 推荐人：${item.authorName || '待补充'}\n- 链接：${
+            item.sourceUrl || '待补充'
+          }\n- 推荐语：${item.summary || '待补充'}`,
+      )
+    : ['- 暂无推荐内容，待补充。'];
   const sections = [
     `极客日报#${input.episodeNumber}\n\n本期共收录 ${input.items.length} 条推荐内容。\n\n本期整理编辑：${
       editors.length > 0 ? editors.join('、') : '待补充'

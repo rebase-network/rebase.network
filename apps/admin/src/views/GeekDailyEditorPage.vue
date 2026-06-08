@@ -389,7 +389,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <GeekDailyItemsField v-model="form.items" />
+        <GeekDailyItemsField v-model="form.items" :issues="fieldIssues" />
 
         <label class="field-inline-row geekdaily-note-field">
           <div class="field-inline-label">

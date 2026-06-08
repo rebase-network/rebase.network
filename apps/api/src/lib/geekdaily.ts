@@ -143,6 +143,52 @@ const getEditors = (value: unknown) =>
 const getTags = (value: unknown) =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
 
+const hasGeekDailyItemContent = (item: GeekDailyEpisodeInput['items'][number]) =>
+  [item.title, item.authorName, item.sourceUrl, item.summary].some((value) => value.trim().length > 0);
+
+const normalizeGeekDailyItems = (items: GeekDailyEpisodeInput['items']) => items.filter(hasGeekDailyItemContent);
+
+const isCompleteGeekDailyItem = (item: GeekDailyEpisodeInput['items'][number]) =>
+  item.title.trim().length > 0 &&
+  item.authorName.trim().length > 0 &&
+  item.sourceUrl.trim().length > 0 &&
+  item.summary.trim().length > 0;
+
+const assertGeekDailyItemsPublishable = (items: GeekDailyEpisodeInput['items']) => {
+  const normalizedItems = normalizeGeekDailyItems(items);
+  const issues: Array<{ path: string; message: string }> = [];
+
+  if (normalizedItems.length === 0) {
+    issues.push({ path: 'items', message: '至少添加一条内容' });
+  }
+
+  for (const [index, item] of normalizedItems.entries()) {
+    if (isCompleteGeekDailyItem(item)) {
+      continue;
+    }
+
+    if (!item.title.trim()) {
+      issues.push({ path: `items.${index}.title`, message: '标题不能为空' });
+    }
+
+    if (!item.authorName.trim()) {
+      issues.push({ path: `items.${index}.authorName`, message: '作者姓名不能为空' });
+    }
+
+    if (!item.sourceUrl.trim()) {
+      issues.push({ path: `items.${index}.sourceUrl`, message: '来源链接不能为空' });
+    }
+
+    if (!item.summary.trim()) {
+      issues.push({ path: `items.${index}.summary`, message: '推荐语不能为空' });
+    }
+  }
+
+  if (issues.length > 0) {
+    throw badRequest('one or more fields failed validation', { issues });
+  }
+};
+
 const resolveEpisodeEditors = (actor: AuditActor, fallback: unknown = []) => {
   const actorName = actor.actorDisplayName?.trim();
   if (actorName) {
@@ -222,6 +268,10 @@ const ensureEpisodeNumberAvailable = async (episodeNumber: number, currentId?: s
 const replaceItems = async (episodeId: string, items: GeekDailyEpisodeInput['items']) => {
   const db = getDb();
   await db.delete(geekdailyEpisodeItems).where(eq(geekdailyEpisodeItems.episodeId, episodeId));
+  if (items.length === 0) {
+    return;
+  }
+
   await db.insert(geekdailyEpisodeItems).values(
     items.map((item, index) => ({
       episodeId,
@@ -328,6 +378,7 @@ export const createAdminGeekDailyEpisode = async (input: GeekDailyEpisodeInput, 
   const db = getDb();
   await ensureEpisodeNumberAvailable(input.episodeNumber);
   const editors = resolveEpisodeEditors(actor, input.editors);
+  const items = normalizeGeekDailyItems(input.items);
 
   const [created] = await db
     .insert(geekdailyEpisodes)
@@ -335,8 +386,8 @@ export const createAdminGeekDailyEpisode = async (input: GeekDailyEpisodeInput, 
       slug: getGeekDailyEpisodeSlug(input.episodeNumber),
       episodeNumber: input.episodeNumber,
       title: input.title,
-      summary: buildGeekDailySummary(input),
-      bodyMarkdown: buildGeekDailyBodyMarkdown({ ...input, editors }),
+      summary: buildGeekDailySummary({ items }),
+      bodyMarkdown: buildGeekDailyBodyMarkdown({ ...input, items, editors }),
       editorsJson: editors,
       tagsJson: input.tags,
       status: input.status,
@@ -345,7 +396,7 @@ export const createAdminGeekDailyEpisode = async (input: GeekDailyEpisodeInput, 
     })
     .returning();
 
-  await replaceItems(created.id, input.items);
+  await replaceItems(created.id, items);
   invalidatePublicGeekDailyCache();
 
   await createAuditEntry({
@@ -368,6 +419,7 @@ export const updateAdminGeekDailyEpisode = async (id: string, input: GeekDailyEp
 
   await ensureEpisodeNumberAvailable(input.episodeNumber, id);
   const editors = resolveStoredEpisodeEditors(current.editors, actor, input.editors);
+  const items = normalizeGeekDailyItems(input.items);
 
   await db
     .update(geekdailyEpisodes)
@@ -375,8 +427,8 @@ export const updateAdminGeekDailyEpisode = async (id: string, input: GeekDailyEp
       slug: getGeekDailyEpisodeSlug(input.episodeNumber),
       episodeNumber: input.episodeNumber,
       title: input.title,
-      summary: buildGeekDailySummary(input),
-      bodyMarkdown: buildGeekDailyBodyMarkdown({ ...input, editors }),
+      summary: buildGeekDailySummary({ items }),
+      bodyMarkdown: buildGeekDailyBodyMarkdown({ ...input, items, editors }),
       editorsJson: editors,
       tagsJson: input.tags,
       status: input.status,
@@ -386,7 +438,7 @@ export const updateAdminGeekDailyEpisode = async (id: string, input: GeekDailyEp
     })
     .where(eq(geekdailyEpisodes.id, id));
 
-  await replaceItems(id, input.items);
+  await replaceItems(id, items);
   invalidatePublicGeekDailyCache();
 
   await createAuditEntry({
@@ -406,6 +458,7 @@ export const publishAdminGeekDailyEpisode = async (id: string, actor: AuditActor
   if (!current) {
     throw notFound('GeekDaily episode not found');
   }
+  assertGeekDailyItemsPublishable(current.items);
   const editors = resolveStoredEpisodeEditors(current.editors, actor);
 
   await db

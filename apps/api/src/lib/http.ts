@@ -28,7 +28,8 @@ export const handleApiError = (c: Context, error: unknown) => {
     return jsonError(c, error.status as ContentfulStatusCode, error.code, error.message, error.details);
   }
 
-  throw error;
+  console.error(error);
+  return jsonError(c, 500, 'INTERNAL_SERVER_ERROR', 'internal server error');
 };
 
 export { ok };
