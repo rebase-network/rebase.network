@@ -9,9 +9,9 @@
 
 ## 目录布局
 
-### Top-level entry docs
+### 顶层入口文档
 
-High-frequency entry docs stay at the top level of `docs/`:
+高频入口文档保留在 `docs/` 顶层：
 
 - `RUNBOOK.md`
 - `COMMAND-CARD.md`

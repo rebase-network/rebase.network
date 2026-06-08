@@ -1,26 +1,26 @@
-# RUNBOOK
+# 开发与发布 Runbook
 
-This runbook is the fastest path for a developer or community contributor to work on `rebase.network`.
+这份 runbook 用来帮助开发者和社区协作者最快进入 `rebase.network` 的开发、验证、发布和运维流程。
 
-Use this file for task-oriented flows.
-Use [COMMAND-CARD.md](./COMMAND-CARD.md) for copy-paste commands.
-Use `docs/operations/*` for detailed reference material.
+这个文件主要按场景说明“该怎么做”。
+[COMMAND-CARD.md](./COMMAND-CARD.md) 提供可直接复制的命令速查。
+更完整的细节说明放在 `docs/operations/*`。
 
-## What This Repo Contains
+## 仓库组成
 
-- `apps/web`: public Astro site
-- `apps/admin`: Vue admin workspace
-- `apps/api`: public and internal API
-- `packages/shared`: shared types and validation
-- `packages/db`: database schema, migrations, and seed data
+- `apps/web`：面向读者的 Astro 公共网站
+- `apps/admin`：Vue 管理工作台
+- `apps/api`：公共与内部 API
+- `packages/shared`：共享类型与校验逻辑
+- `packages/db`：数据库 schema、migrations 和 seed 数据
 
-## 1. First Local Setup
+## 1. 首次本地启动
 
-1. Install the required toolchain.
-2. Create a local `.env`.
-3. Install dependencies.
-4. Bootstrap the local stack.
-5. Start the dev servers.
+1. 安装所需工具链。
+2. 创建本地 `.env`。
+3. 安装依赖。
+4. 初始化本地栈。
+5. 启动开发服务。
 
 ```bash
 nvm install
@@ -33,39 +33,39 @@ pnpm local:bootstrap
 pnpm dev:stack
 ```
 
-Local URLs:
+本地访问地址：
 
 - Public site: `http://127.0.0.1:4321`
 - Admin: `http://127.0.0.1:5174`
 - API: `http://127.0.0.1:8788`
 - PostgreSQL: `127.0.0.1:55433`
 
-If you use the default `.env.example` values, the local admin login is:
+如果沿用 `.env.example` 里的默认值，本地 admin 登录信息为：
 
-- Email: `admin@rebase.local`
-- Password: `RebaseAdmin123456!`
+- 邮箱：`admin@rebase.local`
+- 密码：`RebaseAdmin123456!`
 
-## 2. Daily Development
+## 2. 日常开发
 
-Run the full stack:
+运行完整技术栈：
 
 ```bash
 pnpm dev:stack
 ```
 
-Run only the public site and API:
+只运行公共网站和 API：
 
 ```bash
 pnpm dev:public
 ```
 
-Run only the admin workspace and API:
+只运行管理工作台和 API：
 
 ```bash
 pnpm dev:ops
 ```
 
-Run one service at a time:
+分别运行单个服务：
 
 ```bash
 pnpm dev:web
@@ -73,158 +73,158 @@ pnpm dev:admin
 pnpm dev:api
 ```
 
-## 3. Common Change Flows
+## 3. 常见改动流程
 
-### Frontend or content page change
+### 前端页面或内容页改动
 
-1. Start `pnpm dev:public` or `pnpm dev:stack`.
-2. Make the change.
-3. Check the affected route in a browser.
-4. Run:
+1. 启动 `pnpm dev:public` 或 `pnpm dev:stack`。
+2. 完成改动。
+3. 在浏览器里检查受影响路由。
+4. 运行：
 
 ```bash
 pnpm lint
 pnpm typecheck
 ```
 
-5. If the affected route is covered by smoke tests, run:
+5. 如果受影响路由在 smoke 覆盖范围内，再运行：
 
 ```bash
 pnpm test:smoke
 ```
 
-### Admin workspace change
+### 管理工作台改动
 
-1. Start `pnpm dev:ops` or `pnpm dev:stack`.
-2. Make the change.
-3. Check the affected list page or editor page in the browser.
-4. Run:
+1. 启动 `pnpm dev:ops` 或 `pnpm dev:stack`。
+2. 完成改动。
+3. 在浏览器里检查受影响的列表页或编辑页。
+4. 运行：
 
 ```bash
 pnpm typecheck:admin
 ```
 
-5. If the change affects production build output, also run:
+5. 如果改动会影响生产构建产物，再运行：
 
 ```bash
 pnpm build:admin
 ```
 
-### API, database, or shared contract change
+### API、数据库或共享契约改动
 
-1. Start the local stack.
-2. Make the change.
-3. Run:
+1. 启动本地栈。
+2. 完成改动。
+3. 运行：
 
 ```bash
 pnpm typecheck:api
 pnpm build:api
 ```
 
-4. If schema or seed behavior changed, also run:
+4. 如果 schema 或 seed 行为发生变化，再运行：
 
 ```bash
 pnpm db:migrate
 pnpm db:seed
 ```
 
-5. If the change affects public pages or admin flows, test those paths in the browser too.
+5. 如果改动还影响公共页面或管理流程，也要在浏览器里补测这些路径。
 
-## 4. Before You Push
+## 4. Push 前检查
 
-Use the smallest relevant verification set:
+按改动范围选择最小必要验证集：
 
-- Public site change: `pnpm lint` and `pnpm typecheck`
-- Admin change: `pnpm typecheck:admin`
-- API/shared/db change: `pnpm typecheck:api` and `pnpm build:api`
-- Route-level regression risk: `pnpm test:smoke`
+- 公共网站改动：`pnpm lint` 和 `pnpm typecheck`
+- 管理工作台改动：`pnpm typecheck:admin`
+- API / shared / db 改动：`pnpm typecheck:api` 和 `pnpm build:api`
+- 路由级回归风险：`pnpm test:smoke`
 
-If the change affects production build output, also run the relevant build:
+如果改动会影响生产构建产物，还要补跑对应构建：
 
 - `pnpm build:web:prod`
 - `pnpm build:admin`
 - `pnpm build:api`
 
-## 5. Frontend Release Flow
+## 5. 前端发布流程
 
-Normal production frontend release path:
+默认生产前端发布路径：
 
-1. Finish and verify work on `dev`.
-2. Push `dev`.
-3. Open and merge a Pull Request from `dev` to `main`.
-4. Wait for Cloudflare to deploy `rebase-web` and/or `rebase-admin`.
-5. Run post-release checks.
+1. 在 `dev` 上完成开发和验证。
+2. Push `dev`。
+3. 发起并合并 `dev` 到 `main` 的 Pull Request。
+4. 等待 Cloudflare 部署 `rebase-web` 和 / 或 `rebase-admin`。
+5. 执行发布后检查。
 
-Dry-run commands:
+相关 dry-run 命令：
 
 ```bash
 pnpm deploy:web:dry-run
 pnpm deploy:admin:dry-run
 ```
 
-Do not treat local `wrangler deploy` as the default production path.
+不要把本地 `wrangler deploy` 当成默认生产发布路径。
 
-## 6. Backend Release Flow
+## 6. 后端发布流程
 
-Normal production backend release path:
+默认生产后端发布路径：
 
-1. Merge the backend change to `main`.
-2. Update the deployment machine to the target `main` commit.
-3. Confirm the working tree is clean.
-4. Prefer:
+1. 将后端改动合并到 `main`。
+2. 把部署机更新到目标 `main` commit。
+3. 确认工作树干净。
+4. 优先使用：
 
 ```bash
 ./ops/manage.sh rollout api
 ```
 
-5. Run post-release checks.
+5. 执行发布后检查。
 
-For Compose-level changes, use:
+如果涉及 Compose 级改动，使用：
 
 ```bash
 ./ops/manage.sh deploy stack
 ```
 
-## 7. Production Operations
+## 7. 生产运维
 
-Check the remote host and running services:
+检查远端主机和运行中的服务：
 
 ```bash
 ./ops/manage.sh check
 ./ops/manage.sh ps
 ```
 
-Check API health:
+检查 API 健康状态：
 
 ```bash
 ./ops/manage.sh health
 ./ops/manage.sh ready
 ```
 
-Inspect logs:
+查看日志：
 
 ```bash
 ./ops/manage.sh logs api 200
 ./ops/manage.sh db logs 200
 ```
 
-Create a database backup before risky work:
+在高风险操作前先做数据库备份：
 
 ```bash
 ./ops/manage.sh db backup
 ./ops/manage.sh db list-backups
 ```
 
-Export data for review:
+导出数据用于排查或审查：
 
 ```bash
 ./ops/manage.sh db export articles
 ./ops/manage.sh db export-query "select count(*) from geekdaily_episodes;"
 ```
 
-## 8. Common Local Recovery
+## 8. 常见本地恢复操作
 
-Restart PostgreSQL only:
+只重启 PostgreSQL：
 
 ```bash
 pnpm db:down
@@ -232,29 +232,29 @@ pnpm db:up
 pnpm db:logs
 ```
 
-Refresh local admin credentials after changing `.env`:
+修改 `.env` 后刷新本地 admin 凭据：
 
 ```bash
 pnpm admin:bootstrap
 ```
 
-Re-apply local content seed data:
+重新注入本地内容 seed 数据：
 
 ```bash
 pnpm db:seed
 ```
 
-If the package manager resolution is broken, re-enable Corepack and re-activate the pinned pnpm version:
+如果包管理器解析出了问题，重新启用 Corepack 并激活固定版本的 pnpm：
 
 ```bash
 corepack enable
 corepack prepare pnpm@10.6.5 --activate
 ```
 
-## 9. Detailed References
+## 9. 详细参考
 
-- Local development: [`docs/operations/local-development.md`](./operations/local-development.md)
-- Quality assurance: [`docs/operations/quality-assurance.md`](./operations/quality-assurance.md)
-- Deployment: [`docs/operations/deployment.md`](./operations/deployment.md)
-- Production config: [`docs/operations/production-config.md`](./operations/production-config.md)
-- Launch checklist: [`docs/operations/launch-checklist.md`](./operations/launch-checklist.md)
+- 本地开发：[`docs/operations/local-development.md`](./operations/local-development.md)
+- 质量保障：[`docs/operations/quality-assurance.md`](./operations/quality-assurance.md)
+- 部署手册：[`docs/operations/deployment.md`](./operations/deployment.md)
+- 生产配置：[`docs/operations/production-config.md`](./operations/production-config.md)
+- 上线检查清单：[`docs/operations/launch-checklist.md`](./operations/launch-checklist.md)

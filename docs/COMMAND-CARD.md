@@ -1,8 +1,8 @@
-# COMMAND-CARD
+# 命令卡
 
-This file is a copy-paste command card for local development, verification, and production operations.
+这份命令卡用于本地开发、验证、发布和生产运维时的快速复制粘贴。
 
-## Setup
+## 初始化
 
 ```bash
 nvm install
@@ -14,7 +14,7 @@ pnpm install
 pnpm local:bootstrap
 ```
 
-## Start Dev
+## 启动开发环境
 
 ```bash
 pnpm dev:stack
@@ -25,14 +25,14 @@ pnpm dev:admin
 pnpm dev:api
 ```
 
-## Local URLs
+## 本地地址
 
 - Public site: `http://127.0.0.1:4321`
 - Admin: `http://127.0.0.1:5174`
 - API: `http://127.0.0.1:8788`
 - PostgreSQL: `127.0.0.1:55433`
 
-## Verify Changes
+## 验证改动
 
 ```bash
 pnpm lint
@@ -45,7 +45,7 @@ pnpm build:web:prod
 pnpm test:smoke
 ```
 
-## Local Database and Seed
+## 本地数据库与 Seed
 
 ```bash
 pnpm db:up
@@ -56,7 +56,7 @@ pnpm db:seed
 pnpm admin:bootstrap
 ```
 
-## Frontend Release Checks
+## 前端发布检查
 
 ```bash
 pnpm deploy:web:dry-run
@@ -64,7 +64,7 @@ pnpm deploy:admin:dry-run
 pnpm deploy:server:config
 ```
 
-## Remote Operations
+## 远端运维
 
 ```bash
 ./ops/manage.sh help
@@ -74,7 +74,7 @@ pnpm deploy:server:config
 ./ops/manage.sh ssh
 ```
 
-## Remote Deploy
+## 远端部署
 
 ```bash
 ./ops/manage.sh deploy api
@@ -83,7 +83,7 @@ pnpm deploy:server:config
 ./ops/manage.sh rollout stack
 ```
 
-## Remote Logs and Health
+## 远端日志与健康检查
 
 ```bash
 ./ops/manage.sh logs api 200
@@ -93,7 +93,7 @@ pnpm deploy:server:config
 ./ops/manage.sh ready
 ```
 
-## Remote Database
+## 远端数据库
 
 ```bash
 ./ops/manage.sh db shell
@@ -107,7 +107,7 @@ pnpm deploy:server:config
 ./ops/manage.sh db migrate
 ```
 
-## Remote Service Control
+## 远端服务控制
 
 ```bash
 ./ops/manage.sh up api
@@ -117,14 +117,14 @@ pnpm deploy:server:config
 ./ops/manage.sh stop api
 ```
 
-## Bootstrap and Seed on Remote
+## 远端 Bootstrap 与 Seed
 
 ```bash
 ./ops/manage.sh bootstrap-admin
 ./ops/manage.sh seed
 ```
 
-## Environment Overrides for `ops/manage.sh`
+## `ops/manage.sh` 的环境变量覆盖
 
 ```bash
 export REBASE_REMOTE_HOST="rebase@rebase.host"
