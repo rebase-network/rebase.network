@@ -5,5 +5,6 @@
 ## Git 工作流
 
 - Git commit messages 必须遵循 Conventional Commits
+- Git commit messages 必须使用英文
 - 完成一组连贯修改后，创建一个聚焦的 commit
 - 完成验证后，将 commit push 到远端仓库
