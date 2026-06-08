@@ -22,13 +22,13 @@
 推荐的本地工具链：
 
 - Node：通过 `nvm` 使用 `22.21.1`
-- package manager：`pnpm@10.6.5`
+- package manager：`pnpm@10.34.1`
 - package manager launcher：`corepack`
 
 仓库提示：
 
 - `.nvmrc` 固定了推荐的本地 Node 版本
-- `package.json` 通过 `packageManager` 字段固定了 `pnpm@10.6.5`
+- `package.json` 通过 `packageManager` 字段固定了 `pnpm@10.34.1`
 
 建议的首次初始化：
 
@@ -36,7 +36,7 @@
 nvm install
 nvm use
 corepack enable
-corepack prepare pnpm@10.6.5 --activate
+corepack prepare pnpm@10.34.1 --activate
 pnpm install
 ```
 
@@ -106,7 +106,7 @@ pnpm -v
 rm -f /usr/local/bin/pnpm /usr/local/bin/pnpx
 hash -r
 corepack enable
-corepack prepare pnpm@10.6.5 --activate
+corepack prepare pnpm@10.34.1 --activate
 hash -r
 ```
 

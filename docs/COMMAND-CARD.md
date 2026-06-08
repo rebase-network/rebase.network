@@ -8,7 +8,7 @@
 nvm install
 nvm use
 corepack enable
-corepack prepare pnpm@10.6.5 --activate
+corepack prepare pnpm@10.34.1 --activate
 cp .env.example .env
 pnpm install
 pnpm local:bootstrap
