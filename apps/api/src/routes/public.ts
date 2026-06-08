@@ -53,6 +53,11 @@ publicRoutes.get('/home', async (c) => {
     .filter((event) => event.status === 'upcoming')
     .sort((left, right) => Date.parse(left.startAt ?? '') - Date.parse(right.startAt ?? ''))
     .slice(0, 3);
+  const recentPastEvents = [...events]
+    .filter((event) => event.status === 'past')
+    .sort((left, right) => Date.parse(right.startAt ?? '') - Date.parse(left.startAt ?? ''))
+    .slice(0, 3);
+  const latestEvents = upcomingEvents.length > 0 ? upcomingEvents : recentPastEvents;
 
   const dynamicFeed = sortByPublishedAtDesc([
     ...recentArticles.map((item) => ({
@@ -69,7 +74,7 @@ publicRoutes.get('/home', async (c) => {
       href: buildContentHref('who-is-hiring', item.publicNumber, item.slug),
       publishedAt: item.publishedAt,
     })),
-    ...upcomingEvents.map((item) => ({
+    ...latestEvents.map((item) => ({
       type: 'event',
       title: item.title,
       summary: item.summary,
@@ -92,7 +97,7 @@ publicRoutes.get('/home', async (c) => {
       latestGeekDaily: geekdaily[0] ?? null,
       recentArticles,
       recentJobs,
-      upcomingEvents,
+      latestEvents,
       recentGeekDaily: geekdaily,
       featuredContributors,
       dynamicFeed,
