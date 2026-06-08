@@ -1690,10 +1690,40 @@ code {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.8);
+  color: var(--text);
+  line-height: 1.72;
+  overflow-wrap: anywhere;
 }
 
 .markdown-preview :is(h1, h2, h3, h4, p, ul, ol, blockquote) {
   margin-top: 0;
+}
+
+.markdown-preview :is(ul, ol) {
+  padding-left: 1.2rem;
+}
+
+.markdown-preview :is(li + li, p + p) {
+  margin-top: 0.6rem;
+}
+
+.markdown-preview img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+  border: 1px solid rgba(15, 109, 100, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 12px 28px rgba(33, 41, 35, 0.08);
+}
+
+.markdown-preview a {
+  color: var(--accent-strong);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
 }
 
 .markdown-preview blockquote {
@@ -1701,6 +1731,21 @@ code {
   padding-left: 1rem;
   border-left: 3px solid rgba(15, 109, 100, 0.24);
   color: var(--muted);
+}
+
+.markdown-preview pre {
+  margin: 1rem 0;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  border-radius: 12px;
+  background: rgba(17, 24, 39, 0.95);
+  color: rgba(240, 245, 244, 0.96);
+}
+
+.markdown-preview pre code {
+  padding: 0;
+  background: transparent;
+  color: inherit;
 }
 
 .field-inline-meta-row {
