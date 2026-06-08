@@ -9,6 +9,13 @@
 
 ## 目录布局
 
+### Top-level entry docs
+
+High-frequency entry docs stay at the top level of `docs/`:
+
+- `RUNBOOK.md`
+- `COMMAND-CARD.md`
+
 ### `docs/product/`
 
 当前产品边界、内容规则与验收基线：

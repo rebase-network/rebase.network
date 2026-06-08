@@ -48,6 +48,8 @@ pnpm dev:stack
 
 ## 文档入口
 
+- `docs/RUNBOOK.md`：开发、验证、发布和排障入口
+- `docs/COMMAND-CARD.md`：常用命令速查
 - `docs/README.md`：完整文档地图
 - `docs/product/current-boundaries.md`：当前产品边界
 - `docs/product/content-model.md`：公共内容域、URL 和 RSS 规则
