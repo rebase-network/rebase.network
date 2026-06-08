@@ -166,7 +166,7 @@ export const formatAssetVisibility = (value: 'public' | 'private') => {
     case 'public':
       return '公开';
     case 'private':
-      return '私有';
+      return '私有（历史值）';
     default:
       return value;
   }

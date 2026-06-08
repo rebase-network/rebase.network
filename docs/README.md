@@ -43,6 +43,7 @@
 - `deployment.md`
 - `production-config.md`
 - `launch-checklist.md`
+- `repository-review-2026-06.md`
 
 ### `docs/archive/`
 

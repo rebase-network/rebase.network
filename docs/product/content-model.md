@@ -167,12 +167,6 @@ GeekDaily 的公开期目记录。
 - `/geekdaily?year=2026`
 - `/geekdaily?page=2`
 
-### `Who-Is-Hiring`
-
-- `/who-is-hiring?q=frontend`
-- `/who-is-hiring?location=shanghai`
-- `/who-is-hiring?mode=remote`
-
 ## RSS 规则
 
 - 所有 RSS 只包含已发布内容

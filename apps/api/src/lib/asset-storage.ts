@@ -17,6 +17,21 @@ import { slugify } from './utils.js';
 const execFileAsync = promisify(execFile);
 const wranglerDevUrlCache = new Map<string, string>();
 
+const acceptedUploadMimeTypes = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'application/pdf',
+  'video/mp4',
+] as const;
+
+const acceptedUploadMimeTypeSet = new Set<string>(acceptedUploadMimeTypes);
+const maxUploadBytes = 12 * 1024 * 1024;
+const privateAssetsSupported = false;
+export const maxAssetUploadBytes = maxUploadBytes;
+export const maxAssetUploadBodyBytes = maxUploadBytes + 256 * 1024;
+
 let s3Client: S3Client | null = null;
 
 const normalizeBaseUrl = (value: string) => value.trim().replace(/\/$/, '');
@@ -37,14 +52,14 @@ const detectStorageMode = (): AdminAssetUploadConfig['mode'] => {
 
 const buildMessage = (mode: AdminAssetUploadConfig['mode']) => {
   if (mode === 'r2-s3') {
-    return 'R2 upload is configured with the S3-compatible API.';
+    return 'R2 上传已配置为通过 S3 兼容接口写入，当前只支持公开媒体。';
   }
 
   if (mode === 'wrangler-cli') {
-    return 'R2 upload is using Wrangler for local development.';
+    return 'R2 上传在本地环境通过 Wrangler 写入，当前只支持公开媒体。';
   }
 
-  return 'Set R2_BUCKET plus either S3 credentials or R2_DEV_USE_WRANGLER=true to enable uploads.';
+  return '设置 R2_BUCKET，并补充 S3 凭据或 R2_DEV_USE_WRANGLER=true 后才可启用上传。';
 };
 
 const ensureImageDimensions = (buffer: Buffer, mimeType: string) => {
@@ -60,6 +75,76 @@ const ensureImageDimensions = (buffer: Buffer, mimeType: string) => {
     };
   } catch {
     return { width: null, height: null };
+  }
+};
+
+const hasPrefix = (buffer: Buffer, prefix: number[]) => prefix.every((value, index) => buffer[index] === value);
+
+const sniffMimeType = (buffer: Buffer) => {
+  if (buffer.length >= 3 && hasPrefix(buffer, [0xff, 0xd8, 0xff])) {
+    return 'image/jpeg';
+  }
+
+  if (buffer.length >= 8 && hasPrefix(buffer, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) {
+    return 'image/png';
+  }
+
+  if (buffer.length >= 12 && buffer.subarray(0, 4).toString('ascii') === 'RIFF' && buffer.subarray(8, 12).toString('ascii') === 'WEBP') {
+    return 'image/webp';
+  }
+
+  if (buffer.length >= 6) {
+    const gifHeader = buffer.subarray(0, 6).toString('ascii');
+    if (gifHeader === 'GIF87a' || gifHeader === 'GIF89a') {
+      return 'image/gif';
+    }
+  }
+
+  if (buffer.length >= 5 && buffer.subarray(0, 5).toString('ascii') === '%PDF-') {
+    return 'application/pdf';
+  }
+
+  if (buffer.length >= 12 && buffer.subarray(4, 8).toString('ascii') === 'ftyp') {
+    return 'video/mp4';
+  }
+
+  return null;
+};
+
+export const ensureSupportedAssetVisibility = (visibility: 'public' | 'private') => {
+  if (visibility !== 'public') {
+    throw badRequest('private assets are not supported by the current upload pipeline');
+  }
+};
+
+const ensureSupportedUpload = (file: File, buffer: Buffer, mimeType: string) => {
+  if (buffer.byteLength > maxUploadBytes) {
+    throw badRequest('file is too large', {
+      maxUploadBytes,
+      actualBytes: buffer.byteLength,
+    });
+  }
+
+  if (!acceptedUploadMimeTypeSet.has(mimeType)) {
+    throw badRequest('file type is not allowed', {
+      acceptedMimeTypes: [...acceptedUploadMimeTypes],
+      receivedMimeType: mimeType,
+    });
+  }
+
+  const detectedMimeType = sniffMimeType(buffer);
+  if (detectedMimeType !== mimeType) {
+    throw badRequest('file content does not match its declared mime type', {
+      detectedMimeType,
+      receivedMimeType: mimeType,
+    });
+  }
+
+  if (file.size !== buffer.byteLength) {
+    throw badRequest('file size metadata does not match uploaded bytes', {
+      reportedBytes: file.size,
+      actualBytes: buffer.byteLength,
+    });
   }
 };
 
@@ -318,6 +403,9 @@ export const getAssetUploadConfig = (): AdminAssetUploadConfig => {
     storageProvider: 'r2',
     bucket: env.r2Bucket,
     publicBaseUrl: env.r2PublicBaseUrl ? normalizeBaseUrl(env.r2PublicBaseUrl) : null,
+    maxUploadBytes,
+    acceptedMimeTypes: [...acceptedUploadMimeTypes],
+    supportsPrivateAssets: privateAssetsSupported,
     message: buildMessage(mode),
   };
 };
@@ -371,12 +459,16 @@ export const uploadAssetToR2 = async ({
     throw badRequest('file is required');
   }
 
+  ensureSupportedAssetVisibility(visibility);
+
   const buffer = Buffer.from(await file.arrayBuffer());
   if (buffer.byteLength === 0) {
     throw badRequest('file is empty');
   }
 
   const mimeType = file.type || 'application/octet-stream';
+  ensureSupportedUpload(file, buffer, mimeType);
+
   const originalFilename = file.name || `upload-${Date.now()}`;
   const normalizedFolder = sanitizeFolder(folder);
   const objectKey = buildObjectKey(originalFilename, mimeType, normalizedFolder);

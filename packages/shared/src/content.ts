@@ -782,6 +782,9 @@ export interface AdminAssetUploadConfig {
   storageProvider: 'r2';
   bucket: string;
   publicBaseUrl: string | null;
+  maxUploadBytes: number;
+  acceptedMimeTypes: string[];
+  supportsPrivateAssets: boolean;
   message: string;
 }
 
