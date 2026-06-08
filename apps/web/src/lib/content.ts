@@ -94,6 +94,7 @@ interface HomeFeedPayload {
   recentArticles: Article[];
   recentJobs: Job[];
   latestEvents: Event[];
+  upcomingEvents: Event[];
   recentGeekDaily: PublicGeekDailyEpisodePayload[];
   featuredContributors: HomeContributorPreviewPayload[];
   dynamicFeed: Array<{
@@ -434,6 +435,7 @@ export async function getHomeFeed() {
     latestArticles: payload.recentArticles.map(mapArticle),
     latestJobs: payload.recentJobs,
     latestEvents: payload.latestEvents,
+    upcomingEvents: payload.upcomingEvents,
     latestGeekDaily: payload.latestGeekDaily ? mapGeekDailyEpisode(payload.latestGeekDaily) : undefined,
     recentGeekDaily: payload.recentGeekDaily.map(mapGeekDailyEpisode),
     featuredContributors: payload.featuredContributors,

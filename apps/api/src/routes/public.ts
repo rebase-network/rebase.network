@@ -98,6 +98,7 @@ publicRoutes.get('/home', async (c) => {
       recentArticles,
       recentJobs,
       latestEvents,
+      upcomingEvents,
       recentGeekDaily: geekdaily,
       featuredContributors,
       dynamicFeed,
