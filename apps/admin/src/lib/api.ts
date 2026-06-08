@@ -34,6 +34,7 @@ const adminMessageTranslations = new Map<string, string>([
   ['asset is still referenced', '该媒体仍被内容引用，无法删除。'],
   ['event not found', '未找到活动。'],
   ['job not found', '未找到招聘信息。'],
+  ['internal server error', '服务端内部错误。'],
   ['R2 delete is not configured', '当前环境未配置媒体删除能力。'],
 ]);
 

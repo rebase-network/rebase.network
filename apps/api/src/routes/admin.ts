@@ -25,6 +25,7 @@ import { createAdminAsset, deleteAdminAsset, getAdminAsset, getAdminAssetUploadC
 import { createAdminContributor, createAdminContributorRole, getAdminContributor, listAdminContributorRoles, listAdminContributors, updateAdminContributor, updateAdminContributorRole } from '../lib/contributors.js';
 import { createAdminEvent, getAdminEvent, listAdminEvents, publishAdminEvent, updateAdminEvent, archiveAdminEvent } from '../lib/events.js';
 import { createAdminGeekDailyEpisode, getAdminGeekDailyEpisode, listAdminGeekDailyEpisodes, publishAdminGeekDailyEpisode, updateAdminGeekDailyEpisode, archiveAdminGeekDailyEpisode } from '../lib/geekdaily.js';
+import { badRequest } from '../lib/errors.js';
 import { handleApiError, jsonError, ok } from '../lib/http.js';
 import { createAdminJob, getAdminJob, listAdminJobs, publishAdminJob, updateAdminJob, archiveAdminJob } from '../lib/jobs.js';
 import { getAdminSite, updateAboutPage, updateHomePage, updateSiteSettings } from '../lib/site.js';
@@ -49,13 +50,7 @@ const expectValid = <T>(c: any, result: { valid: boolean; data?: T; issues?: { p
   }
 
   c.status(400);
-  throw new Error(JSON.stringify({
-    error: {
-      code: 'VALIDATION_ERROR',
-      message: '有字段校验未通过，请检查标红项。',
-      details: { issues: result.issues ?? [] },
-    },
-  }));
+  throw badRequest('one or more fields failed validation', { issues: result.issues ?? [] });
 };
 
 const readOptionalString = (value: FormDataEntryValue | null) => (typeof value === 'string' ? value : '');
