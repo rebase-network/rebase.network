@@ -9,6 +9,7 @@ import { formatAssetStatus, formatAssetVisibility, formatDateTime, formatFileSiz
 
 type AssetStatus = (typeof assetStatusValues)[number];
 type AssetVisibility = 'public' | 'private';
+type AssetVisibilityFilter = 'all' | AssetVisibility;
 
 interface AssetFormState {
   storageProvider: string;
@@ -29,7 +30,6 @@ interface AssetFormState {
 
 interface UploadFormState {
   folder: string;
-  visibility: AssetVisibility;
   altText: string;
   assetType: string;
 }
@@ -42,7 +42,7 @@ interface UploadQueueItem {
 
 type AssetWorkspaceMode = 'upload' | 'edit';
 
-const visibilityOptions: AssetVisibility[] = ['public', 'private'];
+const filterVisibilityOptions: AssetVisibilityFilter[] = ['all', 'public', 'private'];
 
 const createBlankForm = (bucket = 'rebase-media'): AssetFormState => ({
   storageProvider: 'r2',
@@ -63,7 +63,6 @@ const createBlankForm = (bucket = 'rebase-media'): AssetFormState => ({
 
 const createUploadForm = (): UploadFormState => ({
   folder: 'media',
-  visibility: 'public',
   altText: '',
   assetType: '',
 });
@@ -92,7 +91,7 @@ const upload = reactive<UploadFormState>(createUploadForm());
 const filters = reactive({
   query: '',
   status: 'all',
-  visibility: 'all',
+  visibility: 'all' as AssetVisibilityFilter,
 });
 
 const selectedAsset = computed(() => rows.value.find((row) => row.id === selectedAssetId.value) ?? null);
@@ -151,6 +150,13 @@ const uploadStatusMessage = computed(() => {
       return uploadConfig.value.message;
   }
 });
+const uploadMimeSummary = computed(() => {
+  const values = uploadConfig.value?.acceptedMimeTypes ?? [];
+  return values.length > 0 ? values.join('、') : '尚未配置';
+});
+const uploadLimitSummary = computed(() => (uploadConfig.value ? formatFileSize(uploadConfig.value.maxUploadBytes) : '尚未配置'));
+const legacyPrivateVisibility = computed(() => (selectedAsset.value?.visibility ?? form.visibility) === 'private');
+const editorVisibilityOptions = computed<AssetVisibility[]>(() => (legacyPrivateVisibility.value ? ['private', 'public'] : ['public']));
 const uploadProgressMessage = computed(() => {
   if (!uploading.value || !uploadProgressName.value) {
     return '';
@@ -379,7 +385,24 @@ const loadPage = async (nextSelectedId: string | null = selectedAssetId.value, p
 
 const onFilePicked = (event: Event) => {
   const input = event.target as HTMLInputElement;
-  setUploadFiles(Array.from(input.files ?? []));
+  const files = Array.from(input.files ?? []);
+  const acceptedFiles: File[] = [];
+  const rejections: string[] = [];
+
+  for (const file of files) {
+    const failure = validateSelectedUploadFile(file);
+    if (failure) {
+      rejections.push(`${file.name}：${failure}`);
+      continue;
+    }
+
+    acceptedFiles.push(file);
+  }
+
+  setUploadFiles(acceptedFiles);
+  if (rejections.length > 0) {
+    errorMessage.value = `以下文件未加入上传队列：${summarizeUploadSelectionRejections(rejections)}`;
+  }
   input.value = '';
 };
 
@@ -387,7 +410,7 @@ const buildUploadPayload = (file: File) => {
   const payload = new FormData();
   payload.append('file', file);
   payload.append('folder', upload.folder.trim());
-  payload.append('visibility', upload.visibility);
+  payload.append('visibility', 'public');
 
   const altText = upload.altText.trim();
   if (altText) {
@@ -409,6 +432,40 @@ const summarizeUploadFailures = (failures: string[]) => {
   }
 
   return `${visible}；另有 ${failures.length - 3} 个文件失败`;
+};
+
+const summarizeUploadSelectionRejections = (failures: string[]) => {
+  const visible = failures.slice(0, 3).join('；');
+  if (failures.length <= 3) {
+    return visible;
+  }
+
+  return `${visible}；另有 ${failures.length - 3} 个文件不符合限制`;
+};
+
+const formatAssetVisibilityOption = (value: AssetVisibility) => {
+  if (value === 'private') {
+    return '私有（历史值，不再支持写入）';
+  }
+
+  return '公开';
+};
+
+const validateSelectedUploadFile = (file: File) => {
+  const config = uploadConfig.value;
+  if (!config) {
+    return null;
+  }
+
+  if (file.size > config.maxUploadBytes) {
+    return `超过 ${formatFileSize(config.maxUploadBytes)}`;
+  }
+
+  if (!config.acceptedMimeTypes.includes(file.type)) {
+    return '文件类型不受支持';
+  }
+
+  return null;
 };
 
 const uploadAsset = async () => {
@@ -644,7 +701,13 @@ const goToAssetPage = async (nextPage: number) => {
                 <span>可见性</span>
                 <select v-model="filters.visibility">
                   <option value="all">全部可见性</option>
-                  <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ formatAssetVisibility(visibility) }}</option>
+                  <option
+                    v-for="visibility in filterVisibilityOptions.filter((value) => value !== 'all')"
+                    :key="visibility"
+                    :value="visibility"
+                  >
+                    {{ formatAssetVisibility(visibility) }}
+                  </option>
                 </select>
               </label>
             </div>
@@ -762,6 +825,14 @@ const goToAssetPage = async (nextPage: number) => {
               <dt>对象目录</dt>
               <dd class="muted">{{ upload.folder || 'media' }}</dd>
             </div>
+            <div class="summary-item">
+              <dt>大小上限</dt>
+              <dd class="muted">{{ uploadLimitSummary }}</dd>
+            </div>
+            <div class="summary-item">
+              <dt>允许类型</dt>
+              <dd class="muted">{{ uploadMimeSummary }}</dd>
+            </div>
           </dl>
 
           <div v-if="uploadPreviewSrc" class="summary-item summary-asset">
@@ -814,9 +885,8 @@ const goToAssetPage = async (nextPage: number) => {
           <div class="field-grid field-grid-2">
             <label class="field">
               <span>可见性</span>
-              <select v-model="upload.visibility">
-                <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ formatAssetVisibility(visibility) }}</option>
-              </select>
+              <input value="公开" type="text" readonly />
+              <small>当前上传链路只支持公开媒体；历史 private 值不再允许新写入。</small>
             </label>
             <label class="field">
               <span>{{ uploadHasMultipleFiles ? '统一 Alt 文案（可选）' : 'Alt 文案' }}</span>
@@ -888,6 +958,9 @@ const goToAssetPage = async (nextPage: number) => {
             <div class="panel-toolbar">
               <h3>访问与路径</h3>
               <div class="panel-meta">{{ formatAssetVisibility(form.visibility) }}</div>
+            </div>
+            <div v-if="legacyPrivateVisibility" class="field-warning">
+              这个媒体记录带有历史 `private` 值，但当前 R2 写入链路并不提供真正的私有访问控制。继续维护前请先改为公开，或等待后续引入私有桶 / 签名 URL。
             </div>
             <div class="field-grid field-grid-2 field-grid-compact">
               <label class="field">
@@ -963,7 +1036,14 @@ const goToAssetPage = async (nextPage: number) => {
               <label class="field">
                 <span>可见性</span>
                 <select v-model="form.visibility">
-                  <option v-for="visibility in visibilityOptions" :key="visibility" :value="visibility">{{ formatAssetVisibility(visibility) }}</option>
+                  <option
+                    v-for="visibility in editorVisibilityOptions"
+                    :key="visibility"
+                    :value="visibility"
+                    :disabled="visibility === 'private'"
+                  >
+                    {{ formatAssetVisibilityOption(visibility) }}
+                  </option>
                 </select>
               </label>
               <label class="field">
@@ -1005,6 +1085,15 @@ const goToAssetPage = async (nextPage: number) => {
 </template>
 
 <style scoped>
+.field-warning {
+  padding: 0.72rem 0.78rem;
+  border: 1px solid rgba(167, 52, 32, 0.18);
+  border-radius: 12px;
+  background: rgba(167, 52, 32, 0.06);
+  color: var(--danger);
+  line-height: 1.5;
+}
+
 .asset-table th:first-child,
 .asset-table td:first-child {
   width: 5.4rem;

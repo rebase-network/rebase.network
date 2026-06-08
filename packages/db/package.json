@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "@rebase/shared": "workspace:*",
-    "drizzle-orm": "^0.41.0",
-    "pg": "^8.16.3"
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.21.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

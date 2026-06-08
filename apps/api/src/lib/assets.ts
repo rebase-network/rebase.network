@@ -3,7 +3,7 @@ import { and, count, desc, eq, ilike, inArray, or } from 'drizzle-orm';
 import { articles, assets, contributors, events } from '@rebase/db';
 import type { AdminAssetRecord, AssetInput, AssetStatus, PaginatedResult } from '@rebase/shared';
 
-import { deleteAssetFromStorage, getAssetUploadConfig, type UploadAssetOptions, uploadAssetToR2 } from './asset-storage.js';
+import { deleteAssetFromStorage, ensureSupportedAssetVisibility, getAssetUploadConfig, type UploadAssetOptions, uploadAssetToR2 } from './asset-storage.js';
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { getDb } from './db.js';
 import { badRequest, notFound } from './errors.js';
@@ -135,6 +135,7 @@ export const getAdminAssetUploadConfig = async () => getAssetUploadConfig();
 
 export const createAdminAsset = async (input: AssetInput, actor: AuditActor) => {
   const db = getDb();
+  ensureSupportedAssetVisibility(input.visibility);
   await ensureUniqueObjectKey(input.objectKey);
 
   const [created] = await db
@@ -213,6 +214,7 @@ export const updateAdminAsset = async (id: string, input: AssetInput, actor: Aud
     throw notFound('asset not found');
   }
 
+  ensureSupportedAssetVisibility(input.visibility);
   await ensureUniqueObjectKey(input.objectKey, id);
 
   const [updated] = await db

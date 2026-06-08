@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 
 import {
   assetStatusValues,
@@ -20,6 +21,7 @@ import {
 
 import { listAuditEntries } from '../lib/audit.js';
 import { getDashboardStats } from '../lib/access.js';
+import { maxAssetUploadBodyBytes } from '../lib/asset-storage.js';
 import { createAdminArticle, getAdminArticle, listAdminArticles, publishAdminArticle, updateAdminArticle, archiveAdminArticle } from '../lib/articles.js';
 import { createAdminAsset, deleteAdminAsset, getAdminAsset, getAdminAssetUploadConfig, listAdminAssets, updateAdminAsset, uploadAdminAsset } from '../lib/assets.js';
 import { createAdminContributor, createAdminContributorRole, getAdminContributor, listAdminContributorRoles, listAdminContributors, updateAdminContributor, updateAdminContributorRole } from '../lib/contributors.js';
@@ -34,6 +36,11 @@ import { getAdminMePayload, requireActiveStaff, type AppVariables } from '../mid
 import { readPaginationInput } from '../lib/pagination.js';
 
 export const adminRoutes = new Hono<{ Variables: AppVariables }>();
+
+const assetUploadBodyLimit = bodyLimit({
+  maxSize: maxAssetUploadBodyBytes,
+  onError: (c) => jsonError(c, 413, 'PAYLOAD_TOO_LARGE', 'upload request is too large', { maxUploadBytes: maxAssetUploadBodyBytes }),
+});
 
 const getAuditActor = (c: any) => ({
   actorUserId: c.get('user')?.id ?? null,
@@ -214,7 +221,7 @@ adminRoutes.post('/geekdaily/:id/publish', requireActiveStaff('geekdaily.publish
 adminRoutes.post('/geekdaily/:id/archive', requireActiveStaff('geekdaily.publish'), async (c) => c.json(ok(await archiveAdminGeekDailyEpisode(c.req.param('id'), getAuditActor(c)))));
 
 adminRoutes.get('/assets/upload-config', requireActiveStaff('asset.manage'), async (c) => c.json(ok(await getAdminAssetUploadConfig())));
-adminRoutes.post('/assets/upload', requireActiveStaff('asset.manage'), async (c) => {
+adminRoutes.post('/assets/upload', requireActiveStaff('asset.manage'), assetUploadBodyLimit, async (c) => {
   const form = await c.req.formData();
   const file = form.get('file');
 

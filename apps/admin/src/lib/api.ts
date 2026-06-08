@@ -33,9 +33,14 @@ const adminMessageTranslations = new Map<string, string>([
   ['asset not found', '未找到媒体文件。'],
   ['asset is still referenced', '该媒体仍被内容引用，无法删除。'],
   ['event not found', '未找到活动。'],
+  ['file content does not match its declared mime type', '文件内容与声明的类型不一致，请重新导出后再上传。'],
+  ['file is too large', '文件过大，超过当前上传上限。'],
+  ['file type is not allowed', '当前只允许上传受支持的图片、PDF 或 MP4 文件。'],
   ['job not found', '未找到招聘信息。'],
   ['internal server error', '服务端内部错误。'],
+  ['private assets are not supported by the current upload pipeline', '当前上传链路只支持公开媒体，不支持私有媒体。'],
   ['R2 delete is not configured', '当前环境未配置媒体删除能力。'],
+  ['upload request is too large', '上传请求过大，已被服务端拒绝。'],
 ]);
 
 const localizeAdminMessage = (message: string) => {
