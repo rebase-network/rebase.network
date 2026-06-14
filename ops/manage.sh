@@ -8,7 +8,8 @@ REMOTE_HOST="${REBASE_REMOTE_HOST:-rebase@rebase.host}"
 REMOTE_DIR="${REBASE_REMOTE_DIR:-/home/rebase/rebase.network}"
 COMPOSE_FILE="${REBASE_COMPOSE_FILE:-infra/production/docker-compose.yml}"
 ENV_FILE="${REBASE_SERVER_ENV:-infra/production/server.env}"
-LOCAL_ENV_FILE="${REBASE_LOCAL_ENV_FILE:-ops/.env}"
+LOCAL_ENV_SYNC_FILE="${REBASE_LOCAL_ENV_FILE:-ops/.env}"
+LOCAL_ENV_DOWNLOAD_FILE="${REBASE_LOCAL_ENV_DOWNLOAD_FILE:-ops/.env.download}"
 API_PORT="${REBASE_API_PORT:-8788}"
 DEFAULT_LOG_TAIL="${REBASE_LOG_TAIL:-120}"
 
@@ -163,7 +164,7 @@ backup_env_remote() {
 }
 
 download_env_local() {
-  local local_path="${1:-$LOCAL_ENV_FILE}"
+  local local_path="${1:-$LOCAL_ENV_DOWNLOAD_FILE}"
   local resolved_local
   local resolved_remote
 
@@ -181,7 +182,7 @@ download_env_local() {
 }
 
 sync_env_remote() {
-  local local_path="${1:-$LOCAL_ENV_FILE}"
+  local local_path="${1:-$LOCAL_ENV_SYNC_FILE}"
   local backup_path="${2:-backups/env/$(basename "$ENV_FILE").$(date +%Y%m%d-%H%M%S).bak}"
   local resolved_local
   local resolved_remote
@@ -382,7 +383,8 @@ Environment overrides:
   REBASE_REMOTE_DIR    default: ${REMOTE_DIR}
   REBASE_COMPOSE_FILE  default: ${COMPOSE_FILE}
   REBASE_SERVER_ENV    default: ${ENV_FILE}
-  REBASE_LOCAL_ENV_FILE default: ${LOCAL_ENV_FILE}
+  REBASE_LOCAL_ENV_FILE default: ${LOCAL_ENV_SYNC_FILE}
+  REBASE_LOCAL_ENV_DOWNLOAD_FILE default: ${LOCAL_ENV_DOWNLOAD_FILE}
   REBASE_API_PORT      default: ${API_PORT}
   REBASE_LOG_TAIL      default: ${DEFAULT_LOG_TAIL}
 
@@ -391,6 +393,7 @@ Examples:
   ./ops/manage.sh rollout api
   ./ops/manage.sh download-env
   ./ops/manage.sh sync-env
+  ./ops/manage.sh sync-env ops/.env.download
   ./ops/manage.sh deploy stack --no-sync
   ./ops/manage.sh logs api 200
   ./ops/manage.sh db query "select count(*) from geekdaily_episodes;"
@@ -424,13 +427,13 @@ case "$command" in
     ;;
 
   download-env)
-    local_path="${1:-$LOCAL_ENV_FILE}"
+    local_path="${1:-$LOCAL_ENV_DOWNLOAD_FILE}"
     [[ $# -le 1 ]] || die "download-env accepts at most one local path argument"
     download_env_local "$local_path"
     ;;
 
   sync-env)
-    local_path="${1:-$LOCAL_ENV_FILE}"
+    local_path="${1:-$LOCAL_ENV_SYNC_FILE}"
     [[ $# -le 1 ]] || die "sync-env accepts at most one local path argument"
     sync_env_remote "$local_path"
     ;;
