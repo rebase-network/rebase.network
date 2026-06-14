@@ -11,6 +11,9 @@ export interface AppEnv {
   r2Bucket: string;
   r2PublicBaseUrl: string;
   r2DevUseWrangler: boolean;
+  wechatOfficialAppId: string;
+  wechatOfficialAppSecret: string;
+  wechatDefaultThumbMediaId: string;
 }
 
 let envCache: AppEnv | null = null;
@@ -49,6 +52,9 @@ export const getEnv = (): AppEnv => {
     r2Bucket: process.env.R2_BUCKET ?? 'rebase-media',
     r2PublicBaseUrl: process.env.R2_PUBLIC_BASE_URL ?? '',
     r2DevUseWrangler: parseBoolean(process.env.R2_DEV_USE_WRANGLER, false),
+    wechatOfficialAppId: process.env.WECHAT_OFFICIAL_APP_ID ?? '',
+    wechatOfficialAppSecret: process.env.WECHAT_OFFICIAL_APP_SECRET ?? '',
+    wechatDefaultThumbMediaId: process.env.WECHAT_DEFAULT_THUMB_MEDIA_ID ?? '',
   };
 
   return envCache;
