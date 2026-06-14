@@ -37,6 +37,7 @@
     "db:migrate": "pnpm --filter @rebase/db migrate",
     "db:seed": "pnpm --filter @rebase/db seed",
     "admin:bootstrap": "pnpm --filter @rebase/api bootstrap-admin",
+    "wechat:create-draft": "node scripts/wechat/create-draft.mjs",
     "wechat:thumb-media-id": "node scripts/wechat/get-thumb-media-id.mjs"
   },
   "devDependencies": {

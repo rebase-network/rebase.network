@@ -15,7 +15,9 @@ const scriptFile = fileURLToPath(import.meta.url);
 const scriptDir = path.dirname(scriptFile);
 const rootDir = path.resolve(scriptDir, '..', '..');
 
-const defaultEnvCandidates = ['ops/.env', '.env', 'ops/.env.download'].map((entry) => path.resolve(rootDir, entry));
+const defaultEnvCandidates = ['infra/production/server.env', 'ops/.env', '.env', 'ops/.env.download'].map((entry) =>
+  path.resolve(rootDir, entry),
+);
 const usage = `Usage:
   pnpm wechat:thumb-media-id --file=./path/to/cover.jpg [--type=image|thumb] [--env-file=ops/.env]
   node scripts/wechat/get-thumb-media-id.mjs --file=./path/to/cover.jpg [--type=image|thumb] [--appid=APPID --secret=APPSECRET]
