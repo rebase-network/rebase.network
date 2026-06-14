@@ -756,6 +756,18 @@ export interface AdminGeekDailyRecord extends GeekDailyEpisodeInput {
   updatedAt: string;
 }
 
+export interface AdminGeekDailyWechatDraftRecord {
+  episodeId: string;
+  episodeNumber: number;
+  title: string;
+  author: string;
+  digest: string;
+  mediaId: string;
+  thumbMediaId: string;
+  contentSourceUrl: string;
+  itemCount: number;
+}
+
 export interface AdminAssetRecord {
   id: string;
   storageProvider: string;
