@@ -8,6 +8,7 @@ REMOTE_HOST="${REBASE_REMOTE_HOST:-rebase@rebase.host}"
 REMOTE_DIR="${REBASE_REMOTE_DIR:-/home/rebase/rebase.network}"
 COMPOSE_FILE="${REBASE_COMPOSE_FILE:-infra/production/docker-compose.yml}"
 ENV_FILE="${REBASE_SERVER_ENV:-infra/production/server.env}"
+LOCAL_ENV_FILE="${REBASE_LOCAL_ENV_FILE:-ops/.env}"
 API_PORT="${REBASE_API_PORT:-8788}"
 DEFAULT_LOG_TAIL="${REBASE_LOG_TAIL:-120}"
 
@@ -138,6 +139,73 @@ resolve_remote_abs_path() {
   printf '%s/%s\n' "$REMOTE_DIR" "$target"
 }
 
+resolve_local_abs_path() {
+  local target="$1"
+
+  if [[ "$target" = /* ]]; then
+    printf '%s\n' "$target"
+    return
+  fi
+
+  printf '%s/%s\n' "$ROOT_DIR" "$target"
+}
+
+backup_env_remote() {
+  local backup_path="${1:-backups/env/$(basename "$ENV_FILE").$(date +%Y%m%d-%H%M%S).bak}"
+  local resolved_env
+  local resolved_backup
+
+  resolved_env="$(resolve_remote_abs_path "$ENV_FILE")"
+  resolved_backup="$(resolve_remote_abs_path "$backup_path")"
+
+  remote_exec "mkdir -p $(quote "$(dirname "$resolved_backup")") && cp $(quote "$resolved_env") $(quote "$resolved_backup") && ls -lh $(quote "$resolved_backup")"
+  log "env backup written to ${resolved_backup}"
+}
+
+download_env_local() {
+  local local_path="${1:-$LOCAL_ENV_FILE}"
+  local resolved_local
+  local resolved_remote
+
+  require_local rsync
+  assert_remote_layout
+
+  resolved_local="$(resolve_local_abs_path "$local_path")"
+  resolved_remote="$(resolve_remote_abs_path "$ENV_FILE")"
+
+  remote_exec "[ -f $(quote "$resolved_remote") ] || { echo missing $(quote "$resolved_remote") >&2; exit 1; }"
+  mkdir -p "$(dirname "$resolved_local")"
+
+  log "downloading ${resolved_remote} to ${resolved_local}"
+  rsync -az --human-readable "${REMOTE_HOST}:${resolved_remote}" "$resolved_local"
+}
+
+sync_env_remote() {
+  local local_path="${1:-$LOCAL_ENV_FILE}"
+  local backup_path="${2:-backups/env/$(basename "$ENV_FILE").$(date +%Y%m%d-%H%M%S).bak}"
+  local resolved_local
+  local resolved_remote
+  local remote_temp
+
+  require_local rsync
+  assert_remote_layout
+
+  resolved_local="$(resolve_local_abs_path "$local_path")"
+  [[ -f "$resolved_local" ]] || die "missing local env file: ${resolved_local}"
+
+  resolved_remote="$(resolve_remote_abs_path "$ENV_FILE")"
+  remote_temp="${resolved_remote}.tmp.$(date +%s)"
+
+  log "backing up remote env before sync"
+  backup_env_remote "$backup_path"
+
+  log "uploading ${resolved_local} to temporary remote path"
+  rsync -az --human-readable "$resolved_local" "${REMOTE_HOST}:${remote_temp}"
+
+  remote_exec "mkdir -p $(quote "$(dirname "$resolved_remote")") && mv $(quote "$remote_temp") $(quote "$resolved_remote") && ls -lh $(quote "$resolved_remote")"
+  log "remote env synced to ${resolved_remote}"
+}
+
 db_backup_remote() {
   local backup_path="$1"
   local backup_target="$backup_path"
@@ -222,9 +290,11 @@ sync_repo() {
     --filter='P .git/' \
     --filter='P .env' \
     --filter='P infra/production/server.env' \
+    --filter='P ops/.env' \
     --exclude '.git/' \
     --exclude '.env' \
     --exclude 'infra/production/server.env' \
+    --exclude 'ops/.env' \
     --exclude '.DS_Store' \
     --exclude 'node_modules/' \
     --exclude 'apps/web/dist/' \
@@ -290,6 +360,8 @@ Usage:
   ./ops/manage.sh help
   ./ops/manage.sh check
   ./ops/manage.sh sync
+  ./ops/manage.sh download-env [local-path]
+  ./ops/manage.sh sync-env [local-path]
   ./ops/manage.sh deploy [api|stack] [--no-sync]
   ./ops/manage.sh rollout [api|stack] [--no-sync]
   ./ops/manage.sh up [api|postgres|cloudflared|stack]
@@ -310,12 +382,15 @@ Environment overrides:
   REBASE_REMOTE_DIR    default: ${REMOTE_DIR}
   REBASE_COMPOSE_FILE  default: ${COMPOSE_FILE}
   REBASE_SERVER_ENV    default: ${ENV_FILE}
+  REBASE_LOCAL_ENV_FILE default: ${LOCAL_ENV_FILE}
   REBASE_API_PORT      default: ${API_PORT}
   REBASE_LOG_TAIL      default: ${DEFAULT_LOG_TAIL}
 
 Examples:
   ./ops/manage.sh deploy api
   ./ops/manage.sh rollout api
+  ./ops/manage.sh download-env
+  ./ops/manage.sh sync-env
   ./ops/manage.sh deploy stack --no-sync
   ./ops/manage.sh logs api 200
   ./ops/manage.sh db query "select count(*) from geekdaily_episodes;"
@@ -346,6 +421,18 @@ case "$command" in
 
   sync)
     sync_repo
+    ;;
+
+  download-env)
+    local_path="${1:-$LOCAL_ENV_FILE}"
+    [[ $# -le 1 ]] || die "download-env accepts at most one local path argument"
+    download_env_local "$local_path"
+    ;;
+
+  sync-env)
+    local_path="${1:-$LOCAL_ENV_FILE}"
+    [[ $# -le 1 ]] || die "sync-env accepts at most one local path argument"
+    sync_env_remote "$local_path"
     ;;
 
   deploy)
