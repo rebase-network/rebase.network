@@ -2,10 +2,14 @@ import { asc, count, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 
 import { geekdailyEpisodeItems, geekdailyEpisodes } from '@rebase/db';
 import {
+  buildGeekDailyWechatHtml,
   buildGeekDailyBodyMarkdown,
   buildGeekDailySummary,
   extractGeekDailyBodyNote,
+  getGeekDailyEpisodePath,
   getGeekDailyEpisodeSlug,
+  getGeekDailyWechatGenerationIssue,
+  type AdminGeekDailyWechatDraftRecord,
   type AdminGeekDailyListItem,
   type ContentStatus,
   type GeekDailyEpisodeInput,
@@ -14,10 +18,13 @@ import {
 
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { getDb } from './db.js';
-import { badRequest, notFound } from './errors.js';
+import { getEnv } from './env.js';
+import { badRequest, notFound, serviceUnavailable } from './errors.js';
 import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
 import { combineFilters, toContainsPattern } from './query-filters.js';
+import { getPublicSiteConfig } from './site.js';
 import { toIsoString } from './utils.js';
+import { createWechatOfficialDraft } from './wechat-official.js';
 
 const mapEpisodeItem = (row: typeof geekdailyEpisodeItems.$inferSelect) => ({
   title: row.title,
@@ -219,6 +226,18 @@ const resolveGeekDailyPublishedAt = (status: ContentStatus, currentPublishedAt?:
 
   return currentPublishedAt ? coerceDate(currentPublishedAt) : new Date();
 };
+
+const withBaseUrl = (baseUrl: string, pathname: string) => new URL(pathname, baseUrl).toString();
+
+const truncateByCodePoints = (value: string, maxLength: number) => Array.from(value).slice(0, maxLength).join('');
+
+const buildWechatDraftTitle = (record: ReturnType<typeof mapEpisodeDetail>) =>
+  truncateByCodePoints((record.title.trim() || `极客日报#${record.episodeNumber}`).trim(), 32);
+
+const buildWechatDraftAuthor = (editors: string[]) => truncateByCodePoints((editors.join('、') || 'Rebase').trim(), 16);
+
+const buildWechatDraftDigest = (record: ReturnType<typeof mapEpisodeDetail>) =>
+  truncateByCodePoints((record.summary.trim() || buildGeekDailySummary({ items: record.items })).trim(), 128);
 
 const mapEpisodeDetail = (row: any, items: any[]) => ({
   id: row.id,
@@ -516,6 +535,79 @@ export const archiveAdminGeekDailyEpisode = async (id: string, actor: AuditActor
   });
 
   return getAdminGeekDailyEpisode(id);
+};
+
+export const createAdminGeekDailyWechatDraft = async (
+  id: string,
+  actor: AuditActor,
+): Promise<AdminGeekDailyWechatDraftRecord> => {
+  const current = await getAdminGeekDailyEpisode(id);
+  if (!current) {
+    throw notFound('GeekDaily episode not found');
+  }
+
+  if (current.status !== 'published') {
+    throw badRequest('only published GeekDaily episodes can create a WeChat draft');
+  }
+
+  const editorName = current.editors.length > 0 ? current.editors.join('、') : 'Rebase';
+  const wechatInput = {
+    episodeNumber: current.episodeNumber,
+    editorName,
+    bodyMarkdown: extractGeekDailyBodyNote(current.bodyMarkdown),
+    items: current.items,
+  };
+  const issue = getGeekDailyWechatGenerationIssue(wechatInput);
+  if (issue) {
+    throw badRequest('wechat draft generation failed validation', { issue });
+  }
+
+  const content = buildGeekDailyWechatHtml(wechatInput);
+  if (!content) {
+    throw badRequest('wechat draft content is empty');
+  }
+
+  const site = await getPublicSiteConfig();
+  const title = buildWechatDraftTitle(current);
+  const author = buildWechatDraftAuthor(current.editors);
+  const digest = buildWechatDraftDigest(current);
+
+  const thumbMediaId = getEnv().wechatDefaultThumbMediaId.trim();
+  if (!thumbMediaId) {
+    throw serviceUnavailable('wechat default thumb media id is not configured', {
+      missing: ['WECHAT_DEFAULT_THUMB_MEDIA_ID'],
+    });
+  }
+
+  const contentSourceUrl = withBaseUrl(site.primaryDomain, getGeekDailyEpisodePath(current.episodeNumber));
+  const { mediaId } = await createWechatOfficialDraft({
+    title,
+    author,
+    digest,
+    content,
+    contentSourceUrl,
+    thumbMediaId,
+  });
+
+  await createAuditEntry({
+    ...actor,
+    action: 'geekdaily.wechat_draft.create',
+    targetType: 'geekdaily_episode',
+    targetId: id,
+    summary: `Created GeekDaily WeChat draft ${current.episodeNumber}`,
+  });
+
+  return {
+    episodeId: id,
+    episodeNumber: current.episodeNumber,
+    title,
+    author,
+    digest,
+    mediaId,
+    thumbMediaId,
+    contentSourceUrl,
+    itemCount: current.items.length,
+  };
 };
 
 export const listPublicGeekDailyEpisodes = async (limit = -1) => {

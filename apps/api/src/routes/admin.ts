@@ -26,7 +26,7 @@ import { createAdminArticle, getAdminArticle, listAdminArticles, publishAdminArt
 import { createAdminAsset, deleteAdminAsset, getAdminAsset, getAdminAssetUploadConfig, listAdminAssets, updateAdminAsset, uploadAdminAsset } from '../lib/assets.js';
 import { createAdminContributor, createAdminContributorRole, getAdminContributor, listAdminContributorRoles, listAdminContributors, updateAdminContributor, updateAdminContributorRole } from '../lib/contributors.js';
 import { createAdminEvent, getAdminEvent, listAdminEvents, publishAdminEvent, updateAdminEvent, archiveAdminEvent } from '../lib/events.js';
-import { createAdminGeekDailyEpisode, getAdminGeekDailyEpisode, listAdminGeekDailyEpisodes, publishAdminGeekDailyEpisode, updateAdminGeekDailyEpisode, archiveAdminGeekDailyEpisode } from '../lib/geekdaily.js';
+import { createAdminGeekDailyEpisode, createAdminGeekDailyWechatDraft, getAdminGeekDailyEpisode, listAdminGeekDailyEpisodes, publishAdminGeekDailyEpisode, updateAdminGeekDailyEpisode, archiveAdminGeekDailyEpisode } from '../lib/geekdaily.js';
 import { badRequest } from '../lib/errors.js';
 import { handleApiError, jsonError, ok } from '../lib/http.js';
 import { createAdminJob, getAdminJob, listAdminJobs, publishAdminJob, updateAdminJob, archiveAdminJob } from '../lib/jobs.js';
@@ -217,6 +217,9 @@ adminRoutes.patch('/geekdaily/:id', requireActiveStaff('geekdaily.write'), async
   const payload = expectValid(c, validateGeekDailyEpisodeInput(await c.req.json().catch(() => null)));
   return c.json(ok(await updateAdminGeekDailyEpisode(c.req.param('id'), payload, getAuditActor(c))));
 });
+adminRoutes.post('/geekdaily/:id/wechat-draft', requireActiveStaff('geekdaily.publish'), async (c) =>
+  c.json(ok(await createAdminGeekDailyWechatDraft(c.req.param('id'), getAuditActor(c)))),
+);
 adminRoutes.post('/geekdaily/:id/publish', requireActiveStaff('geekdaily.publish'), async (c) => c.json(ok(await publishAdminGeekDailyEpisode(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.post('/geekdaily/:id/archive', requireActiveStaff('geekdaily.publish'), async (c) => c.json(ok(await archiveAdminGeekDailyEpisode(c.req.param('id'), getAuditActor(c)))));
 
