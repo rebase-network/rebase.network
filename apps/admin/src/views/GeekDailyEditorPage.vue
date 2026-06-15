@@ -6,6 +6,7 @@ import {
   extractGeekDailyBodyNote,
   type AdminGeekDailyListItem,
   type AdminGeekDailyRecord,
+  type AdminGeekDailyWechatDraftRecord,
   type AdminMePayload,
 } from '@rebase/shared';
 
@@ -54,9 +55,11 @@ const record = ref<AdminGeekDailyRecord | null>(null);
 const loading = ref(true);
 const saving = ref(false);
 const actioning = ref(false);
+const wechatDrafting = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const fieldIssues = ref<Record<string, string>>({});
+const wechatDraftResult = ref<AdminGeekDailyWechatDraftRecord | null>(null);
 const suggestedEpisodeNumber = ref(1);
 const currentStaffName = ref('');
 const activeWechatTab = ref<'preview' | 'source'>('preview');
@@ -75,13 +78,14 @@ const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft')
 const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'button-primary'].filter(Boolean).join(' '));
 const canPublish = computed(() => form.status !== 'published');
 const canArchive = computed(() => Boolean(record.value) && form.status !== 'archived');
+const canCreateWechatDraft = computed(() => Boolean(record.value) && form.status === 'published' && !wechatGenerationIssue.value);
 const workflowHint = computed(() => {
   if (isNew.value) {
     return '可先保存草稿，也可直接发布；右侧可继续复制微信公众号内容。';
   }
 
   if (form.status === 'published') {
-    return '已发布内容保存后会直接更新前台；右侧微信稿会同步更新。';
+    return '已发布内容保存后会直接更新前台；可继续复制微信稿，也可直接创建公众号草稿。';
   }
 
   if (form.status === 'archived') {
@@ -164,6 +168,7 @@ const resetFeedback = () => {
   errorMessage.value = '';
   successMessage.value = '';
   fieldIssues.value = {};
+  wechatDraftResult.value = null;
 };
 
 const setCopyFeedback = (message: string) => {
@@ -309,6 +314,26 @@ const persist = async (nextStatus: GeekDailyFormState['status'], mode: 'save' | 
 const save = async () => persist(form.status === 'published' ? 'published' : form.status === 'archived' ? 'archived' : 'draft', 'save');
 const publish = async () => persist('published', 'publish');
 
+const createWechatDraft = async () => {
+  if (!record.value) {
+    return;
+  }
+
+  wechatDrafting.value = true;
+  resetFeedback();
+  try {
+    const result = await adminRequest<AdminGeekDailyWechatDraftRecord>(`/api/admin/v1/geekdaily/${record.value.id}/wechat-draft`, {
+      method: 'POST',
+    });
+    wechatDraftResult.value = result;
+    successMessage.value = '已创建公众号草稿。';
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : '无法创建公众号草稿。';
+  } finally {
+    wechatDrafting.value = false;
+  }
+};
+
 const runAction = async (action: 'archive') => {
   if (!record.value) {
     return;
@@ -355,6 +380,15 @@ onBeforeUnmount(() => {
         <button :class="saveButtonClass" type="button" :disabled="loading || saving || actioning" @click="save">
           {{ saving ? '保存中…' : saveButtonLabel }}
         </button>
+        <button
+          v-if="canCreateWechatDraft"
+          class="button-link"
+          type="button"
+          :disabled="loading || saving || actioning || wechatDrafting"
+          @click="createWechatDraft"
+        >
+          {{ wechatDrafting ? '创建中…' : '创建公众号草稿' }}
+        </button>
         <button v-if="canPublish" class="button-link button-primary" type="button" :disabled="loading || saving || actioning" @click="publish">
           {{ actioning ? '发布中…' : '发布' }}
         </button>
@@ -364,6 +398,10 @@ onBeforeUnmount(() => {
 
     <div v-if="errorMessage" class="panel panel-danger"><p>{{ errorMessage }}</p></div>
     <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
+    <div v-if="wechatDraftResult" class="panel panel-success stacked-gap-tight">
+      <p>公众号草稿已创建。</p>
+      <p><strong>mediaId：</strong><code>{{ wechatDraftResult.mediaId }}</code></p>
+    </div>
     <div v-if="loading" class="panel"><p>正在准备极客日报编辑器…</p></div>
 
     <div v-else class="geekdaily-workspace">
