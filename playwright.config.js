@@ -2,8 +2,10 @@ const { defineConfig, devices } = require('@playwright/test');
 
 const smokeApiPort = Number.parseInt(process.env.SMOKE_API_PORT || '8789', 10);
 const smokeWebPort = Number.parseInt(process.env.SMOKE_WEB_PORT || '4324', 10);
+const smokeAdminPort = Number.parseInt(process.env.SMOKE_ADMIN_PORT || '5175', 10);
 const smokeApiBaseUrl = `http://127.0.0.1:${smokeApiPort}`;
 const smokeWebBaseUrl = `http://127.0.0.1:${smokeWebPort}`;
+const smokeAdminBaseUrl = `http://127.0.0.1:${smokeAdminPort}`;
 
 module.exports = defineConfig({
   testDir: './tests/smoke',
@@ -44,6 +46,12 @@ module.exports = defineConfig({
       url: smokeWebBaseUrl,
       reuseExistingServer: !process.env.CI,
       timeout: 240000,
+    },
+    {
+      command: `VITE_API_BASE_URL=${smokeApiBaseUrl} VITE_PUBLIC_SITE_BASE_URL=${smokeWebBaseUrl} pnpm --filter @rebase/admin exec vite --host 127.0.0.1 --port ${smokeAdminPort} --strictPort`,
+      url: `${smokeAdminBaseUrl}/login`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000,
     },
   ],
 });
