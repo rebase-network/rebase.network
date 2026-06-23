@@ -52,6 +52,7 @@ const article = ref<AdminArticleRecord | null>(null);
 const loading = ref(true);
 const saving = ref(false);
 const actioning = ref(false);
+const deleting = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const fieldIssues = ref<Record<string, string>>({});
@@ -66,6 +67,7 @@ const saveButtonLabel = computed(() => ((isNew.value || form.status === 'draft')
 const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'button-primary'].filter(Boolean).join(' '));
 const canPublish = computed(() => form.status !== 'published');
 const canArchive = computed(() => Boolean(article.value) && form.status !== 'archived');
+const canDelete = computed(() => Boolean(article.value) && form.status === 'archived');
 const hasIssue = (...paths: string[]) =>
   paths.some((path) => {
     if (fieldIssues.value[path]) {
@@ -212,6 +214,30 @@ const runAction = async (action: 'archive') => {
   }
 };
 
+const deleteArticle = async () => {
+  if (!article.value) {
+    return;
+  }
+
+  const confirmed = window.confirm(`确定删除文章“${article.value.title}”吗？此操作不可恢复。`);
+  if (!confirmed) {
+    return;
+  }
+
+  resetFeedback();
+  deleting.value = true;
+  try {
+    await adminRequest<{ id: string; title: string }>(`/api/admin/v1/articles/${article.value.id}`, {
+      method: 'DELETE',
+    });
+    await router.push('/articles');
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : '无法删除文章。';
+  } finally {
+    deleting.value = false;
+  }
+};
+
 watch(() => route.fullPath, () => void loadArticle());
 onMounted(() => void loadArticle());
 </script>
@@ -232,13 +258,16 @@ onMounted(() => void loadArticle());
 
       <div class="page-actions article-page-header-actions">
         <RouterLink class="button-link" to="/articles">返回列表</RouterLink>
-        <button :class="saveButtonClass" type="button" :disabled="loading || saving || actioning" @click="save">
+        <button :class="saveButtonClass" type="button" :disabled="loading || saving || actioning || deleting" @click="save">
           {{ saving ? '保存中…' : saveButtonLabel }}
         </button>
-        <button v-if="canPublish" class="button-link button-primary" type="button" :disabled="loading || saving || actioning" @click="publish">
+        <button v-if="canPublish" class="button-link button-primary" type="button" :disabled="loading || saving || actioning || deleting" @click="publish">
           {{ actioning ? '发布中…' : '发布' }}
         </button>
-        <button v-if="canArchive" class="button-link button-danger" type="button" :disabled="saving || actioning" @click="runAction('archive')">归档</button>
+        <button v-if="canArchive" class="button-link button-danger" type="button" :disabled="saving || actioning || deleting" @click="runAction('archive')">归档</button>
+        <button v-if="canDelete" class="button-link button-danger" type="button" :disabled="saving || actioning || deleting" @click="deleteArticle">
+          {{ deleting ? '删除中…' : '删除文章' }}
+        </button>
       </div>
     </header>
 

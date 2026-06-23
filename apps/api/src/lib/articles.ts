@@ -6,7 +6,7 @@ import type { AdminArticleListItem, ArticleInput, ContentStatus, PaginatedResult
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { listPublicAssetUrlsById } from './assets.js';
 import { getDb } from './db.js';
-import { notFound } from './errors.js';
+import { badRequest, notFound } from './errors.js';
 import { buildPaginatedMeta, resolvePagination, type PaginationInput } from './pagination.js';
 import { combineFilters, toContainsPattern } from './query-filters.js';
 import { ensurePublishedAt, parsePublicNumber, toIsoString } from './utils.js';
@@ -216,6 +216,33 @@ export const archiveAdminArticle = async (id: string, actor: AuditActor) => {
   });
 
   return mapArticleDetail(updated);
+};
+
+export const deleteAdminArticle = async (id: string, actor: AuditActor) => {
+  const db = getDb();
+  const current = await getAdminArticle(id);
+  if (!current) {
+    throw notFound('article not found');
+  }
+
+  if (current.status !== 'archived') {
+    throw badRequest('only archived articles can be deleted');
+  }
+
+  await db.delete(articles).where(eq(articles.id, id));
+
+  await createAuditEntry({
+    ...actor,
+    action: 'article.delete',
+    targetType: 'article',
+    targetId: current.id,
+    summary: `Deleted article ${current.title}`,
+  });
+
+  return {
+    id: current.id,
+    title: current.title,
+  };
 };
 
 export const listPublicArticles = async () => {

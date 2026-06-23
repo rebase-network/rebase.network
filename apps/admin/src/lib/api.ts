@@ -28,6 +28,7 @@ interface ApiSuccessResponse<T, M = Record<string, unknown>> {
 
 const adminMessageTranslations = new Map<string, string>([
   ['one or more fields failed validation', '有字段校验未通过，请检查标红项。'],
+  ['only archived articles can be deleted', '只有已归档的文章才允许删除。'],
   ['response payload is missing the data field', '响应数据缺少 data 字段。'],
   ['article not found', '未找到文章。'],
   ['asset not found', '未找到媒体文件。'],

@@ -11,7 +11,7 @@ import {
 } from '@rebase/shared';
 
 import PaginationBar from '../components/PaginationBar.vue';
-import { adminFetchWithMeta } from '../lib/api';
+import { adminFetchWithMeta, adminRequest } from '../lib/api';
 import { formatContentStatus, formatDateTime } from '../lib/format';
 import { getPublicSiteUrl } from '../lib/runtime-config';
 
@@ -22,7 +22,9 @@ const rows = ref<AdminArticleListItem[]>([]);
 const pagination = ref<PaginatedMeta | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
+const successMessage = ref('');
 const page = ref(1);
+const deletingArticleId = ref('');
 const statusFilterOpen = ref(false);
 const statusFilterRef = ref<HTMLElement | null>(null);
 
@@ -75,6 +77,35 @@ const loadRows = async () => {
     errorMessage.value = error instanceof Error ? error.message : '无法加载文章列表。';
   } finally {
     loading.value = false;
+  }
+};
+
+const deleteArticle = async (row: AdminArticleListItem) => {
+  const confirmed = window.confirm(`确定删除已归档文章“${row.title}”吗？此操作不可恢复。`);
+  if (!confirmed) {
+    return;
+  }
+
+  deletingArticleId.value = row.id;
+  errorMessage.value = '';
+  successMessage.value = '';
+
+  try {
+    await adminRequest<{ id: string; title: string }>(`/api/admin/v1/articles/${row.id}`, {
+      method: 'DELETE',
+    });
+    successMessage.value = `已删除文章：${row.title}`;
+
+    if (rows.value.length === 1 && page.value > 1) {
+      page.value -= 1;
+      return;
+    }
+
+    await loadRows();
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : '无法删除文章。';
+  } finally {
+    deletingArticleId.value = '';
   }
 };
 
@@ -157,6 +188,7 @@ onBeforeUnmount(() => {
     <div v-else-if="loading" class="panel"><p>正在加载文章列表…</p></div>
 
     <template v-else>
+      <div v-if="successMessage" class="panel panel-success"><p>{{ successMessage }}</p></div>
       <section class="panel admin-list-toolbar-panel">
         <div class="admin-list-toolbar-row">
           <div class="admin-list-toolbar-summary">
@@ -242,6 +274,15 @@ onBeforeUnmount(() => {
                 <div class="table-action-list admin-list-actions">
                   <RouterLink class="table-link" :to="`/articles/${row.id}/edit`">编辑</RouterLink>
                   <a class="table-link" :href="getArticlePreviewUrl(row.publicNumber, row.slug)" target="_blank" rel="noreferrer">前台预览</a>
+                  <button
+                    v-if="row.status === 'archived'"
+                    class="table-link table-link-button"
+                    type="button"
+                    :disabled="deletingArticleId === row.id"
+                    @click="deleteArticle(row)"
+                  >
+                    {{ deletingArticleId === row.id ? '删除中…' : '删除' }}
+                  </button>
                 </div>
               </td>
             </tr>
