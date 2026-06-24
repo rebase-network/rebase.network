@@ -261,6 +261,7 @@ export const formatAuditSummary = (summary: string) => {
     [/^Updated article (.+)$/i, (m) => `已更新文章 ${m[1]}`],
     [/^Published article (.+)$/i, (m) => `已发布文章 ${m[1]}`],
     [/^Archived article (.+)$/i, (m) => `已归档文章 ${m[1]}`],
+    [/^Deleted article (.+)$/i, (m) => `已删除文章 ${m[1]}`],
     [/^Created GeekDaily episode (.+)$/i, (m) => `已创建极客日报第 ${m[1]} 期`],
     [/^Updated GeekDaily episode (.+)$/i, (m) => `已更新极客日报第 ${m[1]} 期`],
     [/^Created GeekDaily WeChat draft (.+)$/i, (m) => `已创建极客日报第 ${m[1]} 期微信公众号草稿`],

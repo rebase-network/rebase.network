@@ -22,7 +22,7 @@ import {
 import { listAuditEntries } from '../lib/audit.js';
 import { getDashboardStats } from '../lib/access.js';
 import { maxAssetUploadBodyBytes } from '../lib/asset-storage.js';
-import { createAdminArticle, getAdminArticle, listAdminArticles, publishAdminArticle, updateAdminArticle, archiveAdminArticle } from '../lib/articles.js';
+import { archiveAdminArticle, createAdminArticle, deleteAdminArticle, getAdminArticle, listAdminArticles, publishAdminArticle, updateAdminArticle } from '../lib/articles.js';
 import { createAdminAsset, deleteAdminAsset, getAdminAsset, getAdminAssetUploadConfig, listAdminAssets, updateAdminAsset, uploadAdminAsset } from '../lib/assets.js';
 import { createAdminContributor, createAdminContributorRole, getAdminContributor, listAdminContributorRoles, listAdminContributors, updateAdminContributor, updateAdminContributorRole } from '../lib/contributors.js';
 import { createAdminEvent, getAdminEvent, listAdminEvents, publishAdminEvent, updateAdminEvent, archiveAdminEvent } from '../lib/events.js';
@@ -109,6 +109,7 @@ adminRoutes.patch('/articles/:id', requireActiveStaff('article.write'), async (c
 });
 adminRoutes.post('/articles/:id/publish', requireActiveStaff('article.publish'), async (c) => c.json(ok(await publishAdminArticle(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.post('/articles/:id/archive', requireActiveStaff('article.publish'), async (c) => c.json(ok(await archiveAdminArticle(c.req.param('id'), getAuditActor(c)))));
+adminRoutes.delete('/articles/:id', requireActiveStaff('article.publish'), async (c) => c.json(ok(await deleteAdminArticle(c.req.param('id'), getAuditActor(c)))));
 
 adminRoutes.get('/jobs', requireActiveStaff('job.read'), async (c) => {
   const result = await listAdminJobs({
