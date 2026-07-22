@@ -7,10 +7,24 @@ interface Props {
 
 const { site } = Astro.props;
 const pathname = Astro.url.pathname;
+const isHome = pathname === '/';
+const worldLabelMap: Record<string, string> = {
+  '/geekdaily': '极客日报',
+  '/who-is-hiring': 'Who is hiring',
+  '/articles': '文章',
+  '/events': '活动',
+  '/contributors': '贡献者们',
+  '/about': '关于Rebase',
+};
 ---
 
-<header class="site-header">
-  <div class="shell header-inner card">
+<header
+  class:list={['site-header', isHome && 'is-home-header']}
+  data-home-header={isHome ? '' : undefined}
+  aria-hidden={isHome ? 'true' : undefined}
+  inert={isHome}
+>
+  <div class="shell header-inner">
     <a class="brand" href="/" aria-label={`${site.name} 首页`}>
       <img
         class="brand-logo"
@@ -19,10 +33,7 @@ const pathname = Astro.url.pathname;
         width="225"
         height="101"
       />
-      <span class="brand-copy">
-        <strong>{site.name}</strong>
-        <small>{site.tagline}</small>
-      </span>
+      <span class="brand-copy">Rebase World</span>
     </a>
 
     <nav aria-label="主导航">
@@ -32,7 +43,7 @@ const pathname = Astro.url.pathname;
           return (
             <li>
               <a class={active ? 'active' : undefined} href={item.href}>
-                {item.label}
+                {worldLabelMap[item.href] ?? item.label}
               </a>
             </li>
           );
@@ -42,12 +53,65 @@ const pathname = Astro.url.pathname;
   </div>
 </header>
 
+<script>
+  const homeHeader = document.querySelector<HTMLElement>('[data-home-header]');
+  const homeHero = document.querySelector<HTMLElement>('.world-hero');
+  const heroNavigation = document.querySelector<HTMLElement>('[data-hero-navigation]');
+
+  if (homeHeader && homeHero && heroNavigation) {
+    let frameRequested = false;
+
+    const updateNavigationState = () => {
+      const handoffPoint = homeHero.offsetHeight * 0.5;
+      const showHeader = window.scrollY > handoffPoint;
+
+      homeHeader.classList.toggle('is-visible', showHeader);
+      homeHeader.toggleAttribute('inert', !showHeader);
+      homeHeader.setAttribute('aria-hidden', String(!showHeader));
+      heroNavigation.classList.toggle('is-departing', showHeader);
+      heroNavigation.toggleAttribute('inert', showHeader);
+      heroNavigation.setAttribute('aria-hidden', String(showHeader));
+      frameRequested = false;
+    };
+
+    const requestNavigationUpdate = () => {
+      if (frameRequested) return;
+      frameRequested = true;
+      window.requestAnimationFrame(updateNavigationState);
+    };
+
+    window.addEventListener('scroll', requestNavigationUpdate, { passive: true });
+    window.addEventListener('resize', requestNavigationUpdate);
+    updateNavigationState();
+  }
+</script>
+
 <style>
   .site-header {
-    position: sticky;
+    position: absolute;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 20;
-    padding: 0.75rem 0 0;
+    padding: 0.8rem 0 0;
+  }
+
+  :global(.site-header[data-home-header]) {
+    position: fixed;
+    z-index: 50;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-1rem);
+    pointer-events: none;
+    transition: opacity 260ms ease, transform 260ms ease, visibility 0s linear 260ms;
+  }
+
+  :global(.site-header[data-home-header].is-visible) {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    transition-delay: 0s;
   }
 
   .header-inner {
@@ -55,53 +119,44 @@ const pathname = Astro.url.pathname;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.82rem 1rem;
-    background: rgba(255, 253, 248, 0.86);
-    box-shadow: var(--shadow-soft);
+    min-height: 4.25rem;
+    padding: 0.64rem 0.8rem 0.64rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.54);
+    border-radius: 1rem;
+    background: rgba(247, 252, 238, 0.72);
+    box-shadow: 0 8px 28px rgba(41, 88, 74, 0.1);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
   }
 
   .brand {
     display: flex;
     align-items: center;
-    gap: 0.9rem;
+    gap: 0.72rem;
     min-width: 0;
   }
 
   .brand-logo {
     display: block;
-    width: clamp(6.4rem, 10vw, 7.6rem);
+    width: clamp(6.1rem, 9vw, 7.2rem);
     height: auto;
     flex: none;
   }
 
   .brand-copy {
-    display: grid;
-    gap: 0.16rem;
-    min-width: 0;
-  }
-
-  strong,
-  small {
-    display: block;
-  }
-
-  strong {
-    font-size: 0.98rem;
-    letter-spacing: 0.02em;
-  }
-
-  small {
-    max-width: 32ch;
-    color: var(--muted);
-    font-size: 0.82rem;
-    line-height: 1.4;
+    padding-left: 0.72rem;
+    border-left: 1px solid rgba(75, 50, 31, 0.18);
+    color: #456548;
+    font-size: 0.76rem;
+    font-weight: 700;
+    white-space: nowrap;
   }
 
   nav ul {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
-    gap: 0.5rem;
+    gap: 0.15rem;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -110,27 +165,28 @@ const pathname = Astro.url.pathname;
   nav a {
     display: inline-flex;
     align-items: center;
-    padding: 0.56rem 0.78rem;
+    padding: 0.58rem 0.72rem;
     border-radius: 999px;
-    color: var(--muted);
-    font-size: 0.94rem;
+    color: #4f6352;
+    font-size: 0.9rem;
     font-weight: 600;
     transition: background 160ms ease, color 160ms ease, transform 160ms ease;
   }
 
   nav a:hover,
   nav a.active {
-    background: rgba(15, 118, 110, 0.09);
-    color: var(--accent-strong);
+    background: rgba(255, 253, 244, 0.78);
+    color: #2f6f39;
     transform: none;
   }
 
   @media (max-width: 920px) {
     .header-inner {
+      min-height: auto;
       flex-direction: column;
       align-items: stretch;
-      gap: 0.75rem;
-      padding: 0.9rem 1rem;
+      gap: 0.55rem;
+      padding: 0.72rem 0.8rem;
     }
 
     .brand {
@@ -141,7 +197,7 @@ const pathname = Astro.url.pathname;
       width: 6.3rem;
     }
 
-    small {
+    .brand-copy {
       display: none;
     }
 
@@ -167,6 +223,14 @@ const pathname = Astro.url.pathname;
 
     nav a {
       white-space: nowrap;
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .header-inner {
+      background: #f7fcee;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
   }
 </style>

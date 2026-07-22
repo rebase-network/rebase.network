@@ -2,6 +2,7 @@
 import ArticleCard from '@/components/ArticleCard.astro';
 import EventCard from '@/components/EventCard.astro';
 import GeekDailyCard from '@/components/GeekDailyCard.astro';
+import HeroNavIcon from '@/components/HeroNavIcon.astro';
 import JobCard from '@/components/JobCard.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
@@ -21,6 +22,15 @@ const liveWireTypeLabel = {
   event: '活动',
   geekdaily: 'GeekDaily',
 } as const;
+
+const heroNavigation = [
+  { href: '/geekdaily', label: '极客日报', icon: 'newspaper' },
+  { href: '/who-is-hiring', label: 'Who is hiring', icon: 'briefcase' },
+  { href: '/articles', label: '文章', icon: 'pencil' },
+  { href: '/events', label: '活动', icon: 'calendar' },
+  { href: '/contributors', label: '贡献者们', icon: 'users' },
+  { href: '/about', label: '关于Rebase', icon: 'info' },
+] as const;
 ---
 
 <BaseLayout site={site} title="Rebase 社区首页" description={site.description}>
@@ -41,7 +51,18 @@ const liveWireTypeLabel = {
       <p class="world-kicker">欢迎来到</p>
       <h1 id="world-title">Rebase</h1>
       <p class="world-intro">由中国开发者用热爱和业余时间共同维护的公益开发者社区</p>
-      <a class="world-cta" href={site.heroPrimaryCtaUrl}>进入社区</a>
+      <nav class="hero-navigation" data-hero-navigation aria-label="社区主要入口">
+        <ul>
+          {heroNavigation.map((item) => (
+            <li>
+              <a href={item.href}>
+                <HeroNavIcon name={item.icon} />
+                <span class="hero-nav-label">{item.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </div>
   </section>
 
@@ -241,7 +262,7 @@ const liveWireTypeLabel = {
     z-index: 20;
     display: grid;
     justify-items: center;
-    width: min(calc(100% - 2rem), 52rem);
+    width: min(calc(100% - 2rem), 56rem);
     margin: 0 auto;
     padding-top: clamp(9rem, 20vh, 12rem);
     text-align: center;
@@ -271,34 +292,57 @@ const liveWireTypeLabel = {
     line-height: 1.8;
   }
 
-  .world-cta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 3rem;
-    margin-top: 1.35rem;
-    padding: 0.8rem 1.35rem;
-    border: 1px solid rgba(255, 255, 255, 0.62);
-    border-radius: 999px;
-    background: rgba(255, 253, 244, 0.88);
-    color: #315e37;
-    font-weight: 800;
-    text-shadow: none;
-    box-shadow: 0 8px 0 rgba(44, 99, 70, 0.17);
-    backdrop-filter: blur(10px);
-    transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease;
+  .hero-navigation {
+    justify-self: stretch;
+    width: 100%;
+    max-width: 48rem;
+    margin-inline: auto;
+    margin-top: clamp(1.65rem, 4vh, 2.4rem);
+    padding-top: clamp(1rem, 2.4vh, 1.4rem);
+    transition: opacity 260ms ease, transform 260ms ease, visibility 0s linear 0s;
   }
 
-  .world-cta:hover,
-  .world-cta:focus-visible {
-    transform: translateY(-2px);
-    background: #fffdf4;
-    box-shadow: 0 10px 0 rgba(44, 99, 70, 0.14);
+  .hero-navigation:global(.is-departing) {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(0.8rem);
+    pointer-events: none;
+    transition-delay: 0s, 0s, 260ms;
   }
 
-  .world-cta:active {
-    transform: translateY(1px);
-    box-shadow: 0 4px 0 rgba(44, 99, 70, 0.17);
+  .hero-navigation ul {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: clamp(0.35rem, 1.4vw, 1rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hero-navigation a {
+    display: grid;
+    min-width: 0;
+    min-height: 5rem;
+    place-items: center;
+    align-content: center;
+    gap: 0.55rem;
+    color: rgba(255, 255, 255, 0.96);
+    font-size: clamp(0.78rem, 1.5vw, 0.94rem);
+    font-weight: 700;
+    line-height: 1.2;
+    text-shadow: 0 2px 8px rgba(21, 80, 112, 0.34);
+    transition: color 180ms ease, transform 180ms ease;
+  }
+
+  .hero-navigation a:hover,
+  .hero-navigation a:focus-visible {
+    color: #fff6aa;
+    transform: translateY(-0.22rem);
+  }
+
+  .hero-nav-label {
+    min-width: 0;
+    white-space: nowrap;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -314,16 +358,19 @@ const liveWireTypeLabel = {
   @keyframes hero-flowers { from { rotate: -0.28deg; } to { rotate: 0.36deg; } }
 
   @media (max-width: 920px) {
-    .world-hero { min-height: 47rem; }
-    .world-hero-content { padding-top: 10rem; }
+    .world-hero { min-height: min(47rem, 100svh); }
+    .world-hero-content { padding-top: 8.5rem; }
     .hero-layer { object-position: 58% center; }
   }
 
   @media (max-width: 640px) {
-    .world-hero { min-height: 42rem; }
-    .world-hero-content { padding-top: 9.5rem; }
+    .world-hero { min-height: min(44rem, 100svh); }
+    .world-hero-content { width: min(calc(100% - 1rem), 56rem); padding-top: 7rem; }
     .world-hero h1 { font-size: clamp(4.4rem, 22vw, 6rem); }
     .world-intro { max-width: 23rem; padding: 0 1rem; font-size: 1rem; }
+    .hero-navigation { margin-top: 1.35rem; padding-top: 0.9rem; }
+    .hero-navigation ul { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35rem 0.2rem; }
+    .hero-navigation a { min-height: 4.35rem; gap: 0.4rem; font-size: 0.76rem; }
     .hero-layer { object-position: 66% center; }
     .hero-sky-layer,
     .hero-clouds-back,
