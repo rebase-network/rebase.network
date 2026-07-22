@@ -35,9 +35,6 @@ const liveWireTypeLabel = {
       <img class="hero-layer hero-grass-back" src="/media/hero/nature/summer/grass-back.png" alt="" width="1536" height="864" style="transform:translateY(16%)" />
       <img class="hero-layer hero-flowers" src="/media/hero/nature/summer/flowers.png" alt="" width="1536" height="864" style="scale:1 0.68" />
       <img class="hero-layer hero-ground-shadow" src="/media/hero/nature/summer/ground-shadow.png" alt="" width="1536" height="864" />
-      <img class="hero-layer hero-mascot" src="/media/hero/nature/summer/mascot.png" alt="" width="1536" height="864" style="scale:0.86" />
-      <img class="hero-layer hero-grass-front" src="/media/hero/nature/summer/grass-front.png" alt="" width="1536" height="864" style="scale:1 0.52" />
-      <img class="hero-layer hero-leaves" src="/media/hero/nature/summer/leaf-particles.png" alt="" width="1536" height="864" style="scale:0.68" />
     </div>
 
     <div class="world-hero-content">
@@ -230,9 +227,6 @@ const liveWireTypeLabel = {
   .hero-grass-back { z-index: 6; transform: translateY(16%); }
   .hero-flowers { z-index: 8; scale: 1 0.68; transform-origin: 50% 100%; }
   .hero-ground-shadow { z-index: 9; }
-  .hero-mascot { z-index: 12; scale: 0.86; transform-origin: 67% 91%; }
-  .hero-grass-front { z-index: 13; scale: 1 0.52; transform-origin: 50% 100%; }
-  .hero-leaves { z-index: 14; scale: 0.68; opacity: 0.42; }
 
   .hero-scene::after {
     content: '';
@@ -312,18 +306,12 @@ const liveWireTypeLabel = {
     .hero-clouds-front { animation: hero-clouds-front 48s ease-in-out infinite alternate; }
     .hero-light-rays { animation: hero-light 9s ease-in-out infinite; }
     .hero-flowers { animation: hero-flowers 5.2s ease-in-out infinite alternate; }
-    .hero-mascot { animation: hero-mascot-breathe 4.8s ease-in-out infinite; }
-    .hero-grass-front { animation: hero-grass 6.2s ease-in-out infinite alternate; }
-    .hero-leaves { animation: hero-leaves 19s ease-in-out infinite alternate; }
   }
 
   @keyframes hero-clouds-back { from { transform: translate3d(-1.2%, 0, 0) scale(1.025); } to { transform: translate3d(1.2%, 0, 0) scale(1.025); } }
   @keyframes hero-clouds-front { from { transform: translate3d(1.8%, 0, 0) scale(1.04); } to { transform: translate3d(-1.8%, 0, 0) scale(1.04); } }
   @keyframes hero-light { 0%, 100% { opacity: 0.26; } 50% { opacity: 0.48; } }
   @keyframes hero-flowers { from { rotate: -0.28deg; } to { rotate: 0.36deg; } }
-  @keyframes hero-mascot-breathe { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-0.35%) scale(1.008); } }
-  @keyframes hero-grass { from { rotate: -0.22deg; } to { rotate: 0.3deg; } }
-  @keyframes hero-leaves { from { transform: translate3d(-0.8%, -0.7%, 0) rotate(-0.4deg); } to { transform: translate3d(1.1%, 0.9%, 0) rotate(0.6deg); } }
 
   @media (max-width: 920px) {
     .world-hero { min-height: 47rem; }
@@ -344,9 +332,7 @@ const liveWireTypeLabel = {
     .hero-mountains,
     .hero-valley,
     .hero-grass-back,
-    .hero-flowers,
-    .hero-grass-front,
-    .hero-leaves { object-position: center; }
+    .hero-flowers { object-position: center; }
   }
 
   .home-hero {
