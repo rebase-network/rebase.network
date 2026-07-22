@@ -35,7 +35,8 @@ const heroNavigation = [
 ---
 
 <BaseLayout site={site} title="Rebase 社区首页" description={site.description}>
-  <section class="world-hero" aria-labelledby="world-title">
+  <div class="hero-scroll-stage">
+    <section class="world-hero" aria-labelledby="world-title">
     <div class="hero-scene" data-hero-scene aria-hidden="true">
       <div class="hero-plane hero-plane-sky" data-hero-depth="0.08">
         <img class="hero-layer hero-sky-layer" src="/media/hero/nature/summer/sky.png" alt="" width="1536" height="864" fetchpriority="high" />
@@ -64,28 +65,36 @@ const heroNavigation = [
     </div>
 
     <div class="world-hero-content">
-      <h1 id="world-title" class="hero-brand">
-        <span class="hero-logo-lockup">
-          <RebaseLogo class="hero-brand-logo" role="img" aria-label="Rebase" />
-        </span>
-      </h1>
-      <p class="world-intro">由中国开发者们在业余时间用热爱建立的开发者社区</p>
-      <nav class="hero-navigation" data-hero-navigation aria-label="社区主要入口">
-        <ul>
-          {heroNavigation.map((item) => (
-            <li>
-              <a href={item.href}>
-                <HeroNavIcon name={item.icon} />
-                <span class="hero-nav-label">{item.label}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <div class="hero-copy" data-hero-copy>
+        <h1 id="world-title" class="hero-brand">
+          <span class="hero-logo-lockup">
+            <RebaseLogo class="hero-brand-logo" role="img" aria-label="Rebase" />
+          </span>
+        </h1>
+        <p class="world-intro">由中国开发者们在业余时间用热爱建立的开发者社区</p>
+      </div>
+      <div class="hero-navigation-stage">
+        <div class="hero-navigation-reveal" data-hero-navigation-reveal>
+          <nav class="hero-navigation" data-hero-navigation data-intro-visible="false" aria-label="社区主要入口">
+            <ul>
+              {heroNavigation.map((item) => (
+                <li>
+                  <a href={item.href}>
+                    <HeroNavIcon name={item.icon} />
+                    <span class="hero-nav-label">{item.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </div>
     </div>
-  </section>
+    </section>
+  </div>
 
-  <section class="shell page-section current-desk" aria-label="社区正在发生什么">
+  <div class="home-modules">
+    <section class="shell page-section current-desk" aria-label="社区正在发生什么">
     <aside class="signal-panel card live-desk">
       <SectionHeader compact title="社区正在发生什么" />
       <ol class="live-wire-list">
@@ -229,9 +238,15 @@ const heroNavigation = [
       </div>
     </article>
   </section>
+  </div>
 </BaseLayout>
 
 <script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
   const hero = document.querySelector<HTMLElement>('.world-hero');
   const scene = document.querySelector<HTMLElement>('[data-hero-scene]');
   const planes = Array.from(document.querySelectorAll<HTMLElement>('[data-hero-depth]'));
@@ -301,11 +316,60 @@ const heroNavigation = [
     window.addEventListener('blur', resetTilt);
     window.addEventListener('scroll', resetTilt, { passive: true });
   }
+
+  const heroCopy = document.querySelector<HTMLElement>('[data-hero-copy]');
+  const heroNavigation = document.querySelector<HTMLElement>('[data-hero-navigation]');
+  const heroNavigationReveal = document.querySelector<HTMLElement>('[data-hero-navigation-reveal]');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (hero && heroCopy && heroNavigation && heroNavigationReveal) {
+    const syncNavigationAccess = (visible: boolean) => {
+      const nextValue = String(visible);
+      if (heroNavigation.dataset.introVisible === nextValue) return;
+
+      heroNavigation.dataset.introVisible = nextValue;
+      window.dispatchEvent(new Event('hero-navigation-visibility'));
+    };
+
+    ScrollTrigger.getById('hero-navigation-intro')?.kill();
+
+    if (reduceMotion) {
+      heroCopy.classList.add('is-lifted');
+      heroNavigationReveal.classList.add('is-visible');
+      syncNavigationAccess(true);
+    } else {
+      gsap.set(heroNavigationReveal, { autoAlpha: 0, y: 28 });
+      syncNavigationAccess(false);
+
+      gsap
+        .timeline({
+          defaults: { ease: 'power2.out' },
+          scrollTrigger: {
+            id: 'hero-navigation-intro',
+            trigger: hero,
+            start: 'top top',
+            end: () => `+=${Math.min(120, hero.offsetHeight * 0.16)}`,
+            scrub: 0.45,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => syncNavigationAccess(self.progress > 0.56),
+          },
+        })
+        .to(heroCopy, { yPercent: -24, duration: 0.62 })
+        .to(heroNavigationReveal, { autoAlpha: 1, y: 0, duration: 0.38 }, '-=0.04');
+    }
+  }
 </script>
 
 <style>
+  .hero-scroll-stage {
+    height: calc(100svh + min(120px, 16svh));
+    background: #62bce7;
+  }
+
   .world-hero {
-    position: relative;
+    position: sticky;
+    top: 0;
+    height: 100svh;
     isolation: isolate;
     min-height: min(52rem, 100dvh);
     overflow: hidden;
@@ -361,15 +425,22 @@ const heroNavigation = [
   }
 
   .world-hero-content {
-    position: relative;
+    position: absolute;
+    inset: 0;
     z-index: 20;
     display: grid;
+    place-items: center;
     justify-items: center;
     width: min(calc(100% - 2rem), 56rem);
     margin: 0 auto;
-    padding-top: clamp(9rem, 20vh, 12rem);
     text-align: center;
     text-shadow: 0 3px 18px rgba(24, 94, 126, 0.3);
+  }
+
+  .hero-copy {
+    grid-area: 1 / 1;
+    width: 100%;
+    will-change: transform;
   }
 
   .hero-brand {
@@ -397,19 +468,38 @@ const heroNavigation = [
 
   .world-intro {
     max-width: 30ch;
-    margin: 1rem 0 0;
+    margin: 1rem auto 0;
     font-size: clamp(1rem, 2vw, 1.24rem);
     line-height: 1.8;
   }
 
   .hero-navigation {
-    justify-self: stretch;
     width: 100%;
     max-width: 48rem;
     margin-inline: auto;
-    margin-top: clamp(1.65rem, 4vh, 2.4rem);
-    padding-top: clamp(1rem, 2.4vh, 1.4rem);
     transition: opacity 260ms ease, transform 260ms ease, visibility 0s linear 0s;
+  }
+
+  .hero-navigation-stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    transform: translate(-50%, clamp(7.5rem, 18vh, 9rem));
+  }
+
+  .hero-navigation-reveal {
+    visibility: hidden;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(1.75rem);
+    will-change: transform, opacity;
+  }
+
+  .hero-navigation-reveal.is-visible {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
   }
 
   .hero-navigation:global(.is-departing) {
@@ -489,16 +579,15 @@ const heroNavigation = [
 
   @media (max-width: 920px) {
     .world-hero { min-height: min(47rem, 100svh); }
-    .world-hero-content { padding-top: 8.5rem; }
     .hero-layer { object-position: 58% center; }
   }
 
   @media (max-width: 640px) {
     .world-hero { min-height: min(44rem, 100svh); }
-    .world-hero-content { width: min(calc(100% - 1rem), 56rem); padding-top: 7rem; }
+    .world-hero-content { width: min(calc(100% - 1rem), 56rem); }
     .hero-logo-lockup { width: min(82vw, 20rem); }
     .world-intro { max-width: 23rem; padding: 0 1rem; font-size: 1rem; }
-    .hero-navigation { margin-top: 1.35rem; padding-top: 0.9rem; }
+    .hero-navigation-stage { transform: translate(-50%, clamp(6.25rem, 15vh, 7.25rem)); }
     .hero-navigation ul { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35rem 0.2rem; }
     .hero-navigation a { min-height: 4.35rem; gap: 0.4rem; font-size: 0.76rem; }
     .hero-layer { object-position: 66% center; }
@@ -517,6 +606,10 @@ const heroNavigation = [
       transform: none;
       will-change: auto;
     }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-copy.is-lifted { transform: translateY(-24%); }
   }
 
   .home-hero {

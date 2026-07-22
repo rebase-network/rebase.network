@@ -56,21 +56,26 @@ const worldLabelMap: Record<string, string> = {
 <script>
   const homeHeader = document.querySelector<HTMLElement>('[data-home-header]');
   const homeHero = document.querySelector<HTMLElement>('.world-hero');
+  const heroScrollStage = document.querySelector<HTMLElement>('.hero-scroll-stage');
   const heroNavigation = document.querySelector<HTMLElement>('[data-hero-navigation]');
 
   if (homeHeader && homeHero && heroNavigation) {
     let frameRequested = false;
 
     const updateNavigationState = () => {
-      const handoffPoint = homeHero.offsetHeight * 0.5;
+      const introScrollDistance = heroScrollStage
+        ? Math.max(0, heroScrollStage.offsetHeight - homeHero.offsetHeight)
+        : 0;
+      const handoffPoint = introScrollDistance + homeHero.offsetHeight * 0.5;
       const showHeader = window.scrollY > handoffPoint;
+      const showHeroNavigation = heroNavigation.dataset.introVisible === 'true' && !showHeader;
 
       homeHeader.classList.toggle('is-visible', showHeader);
       homeHeader.toggleAttribute('inert', !showHeader);
       homeHeader.setAttribute('aria-hidden', String(!showHeader));
       heroNavigation.classList.toggle('is-departing', showHeader);
-      heroNavigation.toggleAttribute('inert', showHeader);
-      heroNavigation.setAttribute('aria-hidden', String(showHeader));
+      heroNavigation.toggleAttribute('inert', !showHeroNavigation);
+      heroNavigation.setAttribute('aria-hidden', String(!showHeroNavigation));
       frameRequested = false;
     };
 
@@ -82,6 +87,7 @@ const worldLabelMap: Record<string, string> = {
 
     window.addEventListener('scroll', requestNavigationUpdate, { passive: true });
     window.addEventListener('resize', requestNavigationUpdate);
+    window.addEventListener('hero-navigation-visibility', requestNavigationUpdate);
     updateNavigationState();
   }
 </script>

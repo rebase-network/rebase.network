@@ -1,5 +1,6 @@
 ---
 import '@/styles/global.css';
+import '@/styles/nature-theme.css';
 import type { SiteSettings } from '@rebase/types';
 import SiteFooter from '@/components/SiteFooter.astro';
 import SiteHeader from '@/components/SiteHeader.astro';
@@ -10,6 +11,7 @@ interface Props {
   description?: string;
   socialImage?: string;
   noindex?: boolean;
+  hideFooter?: boolean;
 }
 
 const {
@@ -18,12 +20,27 @@ const {
   description = site.description,
   socialImage,
   noindex = false,
+  hideFooter = false,
 } = Astro.props;
 
 const canonicalPath = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/+$/, '');
 const canonicalUrl = new URL(canonicalPath, site.primaryDomain).toString();
 const socialImageUrl = new URL(socialImage ?? '/social-card.svg', site.primaryDomain).toString();
 const robots = noindex ? 'noindex, nofollow' : 'index, follow';
+const pathname = Astro.url.pathname;
+const world = pathname.startsWith('/geekdaily')
+  ? 'noticeboard'
+  : pathname.startsWith('/articles')
+    ? 'library'
+    : pathname.startsWith('/who-is-hiring')
+      ? 'station'
+      : pathname.startsWith('/events')
+        ? 'plaza'
+        : pathname.startsWith('/contributors')
+          ? 'camp'
+          : pathname.startsWith('/about')
+            ? 'meadow'
+            : 'nature';
 ---
 
 <!doctype html>
@@ -49,17 +66,18 @@ const robots = noindex ? 'noindex, nofollow' : 'index, follow';
     <link rel="icon" type="image/svg+xml" href="/brand/rebase-logo-square.svg" />
     <link rel="alternate" type="application/rss+xml" title="Rebase RSS" href="/rss.xml" />
   </head>
-  <body>
+  <body class="nature-theme" data-world={world}>
     <SiteHeader site={site} />
     <main class="page-main">
       <slot />
     </main>
-    <SiteFooter site={site} />
+    {!hideFooter && <SiteFooter site={site} />}
   </body>
 </html>
 
 <style>
   .page-main {
-    padding-top: 1.25rem;
+    position: relative;
+    z-index: 1;
   }
 </style>
