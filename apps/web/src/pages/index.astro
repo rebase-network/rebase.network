@@ -243,9 +243,9 @@ const heroNavigation = [
 
 <script>
   import { gsap } from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { Observer } from 'gsap/Observer';
 
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(Observer);
 
   const hero = document.querySelector<HTMLElement>('.world-hero');
   const scene = document.querySelector<HTMLElement>('[data-hero-scene]');
@@ -331,8 +331,6 @@ const heroNavigation = [
       window.dispatchEvent(new Event('hero-navigation-visibility'));
     };
 
-    ScrollTrigger.getById('hero-navigation-intro')?.kill();
-
     if (reduceMotion) {
       heroCopy.classList.add('is-lifted');
       heroNavigationReveal.classList.add('is-visible');
@@ -341,34 +339,72 @@ const heroNavigation = [
       gsap.set(heroNavigationReveal, { autoAlpha: 0, y: 28 });
       syncNavigationAccess(false);
 
-      gsap
+      const introTimeline = gsap
         .timeline({
+          paused: true,
           defaults: { ease: 'power2.out' },
-          scrollTrigger: {
-            id: 'hero-navigation-intro',
-            trigger: hero,
-            start: 'top top',
-            end: () => `+=${Math.min(120, hero.offsetHeight * 0.16)}`,
-            scrub: 0.45,
-            invalidateOnRefresh: true,
-            onUpdate: (self) => syncNavigationAccess(self.progress > 0.56),
-          },
+          onUpdate: () => syncNavigationAccess(introTimeline.progress() > 0.56),
+          onComplete: () => gestureObserver.disable(),
+          onReverseComplete: () => syncNavigationAccess(false),
         })
         .to(heroCopy, { yPercent: -24, duration: 0.62 })
         .to(heroNavigationReveal, { autoAlpha: 1, y: 0, duration: 0.38 }, '-=0.04');
+
+      const playIntro = () => {
+        if (!introTimeline.isActive() && introTimeline.progress() < 1) {
+          introTimeline.play();
+        }
+      };
+
+      const gestureObserver = Observer.create({
+        target: window,
+        type: 'wheel,touch,pointer',
+        preventDefault: true,
+        tolerance: 12,
+        onUp: playIntro,
+        onDown: playIntro,
+      });
+
+      const handleLockedNavigationKey = (event: KeyboardEvent) => {
+        if (!gestureObserver.isEnabled) return;
+        if (!['ArrowDown', 'PageDown', ' ', 'End'].includes(event.key)) return;
+
+        event.preventDefault();
+        playIntro();
+      };
+
+      let previousScrollY = window.scrollY;
+
+      const resetIntroAtTop = () => {
+        const currentScrollY = window.scrollY;
+        const returnedToTop = previousScrollY > 1 && currentScrollY <= 1;
+        previousScrollY = currentScrollY;
+
+        if (!returnedToTop || introTimeline.progress() < 1 || introTimeline.isActive()) return;
+
+        gestureObserver.enable();
+        introTimeline.reverse();
+      };
+
+      window.addEventListener('keydown', handleLockedNavigationKey);
+      window.addEventListener('scroll', resetIntroAtTop, { passive: true });
+
+      if (window.scrollY > 1) {
+        introTimeline.progress(1);
+        gestureObserver.disable();
+      }
     }
   }
 </script>
 
 <style>
   .hero-scroll-stage {
-    height: calc(100svh + min(120px, 16svh));
+    height: 100svh;
     background: #62bce7;
   }
 
   .world-hero {
-    position: sticky;
-    top: 0;
+    position: relative;
     height: 100svh;
     isolation: isolate;
     min-height: min(52rem, 100dvh);

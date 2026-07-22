@@ -56,18 +56,13 @@ const worldLabelMap: Record<string, string> = {
 <script>
   const homeHeader = document.querySelector<HTMLElement>('[data-home-header]');
   const homeHero = document.querySelector<HTMLElement>('.world-hero');
-  const heroScrollStage = document.querySelector<HTMLElement>('.hero-scroll-stage');
   const heroNavigation = document.querySelector<HTMLElement>('[data-hero-navigation]');
 
   if (homeHeader && homeHero && heroNavigation) {
     let frameRequested = false;
 
     const updateNavigationState = () => {
-      const introScrollDistance = heroScrollStage
-        ? Math.max(0, heroScrollStage.offsetHeight - homeHero.offsetHeight)
-        : 0;
-      const handoffPoint = introScrollDistance + homeHero.offsetHeight * 0.5;
-      const showHeader = window.scrollY > handoffPoint;
+      const showHeader = homeHero.getBoundingClientRect().bottom <= 0;
       const showHeroNavigation = heroNavigation.dataset.introVisible === 'true' && !showHeader;
 
       homeHeader.classList.toggle('is-visible', showHeader);
