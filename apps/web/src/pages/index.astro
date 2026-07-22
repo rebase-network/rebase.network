@@ -36,16 +36,31 @@ const heroNavigation = [
 
 <BaseLayout site={site} title="Rebase 社区首页" description={site.description}>
   <section class="world-hero" aria-labelledby="world-title">
-    <div class="hero-scene" aria-hidden="true">
-      <img class="hero-layer hero-sky-layer" src="/media/hero/nature/summer/sky.png" alt="" width="1536" height="864" fetchpriority="high" />
-      <img class="hero-layer hero-clouds-back" src="/media/hero/nature/summer/cloud-layer-2.png" alt="" width="1536" height="864" />
-      <img class="hero-layer hero-clouds-front" src="/media/hero/nature/summer/cloud-layer-1.png" alt="" width="1536" height="864" />
-      <img class="hero-layer hero-light-rays" src="/media/hero/nature/summer/light-rays.png" alt="" width="1536" height="864" />
-      <img class="hero-layer hero-mountains" src="/media/hero/nature/summer/mountain.png" alt="" width="1536" height="864" style="transform:translateY(26%)" />
-      <img class="hero-layer hero-valley" src="/media/hero/nature/summer/valley.png" alt="" width="1536" height="864" style="transform:translateY(22%)" />
-      <img class="hero-layer hero-grass-back" src="/media/hero/nature/summer/grass-back.png" alt="" width="1536" height="864" style="transform:translateY(16%)" />
-      <img class="hero-layer hero-flowers" src="/media/hero/nature/summer/flowers.png" alt="" width="1536" height="864" style="scale:1 0.68" />
-      <img class="hero-layer hero-ground-shadow" src="/media/hero/nature/summer/ground-shadow.png" alt="" width="1536" height="864" />
+    <div class="hero-scene" data-hero-scene aria-hidden="true">
+      <div class="hero-plane hero-plane-sky" data-hero-depth="0.08">
+        <img class="hero-layer hero-sky-layer" src="/media/hero/nature/summer/sky.png" alt="" width="1536" height="864" fetchpriority="high" />
+      </div>
+      <div class="hero-plane hero-plane-clouds-back" data-hero-depth="0.18">
+        <img class="hero-layer hero-clouds-back" src="/media/hero/nature/summer/cloud-layer-2.png" alt="" width="1536" height="864" />
+      </div>
+      <div class="hero-plane hero-plane-clouds-front" data-hero-depth="0.32">
+        <img class="hero-layer hero-clouds-front" src="/media/hero/nature/summer/cloud-layer-1.png" alt="" width="1536" height="864" />
+      </div>
+      <div class="hero-plane hero-plane-light-rays" data-hero-depth="0.24">
+        <img class="hero-layer hero-light-rays" src="/media/hero/nature/summer/light-rays.png" alt="" width="1536" height="864" />
+      </div>
+      <div class="hero-plane hero-plane-mountains" data-hero-depth="0.22">
+        <img class="hero-layer hero-mountains" src="/media/hero/nature/summer/mountain.png" alt="" width="1536" height="864" style="transform:translateY(26%)" />
+      </div>
+      <div class="hero-plane hero-plane-valley" data-hero-depth="0.42">
+        <img class="hero-layer hero-valley" src="/media/hero/nature/summer/valley.png" alt="" width="1536" height="864" style="transform:translateX(-10%) translateY(22%)" />
+      </div>
+      <div class="hero-plane hero-plane-grass-back" data-hero-depth="0.68">
+        <img class="hero-layer hero-grass-back" src="/media/hero/nature/summer/grass-back.png" alt="" width="1536" height="864" style="transform:translateY(25%)" />
+      </div>
+      <div class="hero-plane hero-plane-ground-shadow" data-hero-depth="0.82">
+        <img class="hero-layer hero-ground-shadow" src="/media/hero/nature/summer/ground-shadow.png" alt="" width="1536" height="864" />
+      </div>
     </div>
 
     <div class="world-hero-content">
@@ -216,6 +231,78 @@ const heroNavigation = [
   </section>
 </BaseLayout>
 
+<script>
+  const hero = document.querySelector<HTMLElement>('.world-hero');
+  const scene = document.querySelector<HTMLElement>('[data-hero-scene]');
+  const planes = Array.from(document.querySelectorAll<HTMLElement>('[data-hero-depth]'));
+  const supportsTilt = window.matchMedia(
+    '(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)',
+  );
+
+  if (hero && scene && planes.length && supportsTilt.matches && !scene.dataset.tiltReady) {
+    scene.dataset.tiltReady = 'true';
+
+    let frame = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let targetX = 0;
+    let targetY = 0;
+
+    const renderTilt = () => {
+      currentX += (targetX - currentX) * 0.14;
+      currentY += (targetY - currentY) * 0.14;
+
+      if (Math.abs(targetX - currentX) < 0.002) currentX = targetX;
+      if (Math.abs(targetY - currentY) < 0.002) currentY = targetY;
+
+      for (const plane of planes) {
+        const depth = Number(plane.dataset.heroDepth ?? 0);
+        const rotateX = (currentX * depth).toFixed(3);
+        const rotateY = (currentY * depth).toFixed(3);
+        const scale = (1.006 + depth * 0.042).toFixed(3);
+
+        plane.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
+      }
+
+      if (currentX !== targetX || currentY !== targetY) {
+        frame = requestAnimationFrame(renderTilt);
+      } else {
+        frame = 0;
+      }
+    };
+
+    const requestRender = () => {
+      if (!frame) frame = requestAnimationFrame(renderTilt);
+    };
+
+    renderTilt();
+
+    hero.addEventListener(
+      'pointermove',
+      (event) => {
+        const bounds = hero.getBoundingClientRect();
+        const x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+        const y = ((event.clientY - bounds.top) / bounds.height) * 2 - 1;
+
+        targetX = Math.max(-1, Math.min(1, y)) * -2;
+        targetY = Math.max(-1, Math.min(1, x)) * 3;
+        requestRender();
+      },
+      { passive: true },
+    );
+
+    const resetTilt = () => {
+      targetX = 0;
+      targetY = 0;
+      requestRender();
+    };
+
+    hero.addEventListener('pointerleave', resetTilt);
+    window.addEventListener('blur', resetTilt);
+    window.addEventListener('scroll', resetTilt, { passive: true });
+  }
+</script>
+
 <style>
   .world-hero {
     position: relative;
@@ -233,6 +320,14 @@ const heroNavigation = [
     pointer-events: none;
   }
 
+  .hero-plane {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50% 50%;
+    backface-visibility: hidden;
+    will-change: transform;
+  }
+
   .hero-layer {
     position: absolute;
     inset: 0;
@@ -243,15 +338,19 @@ const heroNavigation = [
     user-select: none;
   }
 
-  .hero-sky-layer { z-index: 0; }
-  .hero-clouds-back { z-index: 1; }
-  .hero-clouds-front { z-index: 2; }
-  .hero-light-rays { z-index: 3; opacity: 0.34; mix-blend-mode: screen; }
-  .hero-mountains { z-index: 4; transform: translateY(26%); }
-  .hero-valley { z-index: 5; transform: translateY(22%); }
-  .hero-grass-back { z-index: 6; transform: translateY(16%); }
-  .hero-flowers { z-index: 8; scale: 1 0.68; transform-origin: 50% 100%; }
-  .hero-ground-shadow { z-index: 9; }
+  .hero-plane-sky { z-index: 0; }
+  .hero-plane-clouds-back { z-index: 1; }
+  .hero-plane-clouds-front { z-index: 2; }
+  .hero-plane-light-rays { z-index: 3; }
+  .hero-plane-mountains { z-index: 4; }
+  .hero-plane-valley { z-index: 5; }
+  .hero-plane-grass-back { z-index: 6; }
+  .hero-plane-ground-shadow { z-index: 9; }
+
+  .hero-light-rays { opacity: 0.34; mix-blend-mode: screen; }
+  .hero-mountains { transform: translateY(26%); }
+  .hero-valley { transform: translateX(-5%) translateY(22%); }
+  .hero-grass-back { transform: translateY(16%); }
 
   .hero-scene::after {
     content: '';
@@ -411,6 +510,13 @@ const heroNavigation = [
     .hero-valley,
     .hero-grass-back,
     .hero-flowers { object-position: center; }
+  }
+
+  @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+    .hero-plane {
+      transform: none;
+      will-change: auto;
+    }
   }
 
   .home-hero {
