@@ -1,3 +1,5 @@
+import { getGeekDailyEpisodePath } from './content.js';
+
 interface GeekDailyWechatItemInput {
   title: string;
   authorName: string;
@@ -90,6 +92,8 @@ const normalizeSiteUrl = (value?: string) => {
 };
 
 const getArchiveUrl = (siteUrl: string) => new URL('/geekdaily', `${siteUrl}/`).toString();
+const getEpisodeUrl = (siteUrl: string, episodeNumber: number) =>
+  new URL(getGeekDailyEpisodePath(episodeNumber), `${siteUrl}/`).toString();
 
 const buildTemplatePayload = (items: GeekDailyWechatItemInput[]): GeekDailyWechatTemplatePayload => {
   const [first, second, third] = items.map(normalizeWechatItem);
@@ -110,8 +114,9 @@ const buildTemplatePayload = (items: GeekDailyWechatItemInput[]): GeekDailyWecha
   };
 };
 
-function renderWechatTemplate(content: string, dx: GeekDailyWechatTemplatePayload, siteUrl: string) {
+function renderWechatTemplate(content: string, dx: GeekDailyWechatTemplatePayload, siteUrl: string, episodeNumber: number) {
   const archiveUrl = getArchiveUrl(siteUrl);
+  const episodeUrl = getEpisodeUrl(siteUrl, episodeNumber);
 
   return `
     <div>${content} </div>
@@ -238,6 +243,8 @@ function renderWechatTemplate(content: string, dx: GeekDailyWechatTemplatePayloa
       <p style="max-width: 100%;min-height: 1em;box-sizing: border-box !important;overflow-wrap: break-word !important;"><br style="max-width: 100%;box-sizing: border-box !important;overflow-wrap: break-word !important;"></p>
       <hr style="max-width: 100%;border-style: solid;border-right-width: 0px;border-bottom-width: 0px;border-left-width: 0px;border-color: rgba(0, 0, 0, 0.098);transform-origin: 0px 0px 0px;transform: scale(1, 0.5);box-sizing: border-box !important;overflow-wrap: break-word !important;">
       <p style="max-width: 100%;min-height: 1em;color: rgb(53, 53, 53);font-size: 14px;text-align: start;letter-spacing: 0.544px;box-sizing: border-box !important;overflow-wrap: break-word !important;"><br style="max-width: 100%;box-sizing: border-box !important;overflow-wrap: break-word !important;"></p>
+      <p style="max-width: 100%;min-height: 1em;color: rgb(53, 53, 53);font-size: 14px;text-align: start;letter-spacing: 0.544px;box-sizing: border-box !important;overflow-wrap: break-word !important;"><strong style="max-width: 100%;box-sizing: border-box !important;overflow-wrap: break-word !important;">本期日报：</strong><a href="${escapeHtml(episodeUrl)}" style="color: rgb(15, 109, 100);text-decoration: none;">${escapeHtml(episodeUrl)}</a></p>
+      <p style="max-width: 100%;min-height: 1em;color: rgb(53, 53, 53);font-size: 14px;text-align: start;letter-spacing: 0.544px;box-sizing: border-box !important;overflow-wrap: break-word !important;"><br style="max-width: 100%;box-sizing: border-box !important;overflow-wrap: break-word !important;"></p>
       <p style="max-width: 100%;min-height: 1em;letter-spacing: 0.544px;color: rgb(53, 53, 53);font-size: 14px;text-align: start;box-sizing: border-box !important;overflow-wrap: break-word !important;"><span style="max-width: 100%;font-size: 15px;box-sizing: border-box !important;overflow-wrap: break-word !important;"><strong style="max-width: 100%;box-sizing: border-box !important;overflow-wrap: break-word !important;">极客日报是为极客们准备的日常读物，由一群极客协作完成，每天更新，每期包含三个推荐内容，都来自极客们各自关注的领域。每晚由 Rebase 志愿者整理发出。若有意参与内容贡献，请添加微信 ljyxxzj 并注明日报贡献。</span></p>
       <p style="max-width: 100%;min-height: 1em;letter-spacing: 0.544px;color: rgb(53, 53, 53);font-size: 14px;text-align: start;box-sizing: border-box !important;overflow-wrap: break-word !important;"><br style="max-width: 100%;box-sizing: border-box !important;overflow-wrap: break-word !important;"></p>
       <p style="max-width: 100%;min-height: 1em;letter-spacing: 0.544px;color: rgb(53, 53, 53);font-size: 14px;text-align: start;box-sizing: border-box !important;overflow-wrap: break-word !important;"><br style="max-width: 100%;box-sizing: border-box !important;overflow-wrap: break-word !important;"></p>
@@ -281,6 +288,6 @@ export function buildGeekDailyWechatHtml(input: GeekDailyWechatInput) {
   const siteUrl = normalizeSiteUrl(input.siteUrl);
 
   return compactWechatHtml(
-    renderWechatTemplate(buildWechatIntroHtml(input), buildTemplatePayload(input.items), siteUrl),
+    renderWechatTemplate(buildWechatIntroHtml(input), buildTemplatePayload(input.items), siteUrl, input.episodeNumber),
   );
 }
