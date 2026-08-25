@@ -90,6 +90,7 @@ interface PublicGeekDailySearchDocumentPayload extends Omit<PublicGeekDailyPrevi
 }
 
 interface HomeFeedPayload {
+  site: PublicSiteConfigPayload;
   latestGeekDaily: PublicGeekDailyEpisodePayload | null;
   recentArticles: Article[];
   recentJobs: Job[];
@@ -432,6 +433,7 @@ export async function getHomeFeed() {
   const payload = await fetchPublicApi<HomeFeedPayload>('/api/public/v1/home');
 
   return {
+    site: mapSiteSettings(payload.site),
     latestArticles: payload.recentArticles.map(mapArticle),
     latestJobs: payload.recentJobs,
     latestEvents: payload.latestEvents,

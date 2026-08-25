@@ -1,4 +1,5 @@
 ---
+/* global __REBASE_BUILD_SHA__ */
 import '@/styles/global.css';
 import type { SiteSettings } from '@rebase/types';
 import SiteFooter from '@/components/SiteFooter.astro';
@@ -24,6 +25,7 @@ const canonicalPath = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.repl
 const canonicalUrl = new URL(canonicalPath, site.primaryDomain).toString();
 const socialImageUrl = new URL(socialImage ?? '/social-card.svg', site.primaryDomain).toString();
 const robots = noindex ? 'noindex, nofollow' : 'index, follow';
+const buildSha = __REBASE_BUILD_SHA__;
 ---
 
 <!doctype html>
@@ -34,6 +36,7 @@ const robots = noindex ? 'noindex, nofollow' : 'index, follow';
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="robots" content={robots} />
+    <meta name="rebase-build" content={buildSha} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content={site.name} />
