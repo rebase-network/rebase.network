@@ -33,10 +33,18 @@ const sortByPublishedAtDesc = <T extends { publishedAt?: string | null }>(items:
 const buildContentHref = (basePath: string, publicNumber: number, slug: string) =>
   `/${basePath}/${slug ? `${publicNumber}-${slug}` : publicNumber}`;
 
-publicRoutes.get('/site-config', async (c) => c.json(ok(await getPublicSiteConfig())));
-publicRoutes.get('/about', async (c) => c.json(ok(await getPublicAboutPage())));
+publicRoutes.get('/site-config', async (c) => {
+  c.header('Cache-Control', publicCacheControl);
+  return c.json(ok(await getPublicSiteConfig()));
+});
+
+publicRoutes.get('/about', async (c) => {
+  c.header('Cache-Control', publicCacheControl);
+  return c.json(ok(await getPublicAboutPage()));
+});
 
 publicRoutes.get('/home', async (c) => {
+  c.header('Cache-Control', publicCacheControl);
   const [site, about, articles, jobs, events, geekdaily, featuredContributors] = await Promise.all([
     getPublicSiteConfig(),
     getPublicAboutPage(),
@@ -108,11 +116,13 @@ publicRoutes.get('/home', async (c) => {
 
 publicRoutes.get('/articles', async (c) => {
   const limit = getPositiveLimit(c.req.query('limit'), 0);
+  c.header('Cache-Control', publicCacheControl);
   const rows = await listPublicArticles();
   return c.json(ok(limit > 0 ? rows.slice(0, limit) : rows));
 });
 
 publicRoutes.get('/articles/:publicNumber', async (c) => {
+  c.header('Cache-Control', publicCacheControl);
   const record = await getPublicArticleByPublicNumber(c.req.param('publicNumber'));
   if (!record) {
     return c.json({ error: { code: 'NOT_FOUND', message: 'article not found' } }, 404);
@@ -123,11 +133,13 @@ publicRoutes.get('/articles/:publicNumber', async (c) => {
 publicRoutes.get('/jobs', async (c) => {
   const limit = getPositiveLimit(c.req.query('limit'), 0);
   const includeExpired = c.req.query('includeExpired') === '1';
+  c.header('Cache-Control', publicCacheControl);
   const rows = await listPublicJobs({ includeExpired });
   return c.json(ok(limit > 0 ? rows.slice(0, limit) : rows));
 });
 
 publicRoutes.get('/jobs/:publicNumber', async (c) => {
+  c.header('Cache-Control', publicCacheControl);
   const record = await getPublicJobByPublicNumber(c.req.param('publicNumber'));
   if (!record) {
     return c.json({ error: { code: 'NOT_FOUND', message: 'job not found' } }, 404);
@@ -136,6 +148,7 @@ publicRoutes.get('/jobs/:publicNumber', async (c) => {
 });
 
 publicRoutes.get('/events', async (c) => {
+  c.header('Cache-Control', publicCacheControl);
   const rows = await listPublicEvents();
   const status = c.req.query('status');
   const filtered = status ? rows.filter((row) => row.status === status) : rows;
@@ -143,6 +156,7 @@ publicRoutes.get('/events', async (c) => {
 });
 
 publicRoutes.get('/events/:publicNumber', async (c) => {
+  c.header('Cache-Control', publicCacheControl);
   const record = await getPublicEventByPublicNumber(c.req.param('publicNumber'));
   if (!record) {
     return c.json({ error: { code: 'NOT_FOUND', message: 'event not found' } }, 404);
@@ -150,7 +164,10 @@ publicRoutes.get('/events/:publicNumber', async (c) => {
   return c.json(ok(record));
 });
 
-publicRoutes.get('/contributors', async (c) => c.json(ok(await listPublicContributorGroups())));
+publicRoutes.get('/contributors', async (c) => {
+  c.header('Cache-Control', publicCacheControl);
+  return c.json(ok(await listPublicContributorGroups()));
+});
 
 publicRoutes.get('/geekdaily', async (c) => {
   const limit = getPositiveLimit(c.req.query('limit'), 0);

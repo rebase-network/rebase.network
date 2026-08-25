@@ -20,7 +20,8 @@ const eventStatus = resolvePublicEventStatus(event);
       class:list={['cover-image', !event.coverImageUrl && 'default-cover-image']}
       src={event.coverImageUrl ?? DEFAULT_EVENT_COVER_PATH}
       alt=""
-      loading={compact ? 'eager' : 'lazy'}
+      loading="lazy"
+      decoding="async"
     />
   </a>
   <div class="content">

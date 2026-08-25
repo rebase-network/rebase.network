@@ -6,10 +6,11 @@ import JobCard from '@/components/JobCard.astro';
 import SectionHeader from '@/components/SectionHeader.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { createAvatarData } from '@/lib/avatar';
-import { getHomeFeed, getSiteSettings } from '@/lib/content';
+import { getHomeFeed } from '@/lib/content';
 import { formatDate } from '@/lib/dates';
 
-const [site, feed] = await Promise.all([getSiteSettings(), getHomeFeed()]);
+const feed = await getHomeFeed();
+const site = feed.site;
 const contributorPreviewLimit = 10;
 const contributorPreview = feed.featuredContributors.slice(0, contributorPreviewLimit);
 const liveWire = feed.dynamicFeed.slice(0, 4);
