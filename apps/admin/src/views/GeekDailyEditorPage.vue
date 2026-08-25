@@ -14,6 +14,7 @@ import GeekDailyItemsField from '../components/GeekDailyItemsField.vue';
 import { adminFetch, adminFetchWithMeta, adminRequest, getValidationIssues } from '../lib/api';
 import { formatContentStatus } from '../lib/format';
 import { buildGeekDailyWechatHtml, getGeekDailyWechatGenerationIssue } from '../lib/geekdaily-wechat';
+import { getPublicSiteBaseUrl } from '../lib/runtime-config';
 
 interface GeekDailyItemFormState {
   title: string;
@@ -106,6 +107,7 @@ const wechatInput = computed(() => ({
   editorName: episodeEditorLabel.value,
   bodyMarkdown: form.bodyMarkdown,
   items: form.items,
+  siteUrl: getPublicSiteBaseUrl(),
 }));
 const wechatGenerationIssue = computed(() => getGeekDailyWechatGenerationIssue(wechatInput.value));
 const wechatIssueTone = computed(() => (form.items.length > 3 ? 'exception' : 'warning'));

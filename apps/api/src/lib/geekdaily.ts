@@ -562,12 +562,12 @@ export const createAdminGeekDailyWechatDraft = async (
     throw badRequest('wechat draft generation failed validation', { issue });
   }
 
-  const content = buildGeekDailyWechatHtml(wechatInput);
+  const site = await getPublicSiteConfig();
+  const content = buildGeekDailyWechatHtml({ ...wechatInput, siteUrl: site.primaryDomain });
   if (!content) {
     throw badRequest('wechat draft content is empty');
   }
 
-  const site = await getPublicSiteConfig();
   const title = buildWechatDraftTitle(current);
   const author = buildWechatDraftAuthor(current.editors);
   const digest = buildWechatDraftDigest(current);
