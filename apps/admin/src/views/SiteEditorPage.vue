@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import type { AdminSiteEditorPayload, HomePageInput, SiteSettingsInput, AboutPageInput } from '@rebase/shared';
+import type { AdminSiteEditorPayload, HomePageInput, InfoqSettingsInput, SiteSettingsInput, AboutPageInput } from '@rebase/shared';
 
 import AboutSectionsField from '../components/AboutSectionsField.vue';
 import FooterGroupsField from '../components/FooterGroupsField.vue';
@@ -20,6 +20,8 @@ const settings = reactive<SiteSettingsInput>({
   footerGroups: [],
   copyrightText: '',
 });
+
+const infoq = reactive<InfoqSettingsInput>({ username: '', password: '' });
 
 const home = reactive<HomePageInput>({
   heroTitle: '',
@@ -77,6 +79,8 @@ const ctaSummary = computed(() =>
 
 const applyPayload = (payload: AdminSiteEditorPayload) => {
   Object.assign(settings, payload.settings);
+  infoq.username = payload.infoq.username;
+  infoq.password = '';
   Object.assign(home, payload.home);
   Object.assign(about, payload.about);
 };
@@ -99,9 +103,10 @@ const saveAll = async () => {
   successMessage.value = '';
   try {
     await adminRequest('/api/admin/v1/site/settings', { method: 'PATCH', body: settings });
+    const nextPayload = await adminRequest<AdminSiteEditorPayload>('/api/admin/v1/site/infoq', { method: 'PATCH', body: infoq });
     await adminRequest('/api/admin/v1/site/home', { method: 'PATCH', body: home });
-    const nextPayload = await adminRequest<AdminSiteEditorPayload>('/api/admin/v1/site/about', { method: 'PATCH', body: about });
-    applyPayload(nextPayload);
+    const aboutPayload = await adminRequest<AdminSiteEditorPayload>('/api/admin/v1/site/about', { method: 'PATCH', body: about });
+    applyPayload({ ...aboutPayload, infoq: nextPayload.infoq });
     successMessage.value = '站点内容已保存。';
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '无法保存站点内容。';
@@ -186,6 +191,27 @@ onMounted(() => void loadSite());
                 <span>站点描述</span>
                 <textarea v-model="settings.description" rows="3" placeholder="描述站点整体定位与内容结构。" />
               </label>
+            </article>
+
+            <article class="site-section-card">
+              <div class="site-section-head">
+                <div class="stacked-gap-tight">
+                  <h4>InfoQ 写作社区</h4>
+                  <p class="site-section-note">用于将已发布内容转成 InfoQ 文章。密码不会回显。</p>
+                </div>
+                <span class="panel-meta">{{ infoq.username ? '已填写账号' : '未配置' }}</span>
+              </div>
+
+              <div class="field-grid field-grid-2 field-grid-compact">
+                <label class="field">
+                  <span>手机号</span>
+                  <input v-model="infoq.username" type="text" inputmode="tel" autocomplete="username" placeholder="13811442224" />
+                </label>
+                <label class="field">
+                  <span>密码</span>
+                  <input v-model="infoq.password" type="password" autocomplete="new-password" placeholder="留空表示保持现有密码" />
+                </label>
+              </div>
             </article>
 
             <article class="site-section-card">

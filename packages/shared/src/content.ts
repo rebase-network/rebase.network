@@ -130,6 +130,13 @@ export const siteSettingsSchema = z.object({
 
 export type SiteSettingsInput = z.infer<typeof siteSettingsSchema>;
 
+export const infoqSettingsSchema = z.object({
+  username: trimmedString.default(''),
+  password: trimmedString.default(''),
+});
+
+export type InfoqSettingsInput = z.infer<typeof infoqSettingsSchema>;
+
 export const homePageSchema = z.object({
   heroTitle: requiredTrimmedString('首页主标题不能为空'),
   heroSummary: requiredTrimmedString('首页摘要不能为空'),
@@ -669,6 +676,7 @@ export interface AdminArticleRecord extends ArticleInput {
   publicNumber: number;
   createdAt: string;
   updatedAt: string;
+  infoqArticleUuid: string | null;
 }
 
 export interface AdminJobListItem {
@@ -712,6 +720,7 @@ export interface AdminEventRecord extends EventInput {
   publicNumber: number;
   createdAt: string;
   updatedAt: string;
+  infoqArticleUuid: string | null;
 }
 
 export interface AdminContributorRoleRecord {
@@ -754,6 +763,7 @@ export interface AdminGeekDailyRecord extends GeekDailyEpisodeInput {
   slug: string;
   createdAt: string;
   updatedAt: string;
+  infoqArticleUuid: string | null;
 }
 
 export interface AdminGeekDailyWechatDraftRecord {
@@ -835,6 +845,7 @@ export interface AdminAuditRecord {
 
 export interface AdminSiteEditorPayload {
   settings: SiteSettingsInput & { id: string };
+  infoq: { username: string; configured: boolean };
   home: HomePageInput & { id: string };
   about: AboutPageInput & { id: string };
 }
@@ -850,6 +861,7 @@ export interface AdminStaffDetailPayload {
 }
 
 export const validateSiteSettingsInput = (payload: unknown) => safeParse(siteSettingsSchema, payload);
+export const validateInfoqSettingsInput = (payload: unknown) => safeParse(infoqSettingsSchema, payload);
 export const validateHomePageInput = (payload: unknown) => safeParse(homePageSchema, payload);
 export const validateAboutPageInput = (payload: unknown) => safeParse(aboutPageSchema, payload);
 export const validateArticleInput = (payload: unknown) => safeParse(articleSchema, payload);

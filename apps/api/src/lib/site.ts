@@ -1,10 +1,14 @@
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
+
 import { eq } from 'drizzle-orm';
 
 import { aboutPage, homePage, siteSettings } from '@rebase/db';
-import type { AboutPageInput, AdminSiteEditorPayload, HomePageInput, SiteSettingsInput } from '@rebase/shared';
+import type { AboutPageInput, AdminSiteEditorPayload, HomePageInput, InfoqSettingsInput, SiteSettingsInput } from '@rebase/shared';
 
 import { createAuditEntry, type AuditActor } from './audit.js';
 import { getDb } from './db.js';
+import { getEnv } from './env.js';
+import { badRequest, serviceUnavailable } from './errors.js';
 
 const defaultSiteSettings: SiteSettingsInput = {
   siteName: 'Rebase',
@@ -57,6 +61,31 @@ const getFirstRow = async (table: any) => {
   const db = getDb();
   const rows = await db.select().from(table).limit(1);
   return rows[0] ?? null;
+};
+
+const getInfoqKey = () => {
+  const value = getEnv().infoqCredentialsKey.trim();
+  if (!value) {
+    throw serviceUnavailable('InfoQ credentials encryption is not configured');
+  }
+  return createHash('sha256').update(value).digest();
+};
+
+export const encryptInfoqPassword = (password: string) => {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', getInfoqKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(password, 'utf8'), cipher.final()]);
+  return [iv.toString('base64url'), cipher.getAuthTag().toString('base64url'), encrypted.toString('base64url')].join('.');
+};
+
+export const decryptInfoqPassword = (value: string) => {
+  const [ivValue, tagValue, encryptedValue] = value.split('.');
+  if (!ivValue || !tagValue || !encryptedValue) {
+    throw serviceUnavailable('stored InfoQ credentials are invalid');
+  }
+  const decipher = createDecipheriv('aes-256-gcm', getInfoqKey(), Buffer.from(ivValue, 'base64url'));
+  decipher.setAuthTag(Buffer.from(tagValue, 'base64url'));
+  return Buffer.concat([decipher.update(Buffer.from(encryptedValue, 'base64url')), decipher.final()]).toString('utf8');
 };
 
 export const ensureSiteSettings = async () => {
@@ -146,6 +175,10 @@ export const getAdminSite = async (): Promise<AdminSiteEditorPayload> => {
       footerGroups: (settings.footerGroupsJson as SiteSettingsInput['footerGroups']) ?? [],
       copyrightText: settings.copyrightText,
     },
+    infoq: {
+      username: settings.infoqUsername ?? '',
+      configured: Boolean(settings.infoqUsername && settings.infoqPasswordEncrypted),
+    },
     home: {
       id: home.id,
       heroTitle: home.heroTitle,
@@ -165,6 +198,49 @@ export const getAdminSite = async (): Promise<AdminSiteEditorPayload> => {
       seoDescription: about.seoDescription ?? '',
     },
   };
+};
+
+export const updateInfoqSettings = async (input: InfoqSettingsInput, actor: AuditActor) => {
+  const db = getDb();
+  const current = await ensureSiteSettings();
+  const username = input.username.trim();
+  const password = input.password.trim();
+  if (username && username !== current.infoqUsername && !password) {
+    throw badRequest('更换 InfoQ 账号时必须重新输入密码');
+  }
+  const passwordEncrypted = username && password ? encryptInfoqPassword(password) : username ? current.infoqPasswordEncrypted : null;
+
+  if (username && !passwordEncrypted) {
+    throw badRequest('请输入 InfoQ 密码，或清空账号以移除配置');
+  }
+
+  await db
+    .update(siteSettings)
+    .set({
+      infoqUsername: username || null,
+      infoqPasswordEncrypted: passwordEncrypted,
+      updatedByStaffId: actor.actorStaffAccountId ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(siteSettings.id, current.id));
+
+  await createAuditEntry({
+    ...actor,
+    action: 'site.infoq.update',
+    targetType: 'site_settings',
+    targetId: current.id,
+    summary: username ? 'Updated InfoQ publishing credentials' : 'Removed InfoQ publishing credentials',
+  });
+
+  return getAdminSite();
+};
+
+export const getInfoqCredentials = async () => {
+  const settings = await ensureSiteSettings();
+  if (!settings.infoqUsername || !settings.infoqPasswordEncrypted) {
+    throw serviceUnavailable('InfoQ publishing credentials are not configured');
+  }
+  return { username: settings.infoqUsername, password: decryptInfoqPassword(settings.infoqPasswordEncrypted) };
 };
 
 export const updateSiteSettings = async (input: SiteSettingsInput, actor: AuditActor) => {

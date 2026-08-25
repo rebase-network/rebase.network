@@ -53,6 +53,7 @@ const loading = ref(true);
 const saving = ref(false);
 const actioning = ref(false);
 const deleting = ref(false);
+const infoqPublishing = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const fieldIssues = ref<Record<string, string>>({});
@@ -68,6 +69,7 @@ const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'but
 const canPublish = computed(() => form.status !== 'published');
 const canArchive = computed(() => Boolean(article.value) && form.status !== 'archived');
 const canDelete = computed(() => Boolean(article.value) && form.status === 'archived');
+const canPublishToInfoq = computed(() => Boolean(article.value) && form.status === 'published' && !article.value?.infoqArticleUuid);
 const hasIssue = (...paths: string[]) =>
   paths.some((path) => {
     if (fieldIssues.value[path]) {
@@ -238,6 +240,20 @@ const deleteArticle = async () => {
   }
 };
 
+const publishToInfoq = async () => {
+  if (!article.value) return;
+  infoqPublishing.value = true;
+  resetFeedback();
+  try {
+    applyRecord(await adminRequest<AdminArticleRecord>(`/api/admin/v1/articles/${article.value.id}/infoq-publish`, { method: 'POST' }));
+    successMessage.value = '已发布到 InfoQ。';
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : '无法发布到 InfoQ。';
+  } finally {
+    infoqPublishing.value = false;
+  }
+};
+
 watch(() => route.fullPath, () => void loadArticle());
 onMounted(() => void loadArticle());
 </script>
@@ -263,6 +279,9 @@ onMounted(() => void loadArticle());
         </button>
         <button v-if="canPublish" class="button-link button-primary" type="button" :disabled="loading || saving || actioning || deleting" @click="publish">
           {{ actioning ? '发布中…' : '发布' }}
+        </button>
+        <button v-if="canPublishToInfoq" class="button-link" type="button" :disabled="saving || actioning || deleting || infoqPublishing" @click="publishToInfoq">
+          {{ infoqPublishing ? '发布中…' : '发布到 InfoQ' }}
         </button>
         <button v-if="canArchive" class="button-link button-danger" type="button" :disabled="saving || actioning || deleting" @click="runAction('archive')">归档</button>
         <button v-if="canDelete" class="button-link button-danger" type="button" :disabled="saving || actioning || deleting" @click="deleteArticle">

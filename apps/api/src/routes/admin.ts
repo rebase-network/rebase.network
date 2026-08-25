@@ -13,6 +13,7 @@ import {
   validateEventInput,
   validateGeekDailyEpisodeInput,
   validateHomePageInput,
+  validateInfoqSettingsInput,
   validateJobInput,
   validateSiteSettingsInput,
   validateStaffCreateInput,
@@ -30,7 +31,8 @@ import { createAdminGeekDailyEpisode, createAdminGeekDailyWechatDraft, getAdminG
 import { badRequest } from '../lib/errors.js';
 import { handleApiError, jsonError, ok } from '../lib/http.js';
 import { createAdminJob, getAdminJob, listAdminJobs, publishAdminJob, updateAdminJob, archiveAdminJob } from '../lib/jobs.js';
-import { getAdminSite, updateAboutPage, updateHomePage, updateSiteSettings } from '../lib/site.js';
+import { getAdminSite, updateAboutPage, updateHomePage, updateInfoqSettings, updateSiteSettings } from '../lib/site.js';
+import { publishAdminArticleToInfoq, publishAdminEventToInfoq, publishAdminGeekDailyToInfoq } from '../lib/infoq.js';
 import { createAdminStaff, getAdminStaff, listAdminRoles, listAdminStaff, updateAdminStaff } from '../lib/staff.js';
 import { getAdminMePayload, requireActiveStaff, type AppVariables } from '../middleware/auth.js';
 import { readPaginationInput } from '../lib/pagination.js';
@@ -75,6 +77,10 @@ adminRoutes.patch('/site/settings', requireActiveStaff('site.manage'), async (c)
   const payload = expectValid(c, validateSiteSettingsInput(await c.req.json().catch(() => null)));
   return c.json(ok(await updateSiteSettings(payload, getAuditActor(c))));
 });
+adminRoutes.patch('/site/infoq', requireActiveStaff('site.manage'), async (c) => {
+  const payload = expectValid(c, validateInfoqSettingsInput(await c.req.json().catch(() => null)));
+  return c.json(ok(await updateInfoqSettings(payload, getAuditActor(c))));
+});
 adminRoutes.patch('/site/home', requireActiveStaff('site.manage'), async (c) => {
   const payload = expectValid(c, validateHomePageInput(await c.req.json().catch(() => null)));
   return c.json(ok(await updateHomePage(payload, getAuditActor(c))));
@@ -108,6 +114,7 @@ adminRoutes.patch('/articles/:id', requireActiveStaff('article.write'), async (c
   return c.json(ok(await updateAdminArticle(c.req.param('id'), payload, getAuditActor(c))));
 });
 adminRoutes.post('/articles/:id/publish', requireActiveStaff('article.publish'), async (c) => c.json(ok(await publishAdminArticle(c.req.param('id'), getAuditActor(c)))));
+adminRoutes.post('/articles/:id/infoq-publish', requireActiveStaff('article.publish'), async (c) => c.json(ok(await publishAdminArticleToInfoq(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.post('/articles/:id/archive', requireActiveStaff('article.publish'), async (c) => c.json(ok(await archiveAdminArticle(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.delete('/articles/:id', requireActiveStaff('article.publish'), async (c) => c.json(ok(await deleteAdminArticle(c.req.param('id'), getAuditActor(c)))));
 
@@ -161,6 +168,7 @@ adminRoutes.patch('/events/:id', requireActiveStaff('event.write'), async (c) =>
   return c.json(ok(await updateAdminEvent(c.req.param('id'), payload, getAuditActor(c))));
 });
 adminRoutes.post('/events/:id/publish', requireActiveStaff('event.publish'), async (c) => c.json(ok(await publishAdminEvent(c.req.param('id'), getAuditActor(c)))));
+adminRoutes.post('/events/:id/infoq-publish', requireActiveStaff('event.publish'), async (c) => c.json(ok(await publishAdminEventToInfoq(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.post('/events/:id/archive', requireActiveStaff('event.publish'), async (c) => c.json(ok(await archiveAdminEvent(c.req.param('id'), getAuditActor(c)))));
 
 adminRoutes.get('/contributors/roles', requireActiveStaff('contributor.read'), async (c) => c.json(ok(await listAdminContributorRoles())));
@@ -222,6 +230,7 @@ adminRoutes.post('/geekdaily/:id/wechat-draft', requireActiveStaff('geekdaily.pu
   c.json(ok(await createAdminGeekDailyWechatDraft(c.req.param('id'), getAuditActor(c)))),
 );
 adminRoutes.post('/geekdaily/:id/publish', requireActiveStaff('geekdaily.publish'), async (c) => c.json(ok(await publishAdminGeekDailyEpisode(c.req.param('id'), getAuditActor(c)))));
+adminRoutes.post('/geekdaily/:id/infoq-publish', requireActiveStaff('geekdaily.publish'), async (c) => c.json(ok(await publishAdminGeekDailyToInfoq(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.post('/geekdaily/:id/archive', requireActiveStaff('geekdaily.publish'), async (c) => c.json(ok(await archiveAdminGeekDailyEpisode(c.req.param('id'), getAuditActor(c)))));
 
 adminRoutes.get('/assets/upload-config', requireActiveStaff('asset.manage'), async (c) => c.json(ok(await getAdminAssetUploadConfig())));
