@@ -32,6 +32,9 @@ type InfoqArticleInput = {
 type InfoqPublishResult = { uuid: string; url: string };
 type InfoqResponse<T> = { code?: number; data?: T; error?: { code?: number; msg?: string } };
 
+export const shouldAutoPublishToInfoq = (record: { status: string; infoqArticleUuid?: string | null }) =>
+  record.status === 'published' && !record.infoqArticleUuid;
+
 class InfoqApiClient {
   private ticket: string;
   private readonly cookie: string;
@@ -250,29 +253,34 @@ const publish = async (input: InfoqArticleInput): Promise<InfoqPublishResult> =>
   const wordNum = infoqWordCount(textContent(doc));
   const client = await loginInfoqApi();
   const draft = await client.request<{ id: number }>('/api/v1/draft/create', {});
-  const title = trimUtf8(input.title, 128);
-  const summary = trimUtf8(input.summary || firstParagraph(input.bodyMarkdown), 120);
-  const labels = await resolveLabels(client, input.tags);
-  await client.request('/api/v1/draft/pushFull', { id: draft.id, content, version: 0, cover: '', title, summary });
-  const contentHtml = marked.parse(input.bodyMarkdown, { async: false }) as string;
-  const result = await client.request<{ uuid: string }>('/api/v1/article/publish', {
-    id: draft.id,
-    content,
-    cover: '',
-    title,
-    word_num: wordNum,
-    content_short: JSON.stringify(truncateDoc(doc, 500)),
-    content_html: contentHtml,
-    sign: createHash('md5').update(content + wordNum).digest('hex'),
-    desc: summary,
-    articleInfo: {},
-    summary,
-    copyright: 0,
-    labels,
-    is_horde: 0,
-  });
-  if (!result?.uuid) throw serviceUnavailable('InfoQ publish returned no article id');
-  return { uuid: result.uuid, url: `https://xie.infoq.cn/article/${result.uuid}` };
+  try {
+    const title = trimUtf8(input.title, 128);
+    const summary = trimUtf8(input.summary || firstParagraph(input.bodyMarkdown), 120);
+    const labels = await resolveLabels(client, input.tags);
+    await client.request('/api/v1/draft/pushFull', { id: draft.id, content, version: 0, cover: '', title, summary });
+    const contentHtml = marked.parse(input.bodyMarkdown, { async: false }) as string;
+    const result = await client.request<{ uuid: string }>('/api/v1/article/publish', {
+      id: draft.id,
+      content,
+      cover: '',
+      title,
+      word_num: wordNum,
+      content_short: JSON.stringify(truncateDoc(doc, 500)),
+      content_html: contentHtml,
+      sign: createHash('md5').update(content + wordNum).digest('hex'),
+      desc: summary,
+      articleInfo: {},
+      summary,
+      copyright: 0,
+      labels,
+      is_horde: 0,
+    });
+    if (!result?.uuid) throw serviceUnavailable('InfoQ publish returned no article id');
+    return { uuid: result.uuid, url: `https://xie.infoq.cn/article/${result.uuid}` };
+  } catch (error) {
+    await client.request('/api/v1/draft/del', { id: draft.id }).catch(() => undefined);
+    throw error;
+  }
 };
 
 // ponytail: one process-wide publish queue; use a durable job worker if volume requires parallelism.
