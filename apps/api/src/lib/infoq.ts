@@ -154,8 +154,12 @@ const inlineNodes = (tokens: any[] = [], marks: InfoqNode['marks'] = []): InfoqN
   if (token.type === 'strong') return inlineNodes(token.tokens, [...marks, { type: 'strong' }]);
   if (token.type === 'em') return inlineNodes(token.tokens, [...marks, { type: 'italic' }]);
   if (token.type === 'del') return inlineNodes(token.tokens, [...marks, { type: 'del' }]);
-  if (token.type === 'codespan') return [{ type: 'text', text: token.text, marks: [...marks, { type: 'codeinline' }] }];
-  if (token.type === 'link') return inlineNodes(token.tokens, [...marks, { type: 'link', attrs: { href: token.href, title: token.title ?? null } }]);
+  if (token.type === 'codespan') return [{ type: 'codeinline', content: [{ type: 'text', text: token.text }] }];
+  if (token.type === 'link') return [{
+    type: 'link',
+    attrs: { href: token.href, title: token.title ?? '', type: null },
+    content: inlineNodes(token.tokens),
+  }];
   if (token.type === 'br') return [{ type: 'text', text: '\n', ...(marks.length ? { marks } : {}) }];
   if (token.type === 'html') {
     const text = token.text.replace(/<[^>]+>/g, '');
