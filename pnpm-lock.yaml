@@ -75,9 +75,9 @@ importers:
       image-size:
         specifier: ^2.0.2
         version: 2.0.2
-      playwright-core:
-        specifier: ^1.60.0
-        version: 1.60.0
+      marked:
+        specifier: ^17.0.1
+        version: 17.0.6
     devDependencies:
       '@types/node':
         specifier: ^22.13.10
