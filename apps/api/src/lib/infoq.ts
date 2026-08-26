@@ -261,9 +261,9 @@ const publish = async (input: InfoqArticleInput): Promise<InfoqPublishResult> =>
     content_html: contentHtml,
     sign: createHash('md5').update(content + wordNum).digest('hex'),
     desc: summary,
-    isEditArticle: false,
-    tagList: labels.map((id) => ({ id })),
     articleInfo: {},
+    summary,
+    copyright: 0,
     labels,
     is_horde: 0,
   });
