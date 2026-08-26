@@ -100,7 +100,10 @@ const login = async (page: Page, username: string, password: string) => {
   await page.getByRole('checkbox', { name: '我已阅读并同意极客邦 、' }).check();
   await page.getByText('登录', { exact: true }).click();
   await page.waitForTimeout(5000);
-  if (page.url() !== 'https://xie.infoq.cn/') throw serviceUnavailable('InfoQ login failed');
+  const landingUrl = new URL(page.url());
+  if (landingUrl.hostname !== 'xie.infoq.cn' || landingUrl.pathname !== '/') {
+    throw serviceUnavailable(`InfoQ login failed (${landingUrl.hostname}${landingUrl.pathname})`);
+  }
 }
 
 const publishWithBrowser = async (input: InfoqArticleInput): Promise<InfoqPublishResult> => {
