@@ -14,6 +14,8 @@ export interface AppEnv {
   wechatOfficialAppId: string;
   wechatOfficialAppSecret: string;
   wechatDefaultThumbMediaId: string;
+  infoqCredentialsKey: string;
+  infoqChromiumExecutablePath: string;
 }
 
 let envCache: AppEnv | null = null;
@@ -55,6 +57,8 @@ export const getEnv = (): AppEnv => {
     wechatOfficialAppId: process.env.WECHAT_OFFICIAL_APP_ID ?? '',
     wechatOfficialAppSecret: process.env.WECHAT_OFFICIAL_APP_SECRET ?? '',
     wechatDefaultThumbMediaId: process.env.WECHAT_DEFAULT_THUMB_MEDIA_ID ?? '',
+    infoqCredentialsKey: process.env.INFOQ_CREDENTIALS_KEY ?? process.env.BETTER_AUTH_SECRET ?? '',
+    infoqChromiumExecutablePath: process.env.INFOQ_CHROMIUM_EXECUTABLE_PATH ?? '',
   };
 
   return envCache;

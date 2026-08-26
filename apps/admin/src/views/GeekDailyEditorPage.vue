@@ -57,6 +57,7 @@ const loading = ref(true);
 const saving = ref(false);
 const actioning = ref(false);
 const wechatDrafting = ref(false);
+const infoqPublishing = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const fieldIssues = ref<Record<string, string>>({});
@@ -80,6 +81,7 @@ const saveButtonClass = computed(() => ['button-link', !canPublish.value && 'but
 const canPublish = computed(() => form.status !== 'published');
 const canArchive = computed(() => Boolean(record.value) && form.status !== 'archived');
 const canCreateWechatDraft = computed(() => Boolean(record.value) && form.status === 'published' && !wechatGenerationIssue.value);
+const canPublishToInfoq = computed(() => Boolean(record.value) && form.status === 'published' && !record.value?.infoqArticleUuid);
 const workflowHint = computed(() => {
   if (isNew.value) {
     return '可先保存草稿，也可直接发布；右侧可继续复制微信公众号内容。';
@@ -336,6 +338,20 @@ const createWechatDraft = async () => {
   }
 };
 
+const publishToInfoq = async () => {
+  if (!record.value) return;
+  infoqPublishing.value = true;
+  resetFeedback();
+  try {
+    applyRecord(await adminRequest<AdminGeekDailyRecord>(`/api/admin/v1/geekdaily/${record.value.id}/infoq-publish`, { method: 'POST' }));
+    successMessage.value = '已发布到 InfoQ。';
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : '无法发布到 InfoQ。';
+  } finally {
+    infoqPublishing.value = false;
+  }
+};
+
 const runAction = async (action: 'archive') => {
   if (!record.value) {
     return;
@@ -393,6 +409,9 @@ onBeforeUnmount(() => {
         </button>
         <button v-if="canPublish" class="button-link button-primary" type="button" :disabled="loading || saving || actioning" @click="publish">
           {{ actioning ? '发布中…' : '发布' }}
+        </button>
+        <button v-if="canPublishToInfoq" class="button-link" type="button" :disabled="saving || actioning || wechatDrafting || infoqPublishing" @click="publishToInfoq">
+          {{ infoqPublishing ? '发布中…' : '发布到 InfoQ' }}
         </button>
         <button v-if="canArchive" class="button-link button-danger" type="button" :disabled="saving || actioning" @click="runAction('archive')">归档</button>
       </div>

@@ -248,6 +248,7 @@ const mapEpisodeDetail = (row: any, items: any[]) => ({
   bodyMarkdown: row.bodyMarkdown,
   editors: getEditors(row.editorsJson),
   tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
+  infoqArticleUuid: row.infoqArticleUuid ?? null,
   status: row.status,
   publishedAt: toIsoString(row.publishedAt) ?? new Date().toISOString(),
   items,

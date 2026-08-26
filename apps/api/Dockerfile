@@ -18,6 +18,7 @@ RUN pnpm --filter @rebase/shared build \
 
 FROM base AS runtime
 ENV NODE_ENV=production
+RUN apk add --no-cache chromium
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json

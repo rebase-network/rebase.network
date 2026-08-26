@@ -37,6 +37,7 @@ const mapArticleDetail = (row: any) => ({
   tags: Array.isArray(row.tagsJson) ? row.tagsJson : [],
   seoTitle: row.seoTitle ?? '',
   seoDescription: row.seoDescription ?? '',
+  infoqArticleUuid: row.infoqArticleUuid ?? null,
   status: row.status,
   publishedAt: toIsoString(row.publishedAt),
   createdAt: toIsoString(row.createdAt) ?? new Date().toISOString(),
