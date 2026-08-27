@@ -84,6 +84,8 @@
 
 ## 必填 R2 env
 
+R2 上传仅支持 S3 兼容接口。必须同时配置以下变量；缺少任意一项时，后台上传功能保持禁用。
+
 | 变量 | 用途 | Secret |
 | --- | --- | --- |
 | `R2_ACCOUNT_ID` | Cloudflare account id | 否 |
@@ -91,9 +93,6 @@
 | `R2_SECRET_ACCESS_KEY` | S3 风格 secret key | 是 |
 | `R2_BUCKET` | 存储桶名称 | 否 |
 | `R2_PUBLIC_BASE_URL` | 公共媒体基础 URL | 否 |
-| `R2_DEV_USE_WRANGLER` | 回退上传模式，生产环境保持 `false` | 否 |
-| `CLOUDFLARE_API_TOKEN` | 可选回退 token | 是 |
-| `WRANGLER_CONFIG_DIR` | 可选 Wrangler profile 路径 | 否 |
 
 ## 更新规则
 

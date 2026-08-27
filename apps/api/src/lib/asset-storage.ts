@@ -1,10 +1,5 @@
-import { execFile } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { existsSync } from 'node:fs';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { dirname, extname, join } from 'node:path';
-import { promisify } from 'node:util';
+import { extname } from 'node:path';
 
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import type { AdminAssetUploadConfig } from '@rebase/shared';
@@ -13,9 +8,6 @@ import { imageSize } from 'image-size';
 import { getEnv } from './env.js';
 import { badRequest, serviceUnavailable } from './errors.js';
 import { slugify } from './utils.js';
-
-const execFileAsync = promisify(execFile);
-const wranglerDevUrlCache = new Map<string, string>();
 
 const acceptedUploadMimeTypes = [
   'image/jpeg',
@@ -39,12 +31,8 @@ const normalizeBaseUrl = (value: string) => value.trim().replace(/\/$/, '');
 const detectStorageMode = (): AdminAssetUploadConfig['mode'] => {
   const env = getEnv();
 
-  if (env.r2AccountId && env.r2AccessKeyId && env.r2SecretAccessKey && env.r2Bucket) {
+  if (env.r2AccountId && env.r2AccessKeyId && env.r2SecretAccessKey && env.r2Bucket && env.r2PublicBaseUrl) {
     return 'r2-s3';
-  }
-
-  if (env.r2DevUseWrangler && env.r2AccountId && env.r2Bucket) {
-    return 'wrangler-cli';
   }
 
   return 'disabled';
@@ -55,11 +43,7 @@ const buildMessage = (mode: AdminAssetUploadConfig['mode']) => {
     return 'R2 上传已配置为通过 S3 兼容接口写入，当前只支持公开媒体。';
   }
 
-  if (mode === 'wrangler-cli') {
-    return 'R2 上传在本地环境通过 Wrangler 写入，当前只支持公开媒体。';
-  }
-
-  return '设置 R2_BUCKET，并补充 S3 凭据或 R2_DEV_USE_WRANGLER=true 后才可启用上传。';
+  return '设置 R2_BUCKET、R2_ACCOUNT_ID、S3 兼容凭据和 R2_PUBLIC_BASE_URL 后才可启用上传。';
 };
 
 const ensureImageDimensions = (buffer: Buffer, mimeType: string) => {
@@ -234,120 +218,14 @@ const getS3Client = () => {
   return s3Client;
 };
 
-const findWorkspaceBinary = (binaryName: string) => {
-  let currentDir = process.cwd();
-
-  while (true) {
-    const candidate = join(currentDir, 'node_modules', '.bin', binaryName);
-    if (existsSync(candidate)) {
-      return candidate;
-    }
-
-    const parentDir = dirname(currentDir);
-    if (parentDir === currentDir) {
-      break;
-    }
-
-    currentDir = parentDir;
-  }
-
-  return binaryName;
-};
-
-const getWranglerExecutable = () => {
-  const configured = process.env.WRANGLER_BIN?.trim();
-  if (configured) {
-    return configured;
-  }
-
-  return findWorkspaceBinary('wrangler');
-};
-
-const toTrimmedOutput = (value: unknown) => {
-  if (typeof value !== 'string') {
-    return undefined;
-  }
-
-  const normalized = value.trim();
-  if (!normalized) {
-    return undefined;
-  }
-
-  return normalized.slice(0, 400);
-};
-
-const runWrangler = async (args: string[]) => {
-  const env = getEnv();
-  const executable = getWranglerExecutable();
-
-  try {
-    return await execFileAsync(executable, args, {
-      env: {
-        ...process.env,
-        CLOUDFLARE_ACCOUNT_ID: env.r2AccountId,
-      },
-    });
-  } catch (error) {
-    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') {
-      throw serviceUnavailable('Wrangler CLI is not available for R2 uploads', {
-        hint: 'set WRANGLER_BIN or expose node_modules/.bin on PATH',
-        executable,
-      });
-    }
-
-    const details: Record<string, unknown> = {
-      hint: 'check the mounted Wrangler profile, CLI login state, and bucket permissions',
-      executable,
-      reason: error instanceof Error ? error.message : String(error),
-    };
-    const stderr = typeof error === 'object' && error !== null && 'stderr' in error ? toTrimmedOutput(error.stderr) : undefined;
-    const stdout = typeof error === 'object' && error !== null && 'stdout' in error ? toTrimmedOutput(error.stdout) : undefined;
-    if (stderr) {
-      details.stderr = stderr;
-    }
-    if (stdout) {
-      details.stdout = stdout;
-    }
-
-    throw serviceUnavailable('Wrangler CLI failed while accessing R2', {
-      ...details,
-    });
-  }
-};
-
-const getWranglerPublicBaseUrl = async (bucket: string) => {
-  const cached = wranglerDevUrlCache.get(bucket);
-  if (cached) {
-    return cached;
-  }
-
-  const result = await runWrangler(['r2', 'bucket', 'dev-url', 'get', bucket]);
-
-  const output = `${result.stdout}\n${result.stderr}`;
-  const match = output.match(/https:\/\/[^\s]+/);
-  if (!match) {
-    throw serviceUnavailable('unable to determine the R2 public URL', {
-      hint: 'set R2_PUBLIC_BASE_URL or enable the bucket r2.dev URL',
-    });
-  }
-
-  const baseUrl = normalizeBaseUrl(match[0]);
-  wranglerDevUrlCache.set(bucket, baseUrl);
-  return baseUrl;
-};
-
-const getPublicBaseUrl = async () => {
+const getPublicBaseUrl = () => {
   const env = getEnv();
   if (env.r2PublicBaseUrl) {
     return normalizeBaseUrl(env.r2PublicBaseUrl);
   }
 
-  if (detectStorageMode() === 'wrangler-cli') {
-    return getWranglerPublicBaseUrl(env.r2Bucket);
-  }
-
   throw serviceUnavailable('R2 uploads require a public base URL', {
-    hint: 'set R2_PUBLIC_BASE_URL to your r2.dev URL or custom media domain',
+    hint: 'set R2_PUBLIC_BASE_URL to your custom media domain',
   });
 };
 
@@ -366,19 +244,6 @@ const uploadWithS3 = async (objectKey: string, body: Buffer, mimeType: string) =
   );
 };
 
-const uploadWithWrangler = async (objectKey: string, body: Buffer, mimeType: string) => {
-  const env = getEnv();
-  const tempDir = await mkdtemp(join(tmpdir(), 'rebase-r2-'));
-  const tempFile = join(tempDir, 'upload.bin');
-
-  try {
-    await writeFile(tempFile, body);
-    await runWrangler(['r2', 'object', 'put', `${env.r2Bucket}/${objectKey}`, '--remote', '--file', tempFile, '--content-type', mimeType]);
-  } finally {
-    await rm(tempDir, { recursive: true, force: true });
-  }
-};
-
 const deleteWithS3 = async (bucket: string, objectKey: string) => {
   const client = getS3Client();
 
@@ -388,10 +253,6 @@ const deleteWithS3 = async (bucket: string, objectKey: string) => {
       Key: objectKey,
     }),
   );
-};
-
-const deleteWithWrangler = async (bucket: string, objectKey: string) => {
-  await runWrangler(['r2', 'object', 'delete', `${bucket}/${objectKey}`, '--remote']);
 };
 
 export const getAssetUploadConfig = (): AdminAssetUploadConfig => {
@@ -476,13 +337,9 @@ export const uploadAssetToR2 = async ({
   const dimensions = ensureImageDimensions(buffer, mimeType);
   const normalizedAssetType = classifyAssetType(mimeType, assetType);
 
-  if (mode === 'r2-s3') {
-    await uploadWithS3(objectKey, buffer, mimeType);
-  } else if (mode === 'wrangler-cli') {
-    await uploadWithWrangler(objectKey, buffer, mimeType);
-  }
+  await uploadWithS3(objectKey, buffer, mimeType);
 
-  const publicBaseUrl = await getPublicBaseUrl();
+  const publicBaseUrl = getPublicBaseUrl();
 
   return {
     storageProvider: 'r2',
@@ -523,10 +380,5 @@ export const deleteAssetFromStorage = async ({ storageProvider, bucket, objectKe
     throw serviceUnavailable('R2 delete is missing the bucket configuration');
   }
 
-  if (mode === 'r2-s3') {
-    await deleteWithS3(targetBucket, objectKey);
-    return;
-  }
-
-  await deleteWithWrangler(targetBucket, objectKey);
+  await deleteWithS3(targetBucket, objectKey);
 };

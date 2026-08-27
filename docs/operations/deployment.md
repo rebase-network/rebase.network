@@ -195,7 +195,7 @@ pnpm deploy:server:config
 
 如果 R2 上传失败，检查：
 
-1. API 是否运行在 `r2-s3` 模式
+1. API 是否配置了 R2 S3 兼容接口
 2. R2 凭据和公开域名是否与 `docs/operations/production-config.md` 一致
 3. R2 key 是否具备 `Object Read & Write`
 4. 修改 env 后是否已重新部署 API

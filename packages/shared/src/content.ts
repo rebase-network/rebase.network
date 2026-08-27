@@ -803,7 +803,7 @@ export interface AdminAssetRecord {
 
 export interface AdminAssetUploadConfig {
   enabled: boolean;
-  mode: 'r2-s3' | 'wrangler-cli' | 'disabled';
+  mode: 'r2-s3' | 'disabled';
   storageProvider: 'r2';
   bucket: string;
   publicBaseUrl: string | null;
