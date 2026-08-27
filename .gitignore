@@ -11,6 +11,7 @@ test-results
 .env
 .env.*
 !.env.example
+!ops/.env.example
 .DS_Store
 wrangler.toml.bak
 geekdaily.csv

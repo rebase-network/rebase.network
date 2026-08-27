@@ -189,7 +189,7 @@ sync_env_remote() {
   local remote_temp
 
   require_local rsync
-  assert_remote_layout
+  remote_repo_exec "[ -f $(quote "$COMPOSE_FILE") ] || { echo missing $(quote "$COMPOSE_FILE") >&2; exit 1; }"
 
   resolved_local="$(resolve_local_abs_path "$local_path")"
   [[ -f "$resolved_local" ]] || die "missing local env file: ${resolved_local}"
@@ -197,8 +197,12 @@ sync_env_remote() {
   resolved_remote="$(resolve_remote_abs_path "$ENV_FILE")"
   remote_temp="${resolved_remote}.tmp.$(date +%s)"
 
-  log "backing up remote env before sync"
-  backup_env_remote "$backup_path"
+  if remote_exec "[ -f $(quote "$resolved_remote") ]"; then
+    log "backing up remote env before sync"
+    backup_env_remote "$backup_path"
+  else
+    log "remote env does not exist yet; creating it from local config"
+  fi
 
   log "uploading ${resolved_local} to temporary remote path"
   rsync -az --human-readable "$resolved_local" "${REMOTE_HOST}:${remote_temp}"

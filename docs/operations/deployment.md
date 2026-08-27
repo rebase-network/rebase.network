@@ -27,21 +27,18 @@
 
 ### 2. 准备后端服务器
 
-同步仓库到服务器：
+在部署机本地创建生产环境文件：
+
+```bash
+cp ops/.env.example ops/.env
+```
+
+然后按 `docs/operations/production-config.md` 填入后端、R2 和外部发布配置，并同步到远端：
 
 ```bash
 ./ops/manage.sh sync
+./ops/manage.sh sync-env ops/.env
 ```
-
-在服务器上创建生产环境文件：
-
-```bash
-ssh rebase@rebase.host
-cd /home/rebase/rebase.network
-cp infra/production/server.env.example infra/production/server.env
-```
-
-然后按 `docs/operations/production-config.md` 填入后端和 R2 必填值。
 
 ### 3. 部署后端栈
 
