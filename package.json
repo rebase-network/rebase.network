@@ -42,7 +42,9 @@
     "x:prototype": "node scripts/x-browser/post-with-profile.mjs"
   },
   "devDependencies": {
+    "@agent-infra/browser": "0.2.1",
     "@playwright/test": "^1.60.0",
+    "react": "19.2.3",
     "wrangler": "^4.98.0"
   },
   "pnpm": {

@@ -1,6 +1,6 @@
 # X 浏览器 Profile 原型
 
-这是一个仅用于本地验证的独立工具，不属于 API 或生产部署链路。它使用一个新的专用 Chrome `user-data-dir` 保存 X 登录会话，不使用现有的 `chrome-profile-A/B`，也不会把 Profile 上传到服务器。
+这是一个仅用于本地验证的独立工具，不属于 API 或生产部署链路。它参考 `/Users/r001/work/x-login`，使用 `@agent-infra/browser` 通过 Chrome DevTools Protocol 启动一个新的专用 Chrome `user-data-dir`，不使用现有的 `chrome-profile-A/B`，也不会把 Profile 上传到服务器。
 
 ## 首次登录
 
@@ -10,7 +10,7 @@
 pnpm x:prototype -- --profile .local/x-rebase-profile
 ```
 
-脚本会打开 `x.com/home`。在窗口中人工登录 RebaseCommunity 账号并完成验证，检测到首页后会关闭浏览器并保留专用 Profile。脚本不会接收或保存密码。
+脚本会打开 `x.com/home`。在窗口中人工登录 RebaseCommunity 账号并完成验证，检测到首页后会关闭浏览器并保留专用 Profile。脚本不会接收或保存密码。实际发布前还会从 X 的账号切换器或 Profile 链接确认当前账号是 `@RebaseCommunity`。
 
 ## 发布测试
 
@@ -19,6 +19,7 @@ pnpm x:prototype -- --profile .local/x-rebase-profile
 ```bash
 pnpm x:prototype -- \
   --profile .local/x-rebase-profile \
+  --handle RebaseCommunity \
   --publish \
   --text "极客日报：今日区块链动态 https://rebase.network"
 ```

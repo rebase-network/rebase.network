@@ -1,23 +1,15 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdirSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
 import { dirname, isAbsolute, resolve } from 'node:path';
 
-import { chromium } from '@playwright/test';
+import { Browser } from '@agent-infra/browser';
 
 const defaultProfilePath = resolve('.local/x-rebase-profile');
+const defaultHandle = 'RebaseCommunity';
 const loginTimeoutMs = 5 * 60 * 1000;
 const navigationTimeoutMs = 45 * 1000;
 const postTimeoutMs = 20 * 1000;
-
-const chromeCandidates = [
-  process.env.CHROME_PATH,
-  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-  '/usr/bin/google-chrome',
-  '/usr/bin/google-chrome-stable',
-  '/usr/bin/chromium',
-  '/usr/bin/chromium-browser',
-].filter(Boolean);
 
 const usage = () => {
   console.log(`Usage:
@@ -25,19 +17,28 @@ const usage = () => {
 
 Options:
   --profile <path>  Dedicated Chrome user-data-dir (default: .local/x-rebase-profile)
+  --handle <name>   Expected X account handle (default: RebaseCommunity)
   --text <text>     Tweet text; required with --publish
   --publish         Actually click the X publish button (default is login/check only)
   --headless        Run headless; first login must be completed in headed mode
   --help             Show this help
 
 Examples:
-  pnpm x:prototype
-  pnpm x:prototype -- --profile .local/x-rebase-profile --publish --text "日报标题 https://rebase.network"
+  pnpm x:prototype -- --profile .local/x-rebase-profile
+  pnpm x:prototype -- --handle RebaseCommunity --publish --text "日报标题 https://rebase.network"
 `);
 };
 
+const normalizeHandle = (value) => value.trim().replace(/^@/, '').toLowerCase();
+
 const parseArgs = (argv) => {
-  const options = { profile: defaultProfilePath, publish: false, headless: false, text: '' };
+  const options = {
+    profile: defaultProfilePath,
+    handle: defaultHandle,
+    publish: false,
+    headless: false,
+    text: '',
+  };
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -54,7 +55,7 @@ const parseArgs = (argv) => {
       options.headless = true;
       continue;
     }
-    if (arg === '--profile' || arg === '--text') {
+    if (arg === '--profile' || arg === '--handle' || arg === '--text') {
       const value = argv[index + 1];
       if (!value || value.startsWith('--')) {
         throw new Error(`${arg} requires a value`);
@@ -67,6 +68,10 @@ const parseArgs = (argv) => {
   }
 
   options.profile = isAbsolute(options.profile) ? options.profile : resolve(options.profile);
+  options.handle = normalizeHandle(options.handle);
+  if (!/^[a-z0-9_]{1,15}$/.test(options.handle)) {
+    throw new Error('--handle must contain 1-15 letters, numbers, or underscores');
+  }
   if (options.publish && !options.text.trim()) {
     throw new Error('--publish requires non-empty --text');
   }
@@ -77,24 +82,100 @@ const parseArgs = (argv) => {
   return options;
 };
 
-const findChrome = () => chromeCandidates.find((candidate) => existsSync(candidate));
+const launchBrowser = async (profile, headless) => {
+  const launchOrConnect = {
+    headless,
+    userDataDir: profile,
+    args: [
+      '--start-maximized',
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-blink-features=AutomationControlled',
+    ],
+    // Match x-login: Browser.create removes --enable-automation and guards navigator.webdriver.
+    ignoreDefaultArgs: ['--enable-automation'],
+  };
 
-const visible = async (locator) => locator.isVisible().catch(() => false);
+  if (process.env.CHROME_PATH?.trim()) {
+    launchOrConnect.executablePath = process.env.CHROME_PATH.trim();
+  }
+
+  return Browser.create({ launchOrConnect });
+};
+
+const isElementVisible = async (element) => {
+  try {
+    return await element.evaluate((node) => {
+      const style = window.getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      return style.visibility !== 'hidden' && style.display !== 'none' && rect.width > 0 && rect.height > 0;
+    });
+  } catch {
+    return false;
+  }
+};
 
 const firstVisible = async (page, selectors) => {
   for (const selector of selectors) {
-    const locator = page.locator(selector).first();
-    if (await visible(locator)) return locator;
+    const element = await page.$(selector);
+    if (!element) continue;
+    if (await isElementVisible(element)) return element;
+    await element.dispose();
   }
   return null;
 };
 
-const isLoggedIn = async (page) => Boolean(await firstVisible(page, [
-  '[data-testid="tweetTextarea_0"]',
-  '[data-testid="SideNav_NewTweet_Button"]',
-  '[data-testid="AppTabBar_Home_Link"]',
-  'a[href="/home"]',
-]));
+const isLoggedIn = async (page) => {
+  if (!page.url().includes('x.com/home')) return false;
+  const element = await firstVisible(page, [
+    '[data-testid="tweetTextarea_0"]',
+    '[data-testid="SideNav_NewTweet_Button"]',
+    '[data-testid="AppTabBar_Home_Link"]',
+    'a[href="/home"]',
+  ]);
+  if (!element) return false;
+  await element.dispose();
+  return true;
+};
+
+const readCurrentHandle = async (page) => {
+  const accountButton = await firstVisible(page, ['[data-testid="SideNav_AccountSwitcher_Button"]']);
+  if (accountButton) {
+    const text = await accountButton.evaluate((node) => node.textContent ?? '');
+    await accountButton.dispose();
+    const match = text.match(/@([A-Za-z0-9_]{1,15})/);
+    if (match) return normalizeHandle(match[1]);
+  }
+
+  const profileLink = await firstVisible(page, [
+    '[data-testid="AppTabBar_Profile_Link"]',
+    'a[href^="/"][aria-label*="Profile"]',
+  ]);
+  if (profileLink) {
+    const href = await profileLink.getProperty('href');
+    const value = await href.jsonValue().catch(() => '');
+    await profileLink.dispose();
+    try {
+      const path = new URL(String(value)).pathname.replace(/^\//, '');
+      if (/^[A-Za-z0-9_]{1,15}$/.test(path)) return normalizeHandle(path);
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+};
+
+const verifyAccount = async (page, expectedHandle) => {
+  const actualHandle = await readCurrentHandle(page);
+  if (!actualHandle) {
+    throw new Error(`无法确认当前 X 账号，请确认已登录 @${expectedHandle} 后再发布`);
+  }
+  if (actualHandle !== expectedHandle) {
+    throw new Error(`当前登录账号是 @${actualHandle}，不是预期的 @${expectedHandle}`);
+  }
+  console.log(`已确认当前账号：@${actualHandle}`);
+};
 
 const waitForLogin = async (page) => {
   const deadline = Date.now() + loginTimeoutMs;
@@ -124,6 +205,7 @@ const openComposer = async (page) => {
   if (!composeButton) throw new Error('找不到 X 发帖入口，可能是页面结构已变化');
 
   await composeButton.click();
+  await composeButton.dispose();
   const composer = await firstVisible(page, [
     '[data-testid="tweetTextarea_0"]',
     'div[contenteditable="true"][role="textbox"]',
@@ -143,9 +225,13 @@ const extractTweetId = (payload) => {
 const publish = async (page, text) => {
   const composer = await openComposer(page);
   await composer.click();
-  await page.keyboard.press('ControlOrMeta+A');
+  const selectAllModifier = process.platform === 'darwin' ? 'Meta' : 'Control';
+  await page.keyboard.down(selectAllModifier);
+  await page.keyboard.press('a');
+  await page.keyboard.up(selectAllModifier);
   await page.keyboard.press('Backspace');
   await page.keyboard.insertText(text);
+  await composer.dispose();
 
   const postButton = await firstVisible(page, [
     '[data-testid="tweetButtonInline"]',
@@ -153,7 +239,12 @@ const publish = async (page, text) => {
     'button[data-testid*="tweetButton"]',
   ]);
   if (!postButton) throw new Error('找不到 X 发布按钮，可能是页面结构已变化');
-  if (!(await postButton.isEnabled().catch(() => false))) throw new Error('X 发布按钮当前不可用，请检查文本长度或账号状态');
+
+  const disabled = await postButton.evaluate((node) => node.getAttribute('aria-disabled') === 'true' || node.disabled === true);
+  if (disabled) {
+    await postButton.dispose();
+    throw new Error('X 发布按钮当前不可用，请检查文本长度或账号状态');
+  }
 
   const createTweetResponse = page.waitForResponse(
     (response) => /\/CreateTweet(?:$|\?|\/)/.test(response.url()) && response.request().method() === 'POST',
@@ -161,6 +252,7 @@ const publish = async (page, text) => {
   ).catch(() => null);
 
   await postButton.click();
+  await postButton.dispose();
   const response = await createTweetResponse;
   if (response?.ok()) {
     const payload = await response.json().catch(() => null);
@@ -170,8 +262,9 @@ const publish = async (page, text) => {
   }
 
   const status = await firstVisible(page, ['[data-testid="toast"]', '[role="status"]']);
-  const statusText = status ? (await status.textContent().catch(() => ''))?.trim() : '';
-  if (/posted|sent|published|已发布|已发送/i.test(statusText ?? '')) {
+  const statusText = status ? (await status.evaluate((node) => node.textContent ?? '')).trim() : '';
+  if (status) await status.dispose();
+  if (/posted|sent|published|已发布|已发送/i.test(statusText)) {
     console.log(`发布成功：${statusText}`);
     return;
   }
@@ -181,24 +274,15 @@ const publish = async (page, text) => {
 
 const main = async () => {
   const options = parseArgs(process.argv.slice(2));
-  const chromePath = findChrome();
-  if (!chromePath) {
-    throw new Error('找不到 Google Chrome，请设置 CHROME_PATH 环境变量');
-  }
-
   mkdirSync(dirname(options.profile), { recursive: true });
   console.log(`使用专用 Profile：${options.profile}`);
-  console.log(`使用浏览器：${chromePath}`);
 
-  const context = await chromium.launchPersistentContext(options.profile, {
-    executablePath: chromePath,
-    headless: options.headless,
-    viewport: { width: 1440, height: 960 },
-    timeout: navigationTimeoutMs,
-  });
-
+  const browser = await launchBrowser(options.profile, options.headless);
   try {
-    const page = context.pages()[0] ?? await context.newPage();
+    const activeTab = browser.getActiveTab();
+    if (!activeTab) throw new Error('浏览器没有可用标签页');
+    const page = activeTab.page;
+
     await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded', timeout: navigationTimeoutMs });
     if (!(await isLoggedIn(page))) {
       if (options.headless) throw new Error('当前 Profile 尚未登录；请先不带 --headless 运行一次完成人工登录');
@@ -206,13 +290,16 @@ const main = async () => {
     }
 
     if (!options.publish) {
-      console.log('登录会话有效。本次为检查模式，没有发布任何内容。');
+      const currentHandle = await readCurrentHandle(page);
+      console.log(currentHandle ? `登录会话有效，当前账号：@${currentHandle}` : '登录会话有效，但未能读取当前账号 handle');
+      console.log('本次为检查模式，没有发布任何内容。');
       return;
     }
 
+    await verifyAccount(page, options.handle);
     await publish(page, options.text.trim());
   } finally {
-    await context.close();
+    await browser.close();
   }
 };
 
