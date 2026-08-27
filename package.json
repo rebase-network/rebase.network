@@ -38,7 +38,8 @@
     "db:seed": "pnpm --filter @rebase/db seed",
     "admin:bootstrap": "pnpm --filter @rebase/api bootstrap-admin",
     "wechat:create-draft": "node scripts/wechat/create-draft.mjs",
-    "wechat:thumb-media-id": "node scripts/wechat/get-thumb-media-id.mjs"
+    "wechat:thumb-media-id": "node scripts/wechat/get-thumb-media-id.mjs",
+    "x:prototype": "node scripts/x-browser/post-with-profile.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
