@@ -2,6 +2,7 @@
 
 import { mkdirSync } from 'node:fs';
 import { dirname, isAbsolute, resolve } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import { Browser } from '@agent-infra/browser';
 
@@ -183,7 +184,7 @@ const waitForLogin = async (page) => {
 
   while (Date.now() < deadline) {
     if (await isLoggedIn(page)) return;
-    await page.waitForTimeout(1000);
+    await delay(1000);
   }
 
   throw new Error(`登录等待超时，当前页面：${page.url()}`);
