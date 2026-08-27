@@ -71,6 +71,13 @@
       "when": 1787694096238,
       "tag": "0009_wide_korath",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787851931722,
+      "tag": "0010_opposite_firebird",
+      "breakpoints": true
     }
   ]
 }

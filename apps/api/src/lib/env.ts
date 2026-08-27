@@ -15,6 +15,8 @@ export interface AppEnv {
   wechatOfficialAppSecret: string;
   wechatDefaultThumbMediaId: string;
   infoqCredentialsKey: string;
+  learnBlockchainApiKey: string;
+  learnBlockchainUrlPosts: string;
 }
 
 let envCache: AppEnv | null = null;
@@ -57,6 +59,8 @@ export const getEnv = (): AppEnv => {
     wechatOfficialAppSecret: process.env.WECHAT_OFFICIAL_APP_SECRET ?? '',
     wechatDefaultThumbMediaId: process.env.WECHAT_DEFAULT_THUMB_MEDIA_ID ?? '',
     infoqCredentialsKey: process.env.INFOQ_CREDENTIALS_KEY ?? process.env.BETTER_AUTH_SECRET ?? '',
+    learnBlockchainApiKey: process.env.LEARNBLOCKCHAIN_API_KEY ?? '',
+    learnBlockchainUrlPosts: process.env.LEARNBLOCKCHAIN_URL_POSTS ?? 'https://learnblockchain.cn/api/post/article',
   };
 
   return envCache;

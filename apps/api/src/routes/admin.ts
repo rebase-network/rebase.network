@@ -33,6 +33,7 @@ import { handleApiError, jsonError, ok } from '../lib/http.js';
 import { createAdminJob, getAdminJob, listAdminJobs, publishAdminJob, updateAdminJob, archiveAdminJob } from '../lib/jobs.js';
 import { getAdminSite, isInfoqConfigured, updateAboutPage, updateHomePage, updateInfoqSettings, updateSiteSettings } from '../lib/site.js';
 import { publishAdminArticleToInfoq, publishAdminEventToInfoq, publishAdminGeekDailyToInfoq, shouldAutoPublishToInfoq } from '../lib/infoq.js';
+import { isLearnBlockchainConfigured, publishAdminArticleToLearnBlockchain, publishAdminEventToLearnBlockchain, publishAdminGeekDailyToLearnBlockchain, shouldAutoPublishToLearnBlockchain } from '../lib/learnblockchain.js';
 import { createAdminStaff, getAdminStaff, listAdminRoles, listAdminStaff, updateAdminStaff } from '../lib/staff.js';
 import { getAdminMePayload, requireActiveStaff, type AppVariables } from '../middleware/auth.js';
 import { readPaginationInput } from '../lib/pagination.js';
@@ -53,11 +54,35 @@ const getAuditActor = (c: any) => ({
   userAgent: c.req.header('user-agent') ?? null,
 });
 
-const autoPublishToInfoq = async <T extends { id: string; status: string; infoqArticleUuid?: string | null }>(
+const autoPublishToExternal = async <T extends { id: string; status: string; infoqArticleUuid?: string | null; learnBlockchainArticleId?: string | null }>(
   record: T | null,
   actor: ReturnType<typeof getAuditActor>,
-  publish: (id: string, actor: ReturnType<typeof getAuditActor>) => Promise<T | null>,
-) => record && shouldAutoPublishToInfoq(record) && await isInfoqConfigured() ? publish(record.id, actor) : record;
+  infoqPublish: (id: string, actor: ReturnType<typeof getAuditActor>) => Promise<T | null>,
+  learnBlockchainPublish: (id: string, actor: ReturnType<typeof getAuditActor>) => Promise<T | null>,
+) => {
+  if (!record) return record;
+  let next = record;
+  let firstError: unknown = null;
+
+  if (shouldAutoPublishToInfoq(next) && await isInfoqConfigured()) {
+    try {
+      next = (await infoqPublish(next.id, actor)) ?? next;
+    } catch (error) {
+      firstError = error;
+    }
+  }
+
+  if (shouldAutoPublishToLearnBlockchain(next) && isLearnBlockchainConfigured()) {
+    try {
+      next = (await learnBlockchainPublish(next.id, actor)) ?? next;
+    } catch (error) {
+      firstError ??= error;
+    }
+  }
+
+  if (firstError) throw firstError;
+  return next;
+};
 
 const expectValid = <T>(c: any, result: { valid: boolean; data?: T; issues?: { path: string; message: string }[] }) => {
   if (result.valid && result.data) {
@@ -108,7 +133,7 @@ adminRoutes.post('/articles', requireActiveStaff('article.write'), async (c) => 
   const payload = expectValid(c, validateArticleInput(await c.req.json().catch(() => null)));
   const actor = getAuditActor(c);
   const record = await createAdminArticle(payload, actor);
-  return c.json(ok(await autoPublishToInfoq(record, actor, publishAdminArticleToInfoq)), 201);
+  return c.json(ok(await autoPublishToExternal(record, actor, publishAdminArticleToInfoq, publishAdminArticleToLearnBlockchain)), 201);
 });
 adminRoutes.get('/articles/:id', requireActiveStaff('article.read'), async (c) => {
   const record = await getAdminArticle(c.req.param('id'));
@@ -121,14 +146,15 @@ adminRoutes.patch('/articles/:id', requireActiveStaff('article.write'), async (c
   const payload = expectValid(c, validateArticleInput(await c.req.json().catch(() => null)));
   const actor = getAuditActor(c);
   const record = await updateAdminArticle(c.req.param('id'), payload, actor);
-  return c.json(ok(await autoPublishToInfoq(record, actor, publishAdminArticleToInfoq)));
+  return c.json(ok(await autoPublishToExternal(record, actor, publishAdminArticleToInfoq, publishAdminArticleToLearnBlockchain)));
 });
 adminRoutes.post('/articles/:id/publish', requireActiveStaff('article.publish'), async (c) => {
   const actor = getAuditActor(c);
   const record = await publishAdminArticle(c.req.param('id'), actor);
-  return c.json(ok(await autoPublishToInfoq(record, actor, publishAdminArticleToInfoq)));
+  return c.json(ok(await autoPublishToExternal(record, actor, publishAdminArticleToInfoq, publishAdminArticleToLearnBlockchain)));
 });
 adminRoutes.post('/articles/:id/infoq-publish', requireActiveStaff('article.publish'), async (c) => c.json(ok(await publishAdminArticleToInfoq(c.req.param('id'), getAuditActor(c)))));
+adminRoutes.post('/articles/:id/learnblockchain-publish', requireActiveStaff('article.publish'), async (c) => c.json(ok(await publishAdminArticleToLearnBlockchain(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.post('/articles/:id/archive', requireActiveStaff('article.publish'), async (c) => c.json(ok(await archiveAdminArticle(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.delete('/articles/:id', requireActiveStaff('article.publish'), async (c) => c.json(ok(await deleteAdminArticle(c.req.param('id'), getAuditActor(c)))));
 
@@ -170,7 +196,7 @@ adminRoutes.post('/events', requireActiveStaff('event.write'), async (c) => {
   const payload = expectValid(c, validateEventInput(await c.req.json().catch(() => null)));
   const actor = getAuditActor(c);
   const record = await createAdminEvent(payload, actor);
-  return c.json(ok(await autoPublishToInfoq(record, actor, publishAdminEventToInfoq)), 201);
+  return c.json(ok(await autoPublishToExternal(record, actor, publishAdminEventToInfoq, publishAdminEventToLearnBlockchain)), 201);
 });
 adminRoutes.get('/events/:id', requireActiveStaff('event.read'), async (c) => {
   const record = await getAdminEvent(c.req.param('id'));
@@ -183,14 +209,15 @@ adminRoutes.patch('/events/:id', requireActiveStaff('event.write'), async (c) =>
   const payload = expectValid(c, validateEventInput(await c.req.json().catch(() => null)));
   const actor = getAuditActor(c);
   const record = await updateAdminEvent(c.req.param('id'), payload, actor);
-  return c.json(ok(await autoPublishToInfoq(record, actor, publishAdminEventToInfoq)));
+  return c.json(ok(await autoPublishToExternal(record, actor, publishAdminEventToInfoq, publishAdminEventToLearnBlockchain)));
 });
 adminRoutes.post('/events/:id/publish', requireActiveStaff('event.publish'), async (c) => {
   const actor = getAuditActor(c);
   const record = await publishAdminEvent(c.req.param('id'), actor);
-  return c.json(ok(await autoPublishToInfoq(record, actor, publishAdminEventToInfoq)));
+  return c.json(ok(await autoPublishToExternal(record, actor, publishAdminEventToInfoq, publishAdminEventToLearnBlockchain)));
 });
 adminRoutes.post('/events/:id/infoq-publish', requireActiveStaff('event.publish'), async (c) => c.json(ok(await publishAdminEventToInfoq(c.req.param('id'), getAuditActor(c)))));
+adminRoutes.post('/events/:id/learnblockchain-publish', requireActiveStaff('event.publish'), async (c) => c.json(ok(await publishAdminEventToLearnBlockchain(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.post('/events/:id/archive', requireActiveStaff('event.publish'), async (c) => c.json(ok(await archiveAdminEvent(c.req.param('id'), getAuditActor(c)))));
 
 adminRoutes.get('/contributors/roles', requireActiveStaff('contributor.read'), async (c) => c.json(ok(await listAdminContributorRoles())));
@@ -237,7 +264,7 @@ adminRoutes.post('/geekdaily', requireActiveStaff('geekdaily.write'), async (c) 
   const payload = expectValid(c, validateGeekDailyEpisodeInput(await c.req.json().catch(() => null)));
   const actor = getAuditActor(c);
   const record = await createAdminGeekDailyEpisode(payload, actor);
-  return c.json(ok(await autoPublishToInfoq(record, actor, publishAdminGeekDailyToInfoq)), 201);
+  return c.json(ok(await autoPublishToExternal(record, actor, publishAdminGeekDailyToInfoq, publishAdminGeekDailyToLearnBlockchain)), 201);
 });
 adminRoutes.get('/geekdaily/:id', requireActiveStaff('geekdaily.read'), async (c) => {
   const record = await getAdminGeekDailyEpisode(c.req.param('id'));
@@ -250,7 +277,7 @@ adminRoutes.patch('/geekdaily/:id', requireActiveStaff('geekdaily.write'), async
   const payload = expectValid(c, validateGeekDailyEpisodeInput(await c.req.json().catch(() => null)));
   const actor = getAuditActor(c);
   const record = await updateAdminGeekDailyEpisode(c.req.param('id'), payload, actor);
-  return c.json(ok(await autoPublishToInfoq(record, actor, publishAdminGeekDailyToInfoq)));
+  return c.json(ok(await autoPublishToExternal(record, actor, publishAdminGeekDailyToInfoq, publishAdminGeekDailyToLearnBlockchain)));
 });
 adminRoutes.post('/geekdaily/:id/wechat-draft', requireActiveStaff('geekdaily.publish'), async (c) =>
   c.json(ok(await createAdminGeekDailyWechatDraft(c.req.param('id'), getAuditActor(c)))),
@@ -258,9 +285,10 @@ adminRoutes.post('/geekdaily/:id/wechat-draft', requireActiveStaff('geekdaily.pu
 adminRoutes.post('/geekdaily/:id/publish', requireActiveStaff('geekdaily.publish'), async (c) => {
   const actor = getAuditActor(c);
   const record = await publishAdminGeekDailyEpisode(c.req.param('id'), actor);
-  return c.json(ok(await autoPublishToInfoq(record, actor, publishAdminGeekDailyToInfoq)));
+  return c.json(ok(await autoPublishToExternal(record, actor, publishAdminGeekDailyToInfoq, publishAdminGeekDailyToLearnBlockchain)));
 });
 adminRoutes.post('/geekdaily/:id/infoq-publish', requireActiveStaff('geekdaily.publish'), async (c) => c.json(ok(await publishAdminGeekDailyToInfoq(c.req.param('id'), getAuditActor(c)))));
+adminRoutes.post('/geekdaily/:id/learnblockchain-publish', requireActiveStaff('geekdaily.publish'), async (c) => c.json(ok(await publishAdminGeekDailyToLearnBlockchain(c.req.param('id'), getAuditActor(c)))));
 adminRoutes.post('/geekdaily/:id/archive', requireActiveStaff('geekdaily.publish'), async (c) => c.json(ok(await archiveAdminGeekDailyEpisode(c.req.param('id'), getAuditActor(c)))));
 
 adminRoutes.get('/assets/upload-config', requireActiveStaff('asset.manage'), async (c) => c.json(ok(await getAdminAssetUploadConfig())));

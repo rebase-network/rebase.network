@@ -34,6 +34,8 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-rebase}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-rebase}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in infra/production/server.env}
       INFOQ_CREDENTIALS_KEY: ${INFOQ_CREDENTIALS_KEY:?set INFOQ_CREDENTIALS_KEY in infra/production/server.env}
+      LEARNBLOCKCHAIN_API_KEY: ${LEARNBLOCKCHAIN_API_KEY:-}
+      LEARNBLOCKCHAIN_URL_POSTS: ${LEARNBLOCKCHAIN_URL_POSTS:-https://learnblockchain.cn/api/post/article}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-https://api.rebase.network}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://rebase.network,https://rebase.community,https://admin.rebase.network}
       DEV_ADMIN_EMAIL: ${DEV_ADMIN_EMAIL:-admin@rebase.network}
