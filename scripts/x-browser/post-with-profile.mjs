@@ -8,8 +8,8 @@ import { Browser } from '@agent-infra/browser';
 
 const defaultProfilePath = resolve('.local/x-rebase-profile');
 const defaultHandle = 'RebaseCommunity';
-const loginTimeoutMs = 5 * 60 * 1000;
 const navigationTimeoutMs = 45 * 1000;
+const sessionCheckTimeoutMs = 20 * 1000;
 const postTimeoutMs = 20 * 1000;
 
 const usage = () => {
@@ -83,7 +83,7 @@ const parseArgs = (argv) => {
   return options;
 };
 
-const launchBrowser = async (profile, headless) => {
+const launchBrowser = async ({ profile, headless }) => {
   const launchOrConnect = {
     headless,
     userDataDir: profile,
@@ -93,8 +93,8 @@ const launchBrowser = async (profile, headless) => {
       '--disable-setuid-sandbox',
       '--disable-blink-features=AutomationControlled',
     ],
-    // Match x-login: Browser.create removes --enable-automation and guards navigator.webdriver.
-    ignoreDefaultArgs: ['--enable-automation'],
+    // Keep normal Chrome's macOS Keychain-backed cookies readable while removing automation markers.
+    ignoreDefaultArgs: ['--enable-automation', '--password-store=basic', '--use-mock-keychain'],
   };
 
   if (process.env.CHROME_PATH?.trim()) {
@@ -139,6 +139,15 @@ const isLoggedIn = async (page) => {
   return true;
 };
 
+const waitForSession = async (page) => {
+  const deadline = Date.now() + sessionCheckTimeoutMs;
+  while (Date.now() < deadline) {
+    if (await isLoggedIn(page)) return true;
+    await delay(500);
+  }
+  return false;
+};
+
 const readCurrentHandle = async (page) => {
   const accountButton = await firstVisible(page, ['[data-testid="SideNav_AccountSwitcher_Button"]']);
   if (accountButton) {
@@ -176,18 +185,6 @@ const verifyAccount = async (page, expectedHandle) => {
     throw new Error(`当前登录账号是 @${actualHandle}，不是预期的 @${expectedHandle}`);
   }
   console.log(`已确认当前账号：@${actualHandle}`);
-};
-
-const waitForLogin = async (page) => {
-  const deadline = Date.now() + loginTimeoutMs;
-  console.log('请在打开的 Chrome 窗口中登录 RebaseCommunity 的 X 账号；脚本不会读取或保存密码。');
-
-  while (Date.now() < deadline) {
-    if (await isLoggedIn(page)) return;
-    await delay(1000);
-  }
-
-  throw new Error(`登录等待超时，当前页面：${page.url()}`);
 };
 
 const openComposer = async (page) => {
@@ -231,7 +228,7 @@ const publish = async (page, text) => {
   await page.keyboard.press('a');
   await page.keyboard.up(selectAllModifier);
   await page.keyboard.press('Backspace');
-  await page.keyboard.insertText(text);
+  await composer.type(text, { delay: 10 });
   await composer.dispose();
 
   const postButton = await firstVisible(page, [
@@ -278,16 +275,15 @@ const main = async () => {
   mkdirSync(dirname(options.profile), { recursive: true });
   console.log(`使用专用 Profile：${options.profile}`);
 
-  const browser = await launchBrowser(options.profile, options.headless);
+  const browser = await launchBrowser(options);
   try {
     const activeTab = browser.getActiveTab();
     if (!activeTab) throw new Error('浏览器没有可用标签页');
     const page = activeTab.page;
 
     await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded', timeout: navigationTimeoutMs });
-    if (!(await isLoggedIn(page))) {
-      if (options.headless) throw new Error('当前 Profile 尚未登录；请先不带 --headless 运行一次完成人工登录');
-      await waitForLogin(page);
+    if (!(await waitForSession(page))) {
+      throw new Error('当前 Profile 尚未登录；请先用普通 Chrome 打开该 Profile 完成人工登录并正常关闭浏览器');
     }
 
     if (!options.publish) {

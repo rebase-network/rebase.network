@@ -1,16 +1,31 @@
 # X 浏览器 Profile 原型
 
-这是一个仅用于本地验证的独立工具，不属于 API 或生产部署链路。它参考 `/Users/r001/work/x-login`，使用 `@agent-infra/browser` 通过 Chrome DevTools Protocol 启动一个新的专用 Chrome `user-data-dir`，不使用现有的 `chrome-profile-A/B`，也不会把 Profile 上传到服务器。
+这是一个仅用于本地验证的独立工具，不属于 API 或生产部署链路。它参考 `/Users/r001/work/x-login`，使用 `@agent-infra/browser` 通过 Chrome DevTools Protocol 启动一个新的专用 Chrome `user-data-dir`，不使用现有的 `chrome-profile-A/B`，也不会把 Profile 上传到服务器。在 macOS 上，脚本会保留系统 Keychain 的 Cookie 加密方式，以便读取普通 Chrome 创建的登录会话。
 
 ## 首次登录
 
-确保本机已安装 Google Chrome，然后运行：
+确保本机已安装 Google Chrome。首次登录必须使用普通 Chrome，不能在自动化 Chrome 或带调试端口的 Chrome 中完成：
 
 ```bash
-pnpm x:prototype -- --profile .local/x-rebase-profile
+chrome_app="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+profile_dir="$PWD/.local/x-rebase-profile"
+
+open -na "$chrome_app" --args \
+  "--user-data-dir=$profile_dir" \
+  "https://x.com/i/flow/login"
 ```
 
-脚本会打开 `x.com/home`。在窗口中人工登录 RebaseCommunity 账号并完成验证，检测到首页后会关闭浏览器并保留专用 Profile。脚本不会接收或保存密码。实际发布前还会从 X 的账号切换器或 Profile 链接确认当前账号是 `@RebaseCommunity`。
+在窗口中人工登录 RebaseCommunity 账号，确认进入 `https://x.com/home`，然后正常关闭整个 Chrome 窗口。脚本不会接收或保存密码。实际发布前还会从 X 的账号切换器或 Profile 链接确认当前账号是 `@RebaseCommunity`。
+
+先执行只读检查：
+
+```bash
+ditto "$profile_dir" "${profile_dir}.backup-$(date +%Y%m%d-%H%M%S)"
+
+pnpm x:prototype -- \
+  --profile .local/x-rebase-profile \
+  --handle RebaseCommunity
+```
 
 ## 发布测试
 
