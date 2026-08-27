@@ -25,7 +25,7 @@
     "deploy:web": "node scripts/deploy/block-manual-production.mjs rebase-web",
     "deploy:admin:dry-run": "pnpm build:admin:prod && pnpm exec wrangler deploy --config apps/admin/wrangler.production.jsonc --dry-run",
     "deploy:admin": "node scripts/deploy/block-manual-production.mjs rebase-admin",
-    "deploy:server:config": "POSTGRES_PASSWORD=example BETTER_AUTH_SECRET=example CLOUDFLARED_TUNNEL_TOKEN=example docker compose --env-file infra/production/server.env.example -f infra/production/docker-compose.yml config",
+    "deploy:server:config": "POSTGRES_PASSWORD=example BETTER_AUTH_SECRET=example INFOQ_CREDENTIALS_KEY=example CLOUDFLARED_TUNNEL_TOKEN=example docker compose --env-file ops/.env.example -f infra/production/docker-compose.yml config",
     "typecheck:admin": "pnpm --filter @rebase/admin typecheck",
     "typecheck:api": "pnpm --filter @rebase/api typecheck",
     "typecheck:backend": "pnpm typecheck:api && pnpm typecheck:admin",

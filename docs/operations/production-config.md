@@ -49,6 +49,8 @@
 | Server host | `rebase@rebase.host` |
 | 远端项目目录 | `/home/rebase/rebase.network` |
 | Compose 文件 | `infra/production/docker-compose.yml` |
+| 生产 env 模板 | `ops/.env.example` |
+| 本地生产 env 来源 | `ops/.env` |
 | 远端 env 文件 | `infra/production/server.env` |
 | 主辅助脚本 | `ops/manage.sh` |
 | API 服务名 | `api` |
@@ -61,7 +63,7 @@
 
 ## 必填后端 env
 
-使用 `infra/production/server.env.example` 作为远端 `infra/production/server.env` 模板。
+使用 `ops/.env.example` 创建本地 `ops/.env`，再通过 `./ops/manage.sh sync-env ops/.env` 同步到远端 `infra/production/server.env`。
 
 | 变量 | 用途 | Secret |
 | --- | --- | --- |
@@ -72,12 +74,17 @@
 | `BETTER_AUTH_SECRET` | 认证签名 secret | 是 |
 | `BETTER_AUTH_URL` | 外部 auth 基础 URL | 否 |
 | `CORS_ALLOWED_ORIGINS` | 浏览器来源列表 | 否 |
+| `INFOQ_CREDENTIALS_KEY` | InfoQ 凭证加密密钥 | 是 |
+| `LEARNBLOCKCHAIN_API_KEY` | LearnBlockchain 发布 API Key，可选 | 是 |
+| `LEARNBLOCKCHAIN_URL_POSTS` | LearnBlockchain 文章接口地址 | 否 |
 | `DEV_ADMIN_EMAIL` | 初始 admin email | 敏感 |
 | `DEV_ADMIN_PASSWORD` | 初始 admin password | 是 |
 | `DEV_ADMIN_NAME` | 初始 admin name | 否 |
 | `CLOUDFLARED_TUNNEL_TOKEN` | Tunnel token | 是 |
 
 ## 必填 R2 env
+
+R2 上传仅支持 S3 兼容接口。必须同时配置以下变量；缺少任意一项时，后台上传功能保持禁用。
 
 | 变量 | 用途 | Secret |
 | --- | --- | --- |
@@ -86,9 +93,6 @@
 | `R2_SECRET_ACCESS_KEY` | S3 风格 secret key | 是 |
 | `R2_BUCKET` | 存储桶名称 | 否 |
 | `R2_PUBLIC_BASE_URL` | 公共媒体基础 URL | 否 |
-| `R2_DEV_USE_WRANGLER` | 回退上传模式，生产环境保持 `false` | 否 |
-| `CLOUDFLARE_API_TOKEN` | 可选回退 token | 是 |
-| `WRANGLER_CONFIG_DIR` | 可选 Wrangler profile 路径 | 否 |
 
 ## 更新规则
 

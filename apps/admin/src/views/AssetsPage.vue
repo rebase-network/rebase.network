@@ -144,8 +144,6 @@ const uploadStatusMessage = computed(() => {
   switch (uploadConfig.value.mode) {
     case 'r2-s3':
       return '当前直接通过 R2 的 S3 接口上传。';
-    case 'wrangler-cli':
-      return '本地环境通过 Wrangler 将文件写入 R2。';
     default:
       return uploadConfig.value.message;
   }

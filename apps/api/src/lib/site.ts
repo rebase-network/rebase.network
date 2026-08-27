@@ -243,6 +243,11 @@ export const getInfoqCredentials = async () => {
   return { username: settings.infoqUsername, password: decryptInfoqPassword(settings.infoqPasswordEncrypted) };
 };
 
+export const isInfoqConfigured = async () => {
+  const settings = await ensureSiteSettings();
+  return Boolean(settings.infoqUsername && settings.infoqPasswordEncrypted);
+};
+
 export const updateSiteSettings = async (input: SiteSettingsInput, actor: AuditActor) => {
   const db = getDb();
   const current = await ensureSiteSettings();

@@ -10,12 +10,12 @@ export interface AppEnv {
   r2SecretAccessKey: string;
   r2Bucket: string;
   r2PublicBaseUrl: string;
-  r2DevUseWrangler: boolean;
   wechatOfficialAppId: string;
   wechatOfficialAppSecret: string;
   wechatDefaultThumbMediaId: string;
   infoqCredentialsKey: string;
-  infoqChromiumExecutablePath: string;
+  learnBlockchainApiKey: string;
+  learnBlockchainUrlPosts: string;
 }
 
 let envCache: AppEnv | null = null;
@@ -25,14 +25,6 @@ const parseOrigins = (value: string) =>
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
-
-const parseBoolean = (value: string | undefined, fallback = false) => {
-  if (value === undefined) {
-    return fallback;
-  }
-
-  return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase());
-};
 
 export const getEnv = (): AppEnv => {
   if (envCache) {
@@ -53,12 +45,12 @@ export const getEnv = (): AppEnv => {
     r2SecretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? '',
     r2Bucket: process.env.R2_BUCKET ?? 'rebase-media',
     r2PublicBaseUrl: process.env.R2_PUBLIC_BASE_URL ?? '',
-    r2DevUseWrangler: parseBoolean(process.env.R2_DEV_USE_WRANGLER, false),
     wechatOfficialAppId: process.env.WECHAT_OFFICIAL_APP_ID ?? '',
     wechatOfficialAppSecret: process.env.WECHAT_OFFICIAL_APP_SECRET ?? '',
     wechatDefaultThumbMediaId: process.env.WECHAT_DEFAULT_THUMB_MEDIA_ID ?? '',
     infoqCredentialsKey: process.env.INFOQ_CREDENTIALS_KEY ?? process.env.BETTER_AUTH_SECRET ?? '',
-    infoqChromiumExecutablePath: process.env.INFOQ_CHROMIUM_EXECUTABLE_PATH ?? '',
+    learnBlockchainApiKey: process.env.LEARNBLOCKCHAIN_API_KEY ?? '',
+    learnBlockchainUrlPosts: process.env.LEARNBLOCKCHAIN_URL_POSTS ?? 'https://learnblockchain.cn/api/post/article',
   };
 
   return envCache;

@@ -88,6 +88,7 @@ const mapEventDetail = (row: any) => ({
   seoTitle: row.seoTitle ?? '',
   seoDescription: row.seoDescription ?? '',
   infoqArticleUuid: row.infoqArticleUuid ?? null,
+  learnBlockchainArticleId: row.learnBlockchainArticleId ?? null,
   status: row.status,
   publishedAt: toIsoString(row.publishedAt),
   createdAt: toIsoString(row.createdAt) ?? new Date().toISOString(),
