@@ -84,6 +84,11 @@ const parseArgs = (argv) => {
 };
 
 const launchBrowser = async ({ profile, headless }) => {
+  const ignoreDefaultArgs = ['--enable-automation'];
+  if (process.platform === 'darwin') {
+    ignoreDefaultArgs.push('--password-store=basic', '--use-mock-keychain');
+  }
+
   const launchOrConnect = {
     headless,
     userDataDir: profile,
@@ -93,8 +98,8 @@ const launchBrowser = async ({ profile, headless }) => {
       '--disable-setuid-sandbox',
       '--disable-blink-features=AutomationControlled',
     ],
-    // Keep normal Chrome's macOS Keychain-backed cookies readable while removing automation markers.
-    ignoreDefaultArgs: ['--enable-automation', '--password-store=basic', '--use-mock-keychain'],
+    // macOS needs Keychain-backed cookies; Linux keeps Puppeteer's stable basic password store.
+    ignoreDefaultArgs,
   };
 
   if (process.env.CHROME_PATH?.trim()) {

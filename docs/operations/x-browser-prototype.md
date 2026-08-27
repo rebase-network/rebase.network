@@ -46,5 +46,6 @@ pnpm x:prototype -- \
 - 这是 X 网页自动化，不是官方 API；X 修改页面结构、触发风控或撤销会话后都可能失效。
 - Profile 只能由一个 Chrome 实例使用，运行前请关闭同一个 Profile 的其他窗口。
 - macOS Profile 不应复制到 Linux 服务器；系统密钥环和设备环境不同。服务器验证应在服务器上新建 Profile 并人工登录。
+- Linux 首次登录和后续自动化必须使用相同的 Chrome 用户及密码存储方式；当前脚本使用 Puppeteer 默认的 basic password store。
 - 发布响应不明确时脚本会停止并要求人工确认，不会自动重试，以避免重复发帖。
 - 当前原型只验证纯文本发帖，不处理图片、线程、定时和后台队列。
