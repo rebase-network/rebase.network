@@ -11,4 +11,6 @@ assert.equal(infoqWordCount('abc中文'), 4);
 assert.equal(shouldAutoPublishToInfoq({ status: 'published', infoqArticleUuid: null }), true);
 assert.equal(shouldAutoPublishToInfoq({ status: 'published', infoqArticleUuid: 'existing' }), false);
 assert.equal(shouldAutoPublishToInfoq({ status: 'draft', infoqArticleUuid: null }), false);
+assert.doesNotMatch(JSON.stringify(markdownToDoc('before <script>alert(1)</script> after')), /[<>]/);
+assert.doesNotMatch(JSON.stringify(markdownToDoc('<script>alert(1)</script>')), /[<>]/);
 console.log('InfoQ markdown conversion self-check passed');

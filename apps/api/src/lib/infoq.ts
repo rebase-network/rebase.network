@@ -151,6 +151,12 @@ const loginInfoqApi = async (): Promise<InfoqApiClient> => {
 };
 
 const paragraphAttrs = () => ({ indent: 0, number: 0, align: null, origin: null });
+const stripHtmlMarkup = (value: string) => value.replace(/[<>]/g, '');
+const renderInfoqHtml = (markdown: string) => {
+  const renderer = new marked.Renderer();
+  renderer.html = ({ text }) => stripHtmlMarkup(text);
+  return marked.parse(markdown, { async: false, renderer }) as string;
+};
 
 const inlineNodes = (tokens: any[] = [], marks: InfoqNode['marks'] = []): InfoqNode[] => tokens.flatMap((token) => {
   if (token.type === 'text' || token.type === 'escape') return token.text ? [{ type: 'text', text: token.text, ...(marks.length ? { marks } : {}) }] : [];
@@ -165,7 +171,7 @@ const inlineNodes = (tokens: any[] = [], marks: InfoqNode['marks'] = []): InfoqN
   }];
   if (token.type === 'br') return [{ type: 'text', text: '\n', ...(marks.length ? { marks } : {}) }];
   if (token.type === 'html') {
-    const text = token.text.replace(/<[^>]+>/g, '');
+    const text = stripHtmlMarkup(token.text);
     return text ? [{ type: 'text', text, ...(marks.length ? { marks } : {}) }] : [];
   }
   if (token.tokens) return inlineNodes(token.tokens, marks);
@@ -193,6 +199,10 @@ const blockNodes = (tokens: any[]): InfoqNode[] => tokens.flatMap((token) => {
   }
   if (token.type === 'table') {
     const text = typeof token.raw === 'string' ? token.raw.trim() : [token.header, ...(token.rows ?? []).flat()].join(' | ');
+    return text ? [{ type: 'paragraph', attrs: paragraphAttrs(), content: [{ type: 'text', text }] }] : [];
+  }
+  if (token.type === 'html') {
+    const text = stripHtmlMarkup(String(token.text ?? ''));
     return text ? [{ type: 'paragraph', attrs: paragraphAttrs(), content: [{ type: 'text', text }] }] : [];
   }
   return token.text ? [{ type: 'paragraph', attrs: paragraphAttrs(), content: [{ type: 'text', text: token.text }] }] : [];
@@ -258,7 +268,7 @@ const publish = async (input: InfoqArticleInput): Promise<InfoqPublishResult> =>
     const summary = trimUtf8(input.summary || firstParagraph(input.bodyMarkdown), 120);
     const labels = await resolveLabels(client, input.tags);
     await client.request('/api/v1/draft/pushFull', { id: draft.id, content, version: 0, cover: '', title, summary });
-    const contentHtml = marked.parse(input.bodyMarkdown, { async: false }) as string;
+    const contentHtml = renderInfoqHtml(input.bodyMarkdown);
     const result = await client.request<{ uuid: string }>('/api/v1/article/publish', {
       id: draft.id,
       content,
