@@ -12,6 +12,12 @@ LOCAL_ENV_SYNC_FILE="${REBASE_LOCAL_ENV_FILE:-ops/.env}"
 LOCAL_ENV_DOWNLOAD_FILE="${REBASE_LOCAL_ENV_DOWNLOAD_FILE:-ops/.env.download}"
 API_PORT="${REBASE_API_PORT:-8788}"
 DEFAULT_LOG_TAIL="${REBASE_LOG_TAIL:-120}"
+X_PROFILE_DIR="${REBASE_X_PROFILE_DIR:-/home/rebase/.local/share/rebase-x-profile}"
+X_HANDLE="${REBASE_X_HANDLE:-RebaseCommunity}"
+X_NODE_BIN_DIR="${REBASE_X_NODE_BIN_DIR:-/home/rebase/.local/node-v22.21.1-linux-x64/bin}"
+X_CHROME_PATH="${REBASE_X_CHROME_PATH:-/usr/bin/google-chrome-stable}"
+X_VNC_PORT="${REBASE_X_VNC_PORT:-5907}"
+X_TUNNEL_SOCKET="${REBASE_X_TUNNEL_SOCKET:-/tmp/rebase-x-vnc-${UID}.sock}"
 
 SSH_OPTS=(
   -o
@@ -359,6 +365,34 @@ rollout_target() {
   log "rollout complete; backup stored at $(resolve_remote_abs_path "$backup_path")"
 }
 
+x_remote_script() {
+  local action="$1"
+  remote_repo_exec "X_PROFILE_DIR=$(quote "$X_PROFILE_DIR") CHROME_PATH=$(quote "$X_CHROME_PATH") X_LOGIN_VNC_PORT=$(quote "$X_VNC_PORT") bash scripts/x-browser/remote-login-session.sh $(quote "$action")"
+}
+
+x_profile_check() {
+  remote_repo_exec "export PATH=$(quote "$X_NODE_BIN_DIR"):\$PATH; CHROME_PATH=$(quote "$X_CHROME_PATH") X_PROFILE_DIR=$(quote "$X_PROFILE_DIR") X_HANDLE=$(quote "$X_HANDLE") pnpm x:profile-check"
+}
+
+x_tunnel_start() {
+  require_local ssh
+  if [[ -S "$X_TUNNEL_SOCKET" ]] && ssh -S "$X_TUNNEL_SOCKET" -O check "$REMOTE_HOST" >/dev/null 2>&1; then
+    printf '[manage] error: X VNC tunnel is already running: %s\n' "$X_TUNNEL_SOCKET" >&2
+    return 1
+  fi
+  [[ ! -e "$X_TUNNEL_SOCKET" ]] || unlink "$X_TUNNEL_SOCKET"
+  ssh "${SSH_OPTS[@]}" -M -S "$X_TUNNEL_SOCKET" -fN -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -L "127.0.0.1:${X_VNC_PORT}:127.0.0.1:${X_VNC_PORT}" "$REMOTE_HOST"
+  log "X VNC tunnel ready at vnc://127.0.0.1:${X_VNC_PORT}"
+  if command -v open >/dev/null 2>&1; then open "vnc://127.0.0.1:${X_VNC_PORT}"; fi
+}
+
+x_tunnel_stop() {
+  if [[ -S "$X_TUNNEL_SOCKET" ]]; then
+    ssh -S "$X_TUNNEL_SOCKET" -O exit "$REMOTE_HOST" >/dev/null 2>&1 || true
+    [[ ! -e "$X_TUNNEL_SOCKET" ]] || unlink "$X_TUNNEL_SOCKET"
+  fi
+}
+
 usage() {
   cat <<EOF
 Usage:
@@ -378,6 +412,7 @@ Usage:
   ./ops/manage.sh ready
   ./ops/manage.sh exec <service> -- <command...>
   ./ops/manage.sh db <shell|query|logs|restart|backup|download|list-backups|list-exports|export|export-query|migrate>
+  ./ops/manage.sh x <check|status|login-start|login-stop|backup>
   ./ops/manage.sh bootstrap-admin
   ./ops/manage.sh seed
   ./ops/manage.sh ssh
@@ -391,6 +426,11 @@ Environment overrides:
   REBASE_LOCAL_ENV_DOWNLOAD_FILE default: ${LOCAL_ENV_DOWNLOAD_FILE}
   REBASE_API_PORT      default: ${API_PORT}
   REBASE_LOG_TAIL      default: ${DEFAULT_LOG_TAIL}
+  REBASE_X_PROFILE_DIR default: ${X_PROFILE_DIR}
+  REBASE_X_HANDLE      default: ${X_HANDLE}
+  REBASE_X_NODE_BIN_DIR default: ${X_NODE_BIN_DIR}
+  REBASE_X_CHROME_PATH default: ${X_CHROME_PATH}
+  REBASE_X_VNC_PORT    default: ${X_VNC_PORT}
 
 Examples:
   ./ops/manage.sh deploy api
@@ -406,6 +446,9 @@ Examples:
   ./ops/manage.sh db download backups/rebase-20260415-120000.sql.gz ./rebase.sql.gz
   ./ops/manage.sh db export-query "select id, email from staff_accounts" exports/staff_accounts.csv
   ./ops/manage.sh exec api -- pnpm --filter @rebase/api bootstrap-admin
+  ./ops/manage.sh x check
+  ./ops/manage.sh x login-start
+  ./ops/manage.sh x login-stop
 EOF
 }
 
@@ -630,6 +673,48 @@ EOF
 
       *)
         die "unknown db subcommand: $subcommand"
+        ;;
+    esac
+    ;;
+
+  x)
+    subcommand="${1:-status}"
+    [[ $# -gt 0 ]] && shift
+    [[ $# -eq 0 ]] || die "x $subcommand does not accept additional arguments"
+    case "$subcommand" in
+      check)
+        x_profile_check
+        ;;
+      status)
+        x_remote_script status
+        if [[ -S "$X_TUNNEL_SOCKET" ]] && ssh -S "$X_TUNNEL_SOCKET" -O check "$REMOTE_HOST" >/dev/null 2>&1; then
+          echo "tunnel=running socket=$X_TUNNEL_SOCKET"
+        else
+          echo 'tunnel=stopped'
+        fi
+        ;;
+      login-start)
+        x_remote_script start
+        if ! x_tunnel_start; then
+          x_remote_script stop-no-backup || true
+          exit 1
+        fi
+        ;;
+      login-stop)
+        if ! x_remote_script stop; then
+          x_tunnel_stop
+          exit 1
+        fi
+        x_tunnel_stop
+        ;;
+      backup)
+        x_remote_script backup
+        ;;
+      help)
+        echo 'X commands: check, status, login-start, login-stop, backup'
+        ;;
+      *)
+        die "unknown x command: $subcommand"
         ;;
     esac
     ;;

@@ -44,6 +44,7 @@
 - `production-config.md`
 - `launch-checklist.md`
 - `repository-review-2026-06.md`
+- `x-login-runbook.md`
 
 ### `docs/archive/`
 

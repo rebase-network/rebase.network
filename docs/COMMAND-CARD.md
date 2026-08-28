@@ -117,6 +117,16 @@ pnpm deploy:server:config
 ./ops/manage.sh stop api
 ```
 
+## X Profile 维护
+
+```bash
+./ops/manage.sh x check
+./ops/manage.sh x status
+./ops/manage.sh x login-start
+./ops/manage.sh x login-stop
+./ops/manage.sh x backup
+```
+
 ## 远端 Bootstrap 与 Seed
 
 ```bash
