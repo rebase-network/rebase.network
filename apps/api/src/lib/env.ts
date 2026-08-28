@@ -16,6 +16,8 @@ export interface AppEnv {
   infoqCredentialsKey: string;
   learnBlockchainApiKey: string;
   learnBlockchainUrlPosts: string;
+  xPublisherEnabled: boolean;
+  xPublisherSocketPath: string;
 }
 
 let envCache: AppEnv | null = null;
@@ -51,6 +53,8 @@ export const getEnv = (): AppEnv => {
     infoqCredentialsKey: process.env.INFOQ_CREDENTIALS_KEY ?? process.env.BETTER_AUTH_SECRET ?? '',
     learnBlockchainApiKey: process.env.LEARNBLOCKCHAIN_API_KEY ?? '',
     learnBlockchainUrlPosts: process.env.LEARNBLOCKCHAIN_URL_POSTS ?? 'https://learnblockchain.cn/api/post/article',
+    xPublisherEnabled: process.env.X_PUBLISHER_ENABLED === 'true',
+    xPublisherSocketPath: process.env.X_PUBLISHER_SOCKET_PATH ?? '/var/run/rebase-x-browser/publisher.sock',
   };
 
   return envCache;

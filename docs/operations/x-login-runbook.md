@@ -74,3 +74,37 @@ Profile 备份与源目录同级，格式为：
 - VNC 密码每次启动随机生成，不写入仓库或 env。
 - Profile 等同于 X 账号会话凭据，不得提交、下载或通过 `ops/.env` 同步。
 - 发布结果不明确时不得立即重试，应先检查账号主页，防止重复推文。
+
+## 启动 X 发布服务
+
+API 容器通过 Unix socket 调用宿主机 publisher。首次启用时，在确认 Profile 已登录后执行：
+
+```bash
+./ops/manage.sh x publisher-start
+```
+
+然后在 `ops/.env` 中设置：
+
+```dotenv
+X_PUBLISHER_ENABLED=true
+X_PUBLISHER_SOCKET_PATH=/var/run/rebase-x-browser/publisher.sock
+```
+
+修改 `ops/.env` 后重新部署 API：
+
+```bash
+./ops/manage.sh sync-env ops/.env
+./ops/manage.sh rollout api
+```
+
+检查 publisher：
+
+```bash
+./ops/manage.sh x publisher-status
+```
+
+停止服务：
+
+```bash
+./ops/manage.sh x publisher-stop
+```

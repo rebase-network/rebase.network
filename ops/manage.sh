@@ -17,6 +17,7 @@ X_HANDLE="${REBASE_X_HANDLE:-RebaseCommunity}"
 X_NODE_BIN_DIR="${REBASE_X_NODE_BIN_DIR:-/home/rebase/.local/node-v22.21.1-linux-x64/bin}"
 X_CHROME_PATH="${REBASE_X_CHROME_PATH:-/usr/bin/google-chrome-stable}"
 X_VNC_PORT="${REBASE_X_VNC_PORT:-5907}"
+X_PUBLISHER_SOCKET_PATH="${REBASE_X_PUBLISHER_SOCKET_PATH:-/home/rebase/.local/state/rebase-x-browser/publisher.sock}"
 X_TUNNEL_SOCKET="${REBASE_X_TUNNEL_SOCKET:-/tmp/rebase-x-vnc-${UID}.sock}"
 
 SSH_OPTS=(
@@ -374,6 +375,11 @@ x_profile_check() {
   remote_repo_exec "export PATH=$(quote "$X_NODE_BIN_DIR"):\$PATH; CHROME_PATH=$(quote "$X_CHROME_PATH") X_PROFILE_DIR=$(quote "$X_PROFILE_DIR") X_HANDLE=$(quote "$X_HANDLE") pnpm x:profile-check"
 }
 
+x_remote_publisher() {
+  local action="$1"
+  remote_repo_exec "X_PROFILE_DIR=$(quote "$X_PROFILE_DIR") X_NODE_BIN_DIR=$(quote "$X_NODE_BIN_DIR") X_REPO_DIR=$(quote "$REMOTE_DIR") X_PUBLISHER_SOCKET_PATH=$(quote "$X_PUBLISHER_SOCKET_PATH") CHROME_PATH=$(quote "$X_CHROME_PATH") bash scripts/x-browser/publisher-service.sh $(quote "$action")"
+}
+
 x_tunnel_start() {
   require_local ssh
   if [[ -S "$X_TUNNEL_SOCKET" ]] && ssh -S "$X_TUNNEL_SOCKET" -O check "$REMOTE_HOST" >/dev/null 2>&1; then
@@ -431,6 +437,7 @@ Environment overrides:
   REBASE_X_NODE_BIN_DIR default: ${X_NODE_BIN_DIR}
   REBASE_X_CHROME_PATH default: ${X_CHROME_PATH}
   REBASE_X_VNC_PORT    default: ${X_VNC_PORT}
+  REBASE_X_PUBLISHER_SOCKET_PATH default: ${X_PUBLISHER_SOCKET_PATH}
 
 Examples:
   ./ops/manage.sh deploy api
@@ -449,6 +456,7 @@ Examples:
   ./ops/manage.sh x check
   ./ops/manage.sh x login-start
   ./ops/manage.sh x login-stop
+  ./ops/manage.sh x publisher-start
 EOF
 }
 
@@ -706,6 +714,15 @@ EOF
           exit 1
         fi
         x_tunnel_stop
+        ;;
+      publisher-start)
+        x_remote_publisher start
+        ;;
+      publisher-stop)
+        x_remote_publisher stop
+        ;;
+      publisher-status)
+        x_remote_publisher status
         ;;
       backup)
         x_remote_script backup

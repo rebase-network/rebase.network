@@ -41,7 +41,8 @@
     "wechat:thumb-media-id": "node scripts/wechat/get-thumb-media-id.mjs",
     "x:profile-check": "node scripts/x-browser/check-profile.mjs",
     "x:publish": "node scripts/x-browser/publish.mjs",
-    "x:self-check": "node scripts/x-browser/profile-client.test.mjs"
+    "x:self-check": "node scripts/x-browser/profile-client.test.mjs",
+    "x:adapter-self-check": "pnpm --filter @rebase/api exec tsx src/lib/x.test.ts"
   },
   "devDependencies": {
     "@agent-infra/browser": "0.2.1",
