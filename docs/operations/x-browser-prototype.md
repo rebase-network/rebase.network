@@ -1,6 +1,6 @@
-# X 浏览器 Profile 原型
+# X 浏览器 Profile 维护工具
 
-这是一个仅用于本地验证的独立工具，不属于 API 或生产部署链路。它参考 `/Users/r001/work/x-login`，使用 `@agent-infra/browser` 通过 Chrome DevTools Protocol 启动一个新的专用 Chrome `user-data-dir`，不使用现有的 `chrome-profile-A/B`，也不会把 Profile 上传到服务器。在 macOS 上，脚本会保留系统 Keychain 的 Cookie 加密方式，以便读取普通 Chrome 创建的登录会话。
+这个独立工具用于检查 X Profile，并在维护时执行受控的测试发布。它参考 `/Users/r001/work/x-login`，使用 `@agent-infra/browser` 通过 Chrome DevTools Protocol 启动专用 Chrome `user-data-dir`。在 macOS 上，脚本会保留系统 Keychain 的 Cookie 加密方式，以便读取普通 Chrome 创建的登录会话。
 
 ## 首次登录
 
@@ -22,7 +22,7 @@ open -na "$chrome_app" --args \
 ```bash
 ditto "$profile_dir" "${profile_dir}.backup-$(date +%Y%m%d-%H%M%S)"
 
-pnpm x:prototype -- \
+pnpm x:profile-check -- \
   --profile .local/x-rebase-profile \
   --handle RebaseCommunity
 ```
@@ -32,14 +32,25 @@ pnpm x:prototype -- \
 先准备一条短文本，建议只包含日报标题、摘要和 Rebase 链接：
 
 ```bash
-pnpm x:prototype -- \
+pnpm x:publish -- \
   --profile .local/x-rebase-profile \
   --handle RebaseCommunity \
-  --publish \
   --text "极客日报：今日区块链动态 https://rebase.network"
 ```
 
-不传 `--publish` 时始终是检查模式，不会点击发布按钮。
+`x:profile-check` 始终只读，不会点击发布按钮；只有 `x:publish` 会发布推文。
+
+## 远端检查
+
+```bash
+ssh rebase@rebase.host
+export PATH=/home/rebase/.local/node-v22.21.1-linux-x64/bin:$PATH
+export CHROME_PATH=/usr/bin/google-chrome-stable
+export X_PROFILE_DIR=/home/rebase/.local/share/rebase-x-profile
+export X_HANDLE=RebaseCommunity
+cd /home/rebase/rebase.network
+pnpm x:profile-check
+```
 
 ## 已知限制
 
@@ -48,4 +59,4 @@ pnpm x:prototype -- \
 - macOS Profile 不应复制到 Linux 服务器；系统密钥环和设备环境不同。服务器验证应在服务器上新建 Profile 并人工登录。
 - Linux 首次登录和后续自动化必须使用相同的 Chrome 用户及密码存储方式；当前脚本使用 Puppeteer 默认的 basic password store。
 - 发布响应不明确时脚本会停止并要求人工确认，不会自动重试，以避免重复发帖。
-- 当前原型只验证纯文本发帖，不处理图片、线程、定时和后台队列。
+- 当前工具只处理纯文本发帖，不处理图片或线程。
