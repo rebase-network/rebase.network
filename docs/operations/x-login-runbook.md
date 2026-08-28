@@ -8,6 +8,10 @@ X 发布使用服务器本机的专用 Chrome Profile：
 
 macOS Profile 不可上传到 Linux 使用。首次登录或会话失效后，必须在远端普通 Chrome 中人工登录。
 
+发布适配器使用该 Profile 处理文章、日报和活动，内容压缩为“标题 + 简介 + Rebase 链接”，并限制为 280 个 Unicode 字符。每条内容发布成功后会记录 `x_post_id`，已记录的内容不会重复发布。
+
+API 不直接启动 Chrome，而是通过受保护的 Unix socket 调用宿主机 X publisher。Profile、Chrome 和 publisher 都属于宿主机维护资源，不进入 API 镜像或 `ops/.env`。
+
 ## 检查 Profile
 
 ```bash
@@ -18,6 +22,14 @@ macOS Profile 不可上传到 Linux 使用。首次登录或会话失效后，�
 
 ```text
 X Profile 正常，当前账号：@rebasecommunity
+```
+
+本地维护工具也可直接检查指定 Profile：
+
+```bash
+X_PROFILE_DIR=/path/to/x-profile \
+X_HANDLE=RebaseCommunity \
+pnpm x:profile-check
 ```
 
 ## 人工登录
