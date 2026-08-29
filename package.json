@@ -38,10 +38,16 @@
     "db:seed": "pnpm --filter @rebase/db seed",
     "admin:bootstrap": "pnpm --filter @rebase/api bootstrap-admin",
     "wechat:create-draft": "node scripts/wechat/create-draft.mjs",
-    "wechat:thumb-media-id": "node scripts/wechat/get-thumb-media-id.mjs"
+    "wechat:thumb-media-id": "node scripts/wechat/get-thumb-media-id.mjs",
+    "x:profile-check": "node scripts/x-browser/check-profile.mjs",
+    "x:publish": "node scripts/x-browser/publish.mjs",
+    "x:self-check": "node scripts/x-browser/profile-client.test.mjs",
+    "x:adapter-self-check": "pnpm --filter @rebase/api exec tsx src/lib/x.test.ts"
   },
   "devDependencies": {
+    "@agent-infra/browser": "0.2.1",
     "@playwright/test": "^1.60.0",
+    "react": "19.2.3",
     "wrangler": "^4.98.0"
   },
   "pnpm": {

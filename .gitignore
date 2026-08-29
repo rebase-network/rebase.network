@@ -13,5 +13,6 @@ test-results
 !.env.example
 !ops/.env.example
 .DS_Store
+.local/x-rebase-profile/
 wrangler.toml.bak
 geekdaily.csv

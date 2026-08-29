@@ -9,6 +9,7 @@
 - 出问题时按什么顺序排查
 
 当前配置值见 `docs/operations/production-config.md`，发布后检查清单见 `docs/operations/launch-checklist.md`。
+服务器系统升级与历史服务清理见 `docs/operations/server-upgrade-and-cleanup.md`。
 
 ## 核心规则
 

@@ -77,6 +77,8 @@
 | `INFOQ_CREDENTIALS_KEY` | InfoQ 凭证加密密钥 | 是 |
 | `LEARNBLOCKCHAIN_API_KEY` | LearnBlockchain 发布 API Key，可选 | 是 |
 | `LEARNBLOCKCHAIN_URL_POSTS` | LearnBlockchain 文章接口地址 | 否 |
+| `X_PUBLISHER_ENABLED` | 是否启用宿主机 X publisher | 否 |
+| `X_PUBLISHER_SOCKET_PATH` | API 容器内的 X publisher Unix socket 路径 | 否 |
 | `DEV_ADMIN_EMAIL` | 初始 admin email | 敏感 |
 | `DEV_ADMIN_PASSWORD` | 初始 admin password | 是 |
 | `DEV_ADMIN_NAME` | 初始 admin name | 否 |
