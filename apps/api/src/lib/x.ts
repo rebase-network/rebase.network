@@ -82,10 +82,14 @@ const requestPublisher = async (text: string) => {
     request.end();
   }).catch((error) => {
     if (error instanceof Error && 'status' in error) throw error;
-    throw serviceUnavailable('X publisher request failed', { reason: error instanceof Error ? error.message : String(error) });
+    const reason = error instanceof Error ? error.message : String(error);
+    throw serviceUnavailable(`X publisher 请求失败：${reason}`, { reason });
   });
 
-  if (!payload.tweetId) throw serviceUnavailable('X publisher returned no tweet id', { error: payload.error });
+  if (!payload.tweetId) {
+    const reason = payload.error || 'publisher 未返回 tweet id';
+    throw serviceUnavailable(`X 发布失败：${reason}`, { error: payload.error });
+  }
   return { tweetId: payload.tweetId, url: payload.url ?? `https://x.com/status/${payload.tweetId}` };
 };
 
@@ -105,9 +109,14 @@ export const publishAdminArticleToX = async (id: string, actor: AuditActor): Pro
   if (!record) throw badRequest('article not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase article before sending it to X');
   if (record.xPostId) return record;
-  const source = await getSourceUrl(`/articles/${record.publicNumber}-${record.slug}`);
-  const text = appendSource(record.title, record.summary, source);
-  const result = await queuePublish(() => requestPublisher(text));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminArticle(id);
+    if (!latest) throw badRequest('article not found');
+    if (latest.xPostId) return null;
+    const source = await getSourceUrl(`/articles/${latest.publicNumber}-${latest.slug}`);
+    return requestPublisher(appendSource(latest.title, latest.summary, source));
+  });
+  if (!result) return (await getAdminArticle(id)) as AdminArticleRecord;
   await getDb().update(articles).set({ xPostId: result.tweetId, updatedAt: new Date() }).where(eq(articles.id, id));
   await createAuditEntry({ ...actor, action: 'article.x_publish', targetType: 'article', targetId: id, summary: `Published article ${record.title} to X` });
   return (await getAdminArticle(id)) as AdminArticleRecord;
@@ -118,8 +127,14 @@ export const publishAdminEventToX = async (id: string, actor: AuditActor): Promi
   if (!record) throw badRequest('event not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase event before sending it to X');
   if (record.xPostId) return record;
-  const source = await getSourceUrl(`/events/${record.publicNumber}-${record.slug}`);
-  const result = await queuePublish(() => requestPublisher(appendSource(`活动｜${record.title}`, record.summary, source)));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminEvent(id);
+    if (!latest) throw badRequest('event not found');
+    if (latest.xPostId) return null;
+    const source = await getSourceUrl(`/events/${latest.publicNumber}-${latest.slug}`);
+    return requestPublisher(appendSource(`活动｜${latest.title}`, latest.summary, source));
+  });
+  if (!result) return (await getAdminEvent(id)) as AdminEventRecord;
   await getDb().update(events).set({ xPostId: result.tweetId, updatedAt: new Date() }).where(eq(events.id, id));
   await createAuditEntry({ ...actor, action: 'event.x_publish', targetType: 'event', targetId: id, summary: `Published event ${record.title} to X` });
   return (await getAdminEvent(id)) as AdminEventRecord;
@@ -130,8 +145,14 @@ export const publishAdminGeekDailyToX = async (id: string, actor: AuditActor): P
   if (!record) throw badRequest('GeekDaily episode not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase GeekDaily episode before sending it to X');
   if (record.xPostId) return record;
-  const source = await getSourceUrl(`/geekdaily/${record.slug}`);
-  const result = await queuePublish(() => requestPublisher(appendSource(`极客日报｜${record.title}`, record.summary, source)));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminGeekDailyEpisode(id);
+    if (!latest) throw badRequest('GeekDaily episode not found');
+    if (latest.xPostId) return null;
+    const source = await getSourceUrl(`/geekdaily/${latest.slug}`);
+    return requestPublisher(appendSource(`极客日报｜${latest.title}`, latest.summary, source));
+  });
+  if (!result) return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;
   await getDb().update(geekdailyEpisodes).set({ xPostId: result.tweetId, updatedAt: new Date() }).where(eq(geekdailyEpisodes.id, id));
   await createAuditEntry({ ...actor, action: 'geekdaily.x_publish', targetType: 'geekdaily_episode', targetId: id, summary: `Published GeekDaily ${record.episodeNumber} to X` });
   return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;

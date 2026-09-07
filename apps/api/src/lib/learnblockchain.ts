@@ -15,6 +15,8 @@ import { getPublicSiteConfig } from './site.js';
 export type LearnBlockchainArticleInput = {
   title: string;
   bodyMarkdown: string;
+  summary?: string;
+  tags?: string[];
   categoryId?: number;
 };
 
@@ -31,13 +33,36 @@ export const shouldAutoPublishToLearnBlockchain = (record: {
   learnBlockchainArticleId?: string | null;
 }) => record.status === 'published' && !record.learnBlockchainArticleId;
 
-export const buildLearnBlockchainArticle = (input: LearnBlockchainArticleInput) => ({
-  title: input.title.trim(),
-  content: input.bodyMarkdown.trim(),
-  type: '1',
-  is_public: '1',
-  category_id: String(input.categoryId ?? 8),
-});
+export const learnBlockchainMinimumContentCharacters = 300;
+
+export const buildLearnBlockchainArticle = (input: LearnBlockchainArticleInput) => {
+  const title = input.title.trim();
+  const content = input.bodyMarkdown.trim();
+  if (!title || !content) throw badRequest('LearnBlockchain article title and content are required');
+
+  const contentCharacters = Array.from(content).length;
+  if (contentCharacters < learnBlockchainMinimumContentCharacters) {
+    throw badRequest(
+      `LearnBlockchain 正文至少需要 ${learnBlockchainMinimumContentCharacters} 个字符，当前 ${contentCharacters} 个字符`,
+      { minimumCharacters: learnBlockchainMinimumContentCharacters, actualCharacters: contentCharacters },
+    );
+  }
+
+  return {
+    title,
+    content,
+    summary: Array.from(input.summary?.trim() || title).slice(0, 200).join(''),
+    link: '',
+    author_id: '322',
+    category_id: String(input.categoryId ?? 8),
+    proofread: 'false',
+    is_public: 'true',
+    tags: input.tags?.map((tag) => tag.trim()).filter(Boolean).join(',') || 'Web3',
+    featured: '0',
+    level: '1',
+    type: '1',
+  };
+};
 
 const appendSource = (body: string, url: string) => `${body.trim()}\n\n---\n\n原文链接：${url}`;
 
@@ -51,23 +76,31 @@ const publishArticle = async (input: LearnBlockchainArticleInput) => {
   if (!apiKey || !endpoint) {
     throw serviceUnavailable('LearnBlockchain publishing is not configured');
   }
-  if (!input.title.trim() || !input.bodyMarkdown.trim()) {
-    throw badRequest('LearnBlockchain article title and content are required');
+  const form = new URLSearchParams(buildLearnBlockchainArticle(input));
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-API-Key': apiKey,
+      },
+      body: form,
+      signal: AbortSignal.timeout(10_000),
+    });
+  } catch (error) {
+    const cause = error instanceof Error && error.cause instanceof Error ? error.cause : error;
+    const code = cause && typeof cause === 'object' && 'code' in cause && typeof cause.code === 'string' ? cause.code : '';
+    const message = cause instanceof Error ? cause.message || cause.name : String(cause);
+    const reason = [code, message].filter(Boolean).join(': ');
+    throw serviceUnavailable(`LearnBlockchain 网络请求失败：${reason}`, { reason });
   }
 
-  const form = new URLSearchParams(buildLearnBlockchainArticle(input));
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'X-API-Key': apiKey,
-    },
-    body: form,
-  });
   const payload = (await response.json().catch(() => null)) as LearnBlockchainResponse | null;
   if (!response.ok || !payload || payload.code !== 0 || payload.article_id === undefined || payload.article_id === null) {
-    throw serviceUnavailable('LearnBlockchain article publish failed', {
+    const reason = payload?.message || (payload ? `业务状态码 ${payload.code ?? '未知'}` : `HTTP ${response.status} 响应不是有效 JSON`);
+    throw serviceUnavailable(`LearnBlockchain 发布失败：${reason}`, {
       status: response.status,
       code: payload?.code,
       message: payload?.message,
@@ -90,8 +123,19 @@ export const publishAdminArticleToLearnBlockchain = async (id: string, actor: Au
   if (!record) throw badRequest('article not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase article before sending it to LearnBlockchain');
   if (record.learnBlockchainArticleId) return record;
-  const source = await getSourceUrl(`/articles/${record.publicNumber}-${record.slug}`);
-  const result = await queuePublish(() => publishArticle({ title: record.title, bodyMarkdown: appendSource(record.bodyMarkdown, source) }));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminArticle(id);
+    if (!latest) throw badRequest('article not found');
+    if (latest.learnBlockchainArticleId) return null;
+    const source = await getSourceUrl(`/articles/${latest.publicNumber}-${latest.slug}`);
+    return publishArticle({
+      title: latest.title,
+      bodyMarkdown: appendSource(latest.bodyMarkdown, source),
+      summary: latest.summary,
+      tags: latest.tags,
+    });
+  });
+  if (!result) return (await getAdminArticle(id)) as AdminArticleRecord;
   await getDb().update(articles).set({ learnBlockchainArticleId: result.articleId, updatedAt: new Date() }).where(eq(articles.id, id));
   await createAuditEntry({ ...actor, action: 'article.learnblockchain_publish', targetType: 'article', targetId: id, summary: `Published article ${record.title} to LearnBlockchain` });
   return (await getAdminArticle(id)) as AdminArticleRecord;
@@ -102,10 +146,21 @@ export const publishAdminEventToLearnBlockchain = async (id: string, actor: Audi
   if (!record) throw badRequest('event not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase event before sending it to LearnBlockchain');
   if (record.learnBlockchainArticleId) return record;
-  const source = await getSourceUrl(`/events/${record.publicNumber}-${record.slug}`);
-  const details = [`活动时间：${record.startAt ?? ''} 至 ${record.endAt ?? ''}`, `活动地点：${record.city} ${record.location} ${record.venue}`];
-  if (record.registrationUrl) details.push(`报名链接：${record.registrationUrl}`);
-  const result = await queuePublish(() => publishArticle({ title: `活动｜${record.title}`, bodyMarkdown: appendSource(`${details.join('\n')}\n\n${record.bodyMarkdown}`, source) }));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminEvent(id);
+    if (!latest) throw badRequest('event not found');
+    if (latest.learnBlockchainArticleId) return null;
+    const source = await getSourceUrl(`/events/${latest.publicNumber}-${latest.slug}`);
+    const details = [`活动时间：${latest.startAt ?? ''} 至 ${latest.endAt ?? ''}`, `活动地点：${latest.city} ${latest.location} ${latest.venue}`];
+    if (latest.registrationUrl) details.push(`报名链接：${latest.registrationUrl}`);
+    return publishArticle({
+      title: `活动｜${latest.title}`,
+      bodyMarkdown: appendSource(`${details.join('\n')}\n\n${latest.bodyMarkdown}`, source),
+      summary: latest.summary,
+      tags: latest.tags,
+    });
+  });
+  if (!result) return (await getAdminEvent(id)) as AdminEventRecord;
   await getDb().update(events).set({ learnBlockchainArticleId: result.articleId, updatedAt: new Date() }).where(eq(events.id, id));
   await createAuditEntry({ ...actor, action: 'event.learnblockchain_publish', targetType: 'event', targetId: id, summary: `Published event ${record.title} to LearnBlockchain` });
   return (await getAdminEvent(id)) as AdminEventRecord;
@@ -116,8 +171,19 @@ export const publishAdminGeekDailyToLearnBlockchain = async (id: string, actor: 
   if (!record) throw badRequest('GeekDaily episode not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase GeekDaily episode before sending it to LearnBlockchain');
   if (record.learnBlockchainArticleId) return record;
-  const source = await getSourceUrl(`/geekdaily/${record.slug}`);
-  const result = await queuePublish(() => publishArticle({ title: `极客日报｜${record.title}`, bodyMarkdown: appendSource(record.bodyMarkdown, source) }));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminGeekDailyEpisode(id);
+    if (!latest) throw badRequest('GeekDaily episode not found');
+    if (latest.learnBlockchainArticleId) return null;
+    const source = await getSourceUrl(`/geekdaily/${latest.slug}`);
+    return publishArticle({
+      title: `极客日报｜${latest.title}`,
+      bodyMarkdown: appendSource(latest.bodyMarkdown, source),
+      summary: latest.summary,
+      tags: latest.tags,
+    });
+  });
+  if (!result) return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;
   await getDb().update(geekdailyEpisodes).set({ learnBlockchainArticleId: result.articleId, updatedAt: new Date() }).where(eq(geekdailyEpisodes.id, id));
   await createAuditEntry({ ...actor, action: 'geekdaily.learnblockchain_publish', targetType: 'geekdaily_episode', targetId: id, summary: `Published GeekDaily ${record.episodeNumber} to LearnBlockchain` });
   return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;

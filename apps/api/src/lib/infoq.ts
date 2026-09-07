@@ -31,6 +31,19 @@ type InfoqArticleInput = {
 
 type InfoqPublishResult = { uuid: string; url: string };
 type InfoqResponse<T> = { code?: number; data?: T; error?: { code?: number; msg?: string } };
+const infoqRequestTimeoutMs = 15_000;
+
+const fetchInfoq = async (stage: string, input: string, init: RequestInit = {}) => {
+  try {
+    return await fetch(input, { ...init, signal: AbortSignal.timeout(infoqRequestTimeoutMs) });
+  } catch (error) {
+    const cause = error instanceof Error && error.cause instanceof Error ? error.cause : error;
+    const code = cause && typeof cause === 'object' && 'code' in cause && typeof cause.code === 'string' ? cause.code : '';
+    const message = cause instanceof Error ? cause.message || cause.name : String(cause);
+    const reason = [code, message].filter(Boolean).join(': ');
+    throw serviceUnavailable(`InfoQ 网络请求失败：${stage}：${reason}`, { stage, reason });
+  }
+};
 
 export const shouldAutoPublishToInfoq = (record: { status: string; infoqArticleUuid?: string | null }) =>
   record.status === 'published' && !record.infoqArticleUuid;
@@ -45,7 +58,7 @@ class InfoqApiClient {
   }
 
   async request<T>(path: string, body: Record<string, unknown>): Promise<T> {
-    const response = await fetch(`https://xie.infoq.cn${path}`, {
+    const response = await fetchInfoq(`API ${path}`, `https://xie.infoq.cn${path}`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -61,7 +74,8 @@ class InfoqApiClient {
     const payload = (await response.json().catch(() => null)) as InfoqResponse<T> | null;
     const errorCode = payload?.error?.code ?? payload?.code;
     if (!response.ok || !payload || errorCode !== 0) {
-      throw serviceUnavailable(`InfoQ API request failed: ${path}`, {
+      const reason = payload?.error?.msg || (payload ? `业务状态码 ${errorCode ?? '未知'}` : `HTTP ${response.status} 响应不是有效 JSON`);
+      throw serviceUnavailable(`InfoQ API 请求失败：${path}：${reason}`, {
         status: response.status,
         code: errorCode,
         message: payload?.error?.msg,
@@ -93,7 +107,7 @@ const mergeCookies = (...headers: Headers[]) => {
 
 const loginInfoqApi = async (): Promise<InfoqApiClient> => {
   const credentials = await getInfoqCredentials();
-  const loginResponse = await fetch('https://account.geekbang.org/account/ticket/login', {
+  const loginResponse = await fetchInfoq('账号登录', 'https://account.geekbang.org/account/ticket/login', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -116,14 +130,15 @@ const loginInfoqApi = async (): Promise<InfoqApiClient> => {
   });
   const loginPayload = (await loginResponse.json().catch(() => null)) as InfoqResponse<{ oss_token?: string }> | null;
   if (!loginResponse.ok || loginPayload?.code !== 0 || !loginPayload.data?.oss_token) {
-    throw serviceUnavailable('InfoQ login failed', {
+    const reason = loginPayload?.error?.msg || (loginPayload ? `业务状态码 ${loginPayload.code ?? '未知'}` : `HTTP ${loginResponse.status} 响应不是有效 JSON`);
+    throw serviceUnavailable(`InfoQ 登录失败：${reason}`, {
       status: loginResponse.status,
       code: loginPayload?.error?.code ?? loginPayload?.code,
       message: loginPayload?.error?.msg,
     });
   }
 
-  const tokenResponse = await fetch('https://account.infoq.cn/account/ticket/token', {
+  const tokenResponse = await fetchInfoq('会话换票', 'https://account.infoq.cn/account/ticket/token', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -135,7 +150,8 @@ const loginInfoqApi = async (): Promise<InfoqApiClient> => {
   });
   const tokenPayload = (await tokenResponse.json().catch(() => null)) as InfoqResponse<unknown> | null;
   if (!tokenResponse.ok || tokenPayload?.code !== 0) {
-    throw serviceUnavailable('InfoQ session exchange failed', {
+    const reason = tokenPayload?.error?.msg || (tokenPayload ? `业务状态码 ${tokenPayload.code ?? '未知'}` : `HTTP ${tokenResponse.status} 响应不是有效 JSON`);
+    throw serviceUnavailable(`InfoQ 会话换票失败：${reason}`, {
       status: tokenResponse.status,
       code: tokenPayload?.error?.code ?? tokenPayload?.code,
       message: tokenPayload?.error?.msg,
@@ -306,8 +322,14 @@ export const publishAdminArticleToInfoq = async (id: string, actor: AuditActor):
   if (!record) throw badRequest('article not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase article before sending it to InfoQ');
   if (record.infoqArticleUuid) return record;
-  const source = await publicUrl(`/articles/${record.publicNumber}-${record.slug}`);
-  const result = await queuePublish(() => publish({ title: record.title, summary: record.summary, bodyMarkdown: appendSource(record.bodyMarkdown, source), tags: record.tags }));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminArticle(id);
+    if (!latest) throw badRequest('article not found');
+    if (latest.infoqArticleUuid) return null;
+    const source = await publicUrl(`/articles/${latest.publicNumber}-${latest.slug}`);
+    return publish({ title: latest.title, summary: latest.summary, bodyMarkdown: appendSource(latest.bodyMarkdown, source), tags: latest.tags });
+  });
+  if (!result) return (await getAdminArticle(id)) as AdminArticleRecord;
   await getDb().update(articles).set({ infoqArticleUuid: result.uuid, updatedAt: new Date() }).where(eq(articles.id, id));
   await createAuditEntry({ ...actor, action: 'article.infoq_publish', targetType: 'article', targetId: id, summary: `Published article ${record.title} to InfoQ` });
   return (await getAdminArticle(id)) as AdminArticleRecord;
@@ -318,10 +340,16 @@ export const publishAdminEventToInfoq = async (id: string, actor: AuditActor): P
   if (!record) throw badRequest('event not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase event before sending it to InfoQ');
   if (record.infoqArticleUuid) return record;
-  const source = await publicUrl(`/events/${record.publicNumber}-${record.slug}`);
-  const details = [`活动时间：${record.startAt ?? ''} 至 ${record.endAt ?? ''}`, `活动地点：${record.city} ${record.location} ${record.venue}`];
-  if (record.registrationUrl) details.push(`报名链接：${record.registrationUrl}`);
-  const result = await queuePublish(() => publish({ title: `活动｜${record.title}`, summary: record.summary, bodyMarkdown: appendSource(`${details.join('\n')}\n\n${record.bodyMarkdown}`, source), tags: record.tags }));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminEvent(id);
+    if (!latest) throw badRequest('event not found');
+    if (latest.infoqArticleUuid) return null;
+    const source = await publicUrl(`/events/${latest.publicNumber}-${latest.slug}`);
+    const details = [`活动时间：${latest.startAt ?? ''} 至 ${latest.endAt ?? ''}`, `活动地点：${latest.city} ${latest.location} ${latest.venue}`];
+    if (latest.registrationUrl) details.push(`报名链接：${latest.registrationUrl}`);
+    return publish({ title: `活动｜${latest.title}`, summary: latest.summary, bodyMarkdown: appendSource(`${details.join('\n')}\n\n${latest.bodyMarkdown}`, source), tags: latest.tags });
+  });
+  if (!result) return (await getAdminEvent(id)) as AdminEventRecord;
   await getDb().update(events).set({ infoqArticleUuid: result.uuid, updatedAt: new Date() }).where(eq(events.id, id));
   await createAuditEntry({ ...actor, action: 'event.infoq_publish', targetType: 'event', targetId: id, summary: `Published event ${record.title} to InfoQ` });
   return (await getAdminEvent(id)) as AdminEventRecord;
@@ -332,8 +360,14 @@ export const publishAdminGeekDailyToInfoq = async (id: string, actor: AuditActor
   if (!record) throw badRequest('GeekDaily episode not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase GeekDaily episode before sending it to InfoQ');
   if (record.infoqArticleUuid) return record;
-  const source = await publicUrl(`/geekdaily/${record.slug}`);
-  const result = await queuePublish(() => publish({ title: `极客日报｜${record.title}`, summary: record.summary, bodyMarkdown: appendSource(record.bodyMarkdown, source), tags: record.tags }));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminGeekDailyEpisode(id);
+    if (!latest) throw badRequest('GeekDaily episode not found');
+    if (latest.infoqArticleUuid) return null;
+    const source = await publicUrl(`/geekdaily/${latest.slug}`);
+    return publish({ title: `极客日报｜${latest.title}`, summary: latest.summary, bodyMarkdown: appendSource(latest.bodyMarkdown, source), tags: latest.tags });
+  });
+  if (!result) return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;
   await getDb().update(geekdailyEpisodes).set({ infoqArticleUuid: result.uuid, updatedAt: new Date() }).where(eq(geekdailyEpisodes.id, id));
   await createAuditEntry({ ...actor, action: 'geekdaily.infoq_publish', targetType: 'geekdaily_episode', targetId: id, summary: `Published GeekDaily ${record.episodeNumber} to InfoQ` });
   return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;
