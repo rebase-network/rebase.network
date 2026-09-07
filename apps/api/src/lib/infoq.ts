@@ -31,6 +31,19 @@ type InfoqArticleInput = {
 
 type InfoqPublishResult = { uuid: string; url: string };
 type InfoqResponse<T> = { code?: number; data?: T; error?: { code?: number; msg?: string } };
+const infoqRequestTimeoutMs = 15_000;
+
+const fetchInfoq = async (stage: string, input: string, init: RequestInit = {}) => {
+  try {
+    return await fetch(input, { ...init, signal: AbortSignal.timeout(infoqRequestTimeoutMs) });
+  } catch (error) {
+    const cause = error instanceof Error && error.cause instanceof Error ? error.cause : error;
+    const code = cause && typeof cause === 'object' && 'code' in cause && typeof cause.code === 'string' ? cause.code : '';
+    const message = cause instanceof Error ? cause.message || cause.name : String(cause);
+    const reason = [code, message].filter(Boolean).join(': ');
+    throw serviceUnavailable(`InfoQ 网络请求失败：${stage}：${reason}`, { stage, reason });
+  }
+};
 
 export const shouldAutoPublishToInfoq = (record: { status: string; infoqArticleUuid?: string | null }) =>
   record.status === 'published' && !record.infoqArticleUuid;
@@ -45,7 +58,7 @@ class InfoqApiClient {
   }
 
   async request<T>(path: string, body: Record<string, unknown>): Promise<T> {
-    const response = await fetch(`https://xie.infoq.cn${path}`, {
+    const response = await fetchInfoq(`API ${path}`, `https://xie.infoq.cn${path}`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -93,7 +106,7 @@ const mergeCookies = (...headers: Headers[]) => {
 
 const loginInfoqApi = async (): Promise<InfoqApiClient> => {
   const credentials = await getInfoqCredentials();
-  const loginResponse = await fetch('https://account.geekbang.org/account/ticket/login', {
+  const loginResponse = await fetchInfoq('账号登录', 'https://account.geekbang.org/account/ticket/login', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -123,7 +136,7 @@ const loginInfoqApi = async (): Promise<InfoqApiClient> => {
     });
   }
 
-  const tokenResponse = await fetch('https://account.infoq.cn/account/ticket/token', {
+  const tokenResponse = await fetchInfoq('会话换票', 'https://account.infoq.cn/account/ticket/token', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
