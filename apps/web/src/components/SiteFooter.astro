@@ -20,6 +20,25 @@ const socialIconMap: Record<string, string> = {
   微信公众号: '/social-icons/wechat.svg',
   'QQ 群': '/social-icons/qq.svg',
 };
+const socialQrCodeMap: Record<
+  string,
+  { id: string; src: string; title: string; prompt: string; size: number }
+> = {
+  微信公众号: {
+    id: 'wechat-qr-dialog',
+    src: '/qrcodes/wechat-official.jpg',
+    title: '关注 Rebase 微信公众号',
+    prompt: '打开微信，扫描二维码关注 Rebase 社区。',
+    size: 760,
+  },
+  'QQ 群': {
+    id: 'qq-qr-dialog',
+    src: '/qrcodes/qq-group.jpg',
+    title: '加入 Rebase QQ 群',
+    prompt: '打开 QQ，扫描二维码加入群聊（群号：1001507060）。',
+    size: 1024,
+  },
+};
 ---
 
 <footer class="site-footer">
@@ -58,20 +77,62 @@ const socialIconMap: Record<string, string> = {
 
     <div class="footer-meta">
       <div class="socials">
-        {site.socialLinks.map((item) => (
-          <a href={item.href} target="_blank" rel="noreferrer" aria-label={item.label} title={item.label}>
-            {socialIconMap[item.label] ? (
+        {site.socialLinks.map((item) => {
+          const qrCode = socialQrCodeMap[item.label];
+          return qrCode ? (
+            <button
+              type="button"
+              data-qr-dialog={qrCode.id}
+              aria-label={item.label}
+              aria-haspopup="dialog"
+              aria-controls={qrCode.id}
+              title={item.label}
+            >
               <img src={socialIconMap[item.label]} alt="" width="20" height="20" loading="lazy" />
-            ) : (
-              <span>{item.label}</span>
-            )}
-          </a>
-        ))}
+            </button>
+          ) : (
+            <a href={item.href} target="_blank" rel="noreferrer" aria-label={item.label} title={item.label}>
+              {socialIconMap[item.label] ? (
+                <img src={socialIconMap[item.label]} alt="" width="20" height="20" loading="lazy" />
+              ) : (
+                <span>{item.label}</span>
+              )}
+            </a>
+          );
+        })}
       </div>
       <p>{site.copyright}</p>
     </div>
   </div>
 </footer>
+
+{Object.values(socialQrCodeMap).map((qrCode) => (
+  <dialog class="qr-dialog" id={qrCode.id} aria-labelledby={`${qrCode.id}-title`}>
+    <div class="qr-dialog-header">
+      <h2 id={`${qrCode.id}-title`}>{qrCode.title}</h2>
+      <form method="dialog">
+        <button type="submit" class="qr-dialog-close" aria-label="关闭二维码弹窗">×</button>
+      </form>
+    </div>
+    <img
+      src={qrCode.src}
+      alt={`${qrCode.title}二维码`}
+      width={qrCode.size}
+      height={qrCode.size}
+      decoding="async"
+    />
+    <p>{qrCode.prompt}</p>
+  </dialog>
+))}
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-qr-dialog]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const dialog = document.getElementById(button.dataset.qrDialog ?? '') as HTMLDialogElement | null;
+      dialog?.showModal();
+    });
+  });
+</script>
 
 <style>
   .site-footer {
@@ -140,7 +201,7 @@ const socialIconMap: Record<string, string> = {
   }
 
   li a,
-  .socials a {
+  .socials :is(a, button) {
     color: var(--muted);
     line-height: 1.6;
     transition: color 180ms ease, transform 180ms ease, opacity 180ms ease;
@@ -148,8 +209,8 @@ const socialIconMap: Record<string, string> = {
 
   li a:hover,
   li a:focus-visible,
-  .socials a:hover,
-  .socials a:focus-visible {
+  .socials :is(a, button):hover,
+  .socials :is(a, button):focus-visible {
     color: var(--accent-strong);
   }
 
@@ -175,7 +236,7 @@ const socialIconMap: Record<string, string> = {
     gap: 0.95rem;
   }
 
-  .socials a {
+  .socials :is(a, button) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -184,8 +245,15 @@ const socialIconMap: Record<string, string> = {
     opacity: 0.78;
   }
 
-  .socials a:hover,
-  .socials a:focus-visible {
+  .socials button {
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  .socials :is(a, button):hover,
+  .socials :is(a, button):focus-visible {
     opacity: 1;
     transform: translateY(-1px);
   }
@@ -200,6 +268,69 @@ const socialIconMap: Record<string, string> = {
     font-size: 0.88rem;
     line-height: 1;
     white-space: nowrap;
+  }
+
+  .qr-dialog {
+    width: 25rem;
+    max-width: calc(100% - 2rem);
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface-strong);
+    color: var(--text);
+    box-shadow: var(--shadow-strong);
+  }
+
+  .qr-dialog::backdrop {
+    background: rgba(31, 41, 51, 0.56);
+    backdrop-filter: blur(3px);
+  }
+
+  .qr-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .qr-dialog h2,
+  .qr-dialog p {
+    margin: 0;
+  }
+
+  .qr-dialog h2 {
+    font-size: 1.1rem;
+  }
+
+  .qr-dialog > img {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+  }
+
+  .qr-dialog p {
+    margin-top: 1rem;
+    color: var(--muted);
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .qr-dialog-close {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
   }
 
   @media (max-width: 920px) {
