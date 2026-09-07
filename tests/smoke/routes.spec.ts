@@ -62,6 +62,24 @@ test('pages expose canonical and social metadata', async ({ page }) => {
   await expect(page.locator('meta[name="twitter:description"]')).toHaveAttribute('content', /可阅读、可订阅/);
 });
 
+test('social QR code buttons open scan dialogs', async ({ page }) => {
+  await page.goto('/');
+
+  for (const item of [
+    { button: '微信公众号', dialog: '关注 Rebase 微信公众号', image: '/qrcodes/wechat-official.jpg' },
+    { button: 'QQ 群', dialog: '加入 Rebase QQ 群', image: '/qrcodes/qq-group.jpg' },
+  ]) {
+    await page.getByRole('button', { name: item.button }).click();
+    const dialog = page.getByRole('dialog', { name: item.dialog });
+    const image = dialog.getByRole('img');
+    await expect(dialog).toBeVisible();
+    await expect(image).toHaveAttribute('src', item.image);
+    await expect(image).toBeInViewport({ ratio: 1 });
+    await dialog.getByRole('button', { name: '关闭二维码弹窗' }).click();
+    await expect(dialog).toBeHidden();
+  }
+});
+
 test('redesigned community UX avoids misleading public actions', async ({ page }) => {
   await page.goto('/events');
   await expect(page.locator('#event-archive')).not.toContainText('立即报名');
