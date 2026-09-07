@@ -28,7 +28,7 @@ import { createAdminAsset, deleteAdminAsset, getAdminAsset, getAdminAssetUploadC
 import { createAdminContributor, createAdminContributorRole, getAdminContributor, listAdminContributorRoles, listAdminContributors, updateAdminContributor, updateAdminContributorRole } from '../lib/contributors.js';
 import { createAdminEvent, getAdminEvent, listAdminEvents, publishAdminEvent, updateAdminEvent, archiveAdminEvent } from '../lib/events.js';
 import { createAdminGeekDailyEpisode, createAdminGeekDailyWechatDraft, getAdminGeekDailyEpisode, listAdminGeekDailyEpisodes, publishAdminGeekDailyEpisode, updateAdminGeekDailyEpisode, archiveAdminGeekDailyEpisode } from '../lib/geekdaily.js';
-import { badRequest } from '../lib/errors.js';
+import { ApiError, badRequest, serviceUnavailable } from '../lib/errors.js';
 import { handleApiError, jsonError, ok } from '../lib/http.js';
 import { createAdminJob, getAdminJob, listAdminJobs, publishAdminJob, updateAdminJob, archiveAdminJob } from '../lib/jobs.js';
 import { getAdminSite, isInfoqConfigured, updateAboutPage, updateHomePage, updateInfoqSettings, updateSiteSettings } from '../lib/site.js';
@@ -65,12 +65,17 @@ const autoPublishToExternal = async <T extends { id: string; status: string; inf
   if (!record) return record;
   let next = record;
   let firstError: unknown = null;
+  const failures: string[] = [];
+  const rememberFailure = (channel: string, error: unknown) => {
+    firstError ??= error;
+    failures.push(`${channel}：${error instanceof Error ? error.message : String(error)}`);
+  };
 
   if (shouldAutoPublishToInfoq(next) && await isInfoqConfigured()) {
     try {
       next = (await infoqPublish(next.id, actor)) ?? next;
     } catch (error) {
-      firstError = error;
+      rememberFailure('InfoQ', error);
     }
   }
 
@@ -78,7 +83,7 @@ const autoPublishToExternal = async <T extends { id: string; status: string; inf
     try {
       next = (await learnBlockchainPublish(next.id, actor)) ?? next;
     } catch (error) {
-      firstError ??= error;
+      rememberFailure('LearnBlockchain', error);
     }
   }
 
@@ -86,11 +91,20 @@ const autoPublishToExternal = async <T extends { id: string; status: string; inf
     try {
       next = (await xPublish(next.id, actor)) ?? next;
     } catch (error) {
-      firstError ??= error;
+      rememberFailure('X', error);
     }
   }
 
-  if (firstError) throw firstError;
+  if (firstError) {
+    const message = `站内内容已保存，但外部发布失败：${failures.join('；')}`;
+    if (firstError instanceof ApiError) {
+      throw new ApiError(firstError.status, firstError.code, message, {
+        ...firstError.details,
+        failures,
+      });
+    }
+    throw serviceUnavailable(message, { failures });
+  }
   return next;
 };
 

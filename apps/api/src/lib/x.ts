@@ -82,10 +82,14 @@ const requestPublisher = async (text: string) => {
     request.end();
   }).catch((error) => {
     if (error instanceof Error && 'status' in error) throw error;
-    throw serviceUnavailable('X publisher request failed', { reason: error instanceof Error ? error.message : String(error) });
+    const reason = error instanceof Error ? error.message : String(error);
+    throw serviceUnavailable(`X publisher 请求失败：${reason}`, { reason });
   });
 
-  if (!payload.tweetId) throw serviceUnavailable('X publisher returned no tweet id', { error: payload.error });
+  if (!payload.tweetId) {
+    const reason = payload.error || 'publisher 未返回 tweet id';
+    throw serviceUnavailable(`X 发布失败：${reason}`, { error: payload.error });
+  }
   return { tweetId: payload.tweetId, url: payload.url ?? `https://x.com/status/${payload.tweetId}` };
 };
 

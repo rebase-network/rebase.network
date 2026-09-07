@@ -74,7 +74,8 @@ class InfoqApiClient {
     const payload = (await response.json().catch(() => null)) as InfoqResponse<T> | null;
     const errorCode = payload?.error?.code ?? payload?.code;
     if (!response.ok || !payload || errorCode !== 0) {
-      throw serviceUnavailable(`InfoQ API request failed: ${path}`, {
+      const reason = payload?.error?.msg || (payload ? `业务状态码 ${errorCode ?? '未知'}` : `HTTP ${response.status} 响应不是有效 JSON`);
+      throw serviceUnavailable(`InfoQ API 请求失败：${path}：${reason}`, {
         status: response.status,
         code: errorCode,
         message: payload?.error?.msg,
@@ -129,7 +130,8 @@ const loginInfoqApi = async (): Promise<InfoqApiClient> => {
   });
   const loginPayload = (await loginResponse.json().catch(() => null)) as InfoqResponse<{ oss_token?: string }> | null;
   if (!loginResponse.ok || loginPayload?.code !== 0 || !loginPayload.data?.oss_token) {
-    throw serviceUnavailable('InfoQ login failed', {
+    const reason = loginPayload?.error?.msg || (loginPayload ? `业务状态码 ${loginPayload.code ?? '未知'}` : `HTTP ${loginResponse.status} 响应不是有效 JSON`);
+    throw serviceUnavailable(`InfoQ 登录失败：${reason}`, {
       status: loginResponse.status,
       code: loginPayload?.error?.code ?? loginPayload?.code,
       message: loginPayload?.error?.msg,
@@ -148,7 +150,8 @@ const loginInfoqApi = async (): Promise<InfoqApiClient> => {
   });
   const tokenPayload = (await tokenResponse.json().catch(() => null)) as InfoqResponse<unknown> | null;
   if (!tokenResponse.ok || tokenPayload?.code !== 0) {
-    throw serviceUnavailable('InfoQ session exchange failed', {
+    const reason = tokenPayload?.error?.msg || (tokenPayload ? `业务状态码 ${tokenPayload.code ?? '未知'}` : `HTTP ${tokenResponse.status} 响应不是有效 JSON`);
+    throw serviceUnavailable(`InfoQ 会话换票失败：${reason}`, {
       status: tokenResponse.status,
       code: tokenPayload?.error?.code ?? tokenPayload?.code,
       message: tokenPayload?.error?.msg,
