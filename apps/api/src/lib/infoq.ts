@@ -322,8 +322,14 @@ export const publishAdminArticleToInfoq = async (id: string, actor: AuditActor):
   if (!record) throw badRequest('article not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase article before sending it to InfoQ');
   if (record.infoqArticleUuid) return record;
-  const source = await publicUrl(`/articles/${record.publicNumber}-${record.slug}`);
-  const result = await queuePublish(() => publish({ title: record.title, summary: record.summary, bodyMarkdown: appendSource(record.bodyMarkdown, source), tags: record.tags }));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminArticle(id);
+    if (!latest) throw badRequest('article not found');
+    if (latest.infoqArticleUuid) return null;
+    const source = await publicUrl(`/articles/${latest.publicNumber}-${latest.slug}`);
+    return publish({ title: latest.title, summary: latest.summary, bodyMarkdown: appendSource(latest.bodyMarkdown, source), tags: latest.tags });
+  });
+  if (!result) return (await getAdminArticle(id)) as AdminArticleRecord;
   await getDb().update(articles).set({ infoqArticleUuid: result.uuid, updatedAt: new Date() }).where(eq(articles.id, id));
   await createAuditEntry({ ...actor, action: 'article.infoq_publish', targetType: 'article', targetId: id, summary: `Published article ${record.title} to InfoQ` });
   return (await getAdminArticle(id)) as AdminArticleRecord;
@@ -334,10 +340,16 @@ export const publishAdminEventToInfoq = async (id: string, actor: AuditActor): P
   if (!record) throw badRequest('event not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase event before sending it to InfoQ');
   if (record.infoqArticleUuid) return record;
-  const source = await publicUrl(`/events/${record.publicNumber}-${record.slug}`);
-  const details = [`活动时间：${record.startAt ?? ''} 至 ${record.endAt ?? ''}`, `活动地点：${record.city} ${record.location} ${record.venue}`];
-  if (record.registrationUrl) details.push(`报名链接：${record.registrationUrl}`);
-  const result = await queuePublish(() => publish({ title: `活动｜${record.title}`, summary: record.summary, bodyMarkdown: appendSource(`${details.join('\n')}\n\n${record.bodyMarkdown}`, source), tags: record.tags }));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminEvent(id);
+    if (!latest) throw badRequest('event not found');
+    if (latest.infoqArticleUuid) return null;
+    const source = await publicUrl(`/events/${latest.publicNumber}-${latest.slug}`);
+    const details = [`活动时间：${latest.startAt ?? ''} 至 ${latest.endAt ?? ''}`, `活动地点：${latest.city} ${latest.location} ${latest.venue}`];
+    if (latest.registrationUrl) details.push(`报名链接：${latest.registrationUrl}`);
+    return publish({ title: `活动｜${latest.title}`, summary: latest.summary, bodyMarkdown: appendSource(`${details.join('\n')}\n\n${latest.bodyMarkdown}`, source), tags: latest.tags });
+  });
+  if (!result) return (await getAdminEvent(id)) as AdminEventRecord;
   await getDb().update(events).set({ infoqArticleUuid: result.uuid, updatedAt: new Date() }).where(eq(events.id, id));
   await createAuditEntry({ ...actor, action: 'event.infoq_publish', targetType: 'event', targetId: id, summary: `Published event ${record.title} to InfoQ` });
   return (await getAdminEvent(id)) as AdminEventRecord;
@@ -348,8 +360,14 @@ export const publishAdminGeekDailyToInfoq = async (id: string, actor: AuditActor
   if (!record) throw badRequest('GeekDaily episode not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase GeekDaily episode before sending it to InfoQ');
   if (record.infoqArticleUuid) return record;
-  const source = await publicUrl(`/geekdaily/${record.slug}`);
-  const result = await queuePublish(() => publish({ title: `极客日报｜${record.title}`, summary: record.summary, bodyMarkdown: appendSource(record.bodyMarkdown, source), tags: record.tags }));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminGeekDailyEpisode(id);
+    if (!latest) throw badRequest('GeekDaily episode not found');
+    if (latest.infoqArticleUuid) return null;
+    const source = await publicUrl(`/geekdaily/${latest.slug}`);
+    return publish({ title: `极客日报｜${latest.title}`, summary: latest.summary, bodyMarkdown: appendSource(latest.bodyMarkdown, source), tags: latest.tags });
+  });
+  if (!result) return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;
   await getDb().update(geekdailyEpisodes).set({ infoqArticleUuid: result.uuid, updatedAt: new Date() }).where(eq(geekdailyEpisodes.id, id));
   await createAuditEntry({ ...actor, action: 'geekdaily.infoq_publish', targetType: 'geekdaily_episode', targetId: id, summary: `Published GeekDaily ${record.episodeNumber} to InfoQ` });
   return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;

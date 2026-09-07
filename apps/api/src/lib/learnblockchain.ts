@@ -123,13 +123,19 @@ export const publishAdminArticleToLearnBlockchain = async (id: string, actor: Au
   if (!record) throw badRequest('article not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase article before sending it to LearnBlockchain');
   if (record.learnBlockchainArticleId) return record;
-  const source = await getSourceUrl(`/articles/${record.publicNumber}-${record.slug}`);
-  const result = await queuePublish(() => publishArticle({
-    title: record.title,
-    bodyMarkdown: appendSource(record.bodyMarkdown, source),
-    summary: record.summary,
-    tags: record.tags,
-  }));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminArticle(id);
+    if (!latest) throw badRequest('article not found');
+    if (latest.learnBlockchainArticleId) return null;
+    const source = await getSourceUrl(`/articles/${latest.publicNumber}-${latest.slug}`);
+    return publishArticle({
+      title: latest.title,
+      bodyMarkdown: appendSource(latest.bodyMarkdown, source),
+      summary: latest.summary,
+      tags: latest.tags,
+    });
+  });
+  if (!result) return (await getAdminArticle(id)) as AdminArticleRecord;
   await getDb().update(articles).set({ learnBlockchainArticleId: result.articleId, updatedAt: new Date() }).where(eq(articles.id, id));
   await createAuditEntry({ ...actor, action: 'article.learnblockchain_publish', targetType: 'article', targetId: id, summary: `Published article ${record.title} to LearnBlockchain` });
   return (await getAdminArticle(id)) as AdminArticleRecord;
@@ -140,15 +146,21 @@ export const publishAdminEventToLearnBlockchain = async (id: string, actor: Audi
   if (!record) throw badRequest('event not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase event before sending it to LearnBlockchain');
   if (record.learnBlockchainArticleId) return record;
-  const source = await getSourceUrl(`/events/${record.publicNumber}-${record.slug}`);
-  const details = [`活动时间：${record.startAt ?? ''} 至 ${record.endAt ?? ''}`, `活动地点：${record.city} ${record.location} ${record.venue}`];
-  if (record.registrationUrl) details.push(`报名链接：${record.registrationUrl}`);
-  const result = await queuePublish(() => publishArticle({
-    title: `活动｜${record.title}`,
-    bodyMarkdown: appendSource(`${details.join('\n')}\n\n${record.bodyMarkdown}`, source),
-    summary: record.summary,
-    tags: record.tags,
-  }));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminEvent(id);
+    if (!latest) throw badRequest('event not found');
+    if (latest.learnBlockchainArticleId) return null;
+    const source = await getSourceUrl(`/events/${latest.publicNumber}-${latest.slug}`);
+    const details = [`活动时间：${latest.startAt ?? ''} 至 ${latest.endAt ?? ''}`, `活动地点：${latest.city} ${latest.location} ${latest.venue}`];
+    if (latest.registrationUrl) details.push(`报名链接：${latest.registrationUrl}`);
+    return publishArticle({
+      title: `活动｜${latest.title}`,
+      bodyMarkdown: appendSource(`${details.join('\n')}\n\n${latest.bodyMarkdown}`, source),
+      summary: latest.summary,
+      tags: latest.tags,
+    });
+  });
+  if (!result) return (await getAdminEvent(id)) as AdminEventRecord;
   await getDb().update(events).set({ learnBlockchainArticleId: result.articleId, updatedAt: new Date() }).where(eq(events.id, id));
   await createAuditEntry({ ...actor, action: 'event.learnblockchain_publish', targetType: 'event', targetId: id, summary: `Published event ${record.title} to LearnBlockchain` });
   return (await getAdminEvent(id)) as AdminEventRecord;
@@ -159,13 +171,19 @@ export const publishAdminGeekDailyToLearnBlockchain = async (id: string, actor: 
   if (!record) throw badRequest('GeekDaily episode not found');
   if (record.status !== 'published') throw badRequest('publish the Rebase GeekDaily episode before sending it to LearnBlockchain');
   if (record.learnBlockchainArticleId) return record;
-  const source = await getSourceUrl(`/geekdaily/${record.slug}`);
-  const result = await queuePublish(() => publishArticle({
-    title: `极客日报｜${record.title}`,
-    bodyMarkdown: appendSource(record.bodyMarkdown, source),
-    summary: record.summary,
-    tags: record.tags,
-  }));
+  const result = await queuePublish(async () => {
+    const latest = await getAdminGeekDailyEpisode(id);
+    if (!latest) throw badRequest('GeekDaily episode not found');
+    if (latest.learnBlockchainArticleId) return null;
+    const source = await getSourceUrl(`/geekdaily/${latest.slug}`);
+    return publishArticle({
+      title: `极客日报｜${latest.title}`,
+      bodyMarkdown: appendSource(latest.bodyMarkdown, source),
+      summary: latest.summary,
+      tags: latest.tags,
+    });
+  });
+  if (!result) return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;
   await getDb().update(geekdailyEpisodes).set({ learnBlockchainArticleId: result.articleId, updatedAt: new Date() }).where(eq(geekdailyEpisodes.id, id));
   await createAuditEntry({ ...actor, action: 'geekdaily.learnblockchain_publish', targetType: 'geekdaily_episode', targetId: id, summary: `Published GeekDaily ${record.episodeNumber} to LearnBlockchain` });
   return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;
