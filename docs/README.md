@@ -23,6 +23,7 @@
 - `current-boundaries.md`
 - `content-model.md`
 - `acceptance-criteria.md`
+- `public-copy-audit-2026-09.md`：公共官网固定文案审查与优化建议
 
 ### `docs/architecture/`
 
