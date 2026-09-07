@@ -28,12 +28,24 @@ let accessTokenCache: { appId: string; accessToken: string; expiresAt: number } 
 
 const requestTimeoutMs = 15_000;
 const accessTokenRefreshBufferMs = 5 * 60 * 1000;
+const invalidAccessTokenErrorCodes = new Set([40001, 40014, 42001]);
 
-const createWechatApiError = (stage: string, payload: unknown) =>
-  serviceUnavailable(`wechat official account ${stage} failed`, {
+export const isWechatAccessTokenError = (errcode?: number) => typeof errcode === 'number' && invalidAccessTokenErrorCodes.has(errcode);
+
+const createWechatApiError = (stage: string, payload: unknown, details: Record<string, unknown> = {}) => {
+  const record = payload && typeof payload === 'object' ? payload as { errcode?: unknown; errmsg?: unknown } : {};
+  const errcode = typeof record.errcode === 'number' ? record.errcode : undefined;
+  const errmsg = typeof record.errmsg === 'string' ? record.errmsg : '';
+  const reason = errmsg || (errcode === undefined ? '响应格式无效' : `错误码 ${errcode}`);
+  const suffix = errcode === undefined ? '' : `（错误码 ${errcode}）`;
+
+  return serviceUnavailable(`微信公众号${stage}失败：${reason}${errmsg && suffix ? suffix : ''}`, {
     stage,
-    payload,
+    ...details,
+    ...(errcode === undefined ? {} : { errcode }),
+    ...(errmsg ? { errmsg } : {}),
   });
+};
 
 const parseJson = async <T>(response: Response): Promise<T> => {
   const text = await response.text();
@@ -41,10 +53,7 @@ const parseJson = async <T>(response: Response): Promise<T> => {
   try {
     return JSON.parse(text) as T;
   } catch {
-    throw createWechatApiError('response parsing', {
-      status: response.status,
-      body: text,
-    });
+    throw createWechatApiError('响应解析', { errmsg: '响应不是有效 JSON' }, { status: response.status });
   }
 };
 
@@ -139,6 +148,9 @@ export const createWechatOfficialDraft = async (input: WechatNewsDraftInput) => 
 
   const payload = await parseJson<WechatDraftAddPayload>(response);
   if (!response.ok || payload.errcode || !payload.media_id) {
+    if (isWechatAccessTokenError(payload.errcode) && accessTokenCache?.accessToken === accessToken) {
+      accessTokenCache = null;
+    }
     throw createWechatApiError('draft response', payload);
   }
 
