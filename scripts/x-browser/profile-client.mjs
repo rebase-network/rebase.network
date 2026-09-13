@@ -62,12 +62,52 @@ const isElementVisible = async (element) => {
 
 const firstVisible = async (page, selectors) => {
   for (const selector of selectors) {
-    const element = await page.$(selector);
-    if (!element) continue;
-    if (await isElementVisible(element)) return element;
-    await element.dispose();
+    const elements = await page.$$(selector);
+    for (const element of elements) {
+      if (await isElementVisible(element)) return element;
+      await element.dispose();
+    }
   }
   return null;
+};
+
+const isElementDisabled = async (element) => {
+  try {
+    return await element.evaluate((node) => node.getAttribute('aria-disabled') === 'true' || node.disabled === true);
+  } catch {
+    return true;
+  }
+};
+
+const waitForVisible = async (page, selectors, timeoutMs, errorMessage) => {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const element = await firstVisible(page, selectors);
+    if (element) return element;
+    await delay(250);
+  }
+  throw new Error(errorMessage);
+};
+
+const waitForEnabled = async (page, selectors, timeoutMs) => {
+  const deadline = Date.now() + timeoutMs;
+  let sawVisible = false;
+  while (Date.now() < deadline) {
+    for (const selector of selectors) {
+      const elements = await page.$$(selector);
+      for (const element of elements) {
+        if (!(await isElementVisible(element))) {
+          await element.dispose();
+          continue;
+        }
+        sawVisible = true;
+        if (!(await isElementDisabled(element))) return element;
+        await element.dispose();
+      }
+    }
+    await delay(250);
+  }
+  throw new Error(sawVisible ? 'X 发布按钮当前不可用，请检查内容或账号状态' : '找不到 X 发布按钮，可能是页面结构已变化');
 };
 
 const isLoggedIn = async (page) => {
@@ -140,28 +180,23 @@ const openSession = async (options) => {
 };
 
 const openComposer = async (page) => {
-  const existing = await firstVisible(page, [
+  const composerSelectors = [
     '[data-testid="tweetTextarea_0"]',
     'div[contenteditable="true"][role="textbox"]',
-  ]);
+  ];
+  const existing = await firstVisible(page, composerSelectors);
   if (existing) return existing;
 
-  const composeButton = await firstVisible(page, [
+  const composeButton = await waitForVisible(page, [
     '[data-testid="SideNav_NewTweet_Button"]',
     '[data-testid="AppTabBar_ComposeButton"]',
     '[aria-label*="Post"]',
     '[aria-label*="Tweet"]',
-  ]);
-  if (!composeButton) throw new Error('找不到 X 发帖入口，可能是页面结构已变化');
+  ], sessionCheckTimeoutMs, '找不到 X 发帖入口，可能是页面结构已变化');
   await composeButton.click();
   await composeButton.dispose();
 
-  const composer = await firstVisible(page, [
-    '[data-testid="tweetTextarea_0"]',
-    'div[contenteditable="true"][role="textbox"]',
-  ]);
-  if (!composer) throw new Error('打开编辑器后找不到文本输入框');
-  return composer;
+  return waitForVisible(page, composerSelectors, sessionCheckTimeoutMs, '打开编辑器后找不到文本输入框');
 };
 
 const extractTweetId = (payload) => {
@@ -195,17 +230,11 @@ export const publishTweetWithProfile = async (options) => {
     await composer.type(text, { delay: 10 });
     await composer.dispose();
 
-    const postButton = await firstVisible(session.page, [
+    const postButton = await waitForEnabled(session.page, [
       '[data-testid="tweetButtonInline"]',
       '[data-testid="tweetButton"]',
       'button[data-testid*="tweetButton"]',
-    ]);
-    if (!postButton) throw new Error('找不到 X 发布按钮，可能是页面结构已变化');
-    const disabled = await postButton.evaluate((node) => node.getAttribute('aria-disabled') === 'true' || node.disabled === true);
-    if (disabled) {
-      await postButton.dispose();
-      throw new Error('X 发布按钮当前不可用，请检查内容或账号状态');
-    }
+    ], postTimeoutMs);
 
     const responsePromise = session.page.waitForResponse(
       (response) => /\/CreateTweet(?:$|\?|\/)/.test(response.url()) && response.request().method() === 'POST',
