@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-import { buildLearnBlockchainArticle, learnBlockchainMinimumContentCharacters, shouldAutoPublishToLearnBlockchain } from './learnblockchain.js';
+import { buildLearnBlockchainArticle, learnBlockchainMinimumContentCharacters } from './learnblockchain.js';
 
 const content = '正文'.repeat(learnBlockchainMinimumContentCharacters / 2);
 const article = buildLearnBlockchainArticle({
@@ -27,6 +27,4 @@ assert.throws(
   () => buildLearnBlockchainArticle({ title: '测试文章', bodyMarkdown: '🚀'.repeat(learnBlockchainMinimumContentCharacters - 1) }),
   /正文至少需要 300 个字符，当前 299 个字符/,
 );
-assert.equal(shouldAutoPublishToLearnBlockchain({ status: 'published', learnBlockchainArticleId: null }), true);
-assert.equal(shouldAutoPublishToLearnBlockchain({ status: 'published', learnBlockchainArticleId: '123' }), false);
 console.log('LearnBlockchain adapter self-check passed');
