@@ -129,6 +129,44 @@ const queuePublish = <T>(channel: ExternalChannel, task: () => Promise<T>) => {
 
 const getSourceUrl = async (path: string) => new URL(path, `${(await getPublicSiteConfig()).primaryDomain}/`).toString();
 
+const describeError = (error: unknown) => {
+  if (error instanceof ApiError) return { message: error.message, status: error.status, code: error.code, details: error.details ?? null };
+  if (error instanceof Error) return { message: error.message, name: error.name, stack: error.stack };
+  return { message: String(error) };
+};
+
+// One JSON line per publish attempt so `manage.sh logs api` can be grepped by channel or target.
+const logPublishEvent = (level: 'info' | 'error', event: string, fields: Record<string, unknown>) => {
+  const line = JSON.stringify({ time: new Date().toISOString(), level, event, ...fields });
+  if (level === 'error') console.error(line);
+  else console.log(line);
+};
+
+const recordPublishFailure = async <T>(
+  source: ContentSource<T>,
+  channel: ExternalChannel,
+  id: string,
+  actor: AuditActor,
+  record: T,
+  error: unknown,
+  context: Record<string, unknown>,
+) => {
+  const failure = describeError(error);
+  logPublishEvent('error', 'external_publish_failed', { ...context, error: failure });
+  try {
+    await createAuditEntry({
+      ...actor,
+      action: `${source.auditPrefix}.${channel.auditKey}_publish_failed`,
+      targetType: source.targetType,
+      targetId: id,
+      summary: `Failed to publish ${source.describe(record)} to ${channel.name}: ${failure.message}`.slice(0, 500),
+      payloadJson: { ...context, error: { ...failure, stack: undefined } },
+    });
+  } catch (auditError) {
+    logPublishEvent('error', 'external_publish_failure_audit_failed', { ...context, error: describeError(auditError) });
+  }
+};
+
 export const publishToExternal = async <K extends ExternalContentKind>(
   kind: K,
   channelKey: ExternalChannelKey,
@@ -141,14 +179,23 @@ export const publishToExternal = async <K extends ExternalContentKind>(
   if (!record) throw badRequest(`${source.label} not found`);
   if (record.status !== 'published') throw badRequest(`publish the Rebase ${source.label} before sending it to ${channel.name}`);
   if (record[channel.idField]) return record;
-  const externalId = await queuePublish(channel, async () => {
-    const latest = await source.get(id);
-    if (!latest) throw badRequest(`${source.label} not found`);
-    if (latest[channel.idField]) return null;
-    const { sourcePath, ...input } = source.toPublishInput(latest);
-    return channel.publish({ ...input, sourceUrl: await getSourceUrl(sourcePath) });
-  });
+  const startedAt = Date.now();
+  const context = { channel: channel.name, kind, targetId: id, title: source.describe(record) };
+  let externalId: string | null;
+  try {
+    externalId = await queuePublish(channel, async () => {
+      const latest = await source.get(id);
+      if (!latest) throw badRequest(`${source.label} not found`);
+      if (latest[channel.idField]) return null;
+      const { sourcePath, ...input } = source.toPublishInput(latest);
+      return channel.publish({ ...input, sourceUrl: await getSourceUrl(sourcePath) });
+    });
+  } catch (error) {
+    await recordPublishFailure(source, channel, id, actor, record, error, { ...context, durationMs: Date.now() - startedAt });
+    throw error;
+  }
   if (!externalId) return (await source.get(id)) as RecordByKind[K];
+  logPublishEvent('info', 'external_publish_succeeded', { ...context, externalId, durationMs: Date.now() - startedAt });
   await source.saveExternalId(id, channel.idField, externalId);
   await createAuditEntry({
     ...actor,

@@ -6,7 +6,7 @@ import type { ExternalChannel } from './external-publishing.js';
 
 export const maxXPostCharacters = 280;
 
-type XPublisherResponse = { tweetId?: string; url?: string; error?: string };
+type XPublisherResponse = { tweetId?: string; url?: string; error?: string; details?: Record<string, unknown> };
 
 export const isXConfigured = () => {
   const env = getEnv();
@@ -75,7 +75,7 @@ const requestPublisher = async (text: string) => {
 
   if (!payload.tweetId) {
     const reason = payload.error || 'publisher 未返回 tweet id';
-    throw serviceUnavailable(`X 发布失败：${reason}`, { error: payload.error });
+    throw serviceUnavailable(`X 发布失败：${reason}`, { error: payload.error, publisher: payload.details ?? null });
   }
   return { tweetId: payload.tweetId, url: payload.url ?? `https://x.com/status/${payload.tweetId}` };
 };
