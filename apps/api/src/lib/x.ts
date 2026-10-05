@@ -1,30 +1,17 @@
 import { request as httpRequest } from 'node:http';
 
-import { eq } from 'drizzle-orm';
-
-import { articles, events, geekdailyEpisodes } from '@rebase/db';
-import type { AdminArticleRecord, AdminEventRecord, AdminGeekDailyRecord } from '@rebase/shared';
-
-import { createAuditEntry, type AuditActor } from './audit.js';
-import { getDb } from './db.js';
 import { badRequest, serviceUnavailable } from './errors.js';
 import { getEnv } from './env.js';
-import { getAdminArticle } from './articles.js';
-import { getAdminEvent } from './events.js';
-import { getAdminGeekDailyEpisode } from './geekdaily.js';
-import { getPublicSiteConfig } from './site.js';
+import type { ExternalChannel } from './external-publishing.js';
 
 export const maxXPostCharacters = 280;
 
-type XPublisherResponse = { tweetId?: string; url?: string; error?: string };
+type XPublisherResponse = { tweetId?: string; url?: string; error?: string; details?: Record<string, unknown> };
 
 export const isXConfigured = () => {
   const env = getEnv();
   return env.xPublisherEnabled && Boolean(env.xPublisherSocketPath.trim());
 };
-
-export const shouldAutoPublishToX = (record: { status: string; xPostId?: string | null }) =>
-  record.status === 'published' && !record.xPostId;
 
 const countCharacters = (value: string) => Array.from(value).length;
 const truncateCharacters = (value: string, maxLength: number) => Array.from(value).slice(0, maxLength).join('');
@@ -88,72 +75,15 @@ const requestPublisher = async (text: string) => {
 
   if (!payload.tweetId) {
     const reason = payload.error || 'publisher 未返回 tweet id';
-    throw serviceUnavailable(`X 发布失败：${reason}`, { error: payload.error });
+    throw serviceUnavailable(`X 发布失败：${reason}`, { error: payload.error, publisher: payload.details ?? null });
   }
   return { tweetId: payload.tweetId, url: payload.url ?? `https://x.com/status/${payload.tweetId}` };
 };
 
-const appendSource = (title: string, summary: string, url: string) => buildXPostText({ title, summary, url });
-const getSourceUrl = async (path: string) => new URL(path, `${(await getPublicSiteConfig()).primaryDomain}/`).toString();
-
-// ponytail: one process-wide publish queue; use a durable job worker if volume requires parallelism.
-let publishQueue = Promise.resolve();
-const queuePublish = <T>(task: () => Promise<T>) => {
-  const next = publishQueue.then(task);
-  publishQueue = next.then(() => undefined, () => undefined);
-  return next;
-};
-
-export const publishAdminArticleToX = async (id: string, actor: AuditActor): Promise<AdminArticleRecord> => {
-  const record = await getAdminArticle(id);
-  if (!record) throw badRequest('article not found');
-  if (record.status !== 'published') throw badRequest('publish the Rebase article before sending it to X');
-  if (record.xPostId) return record;
-  const result = await queuePublish(async () => {
-    const latest = await getAdminArticle(id);
-    if (!latest) throw badRequest('article not found');
-    if (latest.xPostId) return null;
-    const source = await getSourceUrl(`/articles/${latest.publicNumber}-${latest.slug}`);
-    return requestPublisher(appendSource(latest.title, latest.summary, source));
-  });
-  if (!result) return (await getAdminArticle(id)) as AdminArticleRecord;
-  await getDb().update(articles).set({ xPostId: result.tweetId, updatedAt: new Date() }).where(eq(articles.id, id));
-  await createAuditEntry({ ...actor, action: 'article.x_publish', targetType: 'article', targetId: id, summary: `Published article ${record.title} to X` });
-  return (await getAdminArticle(id)) as AdminArticleRecord;
-};
-
-export const publishAdminEventToX = async (id: string, actor: AuditActor): Promise<AdminEventRecord> => {
-  const record = await getAdminEvent(id);
-  if (!record) throw badRequest('event not found');
-  if (record.status !== 'published') throw badRequest('publish the Rebase event before sending it to X');
-  if (record.xPostId) return record;
-  const result = await queuePublish(async () => {
-    const latest = await getAdminEvent(id);
-    if (!latest) throw badRequest('event not found');
-    if (latest.xPostId) return null;
-    const source = await getSourceUrl(`/events/${latest.publicNumber}-${latest.slug}`);
-    return requestPublisher(appendSource(`活动｜${latest.title}`, latest.summary, source));
-  });
-  if (!result) return (await getAdminEvent(id)) as AdminEventRecord;
-  await getDb().update(events).set({ xPostId: result.tweetId, updatedAt: new Date() }).where(eq(events.id, id));
-  await createAuditEntry({ ...actor, action: 'event.x_publish', targetType: 'event', targetId: id, summary: `Published event ${record.title} to X` });
-  return (await getAdminEvent(id)) as AdminEventRecord;
-};
-
-export const publishAdminGeekDailyToX = async (id: string, actor: AuditActor): Promise<AdminGeekDailyRecord> => {
-  const record = await getAdminGeekDailyEpisode(id);
-  if (!record) throw badRequest('GeekDaily episode not found');
-  if (record.status !== 'published') throw badRequest('publish the Rebase GeekDaily episode before sending it to X');
-  if (record.xPostId) return record;
-  const result = await queuePublish(async () => {
-    const latest = await getAdminGeekDailyEpisode(id);
-    if (!latest) throw badRequest('GeekDaily episode not found');
-    if (latest.xPostId) return null;
-    const source = await getSourceUrl(`/geekdaily/${latest.slug}`);
-    return requestPublisher(appendSource(`极客日报｜${latest.title}`, latest.summary, source));
-  });
-  if (!result) return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;
-  await getDb().update(geekdailyEpisodes).set({ xPostId: result.tweetId, updatedAt: new Date() }).where(eq(geekdailyEpisodes.id, id));
-  await createAuditEntry({ ...actor, action: 'geekdaily.x_publish', targetType: 'geekdaily_episode', targetId: id, summary: `Published GeekDaily ${record.episodeNumber} to X` });
-  return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;
+export const xChannel: ExternalChannel = {
+  name: 'X',
+  auditKey: 'x',
+  idField: 'xPostId',
+  isConfigured: isXConfigured,
+  publish: async ({ title, summary, sourceUrl }) => (await requestPublisher(buildXPostText({ title, summary, url: sourceUrl }))).tweetId,
 };

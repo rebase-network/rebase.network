@@ -1,18 +1,10 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import { marked } from 'marked';
-import { eq } from 'drizzle-orm';
 
-import { articles, events, geekdailyEpisodes } from '@rebase/db';
-import type { AdminArticleRecord, AdminEventRecord, AdminGeekDailyRecord } from '@rebase/shared';
-
-import { createAuditEntry, type AuditActor } from './audit.js';
-import { getDb } from './db.js';
 import { badRequest, serviceUnavailable } from './errors.js';
-import { getInfoqCredentials, getPublicSiteConfig } from './site.js';
-import { getAdminArticle } from './articles.js';
-import { getAdminEvent } from './events.js';
-import { getAdminGeekDailyEpisode } from './geekdaily.js';
+import { getInfoqCredentials, isInfoqConfigured } from './site.js';
+import type { ExternalChannel } from './external-publishing.js';
 
 type InfoqNode = {
   type: string;
@@ -44,9 +36,6 @@ const fetchInfoq = async (stage: string, input: string, init: RequestInit = {}) 
     throw serviceUnavailable(`InfoQ 网络请求失败：${stage}：${reason}`, { stage, reason });
   }
 };
-
-export const shouldAutoPublishToInfoq = (record: { status: string; infoqArticleUuid?: string | null }) =>
-  record.status === 'published' && !record.infoqArticleUuid;
 
 class InfoqApiClient {
   private ticket: string;
@@ -252,7 +241,6 @@ const trimUtf8 = (value: string, maxBytes: number) => {
 };
 const firstParagraph = (markdown: string) => markdown.split(/\n\s*\n/).map((part) => part.replace(/^#+\s+|[*_`>-]/g, '').trim()).find(Boolean) ?? '';
 const appendSource = (body: string, url: string) => `${body.trim()}\n\n---\n\n原文链接：${url}`;
-const publicUrl = async (path: string) => new URL(path, `${(await getPublicSiteConfig()).primaryDomain}/`).toString();
 
 const resolveLabels = async (client: InfoqApiClient, tags: string[]) => {
   const labels: number[] = [];
@@ -309,66 +297,11 @@ const publish = async (input: InfoqArticleInput): Promise<InfoqPublishResult> =>
   }
 };
 
-// ponytail: one process-wide publish queue; use a durable job worker if volume requires parallelism.
-let publishQueue = Promise.resolve();
-const queuePublish = <T>(task: () => Promise<T>) => {
-  const next = publishQueue.then(task);
-  publishQueue = next.then(() => undefined, () => undefined);
-  return next;
-};
-
-export const publishAdminArticleToInfoq = async (id: string, actor: AuditActor): Promise<AdminArticleRecord> => {
-  const record = await getAdminArticle(id);
-  if (!record) throw badRequest('article not found');
-  if (record.status !== 'published') throw badRequest('publish the Rebase article before sending it to InfoQ');
-  if (record.infoqArticleUuid) return record;
-  const result = await queuePublish(async () => {
-    const latest = await getAdminArticle(id);
-    if (!latest) throw badRequest('article not found');
-    if (latest.infoqArticleUuid) return null;
-    const source = await publicUrl(`/articles/${latest.publicNumber}-${latest.slug}`);
-    return publish({ title: latest.title, summary: latest.summary, bodyMarkdown: appendSource(latest.bodyMarkdown, source), tags: latest.tags });
-  });
-  if (!result) return (await getAdminArticle(id)) as AdminArticleRecord;
-  await getDb().update(articles).set({ infoqArticleUuid: result.uuid, updatedAt: new Date() }).where(eq(articles.id, id));
-  await createAuditEntry({ ...actor, action: 'article.infoq_publish', targetType: 'article', targetId: id, summary: `Published article ${record.title} to InfoQ` });
-  return (await getAdminArticle(id)) as AdminArticleRecord;
-};
-
-export const publishAdminEventToInfoq = async (id: string, actor: AuditActor): Promise<AdminEventRecord> => {
-  const record = await getAdminEvent(id);
-  if (!record) throw badRequest('event not found');
-  if (record.status !== 'published') throw badRequest('publish the Rebase event before sending it to InfoQ');
-  if (record.infoqArticleUuid) return record;
-  const result = await queuePublish(async () => {
-    const latest = await getAdminEvent(id);
-    if (!latest) throw badRequest('event not found');
-    if (latest.infoqArticleUuid) return null;
-    const source = await publicUrl(`/events/${latest.publicNumber}-${latest.slug}`);
-    const details = [`活动时间：${latest.startAt ?? ''} 至 ${latest.endAt ?? ''}`, `活动地点：${latest.city} ${latest.location} ${latest.venue}`];
-    if (latest.registrationUrl) details.push(`报名链接：${latest.registrationUrl}`);
-    return publish({ title: `活动｜${latest.title}`, summary: latest.summary, bodyMarkdown: appendSource(`${details.join('\n')}\n\n${latest.bodyMarkdown}`, source), tags: latest.tags });
-  });
-  if (!result) return (await getAdminEvent(id)) as AdminEventRecord;
-  await getDb().update(events).set({ infoqArticleUuid: result.uuid, updatedAt: new Date() }).where(eq(events.id, id));
-  await createAuditEntry({ ...actor, action: 'event.infoq_publish', targetType: 'event', targetId: id, summary: `Published event ${record.title} to InfoQ` });
-  return (await getAdminEvent(id)) as AdminEventRecord;
-};
-
-export const publishAdminGeekDailyToInfoq = async (id: string, actor: AuditActor): Promise<AdminGeekDailyRecord> => {
-  const record = await getAdminGeekDailyEpisode(id);
-  if (!record) throw badRequest('GeekDaily episode not found');
-  if (record.status !== 'published') throw badRequest('publish the Rebase GeekDaily episode before sending it to InfoQ');
-  if (record.infoqArticleUuid) return record;
-  const result = await queuePublish(async () => {
-    const latest = await getAdminGeekDailyEpisode(id);
-    if (!latest) throw badRequest('GeekDaily episode not found');
-    if (latest.infoqArticleUuid) return null;
-    const source = await publicUrl(`/geekdaily/${latest.slug}`);
-    return publish({ title: `极客日报｜${latest.title}`, summary: latest.summary, bodyMarkdown: appendSource(latest.bodyMarkdown, source), tags: latest.tags });
-  });
-  if (!result) return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;
-  await getDb().update(geekdailyEpisodes).set({ infoqArticleUuid: result.uuid, updatedAt: new Date() }).where(eq(geekdailyEpisodes.id, id));
-  await createAuditEntry({ ...actor, action: 'geekdaily.infoq_publish', targetType: 'geekdaily_episode', targetId: id, summary: `Published GeekDaily ${record.episodeNumber} to InfoQ` });
-  return (await getAdminGeekDailyEpisode(id)) as AdminGeekDailyRecord;
+export const infoqChannel: ExternalChannel = {
+  name: 'InfoQ',
+  auditKey: 'infoq',
+  idField: 'infoqArticleUuid',
+  isConfigured: isInfoqConfigured,
+  publish: async ({ title, summary, bodyMarkdown, tags, sourceUrl }) =>
+    (await publish({ title, summary, bodyMarkdown: appendSource(bodyMarkdown, sourceUrl), tags })).uuid,
 };

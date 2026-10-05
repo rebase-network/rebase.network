@@ -1,4 +1,6 @@
 import { existsSync } from 'node:fs';
+import { mkdir, readdir, rm } from 'node:fs/promises';
+import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
 import { Browser } from '@agent-infra/browser';
@@ -216,11 +218,71 @@ export const checkXProfile = async (options) => {
   }
 };
 
+const maxDiagnosticCaptures = 50;
+const responseBodyLimit = 4000;
+
+export class XPublishError extends Error {
+  constructor(message, details) {
+    super(message);
+    this.name = 'XPublishError';
+    this.details = details;
+  }
+}
+
+const pruneDiagnostics = async (directory) => {
+  const files = (await readdir(directory).catch(() => [])).filter((name) => name.endsWith('.png')).sort();
+  await Promise.all(files.slice(0, Math.max(0, files.length - maxDiagnosticCaptures)).map((name) => rm(join(directory, name), { force: true })));
+};
+
+const captureFailure = async (page, diagnosticsDir) => {
+  const capture = { pageUrl: null, screenshot: null };
+  try {
+    capture.pageUrl = page.url();
+  } catch {
+    // page already closed
+  }
+  if (!diagnosticsDir) return capture;
+  try {
+    await mkdir(diagnosticsDir, { recursive: true });
+    const path = join(diagnosticsDir, `x-publish-${new Date().toISOString().replace(/[:.]/g, '-')}.png`);
+    await page.screenshot({ path });
+    capture.screenshot = path;
+    await pruneDiagnostics(diagnosticsDir);
+  } catch (error) {
+    capture.screenshotError = error instanceof Error ? error.message : String(error);
+  }
+  return capture;
+};
+
+const readComposerText = async (page) => {
+  const composer = await firstVisible(page, ['[data-testid="tweetTextarea_0"]', 'div[contenteditable="true"][role="textbox"]']);
+  if (!composer) return null;
+  const value = await composer.evaluate((node) => node.textContent ?? '').catch(() => null);
+  await composer.dispose();
+  return value;
+};
+
+const readResponse = async (response) => {
+  const body = await response.text().catch(() => '');
+  let payload = null;
+  try {
+    payload = JSON.parse(body);
+  } catch {
+    // non-JSON body; kept as text in diagnostics
+  }
+  const summary = { status: response.status(), url: response.url(), body: body.slice(0, responseBodyLimit) };
+  if (Array.isArray(payload?.errors) && payload.errors.length) summary.errors = payload.errors;
+  return { payload, summary };
+};
+
 export const publishTweetWithProfile = async (options) => {
   const text = validateTweetText(options.text);
   const session = await openSession(options);
+  // stage + response let the publisher log say where the flow stopped and what X answered.
+  const diagnostics = { stage: 'open_composer', textCharacters: countTweetCharacters(text), composerCharacters: null, createTweet: null };
   try {
     const composer = await openComposer(session.page);
+    diagnostics.stage = 'type_text';
     await composer.click();
     const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
     await session.page.keyboard.down(modifier);
@@ -229,7 +291,10 @@ export const publishTweetWithProfile = async (options) => {
     await session.page.keyboard.press('Backspace');
     await composer.type(text, { delay: 10 });
     await composer.dispose();
+    const typed = await readComposerText(session.page);
+    diagnostics.composerCharacters = typed === null ? null : countTweetCharacters(typed);
 
+    diagnostics.stage = 'wait_post_button';
     const postButton = await waitForEnabled(session.page, [
       '[data-testid="tweetButtonInline"]',
       '[data-testid="tweetButton"]',
@@ -240,14 +305,25 @@ export const publishTweetWithProfile = async (options) => {
       (response) => /\/CreateTweet(?:$|\?|\/)/.test(response.url()) && response.request().method() === 'POST',
       { timeout: postTimeoutMs },
     ).catch(() => null);
+    diagnostics.stage = 'submit';
     await postButton.click();
     await postButton.dispose();
 
+    diagnostics.stage = 'wait_create_tweet_response';
     const response = await responsePromise;
-    if (!response?.ok()) throw new Error('X 发布结果不确定，请检查账号主页后再决定是否重试');
-    const tweetId = extractTweetId(await response.json().catch(() => null));
+    if (!response) {
+      diagnostics.createTweet = { status: null, note: `no CreateTweet response within ${postTimeoutMs}ms` };
+      throw new Error('X 发布结果不确定，请检查账号主页后再决定是否重试');
+    }
+    const { payload, summary } = await readResponse(response);
+    diagnostics.createTweet = summary;
+    if (!response.ok()) throw new Error('X 发布结果不确定，请检查账号主页后再决定是否重试');
+    const tweetId = extractTweetId(payload);
     if (!tweetId) throw new Error('X 发布成功但未能解析 tweet id，请检查账号主页');
     return { tweetId, url: `https://x.com/${session.handle}/status/${tweetId}` };
+  } catch (error) {
+    const capture = await captureFailure(session.page, options.diagnosticsDir);
+    throw new XPublishError(error instanceof Error ? error.message : String(error), { ...diagnostics, ...capture });
   } finally {
     await session.browser.close();
   }

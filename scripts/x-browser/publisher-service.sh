@@ -10,6 +10,7 @@ CHROME_PATH="${CHROME_PATH:-/usr/bin/google-chrome-stable}"
 REPO_DIR="${X_REPO_DIR:-$HOME/rebase.network}"
 PID_FILE="$STATE_DIR/publisher.pid"
 LOG_FILE="$STATE_DIR/publisher.log"
+LOG_MAX_BYTES="${X_PUBLISHER_LOG_MAX_BYTES:-10485760}"
 
 publisher_pid() { [[ -f "$PID_FILE" ]] && cat "$PID_FILE"; }
 publisher_running() { local pid; pid="$(publisher_pid || true)"; [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null && ps -p "$pid" -o command= | grep -Fq 'publisher-server.mjs'; }
@@ -19,9 +20,10 @@ start() {
   mkdir -p "$STATE_DIR"; chmod 700 "$STATE_DIR"
   [[ -d "$PROFILE_DIR" ]] || { echo "missing X Profile: $PROFILE_DIR" >&2; return 1; }
   [[ -f "$REPO_DIR/scripts/x-browser/publisher-server.mjs" ]] || { echo "missing repository: $REPO_DIR" >&2; return 1; }
+  if [[ -f "$LOG_FILE" ]] && (( $(wc -c <"$LOG_FILE") > LOG_MAX_BYTES )); then mv -f "$LOG_FILE" "$LOG_FILE.1"; fi
   export PATH="$NODE_BIN_DIR:$PATH"
   X_PROFILE_DIR="$PROFILE_DIR" X_PUBLISHER_SOCKET_PATH="$SOCKET_PATH" CHROME_PATH="$CHROME_PATH" \
-    nohup node "$REPO_DIR/scripts/x-browser/publisher-server.mjs" >"$LOG_FILE" 2>&1 &
+    nohup node "$REPO_DIR/scripts/x-browser/publisher-server.mjs" >>"$LOG_FILE" 2>&1 &
   echo $! >"$PID_FILE"
   for _ in $(seq 1 40); do
     if [[ -S "$SOCKET_PATH" ]] && publisher_running; then chmod 600 "$SOCKET_PATH"; echo "X publisher started: $SOCKET_PATH"; return 0; fi
