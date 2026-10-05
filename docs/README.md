@@ -34,6 +34,7 @@
 - `admin-information-architecture.md`
 - `admin-data-model.md`
 - `admin-data-model-fields.md`
+- `csdn-publishing.md`：CSDN 自动发布方案（设计稿）
 
 ### `docs/operations/`
 
