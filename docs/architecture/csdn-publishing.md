@@ -166,6 +166,7 @@ CSDN 必须使用独立 Profile，不能与 X 共用：同一个 Chrome 用户�
 | `CSDN_SESSION_SOCKET_PATH` | API 容器内的会话服务 socket，默认 `/var/run/rebase-csdn-browser/session.sock` | 否 |
 | `CSDN_CA_KEY` | 签名用 `x-ca-key` | 否 |
 | `CSDN_CA_SECRET` | 签名用 appSecret | 是 |
+| `CSDN_USERNAME` | 预期登录的 CSDN 用户名，默认 `weixin_41323550`；会话服务读到的账号不一致时拒绝发布 | 否 |
 
 `infra/production/docker-compose.yml` 的 `api` 服务新增 volume：
 
@@ -190,7 +191,7 @@ CSDN 必须使用独立 Profile，不能与 X 共用：同一个 Chrome 用户�
 
 ## 前置验证
 
-写代码前用 CSDN 测试账号完成以下验证，结果补充到本文：
+写代码前用社区 CSDN 账号完成以下验证，结果补充到本文：
 
 1. **登录保持**：通过 VNC 在独立 Profile 中扫码登录，关闭后用无界面 Chrome 重新打开，确认登录状态还在、没有额外验证。
 2. **cookie 读取**：通过 CDP 读出 `.csdn.net` cookie，确认哪些 cookie 是发文必需的。
@@ -216,4 +217,4 @@ CSDN 必须使用独立 Profile，不能与 X 共用：同一个 Chrome 用户�
 - **文章类型**：统一标为“原创”，包括极客日报。
 - **发布范围**：文章、活动、极客日报三类都发布到 CSDN。
 - **自动发布**：与 InfoQ、登链、X 一致，内容发布后自动发到 CSDN（加入 `externalChannels`，执行顺序排在现有渠道之后）。
-- **账号**：社区专用 CSDN 账号尚未创建，创建后再进行前置验证。在此之前，“前置验证”和依赖真实请求的签名细节暂缓。
+- **账号**：社区专用 CSDN 账号为 `weixin_41323550`（主页 `https://blog.csdn.net/weixin_41323550`）。前置验证和依赖真实请求的签名细节，等拿到该账号的 `saveArticle` 请求样本后再补充。
