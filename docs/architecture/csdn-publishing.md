@@ -246,9 +246,27 @@ CSDN 必须使用独立 Profile，不能与 X 共用：同一个 Chrome 用户�
   | `level`、`vote_id`、`creation_statement` | `0` | |
   | `is_new`、`not_auto_saved` | `1`、`"1"` | |
 
+- 响应体（草稿样本）：
+
+  ```json
+  {
+    "code": 200,
+    "traceId": "<uuid>",
+    "msg": "success",
+    "data": {
+      "id": 167163453,
+      "url": "https://blog.csdn.net/<username>/article/details/167163453",
+      "title": "...",
+      "description": "",
+      "qrcode": "..."
+    }
+  }
+  ```
+
+  成功判断：HTTP 2xx、`code === 200` 且 `data.id` 存在。`data.id` 转为字符串写入 `csdn_article_id`，`data.url` 用于展示。失败时把 `code`、`msg`、`traceId` 放进错误详情，`traceId` 便于向 CSDN 反馈。
+
 **仍需补充：**
 
-- 响应体：确认成功时文章 ID、地址的字段名和业务码。
 - 正式发布样本：`status`、`pubStatus` 的取值（社区资料称发布为 `1`，需以真实请求为准），以及发布时标签、分类、封面是否必填。
 
 ## 已确认决策（2026-10-06）
