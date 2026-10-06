@@ -212,6 +212,45 @@ CSDN 必须使用独立 Profile，不能与 X 共用：同一个 Chrome 用户�
 
 上线顺序：先部署代码并保持 `CSDN_PUBLISHER_ENABLED=false`，完成登录和 `csdn check` 后，再打开开关并发布一篇内容验证。
 
+## 请求样本核对结果（2026-10-06）
+
+依据社区账号在网页编辑器中“保存草稿”时抓到的一次 `saveArticle` 请求（未保存 cookie）。
+
+**已确认：**
+
+- 接口：`POST https://bizapi.csdn.net/blog-console-api/v3/mdeditor/saveArticle`，`Content-Type: application/json`，`Accept: */*`。
+- 签名：`x-ca-key` 为 `203803574`，`x-ca-signature-headers` 为 `x-ca-key,x-ca-nonce`。`stringToSign` 格式为：
+
+  ```text
+  POST\n*/*\n\napplication/json\n\nx-ca-key:<key>\nx-ca-nonce:<uuid>\n/blog-console-api/v3/mdeditor/saveArticle
+  ```
+
+  用社区资料中的 appSecret 本地计算 `base64(HMAC-SHA256(appSecret, stringToSign))`，结果与样本中的 `x-ca-signature` 完全一致。appSecret 按设计放在 `CSDN_CA_SECRET`，不写入仓库。
+- 请求体字段（草稿样本）：
+
+  | 字段 | 样本值 | 说明 |
+  |---|---|---|
+  | `id` | 已有草稿 ID | 新建文章时应省略，待验证 |
+  | `title` | 标题 | |
+  | `markdowncontent` | Markdown 原文 | |
+  | `content` | 渲染后的 HTML | **需要 API 自行把 Markdown 渲染成 HTML 一并提交**，可用已有的 `marked` |
+  | `readType` | `public` | |
+  | `tags` | 逗号分隔字符串，样本为空 | 正式发布是否必填待验证 |
+  | `categories` | 空字符串 | |
+  | `type` | `original` | 对应“原创” |
+  | `original_link` | 空 | |
+  | `authorized_status` | `false` | |
+  | `status` / `pubStatus` | `2` / `draft` | 草稿 |
+  | `source` | `pc_mdeditor` | |
+  | `cover_type` / `cover_images` | `1` / `[]` | |
+  | `level`、`vote_id`、`creation_statement` | `0` | |
+  | `is_new`、`not_auto_saved` | `1`、`"1"` | |
+
+**仍需补充：**
+
+- 响应体：确认成功时文章 ID、地址的字段名和业务码。
+- 正式发布样本：`status`、`pubStatus` 的取值（社区资料称发布为 `1`，需以真实请求为准），以及发布时标签、分类、封面是否必填。
+
 ## 已确认决策（2026-10-06）
 
 - **文章类型**：统一标为“原创”，包括极客日报。
