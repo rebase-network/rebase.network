@@ -679,6 +679,8 @@ export interface AdminArticleRecord extends ArticleInput {
   infoqArticleUuid: string | null;
   learnBlockchainArticleId: string | null;
   xPostId: string | null;
+  csdnArticleId: string | null;
+  csdnPublishedAt: string | null;
 }
 
 export interface AdminJobListItem {
@@ -725,6 +727,8 @@ export interface AdminEventRecord extends EventInput {
   infoqArticleUuid: string | null;
   learnBlockchainArticleId: string | null;
   xPostId: string | null;
+  csdnArticleId: string | null;
+  csdnPublishedAt: string | null;
 }
 
 export interface AdminContributorRoleRecord {
@@ -770,6 +774,8 @@ export interface AdminGeekDailyRecord extends GeekDailyEpisodeInput {
   infoqArticleUuid: string | null;
   learnBlockchainArticleId: string | null;
   xPostId: string | null;
+  csdnArticleId: string | null;
+  csdnPublishedAt: string | null;
 }
 
 export interface AdminGeekDailyWechatDraftRecord {

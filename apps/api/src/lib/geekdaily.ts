@@ -251,6 +251,8 @@ const mapEpisodeDetail = (row: any, items: any[]) => ({
   infoqArticleUuid: row.infoqArticleUuid ?? null,
   learnBlockchainArticleId: row.learnBlockchainArticleId ?? null,
   xPostId: row.xPostId ?? null,
+  csdnArticleId: row.csdnArticleId ?? null,
+  csdnPublishedAt: toIsoString(row.csdnPublishedAt),
   status: row.status,
   publishedAt: toIsoString(row.publishedAt) ?? new Date().toISOString(),
   items,
